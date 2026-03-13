@@ -30,11 +30,15 @@ connectDB().then(() => {
 	setInterval(sendReminder24h, 60 * 60 * 1000)
 })
 
-// CORS configuration - allow all origins in development
+// CORS - allow origin with/without trailing slash to fix Hostinger etc.
+const allowedOrigin = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '')
 app.use(cors({
-	origin: process.env.NODE_ENV === 'production' 
-		? (process.env.FRONTEND_URL || 'http://localhost:5173')
-		: true, // Allow all origins in development
+	origin: process.env.NODE_ENV === 'production'
+		? (origin, cb) => {
+				const o = (origin || '').replace(/\/$/, '')
+				cb(null, o === allowedOrigin)
+			}
+		: true,
 	credentials: true,
 	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 	allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
