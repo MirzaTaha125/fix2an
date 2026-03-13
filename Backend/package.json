@@ -1,0 +1,25 @@
+{
+	"name": "fix2an-backend",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "node --watch src/server.js",
+		"start": "node src/server.js",
+		"create-admin": "node src/scripts/createAdmin.js",
+		"check-workshop-docs": "node src/scripts/checkWorkshopDocuments.js",
+		"fix-workshop-docs": "node src/scripts/addDocumentsFieldToWorkshops.js"
+	},
+	"dependencies": {
+		"bcryptjs": "^2.4.3",
+		"cors": "^2.8.5",
+		"dotenv": "^16.4.5",
+		"express": "^4.19.2",
+		"jsonwebtoken": "^9.0.2",
+		"mongoose": "^8.0.3",
+		"multer": "^1.4.5-lts.1",
+		"nodemailer": "^6.10.1",
+		"qrcode": "^1.5.4",
+		"speakeasy": "^2.0.0"
+	}
+}

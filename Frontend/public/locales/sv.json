@@ -1,0 +1,81 @@
+{
+	"common": {
+		"loading": "Laddar...",
+		"error": "Fel",
+		"success": "Framgång",
+		"cancel": "Avbryt",
+		"save": "Spara",
+		"delete": "Ta bort",
+		"edit": "Redigera",
+		"view": "Visa",
+		"close": "Stäng",
+		"back": "Tillbaka",
+		"next": "Nästa",
+		"previous": "Föregående",
+		"submit": "Skicka",
+		"confirm": "Bekräfta",
+		"yes": "Ja",
+		"no": "Nej",
+		"required": "Obligatoriskt",
+		"optional": "Valfritt",
+		"or": "Eller"
+	},
+	"navigation": {
+		"home": "Hem",
+		"login": "Logga in",
+		"register": "Registrera dig",
+		"logout": "Logga ut",
+		"dashboard": "Dashboard",
+		"profile": "Profil",
+		"settings": "Inställningar",
+		"my_cases": "Mina ärenden",
+		"upload": "Ladda upp",
+		"upload_cases": "Ladda upp ärenden",
+		"jobs": "Jobb",
+		"proposals": "Offertförfrågningar",
+		"contracts": "Avtal",
+		"admin_panel": "Admin Panel"
+	},
+	"homepage": {
+		"title": "Hitta din verkstad enkelt",
+		"subtitle": "Ladda upp din inspektionsrapport och få erbjudanden från verifierade verkstäder i ditt område. Jämför priser, tider och recensioner - allt på ett ställe.",
+		"cta_primary": "Börja här",
+		"cta_secondary": "Så fungerar det"
+	},
+	"auth": {
+		"signin": {
+			"title": "Logga in på ditt konto",
+			"subtitle": "Eller skapa ett nytt konto",
+			"email": "E-postadress",
+			"password": "Lösenord",
+			"submit": "Logga in"
+		},
+		"signup": {
+			"title": "Skapa ditt kundkonto",
+			"subtitle": "Eller logga in på ditt befintliga konto",
+			"name": "Namn",
+			"email": "E-postadress",
+			"phone": "Telefonnummer",
+			"address": "Adress",
+			"city": "Stad",
+			"postal_code": "Postnummer",
+			"password": "Lösenord",
+			"confirm_password": "Bekräfta lösenord",
+			"submit": "Skapa konto"
+		}
+	},
+	"errors": {
+		"invalid_credentials": "Ogiltiga inloggningsuppgifter",
+		"generic_error": "Något gick fel. Försök igen.",
+		"email_required": "Ange din e-postadress",
+		"invalid_email_format": "Ogiltigt e-postformat",
+		"password_required": "Lösenord krävs",
+		"password_mismatch": "Lösenorden matchar inte",
+		"password_too_short": "Lösenordet måste vara minst 6 tecken",
+		"email_exists": "En användare med denna e-postadress finns redan"
+	},
+	"success": {
+		"account_created": "Konto skapat",
+		"account_created_message": "Ditt konto har skapats. Logga in för att fortsätta."
+	}
+}

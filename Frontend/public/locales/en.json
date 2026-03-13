@@ -1,0 +1,81 @@
+{
+	"common": {
+		"loading": "Loading...",
+		"error": "Error",
+		"success": "Success",
+		"cancel": "Cancel",
+		"save": "Save",
+		"delete": "Delete",
+		"edit": "Edit",
+		"view": "View",
+		"close": "Close",
+		"back": "Back",
+		"next": "Next",
+		"previous": "Previous",
+		"submit": "Submit",
+		"confirm": "Confirm",
+		"yes": "Yes",
+		"no": "No",
+		"required": "Required",
+		"optional": "Optional",
+		"or": "Or"
+	},
+	"navigation": {
+		"home": "Home",
+		"login": "Login",
+		"register": "Register",
+		"logout": "Logout",
+		"dashboard": "Dashboard",
+		"profile": "Profile",
+		"settings": "Settings",
+		"my_cases": "My Cases",
+		"upload": "Upload",
+		"upload_cases": "Upload Cases",
+		"jobs": "Jobs",
+		"proposals": "Proposals",
+		"contracts": "Contracts",
+		"admin_panel": "Admin Panel"
+	},
+	"homepage": {
+		"title": "Find your workshop easily",
+		"subtitle": "Upload your inspection report and get offers from verified workshops in your area. Compare prices, times and reviews - all in one place.",
+		"cta_primary": "Start here",
+		"cta_secondary": "How it works"
+	},
+	"auth": {
+		"signin": {
+			"title": "Sign in to your account",
+			"subtitle": "Or create a new account",
+			"email": "Email address",
+			"password": "Password",
+			"submit": "Sign in"
+		},
+		"signup": {
+			"title": "Create your customer account",
+			"subtitle": "Or sign in to your existing account",
+			"name": "Name",
+			"email": "Email address",
+			"phone": "Phone number",
+			"address": "Address",
+			"city": "City",
+			"postal_code": "Postal code",
+			"password": "Password",
+			"confirm_password": "Confirm password",
+			"submit": "Create account"
+		}
+	},
+	"errors": {
+		"invalid_credentials": "Invalid login credentials",
+		"generic_error": "Something went wrong. Please try again.",
+		"email_required": "Enter your email address",
+		"invalid_email_format": "Invalid email format",
+		"password_required": "Password is required",
+		"password_mismatch": "Passwords do not match",
+		"password_too_short": "Password must be at least 6 characters",
+		"email_exists": "A user with this email address already exists"
+	},
+	"success": {
+		"account_created": "Account created",
+		"account_created_message": "Your account has been created. Please log in to continue."
+	}
+}
