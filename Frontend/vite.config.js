@@ -15,7 +15,7 @@ export default defineConfig({
 			'/api': {
 				// ⚠️ Update this URL when your ngrok URL changes!
 				// Should match the URL in src/config/api.js
-				target: 'https://peristomatic-hecht-kynlee.ngrok-free.dev',
+				target: 'http://localhost:4000/',
 				changeOrigin: true,
 				secure: true,
 			},

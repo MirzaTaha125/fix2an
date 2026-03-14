@@ -915,7 +915,8 @@
 		"settings": {
 			"title": "Settings",
 			"subtitle": "Manage email configuration and other settings",
-			"email_config": "SMTP Email Settings",
+			"email_config": "Email Settings",
+			"email_provider": "Provider",
 			"email_desc": "Configure SMTP server for sending emails. If empty, .env variables are used as fallback.",
 			"smtp_host": "SMTP Host",
 			"smtp_port": "Port",

@@ -537,27 +537,29 @@ router.post('/payouts', async (req, res) => {
 	}
 })
 
-// Get email config (password not returned)
+// Get email config (password/privateKey not returned)
 router.get('/email-config', async (req, res) => {
 	try {
 		const doc = await EmailConfig.findOne().lean()
 		if (!doc) {
 			return res.json({
-				host: '',
-				port: 587,
-				user: '',
-				from: '',
-				secure: false,
-				hasPassword: false,
+				provider: 'smtp',
+				host: '', port: 587, user: '', from: '', secure: false, hasPassword: false,
+				emailjsUserId: '', emailjsServiceId: '', emailjsTemplateId: '', hasEmailjsPrivateKey: false,
 			})
 		}
 		res.json({
+			provider: doc.provider || 'smtp',
 			host: doc.host || '',
 			port: doc.port ?? 587,
 			user: doc.user || '',
 			from: doc.from || doc.user || '',
 			secure: doc.secure ?? false,
 			hasPassword: !!(doc.password && doc.password.length > 0),
+			emailjsUserId: doc.emailjsUserId || '',
+			emailjsServiceId: doc.emailjsServiceId || '',
+			emailjsTemplateId: doc.emailjsTemplateId || '',
+			hasEmailjsPrivateKey: !!(doc.emailjsPrivateKey && doc.emailjsPrivateKey.length > 0),
 		})
 	} catch (error) {
 		console.error('Get email config error:', error)
@@ -568,28 +570,34 @@ router.get('/email-config', async (req, res) => {
 // Update email config
 router.patch('/email-config', async (req, res) => {
 	try {
-		const { host, port, user, password, from, secure } = req.body
+		const { provider, host, port, user, password, from, secure, emailjsUserId, emailjsServiceId, emailjsTemplateId, emailjsPrivateKey } = req.body
 		const update = {}
+		if (provider !== undefined) update.provider = provider === 'emailjs' ? 'emailjs' : 'smtp'
 		if (host !== undefined) update.host = String(host)
 		if (port !== undefined) update.port = parseInt(port, 10) || 587
 		if (user !== undefined) update.user = String(user)
 		if (password !== undefined && password !== '') update.password = String(password)
 		if (from !== undefined) update.from = String(from)
 		if (secure !== undefined) update.secure = !!secure
+		if (emailjsUserId !== undefined) update.emailjsUserId = String(emailjsUserId)
+		if (emailjsServiceId !== undefined) update.emailjsServiceId = String(emailjsServiceId)
+		if (emailjsTemplateId !== undefined) update.emailjsTemplateId = String(emailjsTemplateId)
+		if (emailjsPrivateKey !== undefined && emailjsPrivateKey !== '') update.emailjsPrivateKey = String(emailjsPrivateKey)
 
-		const doc = await EmailConfig.findOneAndUpdate(
-			{},
-			{ $set: update },
-			{ upsert: true, new: true }
-		).lean()
+		const doc = await EmailConfig.findOneAndUpdate({}, { $set: update }, { upsert: true, new: true }).lean()
 
 		res.json({
+			provider: doc.provider || 'smtp',
 			host: doc.host || '',
 			port: doc.port ?? 587,
 			user: doc.user || '',
 			from: doc.from || doc.user || '',
 			secure: doc.secure ?? false,
 			hasPassword: !!(doc.password && doc.password.length > 0),
+			emailjsUserId: doc.emailjsUserId || '',
+			emailjsServiceId: doc.emailjsServiceId || '',
+			emailjsTemplateId: doc.emailjsTemplateId || '',
+			hasEmailjsPrivateKey: !!(doc.emailjsPrivateKey && doc.emailjsPrivateKey.length > 0),
 		})
 	} catch (error) {
 		console.error('Update email config error:', error)

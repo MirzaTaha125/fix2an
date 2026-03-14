@@ -11,6 +11,8 @@ export const getFullUrl = (relativePath) => {
 	if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
 		return relativePath
 	}
-	return `${API_BASE_URL}${relativePath}`
+	const base = (API_BASE_URL || '').replace(/\/+$/, '')
+	const path = '/' + (relativePath || '').replace(/^\/+/, '')
+	return base ? base + path : path
 }
 

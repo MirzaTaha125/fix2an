@@ -1,86 +1,70 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
+import PendingRegistration from '../models/PendingRegistration.js'
 import { sendEmail, emailTemplates, isEmailConfigured } from '../config/email.js'
 
 const JWT_SECRET = process.env.JWT_SECRET
 
+/** Register: save to PendingRegistration only, send code. User created only after verify. */
 export const register = async (req, res) => {
 	try {
-		const {
-			name,
-			email,
-			password,
-			phone,
-			address,
-			city,
-			postalCode,
-		} = req.body
+		const { name, email, password, phone, address, city, postalCode } = req.body
 
 		const errors = {}
-
-		if (!email) {
-			errors.email = 'Email is required'
-		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-			errors.email = 'Invalid email format'
-		}
-
-		if (!password) {
-			errors.password = 'Password is required'
-		} else if (password.length < 8) {
-			errors.password = 'Password must be at least 8 characters long'
-		}
-
-		if (name && name.trim().length === 0) {
-			errors.name = 'Name cannot be empty'
-		}
+		if (!email) errors.email = 'Email is required'
+		else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Invalid email format'
+		if (!password) errors.password = 'Password is required'
+		else if (password.length < 8) errors.password = 'Password must be at least 8 characters long'
+		if (name && name.trim().length === 0) errors.name = 'Name cannot be empty'
 
 		if (Object.keys(errors).length > 0) {
-			return res.status(400).json({ 
-				message: 'Validation failed',
-				errors 
-			})
+			return res.status(400).json({ message: 'Validation failed', errors })
 		}
 
-		const existingUser = await User.findOne({ email })
+		const normalizedEmail = email.trim().toLowerCase()
+		const existingUser = await User.findOne({ email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } })
 		if (existingUser) {
-			return res.status(400).json({ 
+			return res.status(400).json({
 				message: 'A user with this email address already exists',
-				errors: { email: 'A user with this email address already exists' }
+				errors: { email: 'A user with this email address already exists' },
 			})
 		}
 
 		const code = String(Math.floor(100000 + Math.random() * 900000))
 		const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
 
-		const user = await User.create({
-			name,
-			email,
+		// Delete any old pending for this email
+		await PendingRegistration.deleteMany({ email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } })
+
+		await PendingRegistration.create({
+			email: normalizedEmail,
 			password,
-			phone,
-			address,
-			city,
-			postalCode,
-			role: 'CUSTOMER',
-			emailVerificationCode: code,
-			emailVerificationCodeExpires: expiresAt,
+			name: name || '',
+			phone: phone || '',
+			address: address || '',
+			city: city || '',
+			postalCode: postalCode || '',
+			code,
+			codeExpires: expiresAt,
 		})
 
 		if (await isEmailConfigured()) {
 			try {
-				await sendEmail(email, emailTemplates.emailVerificationCode(code))
+				await sendEmail(normalizedEmail, emailTemplates.emailVerificationCode(code))
 			} catch (emailError) {
 				console.error('Failed to send verification email:', emailError)
 			}
 		}
 
-		return res.status(201).json({ message: 'Account created successfully', userId: user._id, email: user.email })
+		return res.status(201).json({ message: 'Verification code sent', email: normalizedEmail })
 	} catch (error) {
 		console.error('Registration error:', error)
 		return res.status(500).json({ message: 'Something went wrong with the registration' })
 	}
 }
 
+/** Verify code: create User only after code is verified */
 export const verifyEmailCode = async (req, res) => {
 	try {
 		const { email, code } = req.body
@@ -89,30 +73,36 @@ export const verifyEmailCode = async (req, res) => {
 		}
 
 		const normalizedEmail = email.trim().toLowerCase()
-		const user = await User.findOne({
+		const pending = await PendingRegistration.findOne({
 			email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
 		})
 
-		if (!user) {
+		if (!pending) {
 			return res.status(400).json({ message: 'Invalid email or code' })
 		}
 
-		if (user.emailVerified) {
-			return res.json({ message: 'Email already verified' })
-		}
-
-		if (!user.emailVerificationCode || user.emailVerificationCode !== String(code).trim()) {
+		if (pending.code !== String(code).trim()) {
 			return res.status(400).json({ message: 'Invalid or expired code' })
 		}
 
-		if (new Date() > new Date(user.emailVerificationCodeExpires)) {
+		if (new Date() > new Date(pending.codeExpires)) {
 			return res.status(400).json({ message: 'Code has expired' })
 		}
 
-		user.emailVerified = new Date()
-		user.emailVerificationCode = undefined
-		user.emailVerificationCodeExpires = undefined
-		await user.save()
+		// Create user only after verification
+		const user = await User.create({
+			email: pending.email,
+			password: pending.password,
+			name: pending.name,
+			phone: pending.phone,
+			address: pending.address,
+			city: pending.city,
+			postalCode: pending.postalCode,
+			role: 'CUSTOMER',
+			emailVerified: new Date(),
+		})
+
+		await PendingRegistration.findByIdAndDelete(pending._id)
 
 		return res.json({ message: 'Email verified successfully' })
 	} catch (error) {

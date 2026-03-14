@@ -914,7 +914,8 @@
 		"settings": {
 			"title": "Inställningar",
 			"subtitle": "Hantera e-postkonfiguration och andra inställningar",
-			"email_config": "SMTP E-postinställningar",
+			"email_config": "E-postinställningar",
+			"email_provider": "Leverantör",
 			"email_desc": "Konfigurera SMTP-servern för att skicka e-postmeddelanden. Lämnas tomt används .env-variabler som reserv.",
 			"smtp_host": "SMTP-värd",
 			"smtp_port": "Port",

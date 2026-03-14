@@ -74,7 +74,11 @@ export default function AdminPage() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 	const [workshopActionConfirm, setWorkshopActionConfirm] = useState({ open: false, workshopId: null, action: null, workshopName: '' })
 	const mobileMenuRef = useRef(null)
-	const [emailConfig, setEmailConfig] = useState({ host: '', port: 587, user: '', password: '', from: '', secure: false })
+	const [emailConfig, setEmailConfig] = useState({
+		provider: 'smtp',
+		host: '', port: 587, user: '', password: '', from: '', secure: false,
+		emailjsUserId: '', emailjsServiceId: '', emailjsTemplateId: '', emailjsPrivateKey: '',
+	})
 	const [emailConfigSaving, setEmailConfigSaving] = useState(false)
 	const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
 	const [twoFactorSetup, setTwoFactorSetup] = useState({ qrCode: '', secret: '' })
@@ -161,12 +165,17 @@ export default function AdminPage() {
 			const response = await adminAPI.getEmailConfig()
 			if (response.data) {
 				setEmailConfig({
+					provider: response.data.provider || 'smtp',
 					host: response.data.host || '',
 					port: response.data.port ?? 587,
 					user: response.data.user || '',
 					password: '',
 					from: response.data.from || '',
 					secure: response.data.secure ?? false,
+					emailjsUserId: response.data.emailjsUserId || '',
+					emailjsServiceId: response.data.emailjsServiceId || '',
+					emailjsTemplateId: response.data.emailjsTemplateId || '',
+					emailjsPrivateKey: '',
 				})
 			}
 		} catch (error) {
@@ -178,8 +187,19 @@ export default function AdminPage() {
 	const handleUpdateEmailConfig = async () => {
 		setEmailConfigSaving(true)
 		try {
-			const payload = { host: emailConfig.host, port: emailConfig.port, user: emailConfig.user, from: emailConfig.from, secure: emailConfig.secure }
+			const payload = {
+				provider: emailConfig.provider,
+				host: emailConfig.host,
+				port: emailConfig.port,
+				user: emailConfig.user,
+				from: emailConfig.from,
+				secure: emailConfig.secure,
+				emailjsUserId: emailConfig.emailjsUserId,
+				emailjsServiceId: emailConfig.emailjsServiceId,
+				emailjsTemplateId: emailConfig.emailjsTemplateId,
+			}
 			if (emailConfig.password) payload.password = emailConfig.password
+			if (emailConfig.emailjsPrivateKey) payload.emailjsPrivateKey = emailConfig.emailjsPrivateKey
 			const response = await adminAPI.updateEmailConfig(payload)
 			if (response.data) {
 				setEmailConfig({ ...response.data, password: '' })
@@ -1501,65 +1521,70 @@ export default function AdminPage() {
 								</CardHeader>
 								<CardContent className="space-y-4">
 									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_host')}</label>
-										<Input
-											placeholder="smtp.example.com"
-											value={emailConfig.host}
-											onChange={(e) => setEmailConfig((c) => ({ ...c, host: e.target.value }))}
-											className="h-10"
-										/>
-									</div>
-									<div className="flex gap-4">
-										<div className="flex-1">
-											<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_port')}</label>
-											<Input
-												type="number"
-												placeholder="587"
-												value={emailConfig.port}
-												onChange={(e) => setEmailConfig((c) => ({ ...c, port: parseInt(e.target.value, 10) || 587 }))}
-												className="h-10"
-											/>
-										</div>
-										<div className="flex items-end pb-2">
-											<label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-												<input
-													type="checkbox"
-													checked={emailConfig.secure}
-													onChange={(e) => setEmailConfig((c) => ({ ...c, secure: e.target.checked }))}
-													className="rounded border-gray-300"
-												/>
-												{t('admin.settings.secure')}
+										<label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.email_provider')}</label>
+										<div className="flex gap-4">
+											<label className="flex items-center gap-2 cursor-pointer">
+												<input type="radio" checked={emailConfig.provider === 'emailjs'} onChange={() => setEmailConfig((c) => ({ ...c, provider: 'emailjs' }))} />
+												<span>EmailJS</span>
+											</label>
+											<label className="flex items-center gap-2 cursor-pointer">
+												<input type="radio" checked={emailConfig.provider === 'smtp'} onChange={() => setEmailConfig((c) => ({ ...c, provider: 'smtp' }))} />
+												<span>SMTP</span>
 											</label>
 										</div>
 									</div>
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_user')}</label>
-										<Input
-											placeholder="user@example.com"
-											value={emailConfig.user}
-											onChange={(e) => setEmailConfig((c) => ({ ...c, user: e.target.value }))}
-											className="h-10"
-										/>
-									</div>
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_password')}</label>
-										<Input
-											type="password"
-											placeholder={t('admin.settings.password_placeholder')}
-											value={emailConfig.password}
-											onChange={(e) => setEmailConfig((c) => ({ ...c, password: e.target.value }))}
-											className="h-10"
-										/>
-									</div>
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.from_address')}</label>
-										<Input
-											placeholder="noreply@example.com"
-											value={emailConfig.from}
-											onChange={(e) => setEmailConfig((c) => ({ ...c, from: e.target.value }))}
-											className="h-10"
-										/>
-									</div>
+									{emailConfig.provider === 'emailjs' ? (
+										<>
+											<div>
+												<label className="block text-sm font-medium text-gray-700 mb-1">User ID (Public Key)</label>
+												<Input placeholder="user_xxxxx" value={emailConfig.emailjsUserId} onChange={(e) => setEmailConfig((c) => ({ ...c, emailjsUserId: e.target.value }))} className="h-10" />
+											</div>
+											<div>
+												<label className="block text-sm font-medium text-gray-700 mb-1">Service ID</label>
+												<Input placeholder="service_xxxxx" value={emailConfig.emailjsServiceId} onChange={(e) => setEmailConfig((c) => ({ ...c, emailjsServiceId: e.target.value }))} className="h-10" />
+											</div>
+											<div>
+												<label className="block text-sm font-medium text-gray-700 mb-1">Template ID</label>
+												<Input placeholder="template_xxxxx" value={emailConfig.emailjsTemplateId} onChange={(e) => setEmailConfig((c) => ({ ...c, emailjsTemplateId: e.target.value }))} className="h-10" />
+											</div>
+											<div>
+												<label className="block text-sm font-medium text-gray-700 mb-1">Private Key (Access Token)</label>
+												<Input type="password" placeholder="Required for server-side" value={emailConfig.emailjsPrivateKey} onChange={(e) => setEmailConfig((c) => ({ ...c, emailjsPrivateKey: e.target.value }))} className="h-10" />
+												<p className="text-xs text-gray-500 mt-1">EmailJS Account → Security → Enable API requests, add Private Key</p>
+											</div>
+										</>
+									) : (
+										<>
+											<div>
+												<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_host')}</label>
+												<Input placeholder="smtp.example.com" value={emailConfig.host} onChange={(e) => setEmailConfig((c) => ({ ...c, host: e.target.value }))} className="h-10" />
+											</div>
+											<div className="flex gap-4">
+												<div className="flex-1">
+													<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_port')}</label>
+													<Input type="number" placeholder="587" value={emailConfig.port} onChange={(e) => setEmailConfig((c) => ({ ...c, port: parseInt(e.target.value, 10) || 587 }))} className="h-10" />
+												</div>
+												<div className="flex items-end pb-2">
+													<label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+														<input type="checkbox" checked={emailConfig.secure} onChange={(e) => setEmailConfig((c) => ({ ...c, secure: e.target.checked }))} className="rounded border-gray-300" />
+														{t('admin.settings.secure')}
+													</label>
+												</div>
+											</div>
+											<div>
+												<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_user')}</label>
+												<Input placeholder="user@example.com" value={emailConfig.user} onChange={(e) => setEmailConfig((c) => ({ ...c, user: e.target.value }))} className="h-10" />
+											</div>
+											<div>
+												<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_password')}</label>
+												<Input type="password" placeholder={t('admin.settings.password_placeholder')} value={emailConfig.password} onChange={(e) => setEmailConfig((c) => ({ ...c, password: e.target.value }))} className="h-10" />
+											</div>
+											<div>
+												<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.from_address')}</label>
+												<Input placeholder="noreply@example.com" value={emailConfig.from} onChange={(e) => setEmailConfig((c) => ({ ...c, from: e.target.value }))} className="h-10" />
+											</div>
+										</>
+									)}
 									<Button
 										onClick={handleUpdateEmailConfig}
 										disabled={emailConfigSaving}
