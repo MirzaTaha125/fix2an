@@ -487,9 +487,9 @@ export default function AdminPage() {
 	return (
 		<div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
 			{/* Header */}
-			<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+			<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 max-md:border-gray-200">
 				<div className="flex items-center gap-2 sm:gap-3">
-					{/* Mobile Menu Button */}
+					{/* Mobile Menu Button - reference: hamburger right */}
 					<button
 						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 						className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
@@ -497,9 +497,10 @@ export default function AdminPage() {
 						<Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
 					</button>
 					<span className="text-2xl sm:text-3xl lg:text-4xl font-bold">
-						<span className="text-[#05324f]">Fix</span>
+						<span className="text-[#05324f]">Fixa</span>
 						<span style={{ color: '#34C759' }}>2an</span>
-							</span>
+					</span>
+					<span className="hidden max-md:inline text-base font-bold text-[#05324f] ml-1">{t('admin.tabs.dashboard') || 'Admin'}</span>
 						</div>
 				<div className="flex items-center gap-2 sm:gap-3">
 						<LanguageSwitcher />
@@ -513,36 +514,36 @@ export default function AdminPage() {
 				</div>
 			</header>
 
-			{/* KPI Cards - Show on all tabs */}
-			<div className="bg-gray-50 px-3 sm:px-6 py-4 sm:py-5">
-				<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-					<div className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5">
-						<div className="flex items-center gap-2 mb-2">
-							<Users className="w-4 h-4 text-[#34C759]" />
+			{/* KPI Cards - reference mobile: 2x2 grid, icon + number + label, border no shadow */}
+			<div className="bg-gray-50 px-3 sm:px-6 py-4 sm:py-5 max-md:bg-white max-md:py-4">
+				<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-md:gap-2">
+					<div className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5 max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:p-4 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
+						<div className="flex items-center gap-2 mb-2 max-md:mb-2">
+							<Users className="w-4 h-4 text-[#05324f] max-md:w-8 max-md:h-8" />
 						</div>
-						<div className="text-3xl sm:text-4xl font-bold text-[#05324f] leading-none mb-1">{stats.totalCustomers}</div>
-						<div className="text-xs sm:text-small text-gray-500 font-medium">{t('admin.stats.customers')}</div>
+						<div className="text-3xl sm:text-4xl font-bold text-[#05324f] leading-none mb-1 max-md:text-2xl">{stats.totalCustomers}</div>
+						<div className="text-xs sm:text-small text-gray-500 font-medium max-md:text-xs">{t('admin.stats.customers')}</div>
 					</div>
-					<div className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5">
-						<div className="flex items-center gap-2 mb-2">
-							<Building2 className="w-4 h-4 text-[#34C759]" />
+					<div className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5 max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:p-4 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
+						<div className="flex items-center gap-2 mb-2 max-md:mb-2">
+							<Building2 className="w-4 h-4 text-[#34C759] max-md:w-8 max-md:h-8" />
 						</div>
-						<div className="text-3xl sm:text-4xl font-bold text-[#05324f] leading-none mb-1">{stats.totalWorkshops}</div>
-						<div className="text-xs sm:text-small text-gray-500 font-medium">{t('admin.stats.workshops')}</div>
+						<div className="text-3xl sm:text-4xl font-bold text-[#05324f] leading-none mb-1 max-md:text-2xl">{stats.totalWorkshops}</div>
+						<div className="text-xs sm:text-small text-gray-500 font-medium max-md:text-xs">{t('admin.stats.workshops')}</div>
 					</div>
-					<div className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5">
-						<div className="flex items-center gap-2 mb-2">
-							<FileText className="w-4 h-4 text-[#34C759]" />
+					<div className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5 max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:p-4 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
+						<div className="flex items-center gap-2 mb-2 max-md:mb-2">
+							<FileText className="w-4 h-4 text-[#05324f] max-md:w-8 max-md:h-8" />
 						</div>
-						<div className="text-3xl sm:text-4xl font-bold text-[#05324f] leading-none mb-1">{stats.totalRequests}</div>
-						<div className="text-xs sm:text-small text-gray-500 font-medium">{t('admin.stats.requests')}</div>
+						<div className="text-3xl sm:text-4xl font-bold text-[#05324f] leading-none mb-1 max-md:text-2xl">{stats.totalRequests}</div>
+						<div className="text-xs sm:text-small text-gray-500 font-medium max-md:text-xs">{t('admin.stats.requests')}</div>
 					</div>
-					<div className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5">
-						<div className="flex items-center gap-2 mb-2">
-							<DollarSign className="w-4 h-4 text-[#34C759]" />
+					<div className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5 max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:p-4 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
+						<div className="flex items-center gap-2 mb-2 max-md:mb-2">
+							<DollarSign className="w-4 h-4 text-[#34C759] max-md:w-8 max-md:h-8" />
 						</div>
-						<div className="text-3xl sm:text-4xl font-bold text-[#05324f] leading-none mb-1">{formatPrice(stats.monthlyRevenue)}</div>
-						<div className="text-xs sm:text-small text-gray-500 font-medium">{t('admin.stats.monthly_revenue')}</div>
+						<div className="text-3xl sm:text-4xl font-bold text-[#05324f] leading-none mb-1 max-md:text-2xl">{formatPrice(stats.monthlyRevenue)}</div>
+						<div className="text-xs sm:text-small text-gray-500 font-medium max-md:text-xs">{t('admin.stats.monthly_revenue')}</div>
 					</div>
 				</div>
 			</div>
@@ -634,7 +635,7 @@ export default function AdminPage() {
 				</div>
 
 				{/* Main Content */}
-				<main className="flex-1 overflow-y-auto bg-white p-3 sm:p-4 lg:p-6">
+				<main className="flex-1 overflow-y-auto bg-white p-3 sm:p-4 lg:p-6 max-md:pb-8">
 				{/* Dashboard Tab */}
 				{activeTab === 'dashboard' && (
 						<div className="space-y-6">
@@ -1683,12 +1684,14 @@ export default function AdminPage() {
 						</div>
 					</div>
 				)}
+				{/* Mobile footer - reference */}
+				<p className="max-md:block hidden text-center text-gray-400 text-xs py-6 border-t border-gray-100 mt-6">Admin panel v1.0</p>
 			</main>
 		</div>
 		{/* Workshop approve/reject confirmation dialog */}
 		{workshopActionConfirm.open && (
 			<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-				<div className="bg-white rounded-card shadow-card p-6 max-w-sm w-full mx-4">
+				<div className="bg-white rounded-card border border-gray-200 p-6 max-w-sm w-full mx-4">
 					<h3 className="text-lg font-bold text-gray-900 mb-2">
 						{workshopActionConfirm.action === 'approve' ? 'Approve Workshop' : 'Reject Workshop'}
 					</h3>

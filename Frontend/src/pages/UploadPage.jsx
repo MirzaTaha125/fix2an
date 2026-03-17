@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import CustomerBottomNav from '../components/CustomerBottomNav'
 import { uploadAPI, vehiclesAPI, requestsAPI } from '../services/api'
 
 export default function UploadPage() {
@@ -209,7 +210,7 @@ export default function UploadPage() {
 	return (
 		<div className="min-h-screen bg-gray-50">
 			<Navbar />
-		<div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
+		<div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24">
 			<div className="text-center mb-8">
 				<h1 className="text-h1 font-bold text-[#05324f] mb-2">{t('upload.title')}</h1>
 				<p className="text-base text-gray-500">{t('upload.subtitle')}</p>
@@ -367,6 +368,7 @@ export default function UploadPage() {
 					</div>
 				</form>
 			</div>
+			<CustomerBottomNav />
 			<Footer />
 		</div>
 	)

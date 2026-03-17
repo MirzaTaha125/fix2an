@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
-import { Input } from '../components/ui/Input'
 import { Label } from '../components/ui/Label'
 import toast from 'react-hot-toast'
 import { formatPrice } from '../utils/cn'
@@ -14,6 +13,7 @@ import {
 	MapPin,
 	CheckCircle,
 	Calendar,
+	Star,
 } from 'lucide-react'
 
 export default function BookAppointmentPage() {
@@ -28,6 +28,38 @@ export default function BookAppointmentPage() {
 	const [scheduledAt, setScheduledAt] = useState('')
 	const [bookingNotes, setBookingNotes] = useState('')
 	const [isBooking, setIsBooking] = useState(false)
+
+	// Parse workshop's available times from offer (stored as JSON string)
+	const availableSlots = (() => {
+		if (!offer?.availableDates) return []
+		try {
+			const raw = typeof offer.availableDates === 'string' ? JSON.parse(offer.availableDates) : offer.availableDates
+			const arr = Array.isArray(raw) ? raw : []
+			return arr.filter((d) => d && new Date(d).getTime())
+		} catch {
+			return []
+		}
+	})()
+
+	// When offer has only one slot, pre-select it
+	useEffect(() => {
+		if (!offer?.availableDates) return
+		try {
+			const raw = typeof offer.availableDates === 'string' ? JSON.parse(offer.availableDates) : offer.availableDates
+			const arr = Array.isArray(raw) ? raw : []
+			const valid = arr.filter((d) => d && new Date(d).getTime())
+			if (valid.length === 1) setScheduledAt(valid[0])
+		} catch (_) {}
+	}, [offer])
+
+	const formatSlotLabel = (isoString) => {
+		try {
+			const d = new Date(isoString)
+			return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+		} catch {
+			return isoString
+		}
+	}
 
 	useEffect(() => {
 		if (!authLoading) {
@@ -85,8 +117,13 @@ export default function BookAppointmentPage() {
 	}
 
 	const handleBooking = async () => {
-		if (!offer || !scheduledAt) {
-			toast.error(t('offers_page.booking_date_required') || 'Please select a date and time')
+		if (!offer) return
+		if (availableSlots.length === 0) {
+			toast.error(t('offers_page.no_available_times') || "Workshop hasn't set available times")
+			return
+		}
+		if (!scheduledAt) {
+			toast.error(t('offers_page.select_workshop_time') || "Please select one of the workshop's available times")
 			return
 		}
 
@@ -147,10 +184,15 @@ export default function BookAppointmentPage() {
 	const workshop = offer.workshopId || offer.workshop
 	const workshopName = workshop?.companyName || 'Workshop'
 	const totalPrice = offer.price || 0
+	// Display split for price breakdown (reference: labor + material)
+	const laborAmount = Math.round(totalPrice * 0.75)
+	const materialAmount = totalPrice - laborAmount
 	const address = workshop?.address || ''
 	const city = workshop?.city || ''
 	const postalCode = workshop?.postalCode || ''
 	const fullAddress = `${address}${postalCode ? `, ${postalCode}` : ''} ${city}`.trim()
+	const workshopRating = workshop?.rating != null ? Number(workshop.rating) : null
+	const isVerified = workshop?.isVerified === true
 	// Format opening hours
 	const formatOpeningHours = (openingHoursStr) => {
 		if (!openingHoursStr) {
@@ -216,164 +258,204 @@ export default function BookAppointmentPage() {
 	const openingHoursFormatted = formatOpeningHours(workshop?.openingHours)
 	const warrantyText = offer.warranty || null
 
+	const mapSrc = workshop?.latitude && workshop?.longitude
+		? `https://www.google.com/maps?q=${workshop.latitude},${workshop.longitude}&output=embed&z=15`
+		: fullAddress ? `https://www.google.com/maps?q=${encodeURIComponent(fullAddress)}&output=embed&z=15` : null
+
 	return (
 	<div className="min-h-screen bg-gray-50">
 		<Navbar />
-		<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
-			{/* Header */}
-			<div className="text-center mb-8">
-				<h1 className="text-h1 font-bold mb-2 text-[#05324f]">
-					{workshopName}
-				</h1>
-				<p className="text-gray-500 text-base">
-					Your chosen workshop to fix the secondhand car
-				</p>
+		<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-28">
+			{/* Desktop: Header */}
+			<div className="text-center mb-8 max-md:hidden">
+				<h1 className="text-h1 font-bold mb-2 text-[#05324f]">{workshopName}</h1>
+				<p className="text-gray-500 text-base">{t('offers_page.your_chosen_workshop')}</p>
 			</div>
 
-			{/* Main Card */}
-			<div className="bg-white rounded-card border border-gray-100 shadow-card p-6 sm:p-8 space-y-6 sm:space-y-8">
-					{/* Price and Booking Button */}
+			{/* Mobile: reference layout - Total price then cards then button */}
+			<div className="max-md:block hidden space-y-5">
+				<p className="text-3xl font-bold text-[#05324f] max-md:text-center">{formatPrice(totalPrice)}</p>
+
+				{/* Price breakdown card - only Total on mobile */}
+				<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+					<h2 className="text-base font-bold text-gray-900 mb-4">{t('offers_page.price_breakdown')}</h2>
+					<div className="flex justify-between text-sm text-gray-700">
+						<span>{t('offers_page.total')}</span>
+						<span className="font-medium">{formatPrice(totalPrice)}</span>
+					</div>
+					{offer.note && (
+						<p className="text-sm text-gray-600 mt-3 pt-3 border-t border-gray-200">{offer.note}</p>
+					)}
+				</div>
+
+				{/* Workshop card - reference (name, city, certified, rating, map) */}
+				<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+					<div className="flex gap-4">
+						<div className="flex-1 min-w-0">
+							<h3 className="text-base font-bold text-gray-900">{workshopName}</h3>
+							{city && <p className="text-sm text-gray-600 mt-0.5">{city}</p>}
+							{isVerified && (
+								<div className="flex items-center gap-1.5 mt-2">
+									<CheckCircle className="w-4 h-4 text-[#34C759] shrink-0" />
+									<span className="text-sm text-gray-700">{t('offers_page.certified')}</span>
+								</div>
+							)}
+							{workshopRating != null && (
+								<div className="flex items-center gap-1.5 mt-2">
+									{[1,2,3,4,5].map((i) => (
+										<Star
+											key={i}
+											className={`w-4 h-4 shrink-0 ${i <= Math.round(workshopRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
+										/>
+									))}
+									<span className="text-sm text-gray-600 ml-0.5">{workshopRating.toFixed(1).replace('.', ',')}</span>
+								</div>
+							)}
+						</div>
+						{mapSrc && (
+							<div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 shrink-0">
+								<iframe title="Map" width="96" height="96" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={mapSrc} className="pointer-events-none scale-150 origin-top-left w-[200%] h-[200%]" />
+							</div>
+						)}
+					</div>
+				</div>
+
+				{/* Workshop's available times + notes */}
+				<div className="space-y-3">
+					<Label className="text-sm font-semibold text-gray-900 block">
+						{t('offers_page.workshop_available_times') || "Workshop's available times"} *
+					</Label>
+					{availableSlots.length === 0 ? (
+						<p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+							{t('offers_page.no_available_times') || "Workshop hasn't set available times."}
+						</p>
+					) : (
+						<div className="flex flex-wrap gap-2">
+							{availableSlots.map((slot) => {
+								const isSelected = scheduledAt === slot
+								return (
+									<button
+										key={slot}
+										type="button"
+										onClick={() => setScheduledAt(slot)}
+										className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
+											isSelected
+												? 'border-[#34C759] bg-[#34C759]/10 text-[#34C759]'
+												: 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+										}`}
+									>
+										{formatSlotLabel(slot)}
+									</button>
+								)
+							})}
+						</div>
+					)}
+					<Label htmlFor="notes" className="text-sm font-semibold text-gray-900 block">{t('offers_page.notes')}</Label>
+					<textarea id="notes" value={bookingNotes} onChange={(e) => setBookingNotes(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] outline-none text-sm" rows={2} placeholder={t('offers_page.notes_placeholder')} />
+				</div>
+
+				{/* Full-width green button - reference "Boka verkstad" */}
+				<Button
+					onClick={handleBooking}
+					disabled={availableSlots.length === 0 || !scheduledAt || isBooking}
+					className="w-full py-4 rounded-xl font-bold text-white text-base"
+					style={{ backgroundColor: '#34C759' }}
+				>
+					{isBooking ? (
+						<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block" />{t('offers_page.booking')}</>
+					) : (
+						t('offers_page.book_workshop')
+					)}
+				</Button>
+			</div>
+
+			{/* Desktop (PC): original layout - no reference style */}
+			<div className="hidden md:block">
+				<div className="bg-white rounded-card border border-gray-100 shadow-card p-6 sm:p-8 space-y-6 sm:space-y-8">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						{/* Total Price */}
 						<div>
-							<h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-								Offer Price
-							</h2>
+							<h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Offer Price</h2>
 							<div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
 								<div className="flex justify-between items-center">
 									<span className="font-semibold text-base text-gray-700">Total</span>
-									<span className="font-bold text-2xl sm:text-3xl" style={{ color: '#05324f' }}>
-										{formatPrice(totalPrice)}
-									</span>
+									<span className="font-bold text-2xl sm:text-3xl" style={{ color: '#05324f' }}>{formatPrice(totalPrice)}</span>
 								</div>
-								{offer.note && (
-									<p className="text-sm text-gray-500 mt-3 pt-3 border-t border-gray-200">{offer.note}</p>
-								)}
+								{offer.note && <p className="text-sm text-gray-500 mt-3 pt-3 border-t border-gray-200">{offer.note}</p>}
 							</div>
 						</div>
-
-						{/* Booking Button */}
 						<div className="flex items-start justify-end">
-							<Button
-								onClick={handleBooking}
-								disabled={!scheduledAt || isBooking}
-								className="px-8 py-3 text-base font-semibold w-full md:w-auto"
-								style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
-							>
-								{isBooking ? (
-									<>
-										<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block"></div>
-										{t('offers_page.booking') || 'Booking...'}
-									</>
-													) : (
-														<>
-															<Calendar className="w-5 h-5 mr-2" />
-															Book this workshop
-														</>
-													)}
+							<Button onClick={handleBooking} disabled={availableSlots.length === 0 || !scheduledAt || isBooking} className="px-8 py-3 text-base font-semibold w-full md:w-auto" style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}>
+								{isBooking ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block" />{t('offers_page.booking')}</> : <><Calendar className="w-5 h-5 mr-2" />{t('offers_page.book_this_workshop')}</>}
 							</Button>
 						</div>
 					</div>
-
-					{/* Workshop Details Section */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-						{/* Left: Map */}
 						<div>
-							{workshop?.latitude && workshop?.longitude ? (
-								<div className="w-full h-48 sm:h-64 rounded-lg overflow-hidden mb-4 border border-gray-300">
-									<iframe
-										width="100%"
-										height="100%"
-										style={{ border: 0 }}
-										loading="lazy"
-										allowFullScreen
-										referrerPolicy="no-referrer-when-downgrade"
-										src={`https://www.google.com/maps?q=${workshop.latitude},${workshop.longitude}&output=embed&z=15`}
-									></iframe>
-								</div>
-							) : fullAddress ? (
-								<div className="w-full h-48 sm:h-64 rounded-lg overflow-hidden mb-4 border border-gray-300">
-									<iframe
-										width="100%"
-										height="100%"
-										style={{ border: 0 }}
-										loading="lazy"
-										allowFullScreen
-										referrerPolicy="no-referrer-when-downgrade"
-										src={`https://www.google.com/maps?q=${encodeURIComponent(fullAddress)}&output=embed&z=15`}
-									></iframe>
+							{mapSrc ? (
+								<div className="w-full h-48 sm:h-64 rounded-lg overflow-hidden border border-gray-300">
+									<iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={mapSrc} />
 								</div>
 							) : (
-								<div className="w-full h-48 sm:h-64 bg-gray-200 rounded-lg flex items-center justify-center mb-4 border border-gray-300">
+								<div className="w-full h-48 sm:h-64 bg-gray-200 rounded-lg flex items-center justify-center border border-gray-300">
 									<MapPin className="w-12 h-12 text-gray-400" />
 								</div>
 							)}
-						{/* Warranty */}
-						{warrantyText && (
-							<div className="flex items-center gap-2 text-sm sm:text-base text-gray-700">
-								<CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-								<span>{warrantyText}</span>
-							</div>
-						)}
+							{warrantyText && (
+								<div className="flex items-center gap-2 text-sm sm:text-base text-gray-700 mt-4">
+									<CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" /><span>{warrantyText}</span>
+								</div>
+							)}
 						</div>
-
-						{/* Right: Address, Opening Hours */}
 						<div className="space-y-4 sm:space-y-6">
-							{/* Address */}
 							{fullAddress && (
 								<div>
-									<h3 className="font-bold text-base sm:text-lg text-gray-900 mb-2">
-										Address
-									</h3>
+									<h3 className="font-bold text-base sm:text-lg text-gray-900 mb-2">Address</h3>
 									<p className="text-sm sm:text-base text-gray-700">{fullAddress}</p>
 								</div>
 							)}
-
-							{/* Opening Hours */}
 							<div>
-								<h3 className="font-bold text-base sm:text-lg text-gray-900 mb-2">
-									Opening hours
-								</h3>
-								<div className="text-sm sm:text-base text-gray-700 whitespace-pre-line">
-									{openingHoursFormatted}
-								</div>
+								<h3 className="font-bold text-base sm:text-lg text-gray-900 mb-2">Opening hours</h3>
+								<div className="text-sm sm:text-base text-gray-700 whitespace-pre-line">{openingHoursFormatted}</div>
 							</div>
 						</div>
 					</div>
-
-					{/* Date & Time Selection */}
 					<div className="border-t border-gray-300 pt-6">
-						<Label htmlFor="scheduledAt" className="text-base sm:text-lg font-semibold text-gray-900 mb-3 block">
-							{t('offers_page.select_date_time') || 'Select Date & Time'} *
-						</Label>
-						<Input
-							id="scheduledAt"
-							type="datetime-local"
-							value={scheduledAt}
-							onChange={(e) => setScheduledAt(e.target.value)}
-							className="w-full"
-							min={new Date().toISOString().slice(0, 16)}
-						/>
+						<Label className="text-base sm:text-lg font-semibold text-gray-900 mb-3 block">{t('offers_page.workshop_available_times') || "Workshop's available times"} *</Label>
+						{availableSlots.length === 0 ? (
+							<p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+								{t('offers_page.no_available_times') || "Workshop hasn't set available times."}
+							</p>
+						) : (
+							<div className="flex flex-wrap gap-2">
+								{availableSlots.map((slot) => {
+									const isSelected = scheduledAt === slot
+									return (
+										<button
+											key={slot}
+											type="button"
+											onClick={() => setScheduledAt(slot)}
+											className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
+												isSelected
+													? 'border-[#34C759] bg-[#34C759]/10 text-[#34C759]'
+													: 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+											}`}
+										>
+											{formatSlotLabel(slot)}
+										</button>
+									)
+								})}
+							</div>
+						)}
 					</div>
-
-					{/* Notes */}
 					<div>
-						<Label htmlFor="notes" className="text-base sm:text-lg font-semibold text-gray-900 mb-3 block">
-							{t('offers_page.notes') || 'Notes (Optional)'}
-						</Label>
-						<textarea
-							id="notes"
-							value={bookingNotes}
-							onChange={(e) => setBookingNotes(e.target.value)}
-							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] outline-none"
-							rows={3}
-							placeholder={t('offers_page.notes_placeholder') || 'Add any special instructions...'}
-						/>
+						<Label htmlFor="notes-d" className="text-base sm:text-lg font-semibold text-gray-900 mb-3 block">{t('offers_page.notes')}</Label>
+						<textarea id="notes-d" value={bookingNotes} onChange={(e) => setBookingNotes(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] outline-none" rows={3} placeholder={t('offers_page.notes_placeholder')} />
 					</div>
 				</div>
 			</div>
-			<Footer />
 		</div>
+		<Footer />
+	</div>
 	)
 }
 

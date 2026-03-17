@@ -27,6 +27,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import CustomerBottomNav from '../components/CustomerBottomNav'
 import { authAPI, requestsAPI, bookingsAPI, uploadAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 
@@ -273,7 +274,7 @@ export default function CustomerProfilePage() {
 	return (
 		<div className="min-h-screen bg-white">
 			<Navbar />
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12">
+			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 max-md:pb-24">
 				{/* Header Section */}
 				<div className="mb-8">
 					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -632,6 +633,7 @@ export default function CustomerProfilePage() {
 					</div>
 				</div>
 			</div>
+			<CustomerBottomNav />
 			<Footer />
 		</div>
 	)

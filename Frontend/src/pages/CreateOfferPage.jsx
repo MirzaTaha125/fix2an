@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import WorkshopBottomNav from '../components/WorkshopBottomNav'
 import { requestsAPI, offersAPI } from '../services/api'
 
 export default function CreateOfferPage() {
@@ -513,6 +514,7 @@ export default function CreateOfferPage() {
 					</CardContent>
 				</Card>
 			</div>
+			<WorkshopBottomNav />
 			<Footer />
 		</div>
 	)

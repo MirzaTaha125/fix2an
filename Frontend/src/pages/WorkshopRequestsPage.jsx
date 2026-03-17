@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import WorkshopBottomNav from '../components/WorkshopBottomNav'
 import { requestsAPI, workshopAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 import {
@@ -31,6 +32,10 @@ import {
 	DollarSign,
 	FileText,
 	X,
+	ChevronDown,
+	Mail,
+	BarChart2,
+	UserCircle,
 } from 'lucide-react'
 
 export default function WorkshopRequestsPage() {
@@ -233,10 +238,10 @@ export default function WorkshopRequestsPage() {
 				</div>
 			</div>
 		) : (
-		<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
-			{/* Greeting + Stats */}
+		<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24 w-full">
+			{/* Greeting + Stats - desktop */}
 			{workshopName && (
-				<div className="mb-8">
+				<div className="mb-8 max-md:mb-4 max-md:hidden">
 					<p className="text-small text-gray-400 font-medium uppercase tracking-wide mb-1">
 						{t('workshop.requests.hi') || 'Welcome'}
 					</p>
@@ -244,7 +249,6 @@ export default function WorkshopRequestsPage() {
 						{workshopName}
 					</h1>
 
-					{/* Stats */}
 					<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
 						<div className="rounded-card border border-gray-100 bg-white shadow-card p-5">
 							<div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mb-3">
@@ -271,29 +275,54 @@ export default function WorkshopRequestsPage() {
 				</div>
 			)}
 
+			{/* Mobile: 3 stat cards - reference (icon in gray square, number, label) */}
+			<div className="md:hidden grid grid-cols-3 gap-2 mb-6">
+				<div className="rounded-xl border border-gray-200 bg-white p-4 flex flex-col items-center text-center shadow-none">
+					<div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mb-2">
+						<ChevronDown className="w-5 h-5 text-[#05324f]" />
+					</div>
+					<p className="text-2xl font-bold text-[#05324f] leading-none">{stats.totalRequests}</p>
+					<p className="text-xs text-gray-500 mt-1">{t('workshop.requests.new_inquiries')}</p>
+				</div>
+				<div className="rounded-xl border border-gray-200 bg-white p-4 flex flex-col items-center text-center shadow-none">
+					<div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mb-2">
+						<CheckCircle className="w-5 h-5 text-[#34C759]" />
+					</div>
+					<p className="text-2xl font-bold text-[#05324f] leading-none">{stats.completedContracts}</p>
+					<p className="text-xs text-gray-500 mt-1">{t('workshop.requests.won_jobs')}</p>
+				</div>
+				<div className="rounded-xl border border-gray-200 bg-white p-4 flex flex-col items-center text-center shadow-none">
+					<div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mb-2">
+						<DollarSign className="w-5 h-5 text-[#34C759]" />
+					</div>
+					<p className="text-xl font-bold text-[#05324f] leading-none">{formatPrice(stats.monthlyRevenue)}</p>
+					<p className="text-xs text-gray-500 mt-1">{t('workshop.requests.income')}</p>
+				</div>
+			</div>
+
 			{/* Offer Inbox Section */}
 			<div className="mb-6">
-				<h2 className="text-h2 font-bold text-[#05324f] mb-6">{t('workshop.requests.offer_inbox')}</h2>
+				<h2 className="text-h2 font-bold text-[#05324f] mb-6 max-md:mb-3 max-md:text-lg">{t('workshop.requests.offer_inbox')}</h2>
 					
-					<div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+					<div className="bg-white border border-gray-200 rounded-lg overflow-hidden max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:bg-transparent max-md:border-0">
 						{filteredRequests.length === 0 ? (
-							<Card className="border-0 shadow-2xl overflow-hidden">
-								<CardContent className="text-center py-20 sm:py-24 px-6 bg-white">
-									<div className="relative inline-block mb-8">
-										<div className="relative p-10 sm:p-12 rounded-3xl border-2 border-gray-200">
-											<Car className="w-24 h-24 sm:w-28 sm:h-28 mx-auto" style={{ color: '#34C759' }} />
+							<Card className="border-0 shadow-2xl overflow-hidden max-md:rounded-xl max-md:border max-md:border-gray-200 max-md:shadow-none">
+								<CardContent className="text-center py-20 sm:py-24 px-6 bg-white max-md:py-12">
+									<div className="relative inline-block mb-8 max-md:mb-4">
+										<div className="relative p-10 sm:p-12 rounded-3xl border-2 border-gray-200 max-md:p-8">
+											<Car className="w-24 h-24 sm:w-28 sm:h-28 mx-auto max-md:w-16 max-md:h-16" style={{ color: '#34C759' }} />
 										</div>
 									</div>
-							<h3 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: '#05324f' }}>
-								{t('workshop.requests.no_requests.title') || 'No Available Requests'}
+							<h3 className="text-3xl sm:text-4xl font-bold mb-4 max-md:text-xl" style={{ color: '#05324f' }}>
+								{t('workshop.requests.no_requests.title')}
 							</h3>
-							<p className="text-lg sm:text-xl max-w-xl mx-auto leading-relaxed" style={{ color: '#05324f' }}>
-								{t('workshop.requests.no_requests.description') || 'There are no requests available at the moment. Check back later for new opportunities.'}
+							<p className="text-lg sm:text-xl max-w-xl mx-auto leading-relaxed max-md:text-sm" style={{ color: '#05324f' }}>
+								{t('workshop.requests.no_requests.description')}
 							</p>
 								</CardContent>
 							</Card>
 						) : (
-							<div className="space-y-0">
+							<div className="space-y-0 max-md:space-y-3">
 								{filteredRequests.map((request, index) => {
 									const requestId = request._id || request.id
 									const vehicle = request.vehicleId || request.vehicle
@@ -316,6 +345,7 @@ export default function WorkshopRequestsPage() {
 										minute: '2-digit',
 										hour12: true
 									}) : ''
+									const latestDate = request.createdAt ? new Date(request.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : ''
 
 									const report = request.reportId || request.report
 									const hasReport = report && report.fileUrl
@@ -323,44 +353,44 @@ export default function WorkshopRequestsPage() {
 									return (
 										<div
 											key={requestId}
-											className={`grid grid-cols-1 md:grid-cols-3 items-center py-4 px-4 sm:px-6 gap-3 sm:gap-4 ${index !== filteredRequests.length - 1 ? 'border-b border-gray-200' : ''}`}
+											className={`grid grid-cols-1 md:grid-cols-3 items-center py-4 px-4 sm:px-6 gap-3 sm:gap-4 max-md:flex max-md:flex-row max-md:items-center max-md:gap-4 max-md:bg-white max-md:rounded-xl max-md:border max-md:border-gray-200 max-md:p-5 max-md:shadow-sm max-md:min-h-0 ${index !== filteredRequests.length - 1 ? 'border-b border-gray-200 md:border-b' : ''} max-md:border-b-0`}
 										>
-											{/* Left: Title, Name with Date, Description */}
-											<div className="min-w-0">
-												{/* Title (Vehicle Name) */}
-												<h3 className="text-base font-bold mb-1" style={{ color: '#05324f' }}>
-													{vehicle?.make} {vehicle?.model}-{vehicle?.year}
+											{/* Left: Vehicle (bold) + Description + "X km away · Latest date" - reference card layout */}
+											<div className="min-w-0 flex-1">
+												<h3 className="text-base font-bold mb-1 max-md:text-base max-md:mb-1.5 text-gray-900" style={{ color: '#05324f' }}>
+													{vehicle?.make} {vehicle?.model} {vehicle?.year}
 												</h3>
-												{/* Username with Date and Time */}
-												<div className="flex items-center gap-2 mb-1 flex-wrap">
+												<p className="text-sm mb-1.5 md:mb-0 max-md:text-sm max-md:mb-1 text-gray-700" style={{ color: 'inherit' }}>
+													{request.description || t('workshop.requests.no_description_provided')}
+												</p>
+												{/* "8 km away · Latest 2 May" - reference line with middle dot */}
+												<p className="text-xs text-gray-500 max-md:block">
+													{distance != null && `${Math.round(distance)} ${t('workshop.requests.km_away')}`}
+													{distance != null && latestDate && ' · '}
+													{latestDate && `${t('workshop.requests.latest')} ${latestDate}`}
+													{distance == null && !latestDate && t('common.no_data')}
+												</p>
+												{/* Desktop only: Username + Date, Distance */}
+												<div className="hidden md:flex items-center gap-2 mb-1 flex-wrap mt-2">
 													{customer?.name && (
 														<div className="flex items-center gap-1.5">
 															<User className="w-3 h-3" style={{ color: '#05324f' }} />
 															<p className="text-xs font-semibold" style={{ color: '#05324f' }}>{customer.name}</p>
 														</div>
 													)}
-													{customer?.name && requestDateTime && (
-														<span style={{ color: '#05324f' }}>•</span>
-													)}
-													{requestDateTime && (
-														<p className="text-xs" style={{ color: '#05324f' }}>{requestDateTime}</p>
-													)}
+													{customer?.name && requestDateTime && <span style={{ color: '#05324f' }}>·</span>}
+													{requestDateTime && <p className="text-xs" style={{ color: '#05324f' }}>{requestDateTime}</p>}
 												</div>
-												{/* Description */}
-												<p className="text-sm mb-2 md:mb-0" style={{ color: '#05324f' }}>
-													{request.description || t('workshop.requests.no_description_provided')}
-												</p>
-												{/* Distance - Mobile: Show below description */}
-												<div className="flex md:hidden mt-2">
+												<div className="hidden md:block mt-1">
 													{distance !== null ? (
-														<p className="text-xs sm:text-sm" style={{ color: '#05324f' }}>{Math.round(distance)} {t('workshop.requests.km_from_job')}</p>
+														<p className="text-xs text-gray-500">{Math.round(distance)} {t('workshop.requests.km_from_job')}</p>
 													) : (
-														<p className="text-xs sm:text-sm" style={{ color: '#05324f' }}>{t('common.no_data')}</p>
+														<p className="text-xs text-gray-500">{t('common.no_data')}</p>
 													)}
 												</div>
 											</div>
 
-											{/* Center: Distance - Desktop only */}
+											{/* Center: Desktop only */}
 											<div className="hidden md:flex justify-center">
 												{distance !== null ? (
 													<p className="text-xs sm:text-sm" style={{ color: '#05324f' }}>{Math.round(distance)} {t('workshop.requests.km_from_job')}</p>
@@ -369,20 +399,14 @@ export default function WorkshopRequestsPage() {
 												)}
 											</div>
 
-											{/* Right: View Report and Leave Quote Buttons */}
-											<div className="flex justify-end gap-2 flex-wrap">
+											{/* Right: View report + Submit offer - both visible on mobile */}
+											<div className="flex justify-end gap-2 flex-wrap max-md:shrink-0 max-md:flex-nowrap max-md:gap-2">
 												{hasReport && (
 													<Button
-														onClick={() => {
-															setSelectedReport(report)
-															setShowReportDialog(true)
-														}}
+														onClick={() => { setSelectedReport(report); setShowReportDialog(true) }}
 														variant="outline"
-														className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-md flex items-center gap-1.5"
-														style={{ 
-															borderColor: '#05324f',
-															color: '#05324f'
-														}}
+														className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-md flex items-center gap-1.5 max-md:rounded-xl max-md:border-[#05324f] max-md:text-[#05324f] max-md:px-3 max-md:py-2.5"
+														style={{ borderColor: '#05324f', color: '#05324f' }}
 													>
 														<Eye className="w-3 h-3 sm:w-4 sm:h-4" />
 														<span className="hidden sm:inline">{t('workshop.requests.view_report')}</span>
@@ -391,13 +415,10 @@ export default function WorkshopRequestsPage() {
 												)}
 												<Link to={`/workshop/requests/${requestId}/offer`}>
 													<Button 
-														className="px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-md"
-														style={{ 
-															backgroundColor: '#34C759',
-															color: '#FFFFFF'
-														}}
+														className="px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg max-md:rounded-xl max-md:!bg-[#34C759] max-md:!text-white max-md:px-4 max-md:py-3 max-md:whitespace-nowrap"
+														style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
 													>
-														{t('workshop.requests.leave_a_quote') || 'Leave quote'}
+														{t('workshop.requests.submit_offer')}
 													</Button>
 												</Link>
 											</div>
@@ -466,6 +487,8 @@ export default function WorkshopRequestsPage() {
 					)}
 				</div>
 			</Dialog>
+
+			<WorkshopBottomNav />
 
 			<Footer />
 		</div>

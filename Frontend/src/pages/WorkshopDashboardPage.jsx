@@ -18,10 +18,14 @@ import {
 	Briefcase,
 	DollarSign,
 	Send,
+	Mail,
+	BarChart2,
+	User,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import WorkshopBottomNav from '../components/WorkshopBottomNav'
 import { requestsAPI, workshopAPI } from '../services/api'
 
 export default function WorkshopDashboardPage() {
@@ -121,44 +125,44 @@ export default function WorkshopDashboardPage() {
 	return (
 		<div className="min-h-screen bg-gray-50">
 			<Navbar />
-			<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
+			<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24">
 
-				{/* Header */}
-				<div className="mb-8">
-					<p className="text-small text-gray-400 font-medium uppercase tracking-wide mb-1">
+				{/* Header - mobile: compact */}
+				<div className="mb-8 max-md:mb-6">
+					<p className="text-small text-gray-400 font-medium uppercase tracking-wide mb-1 max-md:hidden">
 						{t('workshop.dashboard.welcome') || 'Welcome back'}
 					</p>
-					<h1 className="text-h1 font-bold text-[#05324f]">
+					<h1 className="text-h1 font-bold text-[#05324f] max-md:text-xl">
 						{user?.workshop?.companyName || user?.name || 'Workshop'}
 					</h1>
 				</div>
 
-				{/* Stats Grid */}
-				<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-10">
+				{/* Stats Grid - 3 cards inline on all screens */}
+				<div className="grid grid-cols-3 gap-2 sm:gap-6 mb-10 max-md:mb-6">
 					<StatCard
 						icon={TrendingUp}
 						value={stats.totalRequests}
-						label={t('workshop.dashboard.stats.total_requests') || 'New Requests'}
+						label={t('workshop.dashboard.stats.new_inquiries') || t('workshop.dashboard.stats.total_requests') || 'New inquiries'}
 					/>
 					<StatCard
 						icon={Briefcase}
 						value={stats.completedJobs}
-						label={t('workshop.dashboard.stats.completed_jobs') || 'Completed Jobs'}
+						label={t('workshop.dashboard.stats.won_jobs') || t('workshop.dashboard.stats.completed_jobs') || 'Won jobs'}
 					/>
 					<StatCard
 						icon={DollarSign}
 						value={formatPrice(stats.totalRevenue)}
-						label={t('workshop.dashboard.stats.monthly_revenue') || 'Monthly Revenue'}
+						label={t('workshop.dashboard.stats.monthly_revenue') || 'Income'}
 					/>
 				</div>
 
-				{/* Offer Inbox */}
-				<div className="mb-10">
-					<div className="flex items-center justify-between mb-4">
-						<h2 className="text-h2 font-bold text-[#05324f]">
+				{/* Offer Inbox - mobile: reference list style */}
+				<div className="mb-10 max-md:mb-6">
+					<div className="flex items-center justify-between mb-4 max-md:mb-3">
+						<h2 className="text-h2 font-bold text-[#05324f] max-md:text-lg">
 							{t('workshop.dashboard.offer_inbox') || 'Offer Inbox'}
 						</h2>
-						<Link to="/workshop/requests">
+						<Link to="/workshop/requests" className="max-md:hidden">
 							<Button variant="outline" size="sm">
 								{t('workshop.dashboard.view_all') || 'View all'}
 							</Button>
@@ -166,43 +170,47 @@ export default function WorkshopDashboardPage() {
 					</div>
 
 					{requests.length === 0 ? (
-						<Card>
-							<CardContent className="py-12 text-center text-gray-400">
+						<Card className="max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none">
+							<CardContent className="py-12 text-center text-gray-400 max-md:py-8">
 								<Send className="w-10 h-10 mx-auto mb-3 opacity-30" />
-								<p className="font-medium">
+								<p className="font-medium text-sm">
 									{t('workshop.dashboard.no_requests') || 'No requests available'}
 								</p>
 							</CardContent>
 						</Card>
 					) : (
-						<div className="space-y-3">
+						<div className="space-y-3 max-md:space-y-2">
 							{requests.slice(0, 5).map((request) => {
 								const requestId = request._id || request.id
 								const vehicle = request.vehicleId || request.vehicle
 								const hasOffer = (request.offers || []).length > 0
 
 								return (
-									<Card key={requestId} className="hover:shadow-card-hover transition-shadow duration-200">
-										<CardContent className="p-5">
+									<Card key={requestId} className="hover:shadow-card-hover transition-shadow duration-200 max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:border">
+										<CardContent className="p-5 max-md:p-4">
 											<div className="flex items-center justify-between gap-4">
 												<div className="flex-1 min-w-0">
 													<div className="flex items-center gap-2 mb-1">
-														<h3 className="font-bold text-[#05324f] truncate">
+														<h3 className="font-bold text-[#05324f] truncate max-md:text-sm">
 															{vehicle?.make} {vehicle?.model} {vehicle?.year}
 														</h3>
-														{getStatusBadge(request.status)}
+														<span className="hidden md:inline">{getStatusBadge(request.status)}</span>
 													</div>
 													{request.description && (
-														<p className="text-small text-gray-500 line-clamp-1">
+														<p className="text-small text-gray-500 line-clamp-1 max-md:text-xs">
 															{request.description}
 														</p>
 													)}
+													{/* Mobile: distance / date placeholder - could use request.createdAt */}
+													<p className="text-xs text-gray-400 mt-0.5 max-md:block hidden">
+														{t('workshop.dashboard.latest') || 'Latest'} {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : ''}
+													</p>
 												</div>
 												<div className="shrink-0">
 													{!hasOffer ? (
 														<Link to={`/workshop/requests/${requestId}/offer`}>
-															<Button size="sm">
-																{t('workshop.dashboard.submit_offer') || 'Submit Offer'}
+															<Button size="sm" className="max-md:!bg-[#34C759] max-md:!text-white max-md:rounded-xl max-md:text-xs max-md:px-3 max-md:py-2">
+																{t('workshop.dashboard.submit_offer') || 'Submit offer'}
 															</Button>
 														</Link>
 													) : (
@@ -236,6 +244,8 @@ export default function WorkshopDashboardPage() {
 					</Card>
 				</div>
 			</div>
+
+			<WorkshopBottomNav />
 			<Footer />
 		</div>
 	)

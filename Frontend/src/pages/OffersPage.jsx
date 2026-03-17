@@ -15,6 +15,7 @@ import {
 	MapPin,
 	AlertCircle,
 	ArrowRight,
+	CheckCircle,
 } from 'lucide-react'
 
 const SORT_OPTIONS = [
@@ -139,26 +140,26 @@ export default function OffersPage() {
 			<div className="flex-1 max-w-3xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-20 w-full">
 
 				{/* Page Header */}
-				<div className="mb-8 text-center">
-					<h1 className="text-h1 font-bold text-[#05324f] mb-2">
+				<div className="mb-8 text-center max-md:mb-6 max-md:text-left">
+					<h1 className="text-h1 font-bold text-[#05324f] mb-2 max-md:text-xl max-md:mb-1">
 						{sortedOffers.length === 1
 							? t('offers_page.found_workshops_near_you', { count: 1 })
 							: t('offers_page.found_workshops_near_you_plural', { count: sortedOffers.length })}
 					</h1>
-					<p className="text-gray-500 text-base mb-7">
+					<p className="text-gray-500 text-base mb-7 max-md:mb-4 max-md:text-sm">
 						{t('offers_page.compare_and_choose')}
 					</p>
 
-					{/* Sort Tabs */}
-					<div className="inline-flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1 gap-1">
+					{/* Sort Tabs - reference: pill style, active green */}
+					<div className="inline-flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1 gap-1 max-md:w-full max-md:bg-gray-100 max-md:border-0 max-md:shadow-none max-md:p-0 max-md:gap-2">
 						{SORT_OPTIONS.map(({ key, labelKey }) => (
 							<button
 								key={key}
 								onClick={() => handleSort(key)}
-								className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+								className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 max-md:flex-1 max-md:py-3 max-md:rounded-full ${
 									sortBy === key
 										? 'bg-[#34C759] text-white shadow-sm'
-										: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50'
+										: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 max-md:bg-gray-200 max-md:text-gray-600'
 								}`}
 							>
 								{t(labelKey)}
@@ -194,77 +195,113 @@ export default function OffersPage() {
 								const distance = offer.distance != null ? offer.distance : null
 								const estimatedDuration = offer.estimatedDuration || null
 								const warranty = offer.warranty || null
+								const initials = (workshop?.companyName || 'W')
+									.split(/\s+/)
+									.map((w) => w[0])
+									.join('')
+									.toUpperCase()
+									.slice(0, 2)
 
 								return (
 									<div
 										key={offerId}
-										className="bg-white rounded-card border border-gray-100 shadow-card hover:shadow-card-hover transition-shadow duration-200 overflow-hidden"
+										className="bg-white rounded-card border border-gray-100 shadow-card hover:shadow-card-hover transition-shadow duration-200 overflow-hidden max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:border"
 									>
-										<div className="p-6">
-											{/* Top row: name + verified badge */}
-											<div className="flex flex-wrap items-center gap-2 mb-3">
-												<h3 className="text-lg font-bold text-[#05324f]">
-													{workshop?.companyName || 'Workshop'}
-												</h3>
-												{workshop?.isVerified && <VerifiedBadge />}
-											</div>
-
-											{/* Meta row: rating, distance, duration, warranty */}
-											<div className="flex flex-wrap items-center gap-2 mb-5">
-												{workshopRating != null && (
-													<RatingBadge
-														rating={workshopRating.toFixed(1)}
-														count={reviewCount}
-													/>
-												)}
-												{distance != null && (
-													<span className="inline-flex items-center gap-1 text-small text-gray-500">
-														<MapPin size={13} className="text-gray-400" />
-														{distance.toFixed(1)} km
-													</span>
-												)}
-												{estimatedDuration && (
-													<span className="inline-flex items-center gap-1 text-small text-gray-500">
-														<Clock size={13} className="text-gray-400" />
-														{estimatedDuration >= 60
-															? `${Math.round(estimatedDuration / 60)} ${t('offers_page.hours_fix')}`
-															: `${estimatedDuration} ${t('offers_page.minutes')}`}
-													</span>
-												)}
-												{warranty && <WarrantyBadge text={warranty} />}
-											</div>
-
-											{/* Note */}
-											{offer.note && (
-												<p className="text-small text-gray-500 italic mb-5 leading-relaxed border-l-2 border-gray-100 pl-3">
-													{offer.note}
-												</p>
-											)}
-
-											{/* Price + CTA row */}
-											<div className="flex items-center justify-between gap-4 pt-4 border-t border-gray-100">
-												<div>
-													<p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">
-														{t('offers_page.price') || 'Price'}
-													</p>
-													<p className="text-3xl font-bold text-[#34C759] leading-none">
+										<div className="p-6 max-md:p-4">
+											{/* Mobile only: row with avatar left, content middle, Select right */}
+											<div className="flex items-stretch gap-4 max-md:gap-3 md:hidden">
+												{/* Avatar - visible on mobile like reference */}
+												<div className="hidden max-md:flex w-12 h-12 rounded-full bg-[#05324f] text-white items-center justify-center text-sm font-bold shrink-0">
+													{initials}
+												</div>
+												<div className="flex-1 min-w-0">
+													<div className="flex flex-wrap items-center gap-2 mb-1">
+														<h3 className="text-lg font-bold text-[#05324f] max-md:text-base">
+															{workshop?.companyName || 'Workshop'}
+														</h3>
+														{workshop?.isVerified && <VerifiedBadge />}
+													</div>
+													<p className="text-xl max-md:text-lg font-bold text-[#05324f] mb-0.5">
 														{formatPrice(offer.price)}
 													</p>
+													{distance != null && (
+														<p className="text-sm text-gray-500 mb-1">
+															{distance.toFixed(1)} km {t('offers_page.from_you') || 'from you'}
+														</p>
+													)}
+													{workshop?.isVerified && (
+														<p className="inline-flex items-center gap-1 text-sm text-gray-600 max-md:text-xs">
+															<CheckCircle className="w-4 h-4 text-[#34C759] shrink-0" />
+															{t('offers_page.certified')}
+														</p>
+													)}
+													{workshopRating != null && (
+														<div className="flex items-center gap-1 mt-1">
+															{[1,2,3,4,5].map((i) => (
+																<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" size={14} />
+															))}
+															<span className="text-sm text-gray-500 ml-0.5">{workshopRating.toFixed(1)}</span>
+														</div>
+													)}
 												</div>
+												{/* CTA - green button on right for mobile */}
+												<div className="max-md:flex max-md:items-center max-md:shrink-0">
+													{offer.status !== 'ACCEPTED' ? (
+														<Button
+															onClick={() => handleAcceptOffer(offer)}
+															className="flex items-center gap-2 shrink-0 max-md:!bg-[#34C759] max-md:!text-white max-md:rounded-xl max-md:px-4 max-md:py-2.5"
+														>
+															{t('offers_page.choose')}
+															<ArrowRight size={16} className="max-md:hidden" />
+														</Button>
+													) : (
+														<span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-semibold text-sm px-4 py-2.5 rounded-btn border border-green-200">
+															{t('offers_page.accepted')}
+														</span>
+													)}
+												</div>
+											</div>
 
-												{offer.status !== 'ACCEPTED' ? (
-													<Button
-														onClick={() => handleAcceptOffer(offer)}
-														className="flex items-center gap-2 shrink-0"
-													>
-														{t('offers_page.choose')}
-														<ArrowRight size={16} />
-													</Button>
-												) : (
-													<span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-semibold text-sm px-4 py-2.5 rounded-btn border border-green-200">
-														{t('offers_page.accepted')}
-													</span>
+											{/* Desktop: original layout */}
+											<div className="md:block hidden">
+												{/* Meta row */}
+												<div className="flex flex-wrap items-center gap-2 mb-5">
+													{workshopRating != null && (
+														<RatingBadge rating={workshopRating.toFixed(1)} count={reviewCount} />
+													)}
+													{distance != null && (
+														<span className="inline-flex items-center gap-1 text-small text-gray-500">
+															<MapPin size={13} className="text-gray-400" />
+															{distance.toFixed(1)} km
+														</span>
+													)}
+													{estimatedDuration && (
+														<span className="inline-flex items-center gap-1 text-small text-gray-500">
+															<Clock size={13} className="text-gray-400" />
+															{estimatedDuration >= 60 ? `${Math.round(estimatedDuration / 60)} ${t('offers_page.hours_fix')}` : `${estimatedDuration} ${t('offers_page.minutes')}`}
+														</span>
+													)}
+													{warranty && <WarrantyBadge text={warranty} />}
+												</div>
+												{offer.note && (
+													<p className="text-small text-gray-500 italic mb-5 leading-relaxed border-l-2 border-gray-100 pl-3">{offer.note}</p>
 												)}
+												<div className="flex items-center justify-between gap-4 pt-4 border-t border-gray-100">
+													<div>
+														<p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">{t('offers_page.price') || 'Price'}</p>
+														<p className="text-3xl font-bold text-[#34C759] leading-none">{formatPrice(offer.price)}</p>
+													</div>
+													{offer.status !== 'ACCEPTED' ? (
+														<Button onClick={() => handleAcceptOffer(offer)} className="flex items-center gap-2 shrink-0">
+															{t('offers_page.choose')}
+															<ArrowRight size={16} />
+														</Button>
+													) : (
+														<span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-semibold text-sm px-4 py-2.5 rounded-btn border border-green-200">
+															{t('offers_page.accepted')}
+														</span>
+													)}
+												</div>
 											</div>
 										</div>
 									</div>

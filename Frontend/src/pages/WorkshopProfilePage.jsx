@@ -33,6 +33,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import WorkshopBottomNav from '../components/WorkshopBottomNav'
 import { workshopAPI, authAPI, uploadAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 
@@ -692,6 +693,7 @@ export default function WorkshopProfilePage() {
 					</div>
 				</div>
 			</div>
+			<WorkshopBottomNav />
 			<Footer />
 		</div>
 	)

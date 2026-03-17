@@ -363,6 +363,9 @@
 		"book_appointment": "Boka tid",
 		"book_appointment_desc": "Välj datum och tid för din tid",
 		"select_date_time": "Välj datum och tid",
+		"workshop_available_times": "Verkstadens tillgängliga tider",
+		"no_available_times": "Verkstaden har inte angett tillgängliga tider.",
+		"select_workshop_time": "Välj en av verkstadens tillgängliga tider",
 		"notes": "Anteckningar",
 		"notes_placeholder": "Lägg till särskilda instruktioner...",
 		"booking": "Bokar...",
@@ -374,12 +377,15 @@
 		"workshop_info": "Verkstadinformation",
 		"your_chosen_workshop": "Din valda verkstad för att fixa begagnade bilen",
 		"price_breakdown": "Prisuppdelning",
+		"labor_cost": "Arbetskostnad",
+		"material_cost": "Materialkostnad",
 		"labour": "Arbete",
 		"parts": "Delar",
 		"vat": "Moms",
 		"total": "Totalt",
 		"address": "Adress",
 		"opening_hours": "Öppettider",
+		"book_workshop": "Boka verkstad",
 		"book_this_workshop": "Boka denna verkstad",
 		"view_on_map": "Visa på karta",
 		"go_back": "Tillbaka"
@@ -424,6 +430,7 @@
 			"title": "Verkstadsdashboard",
 			"subtitle": "Hantera dina förfrågningar och erbjudanden",
 			"loading": "Laddar dashboard...",
+			"welcome": "Välkommen tillbaka",
 			"stats": {
 				"total_requests": "Totala förfrågningar",
 				"total_requests_desc": "+12% från förra månaden",
@@ -432,7 +439,10 @@
 				"completed_jobs": "Genomförda jobb",
 				"completed_jobs_desc": "Denna månad",
 				"total_revenue": "Total omsättning",
-				"total_revenue_desc": "Denna månad"
+				"total_revenue_desc": "Denna månad",
+				"new_inquiries": "Nya förfrågningar",
+				"won_jobs": "Vunna jobb",
+				"monthly_revenue": "Månadsintäkter"
 			},
 			"status": {
 				"new": "Ny",
@@ -466,7 +476,17 @@
 					"title": "Inga förfrågningar",
 					"description": "Det finns inga nya förfrågningar just nu. Kom tillbaka senare."
 				}
-			}
+			},
+			"inbox": "Inkorg",
+			"my_jobs": "Mina jobb",
+			"statistics": "Statistik",
+			"account": "Konto",
+			"offer_inbox": "Offertinbox",
+			"view_all": "Visa alla",
+			"offer_sent": "Offert skickad",
+			"submit_offer": "Lämna offert",
+			"no_active_jobs": "Inga aktiva jobb",
+			"latest": "Senast"
 		},
 		"profile": {
 			"title": "Profil",
@@ -639,8 +659,17 @@
 			"new_requests": "nya förfrågningar",
 			"won_jobs": "vunna jobb",
 			"revenue_this_month": "Intäkter denna månad",
-			"offer_inbox": "Erbjudandeinkorg",
+			"offer_inbox": "Offertinbox",
 			"km_from_job": "km från jobb",
+			"km_away": "km bort",
+			"latest": "Senast",
+			"new_inquiries": "Nya förfrågningar",
+			"income": "Intäkter",
+			"submit_offer": "Lämna offert",
+			"inbox": "Inkorg",
+			"my_jobs": "Mina jobb",
+			"statistics": "Statistik",
+			"account": "Konto",
 			"view_report": "Visa rapport",
 			"view": "Visa",
 			"inspection_report": "Besiktningsrapport",

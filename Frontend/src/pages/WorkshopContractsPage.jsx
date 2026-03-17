@@ -23,6 +23,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import WorkshopBottomNav from '../components/WorkshopBottomNav'
 import { offersAPI, bookingsAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 
@@ -464,6 +465,7 @@ export default function WorkshopContractsPage() {
 					)}
 				</div>
 			</div>
+			<WorkshopBottomNav />
 			<Footer />
 		</div>
 	)

@@ -119,19 +119,20 @@ export default function HomePage() {
 			<section className="relative w-full bg-white pt-24 sm:pt-32 md:pt-36 pb-8 sm:pb-12 md:pb-16">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="text-center">
-						<h1 className="font-bold mb-3 sm:mb-4 md:mb-6 leading-tight px-2" style={{ color: '#05324f', fontSize: 'clamp(2rem, 5vw, 5rem)' }}>
+						<h1 className="font-bold mb-3 sm:mb-4 md:mb-6 leading-tight px-2 max-md:text-2xl" style={{ color: '#05324f', fontSize: 'clamp(2rem, 5vw, 5rem)' }}>
 							{t('homepage.title')}
 						</h1>
-						<p className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 md:mb-10 max-w-3xl mx-auto leading-relaxed px-2" style={{ color: '#05324f' }}>
+						<p className="text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 md:mb-10 max-w-3xl mx-auto leading-relaxed px-2 max-md:text-base max-md:mb-6" style={{ color: '#05324f' }}>
 							{t('homepage.subtitle')}
 						</p>
-						<div className="flex justify-center px-2">
-							<Link to="/upload">
+						<div className="flex justify-center px-2 max-md:px-0">
+							<Link to="/upload" className="max-md:w-full max-md:block">
 								<Button 
 									size="lg" 
-									className="w-auto text-sm sm:text-base md:text-lg px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 h-auto font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300" 
+									className="w-auto text-sm sm:text-base md:text-lg px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 h-auto font-semibold rounded-xl md:rounded-lg shadow-none md:shadow-lg hover:shadow-xl transition-all duration-300 max-md:w-full max-md:flex max-md:items-center max-md:justify-center max-md:gap-2 max-md:py-4" 
 									style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
 								>
+									<Camera className="w-5 h-5 max-md:block md:hidden shrink-0" />
 									{t('homepage.cta_primary')}
 								</Button>
 							</Link>
@@ -141,52 +142,52 @@ export default function HomePage() {
 			</section>
 
 		{/* Benefits Section */}
-		<section className="py-20 bg-white">
+		<section className="py-20 bg-white max-md:py-10">
 			<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-center items-stretch gap-6 sm:gap-8">
-						<Card className="text-center border border-gray-200 bg-white rounded-lg shadow-sm w-full sm:w-auto h-auto min-h-[200px] sm:min-h-[240px] flex flex-col">
-							<CardHeader className="pb-3 pt-6 sm:pt-8 px-4 sm:px-6 flex-grow">
-								<div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4" style={{ backgroundColor: '#34C759' }}>
-									<CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-center items-stretch gap-6 sm:gap-8 max-md:gap-4">
+						<Card className="text-center border border-gray-200 bg-white rounded-xl md:rounded-lg shadow-none md:shadow-sm w-full sm:w-auto h-auto min-h-[200px] sm:min-h-[240px] flex flex-col max-md:min-h-0 max-md:flex-row max-md:items-center max-md:text-left max-md:gap-3 max-md:py-4 max-md:px-4">
+							<CardHeader className="pb-3 pt-6 sm:pt-8 px-4 sm:px-6 flex-grow max-md:py-0 max-md:px-0 max-md:flex-grow-0">
+								<div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 max-md:mx-0 max-md:mb-0 max-md:w-10 max-md:h-10 shrink-0" style={{ backgroundColor: '#34C759' }}>
+									<CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white max-md:w-5 max-md:h-5" />
 								</div>
-								<CardTitle className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3" style={{ color: '#05324f' }}>
+								<CardTitle className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 max-md:mb-0" style={{ color: '#05324f' }}>
 									{t('homepage.features.verified.title')}
 								</CardTitle>
 							</CardHeader>
-							<CardContent className="pb-6 sm:pb-8 px-4 sm:px-6">
-								<p className="text-sm sm:text-base md:text-lg" style={{ color: '#05324f' }}>
+							<CardContent className="pb-6 sm:pb-8 px-4 sm:px-6 max-md:py-0 max-md:px-0 max-md:pt-0">
+								<p className="text-sm sm:text-base md:text-lg max-md:text-sm text-gray-600 max-md:text-gray-600" style={{ color: 'inherit' }}>
 									{t('homepage.features.verified.description')}
 								</p>
 							</CardContent>
 						</Card>
 
-						<Card className="text-center border border-gray-200 bg-white rounded-lg shadow-sm w-full sm:w-auto h-auto min-h-[200px] sm:min-h-[240px] flex flex-col">
-							<CardHeader className="pb-3 pt-6 sm:pt-8 px-4 sm:px-6 flex-grow">
-								<div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4" style={{ backgroundColor: '#34C759' }}>
-									<CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
+						<Card className="text-center border border-gray-200 bg-white rounded-xl md:rounded-lg shadow-none md:shadow-sm w-full sm:w-auto h-auto min-h-[200px] sm:min-h-[240px] flex flex-col max-md:min-h-0 max-md:flex-row max-md:items-center max-md:text-left max-md:gap-3 max-md:py-4 max-md:px-4">
+							<CardHeader className="pb-3 pt-6 sm:pt-8 px-4 sm:px-6 flex-grow max-md:py-0 max-md:px-0 max-md:flex-grow-0">
+								<div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 max-md:mx-0 max-md:mb-0 max-md:w-10 max-md:h-10 shrink-0" style={{ backgroundColor: '#34C759' }}>
+									<CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white max-md:w-5 max-md:h-5" />
 								</div>
-								<CardTitle className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3" style={{ color: '#05324f' }}>
+								<CardTitle className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 max-md:mb-0" style={{ color: '#05324f' }}>
 									{t('homepage.features.free.title')}
 								</CardTitle>
 							</CardHeader>
-							<CardContent className="pb-6 sm:pb-8 px-4 sm:px-6">
-								<p className="text-sm sm:text-base md:text-lg" style={{ color: '#05324f' }}>
+							<CardContent className="pb-6 sm:pb-8 px-4 sm:px-6 max-md:py-0 max-md:px-0 max-md:pt-0">
+								<p className="text-sm sm:text-base md:text-lg max-md:text-sm text-gray-600" style={{ color: 'inherit' }}>
 									{t('homepage.features.free.description')}
 								</p>
 							</CardContent>
 						</Card>
 
-						<Card className="text-center border border-gray-200 bg-white rounded-lg shadow-sm w-full sm:w-auto h-auto min-h-[200px] sm:min-h-[240px] flex flex-col sm:col-span-2 lg:col-span-1">
-							<CardHeader className="pb-3 pt-6 sm:pt-8 px-4 sm:px-6 flex-grow">
-								<div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4" style={{ backgroundColor: '#34C759' }}>
-									<Clock className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
+						<Card className="text-center border border-gray-200 bg-white rounded-xl md:rounded-lg shadow-none md:shadow-sm w-full sm:w-auto h-auto min-h-[200px] sm:min-h-[240px] flex flex-col sm:col-span-2 lg:col-span-1 max-md:min-h-0 max-md:flex-row max-md:items-center max-md:text-left max-md:gap-3 max-md:py-4 max-md:px-4">
+							<CardHeader className="pb-3 pt-6 sm:pt-8 px-4 sm:px-6 flex-grow max-md:py-0 max-md:px-0 max-md:flex-grow-0">
+								<div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 max-md:mx-0 max-md:mb-0 max-md:w-10 max-md:h-10 shrink-0" style={{ backgroundColor: '#34C759' }}>
+									<Clock className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white max-md:w-5 max-md:h-5" />
 								</div>
-								<CardTitle className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3" style={{ color: '#05324f' }}>
+								<CardTitle className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 max-md:mb-0" style={{ color: '#05324f' }}>
 									{t('homepage.features.fast.title')}
 								</CardTitle>
 							</CardHeader>
-							<CardContent className="pb-6 sm:pb-8 px-4 sm:px-6">
-								<p className="text-sm sm:text-base md:text-lg" style={{ color: '#05324f' }}>
+							<CardContent className="pb-6 sm:pb-8 px-4 sm:px-6 max-md:py-0 max-md:px-0 max-md:pt-0">
+								<p className="text-sm sm:text-base md:text-lg max-md:text-sm text-gray-600" style={{ color: 'inherit' }}>
 									{t('homepage.features.fast.description')}
 								</p>
 							</CardContent>
@@ -196,15 +197,37 @@ export default function HomePage() {
 			</section>
 
 		{/* How it works */}
-		<section id="how-it-works-section" className="py-20 bg-gray-50">
+		<section id="how-it-works-section" className="py-20 bg-gray-50 max-md:py-10">
 			<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="text-center mb-12">
-					<h2 className="text-h2 font-bold mb-3" style={{ color: '#05324f' }}>
+				<div className="text-center mb-12 max-md:mb-6 max-md:text-left">
+					<h2 className="text-h2 font-bold mb-3 max-md:text-xl" style={{ color: '#05324f' }}>
 							{t('homepage.how_it_works.title')}
 						</h2>
 					</div>
 
-					<div className="flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-8 md:gap-12">
+					{/* Mobile: numbered list */}
+					<div className="md:hidden space-y-4">
+						<div className="flex items-start gap-3">
+							<div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0 text-sm font-bold text-[#05324f]">1</div>
+							<div className="flex-1 flex items-center gap-2">
+								<span className="text-[#05324f] font-medium text-sm">{t('homepage.how_it_works.step1.title')}</span>
+								<Camera className="w-4 h-4 text-[#05324f] shrink-0" />
+							</div>
+						</div>
+						<div className="flex items-start gap-3">
+							<div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0 text-sm font-bold text-[#05324f]">2</div>
+							<div className="flex-1 flex items-center gap-2">
+								<span className="text-[#05324f] font-medium text-sm">{t('homepage.how_it_works.step2.title')}</span>
+								<CheckCircle className="w-4 h-4 text-[#34C759] shrink-0" />
+							</div>
+						</div>
+						<div className="flex items-start gap-3">
+							<div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0 text-sm font-bold text-[#05324f]">3</div>
+							<span className="text-[#05324f] font-medium text-sm">{t('homepage.how_it_works.step3.title')}</span>
+						</div>
+					</div>
+
+					<div className="hidden md:flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-8 md:gap-12">
 						{/* Step 1 */}
 						<div className="flex flex-col items-center text-center flex-1 w-full sm:w-auto max-w-[280px] sm:max-w-[320px]">
 							<div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 bg-gray-100">
@@ -215,9 +238,7 @@ export default function HomePage() {
 							</h3>
 						</div>
 
-						{/* Line 1 */}
 						<div className="hidden md:block w-24 md:w-32 h-0.5 bg-gray-100 self-center flex-shrink-0 mx-4 md:mx-8"></div>
-						<div className="md:hidden w-0.5 h-12 bg-gray-100 self-center flex-shrink-0"></div>
 
 						{/* Step 2 */}
 						<div className="flex flex-col items-center text-center flex-1 w-full sm:w-auto max-w-[280px] sm:max-w-[320px]">
@@ -229,9 +250,7 @@ export default function HomePage() {
 							</h3>
 						</div>
 
-						{/* Line 2 */}
 						<div className="hidden md:block w-24 md:w-32 h-0.5 bg-gray-100 self-center flex-shrink-0 mx-4 md:mx-8"></div>
-						<div className="md:hidden w-0.5 h-12 bg-gray-100 self-center flex-shrink-0"></div>
 
 						{/* Step 3 */}
 						<div className="flex flex-col items-center text-center flex-1 w-full sm:w-auto max-w-[280px] sm:max-w-[320px]">

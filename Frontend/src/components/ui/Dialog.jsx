@@ -10,12 +10,12 @@ export function Dialog({ open, onOpenChange, children, className = '' }) {
 		<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
 			{/* Backdrop */}
 			<div 
-				className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+				className="fixed inset-0 bg-black/50"
 				onClick={() => onOpenChange(false)}
 			/>
 			{/* Dialog Content */}
 			<div className={`relative z-[10000] w-full mx-auto ${className || 'max-w-md'}`}>
-				<Card className="shadow-2xl">
+				<Card className="shadow-none border border-gray-200">
 					<CardContent className="p-4 sm:p-6">
 						{children}
 					</CardContent>

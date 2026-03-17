@@ -22,11 +22,13 @@ import {
 	X,
 	RotateCcw,
 	Building2,
+	Camera,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import CustomerBottomNav from '../components/CustomerBottomNav'
 import { requestsAPI, bookingsAPI, reviewsAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 
@@ -343,19 +345,19 @@ export default function MyCasesPage() {
 	return (
 	<div className="min-h-screen bg-gray-50 flex flex-col">
 		<Navbar />
-		<div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 flex-1 w-full">
+		<div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-28 flex-1 w-full">
 			{/* Header */}
 			<div className="mb-8">
 				<div className="flex flex-row justify-between items-start sm:items-center gap-4">
-					<div className="flex-1">
-						<h1 className="text-h1 font-bold mb-1.5 text-[#05324f]">
+					<div className="flex-1 max-md:flex-1">
+						<h1 className="text-h1 font-bold mb-1.5 text-[#05324f] max-md:text-xl">
 							{t('my_cases.title')}
 						</h1>
-						<p className="text-base text-gray-500">
+						<p className="text-base text-gray-500 max-md:text-sm">
 							{t('my_cases.subtitle')}
 						</p>
 					</div>
-					<Link to="/upload" className="self-start sm:self-auto shrink-0">
+					<Link to="/upload" className="self-start sm:self-auto shrink-0 max-md:hidden">
 						<Button>
 							<span className="md:hidden">{t('my_cases.upload_case')}</span>
 							<span className="hidden md:inline">{t('my_cases.upload_new_protocol')}</span>
@@ -446,7 +448,7 @@ export default function MyCasesPage() {
 						</CardContent>
 					</Card>
 				) : (
-					<div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+					<div className="bg-white border border-gray-200 rounded-lg overflow-hidden max-md:rounded-xl max-md:shadow-none max-md:space-y-3 max-md:border-0 max-md:bg-transparent">
 						{filteredRequests.map((request, index) => {
 							// Handle both MongoDB _id and id formats
 							const requestId = request._id || request.id
@@ -465,7 +467,7 @@ export default function MyCasesPage() {
 							return (
 								<div
 									key={requestId}
-									className={`grid grid-cols-1 md:grid-cols-3 items-start py-3 px-3 sm:px-6 gap-4 relative ${index !== filteredRequests.length - 1 ? 'border-b border-gray-200' : ''}`}
+									className={`grid grid-cols-1 md:grid-cols-3 items-start py-3 px-3 sm:px-6 gap-4 relative max-md:bg-white max-md:rounded-xl max-md:border max-md:border-gray-200 max-md:p-4 max-md:shadow-none ${index !== filteredRequests.length - 1 ? 'border-b border-gray-200 md:border-b' : ''} max-md:border-b-0`}
 								>
 									{/* Badge in Top Right Corner - Mobile Only */}
 									<div className="absolute top-3 right-3 md:hidden">
@@ -1044,7 +1046,8 @@ export default function MyCasesPage() {
 						)}
 					</DialogContent>
 				</Dialog>
-			
+
+			<CustomerBottomNav />
 			<Footer />
 		</div>
 	)
