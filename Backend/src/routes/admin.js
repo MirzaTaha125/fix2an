@@ -626,6 +626,102 @@ router.patch('/payouts/:id/mark-paid', async (req, res) => {
 		res.status(500).json({ message: 'Failed to mark payout as paid' })
 	}
 })
+// Get Wallet Transactions
+router.get('/wallet/transactions', async (req, res) => {
+	try {
+		const { search, page = 1, limit = 20, status } = req.query
+		const query = {}
+
+		if (status && status !== 'all') {
+			query.status = status
+		}
+
+		// Pagination
+		const skip = (parseInt(page) - 1) * parseInt(limit)
+
+		// Search could be complicated because we need to search across user emails/names via Wallet
+		// We'll skip complex search for now or just search by description
+		if (search) {
+			query.$or = [
+				{ description: { $regex: search, $options: 'i' } }
+			]
+		}
+
+		// First, fetch transactions
+		const txs = await import('../models/WalletTransaction.js').then(m => m.default)
+			.find(query)
+			.populate({
+				path: 'walletId',
+				populate: { path: 'user', select: 'name email role' }
+			})
+			.sort({ createdAt: -1 })
+			.skip(skip)
+			.limit(parseInt(limit))
+			.lean()
+
+		// Restructure the response to easily access user details on frontend
+		const transactions = txs.map(tx => ({
+			...tx,
+			id: tx._id,
+			user: tx.walletId?.user,
+			wallet: tx.walletId
+		}))
+
+		const total = await import('../models/WalletTransaction.js').then(m => m.default).countDocuments(query)
+
+		res.json({
+			transactions,
+			total,
+			page: parseInt(page),
+			limit: parseInt(limit),
+		})
+	} catch (error) {
+		console.error('Admin wallet transactions get error:', error)
+		res.status(500).json({ message: 'Failed to fetch wallet transactions' })
+	}
+})
+
+// Update Wallet Transaction Status (Approve/Reject Withdrawals)
+router.patch('/wallet/transactions/:id', async (req, res) => {
+	try {
+		const { id } = req.params
+		const { status } = req.body
+
+		if (!['Completed', 'Failed', 'Cancelled'].includes(status)) {
+			return res.status(400).json({ message: 'Invalid status update' })
+		}
+
+		const WalletTransactionModel = await import('../models/WalletTransaction.js').then(m => m.default)
+		const WalletModel = await import('../models/Wallet.js').then(m => m.default)
+
+		const tx = await WalletTransactionModel.findById(id)
+
+		if (!tx) {
+			return res.status(404).json({ message: 'Transaction not found' })
+		}
+
+		if (tx.status !== 'Pending') {
+			return res.status(400).json({ message: 'Transaction is already processed' })
+		}
+
+		tx.status = status
+		await tx.save()
+
+		// If a withdrawal is rejected/cancelled, refund the wallet balance
+		if (tx.type === 'Withdrawal' && (status === 'Failed' || status === 'Cancelled')) {
+			const wallet = await WalletModel.findById(tx.walletId)
+			if (wallet) {
+				wallet.balance += Math.abs(tx.amount)
+				await wallet.save()
+			}
+		}
+
+		res.json({ message: 'Transaction status updated successfully', transaction: tx })
+	} catch (error) {
+		console.error('Admin update wallet transaction error:', error)
+		res.status(500).json({ message: 'Failed to update transaction status' })
+	}
+})
 
 export default router
 

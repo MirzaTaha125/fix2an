@@ -206,9 +206,42 @@ router.patch('/:id', authenticate, async (req, res) => {
 			await Request.findByIdAndUpdate(booking.requestId, { status: 'BIDDING_CLOSED' })
 		}
 
-		if (updateData.status === 'DONE' && booking.requestId) {
-			await Request.findByIdAndUpdate(booking.requestId, { status: 'COMPLETED' })
-			notifyJobCompleteReviewRequest(updatedBooking).catch(() => {})
+		if (updateData.status === 'DONE' && booking.status !== 'DONE') {
+			if (booking.requestId) {
+				await Request.findByIdAndUpdate(booking.requestId, { status: 'COMPLETED' })
+				notifyJobCompleteReviewRequest(updatedBooking).catch(() => {})
+			}
+
+			// Safely credit the workshop's wallet
+			try {
+				const Workshop = (await import('../models/Workshop.js')).default
+				const Wallet = (await import('../models/Wallet.js')).default
+				const WalletTransaction = (await import('../models/WalletTransaction.js')).default
+
+				const workshop = await Workshop.findById(booking.workshopId)
+				if (workshop && updatedBooking.workshopAmount > 0) {
+					let wallet = await Wallet.findOne({ user: workshop.userId })
+					if (!wallet) {
+						wallet = await Wallet.create({ user: workshop.userId, balance: 0 })
+					}
+
+					// Credit the balance
+					wallet.balance += updatedBooking.workshopAmount
+					await wallet.save()
+
+					// Record the payment
+					await WalletTransaction.create({
+						walletId: wallet._id,
+						amount: updatedBooking.workshopAmount,
+						type: 'Payment',
+						status: 'Completed',
+						description: `Earning from completed booking`,
+						referenceId: booking._id
+					})
+				}
+			} catch (walletError) {
+				console.error('Failed to credit workshop wallet for booking', booking._id, walletError)
+			}
 		}
 
 		return res.json(updatedBooking)

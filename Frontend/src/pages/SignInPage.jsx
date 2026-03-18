@@ -128,9 +128,14 @@ export default function SignInPage() {
 							</div>
 							<div>
 								<label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-									<div className="flex items-center gap-2">
-										<Lock className="w-4 h-4 text-gray-500" />
-										{t('auth.signin.password')}
+									<div className="flex items-center justify-between w-full">
+										<div className="flex items-center gap-2">
+											<Lock className="w-4 h-4 text-gray-500" />
+											{t('auth.signin.password')}
+										</div>
+										<Link tabIndex="-1" to="/auth/forgot-password" className="text-sm font-medium hover:underline text-[#05324f]" style={{ color: '#05324f' }}>
+											{t('auth.signin.forgot_password', 'Forgot your password?')}
+										</Link>
 									</div>
 								</label>
 								<div className="relative">

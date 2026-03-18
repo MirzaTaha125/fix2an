@@ -34,6 +34,7 @@
 		"pending": "Väntande",
 		"registered": "Registrerad",
 		"logout": "Logga ut",
+		"wallet": "Min Plånbok",
 		"actions": "Åtgärder",
 		"could_not_fetch": "Kunde inte hämta data",
 		"workshop_approved": "Verkstad godkänd",
@@ -54,6 +55,7 @@
 		"login": "Logga in",
 		"register": "Registrera dig",
 		"logout": "Logga ut",
+		"wallet": "Min Plånbok",
 		"dashboard": "Dashboard",
 		"profile": "Profil",
 		"settings": "Inställningar",
@@ -152,6 +154,19 @@
 			"workshop_signup_text": "Är du en verkstad?",
 			"workshop_signup_link": "Registrera här",
 			"submitting": "Skapar konto..."
+		},
+		"forgot_password": {
+			"title": "Återställ lösenord",
+			"subtitle_1": "Ange din e-postadress så skickar vi en återställningskod.",
+			"subtitle_2": "Ange den 6-siffriga koden som skickats till din e-post.",
+			"subtitle_3": "Ange ditt nya lösenord nedan.",
+			"code_sent": "Om det finns ett konto har en kod skickats.",
+			"code_verified": "Koden verifierad. Vänligen välj ett nytt lösenord.",
+			"success": "Lösenordet har återställts",
+			"send_code": "Skicka kod",
+			"back_to_email": "Försök med en annan e-post",
+			"set_password": "Uppdatera lösenord",
+			"back_to_login": "← Tillbaka till inloggning"
 		}
 	},
 	"upload": {
@@ -736,7 +751,7 @@
 				"address": "Adress",
 				"city": "Stad",
 				"postal_code": "Postnummer",
-				"description": "Beskrivning av verkstaden",
+				"description_label": "Beskrivning av verkstaden",
 				"company_name_placeholder": "Din Verkstad AB",
 				"organization_number_placeholder": "123456-7890",
 				"address_placeholder": "Gatunamn 123",

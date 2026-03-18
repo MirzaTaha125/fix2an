@@ -240,3 +240,94 @@ export const updateProfile = async (req, res) => {
 		return res.status(500).json({ message: 'Failed to update profile' })
 	}
 }
+
+export const forgotPassword = async (req, res) => {
+	try {
+		const { email } = req.body
+		if (!email) return res.status(400).json({ message: 'Email is required' })
+
+		const normalizedEmail = email.trim().toLowerCase()
+		const user = await User.findOne({ email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } })
+
+		if (!user) {
+			// Do not explicitly state whether the email exists or not to prevent user enumeration
+			return res.json({ message: 'If an account exists with that email, a password reset code has been sent.' })
+		}
+
+		const code = String(Math.floor(100000 + Math.random() * 900000))
+		user.resetPasswordCode = code
+		user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000) // 15 mins
+		await user.save()
+
+		if (await isEmailConfigured()) {
+			try {
+				await sendEmail(user.email, emailTemplates.passwordResetCode(code))
+			} catch (emailError) {
+				console.error('Failed to send reset email:', emailError)
+			}
+		}
+
+		return res.json({ message: 'If an account exists with that email, a password reset code has been sent.' })
+	} catch (error) {
+		console.error('Forgot password error:', error)
+		return res.status(500).json({ message: 'Something went wrong' })
+	}
+}
+
+export const verifyPasswordResetCode = async (req, res) => {
+	try {
+		const { email, code } = req.body
+		if (!email || !code || !/^\d{6}$/.test(String(code).trim())) {
+			return res.status(400).json({ message: 'Email and valid 6-digit code are required' })
+		}
+
+		const normalizedEmail = email.trim().toLowerCase()
+		const user = await User.findOne({
+			email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
+			resetPasswordCode: String(code).trim(),
+			resetPasswordExpires: { $gt: Date.now() },
+		})
+
+		if (!user) {
+			return res.status(400).json({ message: 'Invalid or expired code' })
+		}
+
+		return res.json({ message: 'Code is valid' })
+	} catch (error) {
+		console.error('Verify reset code error:', error)
+		return res.status(500).json({ message: 'Something went wrong' })
+	}
+}
+
+export const resetPassword = async (req, res) => {
+	try {
+		const { email, code, newPassword } = req.body
+		if (!email || !code || !newPassword) {
+			return res.status(400).json({ message: 'Email, code, and new password are required' })
+		}
+		if (newPassword.length < 8) {
+			return res.status(400).json({ message: 'Password must be at least 8 characters long' })
+		}
+
+		const normalizedEmail = email.trim().toLowerCase()
+		const user = await User.findOne({
+			email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
+			resetPasswordCode: String(code).trim(),
+			resetPasswordExpires: { $gt: Date.now() },
+		})
+
+		if (!user) {
+			return res.status(400).json({ message: 'Invalid or expired code' })
+		}
+
+		user.password = newPassword
+		user.resetPasswordCode = undefined
+		user.resetPasswordExpires = undefined
+		await user.save()
+
+		return res.json({ message: 'Password successfully reset' })
+	} catch (error) {
+		console.error('Reset password error:', error)
+		return res.status(500).json({ message: 'Something went wrong' })
+	}
+}

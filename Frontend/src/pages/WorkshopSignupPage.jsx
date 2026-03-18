@@ -555,7 +555,7 @@ export default function WorkshopSignupPage() {
 							</div>
 							<div>
 								<Label htmlFor="description" className="text-sm sm:text-base">
-									{t('workshop.signup.company_info.description')}
+									{t('workshop.signup.company_info.description_label')}
 								</Label>
 								<Textarea
 									id="description"

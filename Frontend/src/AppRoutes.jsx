@@ -5,6 +5,7 @@ import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage'
 import Auth2FAVerifyPage from './pages/Auth2FAVerifyPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import MyCasesPage from './pages/MyCasesPage'
 import UploadPage from './pages/UploadPage'
 import CustomerProfilePage from './pages/CustomerProfilePage'
@@ -21,6 +22,7 @@ import HowItWorksPage from './pages/HowItWorksPage'
 import WorkshopSignupPage from './pages/WorkshopSignupPage'
 import OffersPage from './pages/OffersPage'
 import BookAppointmentPage from './pages/BookAppointmentPage'
+import WalletPage from './pages/WalletPage'
 
 function PrivateRoute({ children, allowedRoles = [] }) {
 	const { user, loading } = useAuth()
@@ -57,6 +59,7 @@ function AppRoutes() {
 			<Route path="/auth/signin" element={<SignInPage />} />
 			<Route path="/auth/signup" element={<SignUpPage />} />
 			<Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+			<Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
 			<Route path="/auth/2fa-verify" element={<Auth2FAVerifyPage />} />
 			<Route path="/signin" element={<SignInPage />} />
 			<Route path="/signup" element={<SignUpPage />} />
@@ -81,6 +84,14 @@ function AppRoutes() {
 				element={
 					<PrivateRoute allowedRoles={['CUSTOMER']}>
 						<CustomerProfilePage />
+					</PrivateRoute>
+				}
+			/>
+			<Route
+				path="/wallet"
+				element={
+					<PrivateRoute allowedRoles={['CUSTOMER', 'WORKSHOP']}>
+						<WalletPage />
 					</PrivateRoute>
 				}
 			/>

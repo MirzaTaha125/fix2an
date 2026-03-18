@@ -15,6 +15,7 @@ import uploadRouter from './routes/upload.js'
 import workshopRouter from './routes/workshop.js'
 import adminRouter from './routes/admin.js'
 import reviewsRouter from './routes/reviews.js'
+import walletRouter from './routes/wallet.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -28,6 +29,14 @@ connectDB().then(() => {
 	// 24h booking reminder: run on startup, then every hour
 	sendReminder24h()
 	setInterval(sendReminder24h, 60 * 60 * 1000)
+})
+
+// Capture frontend URL dynamically for emails
+app.use((req, res, next) => {
+	if (req.headers.origin && !process.env.FRONTEND_URL) {
+		global.dynamicFrontendUrl = req.headers.origin
+	}
+	next()
 })
 
 // CORS - allow origin with/without trailing slash to fix Hostinger etc.
@@ -99,6 +108,7 @@ app.use('/api/upload', uploadRouter)
 app.use('/api/workshop', workshopRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/reviews', reviewsRouter)
+app.use('/api/wallet', walletRouter)
 
 const port = process.env.PORT ? Number(process.env.PORT) : 4000
 app.listen(port, () => {

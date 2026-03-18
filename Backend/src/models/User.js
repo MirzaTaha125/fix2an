@@ -20,6 +20,8 @@ const userSchema = new mongoose.Schema({
 	isActive: { type: Boolean, default: true },
 	twoFactorEnabled: { type: Boolean, default: false },
 	twoFactorSecret: { type: String },
+	resetPasswordCode: { type: String },
+	resetPasswordExpires: { type: Date },
 }, {
 	timestamps: true,
 })

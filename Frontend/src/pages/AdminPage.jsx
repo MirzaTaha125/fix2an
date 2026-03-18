@@ -61,6 +61,7 @@ export default function AdminPage() {
 	const [offers, setOffers] = useState([])
 	const [bookings, setBookings] = useState([])
 	const [payouts, setPayouts] = useState([])
+	const [walletTransactions, setWalletTransactions] = useState([])
 	
 	// Filter states
 	const [searchQuery, setSearchQuery] = useState('')
@@ -349,6 +350,13 @@ export default function AdminPage() {
 						}
 					}
 					break
+				case 'wallet':
+					response = await adminAPI.getWalletTransactions(params)
+					if (response.data) {
+						setWalletTransactions(response.data.transactions || [])
+						setPagination((p) => ({ ...p, total: response.data.total || 0 }))
+					}
+					break
 			}
 		} catch (error) {
 			console.error('Failed to fetch data:', error)
@@ -434,6 +442,18 @@ export default function AdminPage() {
 		}
 	}
 
+	const handleUpdateWalletTransactionStatus = async (txId, status) => {
+		try {
+			const response = await adminAPI.updateWalletTransaction(txId, { status })
+			if (response.data) {
+				toast.success('Transaction status updated')
+				fetchTabData()
+			}
+		} catch (error) {
+			toast.error(error.response?.data?.message || 'Failed to update transaction status')
+		}
+	}
+
 	const handleLogout = () => {
 		logout()
 		navigate('/')
@@ -481,7 +501,7 @@ export default function AdminPage() {
 		return null
 	}
 
-	const tabs = ['dashboard', 'customers', 'workshops', 'requests', 'offers', 'bookings', 'payouts', 'settings']
+	const tabs = ['dashboard', 'customers', 'workshops', 'requests', 'offers', 'bookings', 'payouts', 'wallet', 'settings']
 	const sidebarBgColor = '#05324f' // Dark blue color
 
 	return (
@@ -579,7 +599,7 @@ export default function AdminPage() {
 										: 'text-white/80 hover:text-white hover:bg-white/10'
 								}`}
 									>
-										{t(`admin.tabs.${tab}`)}
+										{tab === 'wallet' ? 'Wallet & Withdrawals' : t(`admin.tabs.${tab}`)}
 									</button>
 								))}
 					</nav>
@@ -625,7 +645,7 @@ export default function AdminPage() {
 										: 'text-white/80 hover:text-white hover:bg-white/10'
 								}`}
 								>
-									{t(`admin.tabs.${tab}`)}
+									{tab === 'wallet' ? 'Wallet & Withdrawals' : t(`admin.tabs.${tab}`)}
 								</button>
 							))}
 					</nav>
@@ -1505,6 +1525,140 @@ export default function AdminPage() {
 									</div>
 									</div>
 								)}
+						</div>
+					</div>
+				)}
+
+				{/* Wallet Tab */}
+				{activeTab === 'wallet' && (
+					<div className="space-y-6">
+						<div>
+							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+								<h2 className="text-lg sm:text-xl font-bold" style={{ color: '#05324f' }}>
+									Wallet Transactions
+								</h2>
+								<div className="hidden sm:block">
+									<Select
+										value={statusFilter}
+										onValueChange={(value) => {
+											setStatusFilter(value)
+											setPagination({ ...pagination, page: 1 })
+										}}
+									>
+										<SelectTrigger className="w-full sm:w-40 h-9 sm:h-10 text-sm sm:text-base">
+											<SelectValue placeholder={t('admin.filters.all')} />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
+											<SelectItem value="Pending">Pending</SelectItem>
+											<SelectItem value="Completed">Completed</SelectItem>
+											<SelectItem value="Failed">Failed</SelectItem>
+											<SelectItem value="Cancelled">Cancelled</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							</div>
+							<div className="mb-4">
+								<div className="flex gap-2">
+									<div className="relative flex-1 min-w-0">
+										<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+										<Input
+											placeholder="Search description..."
+											value={searchQuery}
+											onChange={(e) => {
+												setSearchQuery(e.target.value)
+												setPagination({ ...pagination, page: 1 })
+											}}
+											className="pl-10 h-9 sm:h-10 text-sm sm:text-base w-full"
+										/>
+									</div>
+									<div className="sm:hidden flex-shrink-0">
+										<Select
+											value={statusFilter}
+											onValueChange={(value) => {
+												setStatusFilter(value)
+												setPagination({ ...pagination, page: 1 })
+											}}
+										>
+											<SelectTrigger className="w-24 h-9 text-sm">
+												<SelectValue placeholder={t('admin.filters.all')} />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
+												<SelectItem value="Pending">Pending</SelectItem>
+												<SelectItem value="Completed">Completed</SelectItem>
+												<SelectItem value="Failed">Failed</SelectItem>
+												<SelectItem value="Cancelled">Cancelled</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+								</div>
+							</div>
+							{listLoading ? (
+								<div className="text-center py-12">
+									<RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3" style={{ color: '#34C759' }} />
+									<p className="text-gray-600">{t('common.loading')}</p>
+								</div>
+							) : walletTransactions.length === 0 ? (
+								<div className="text-center py-12">
+									<CreditCard className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+									<p className="text-gray-600">No wallet transactions found.</p>
+								</div>
+							) : (
+								<div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+									<div className="overflow-x-auto">
+										<table className="w-full min-w-[900px]">
+											<thead className="bg-gray-50">
+												<tr>
+													<th className="text-left p-2 sm:p-4 font-semibold text-xs sm:text-sm text-gray-700">Date</th>
+													<th className="text-left p-2 sm:p-4 font-semibold text-xs sm:text-sm text-gray-700">{t('admin.customers.email')}</th>
+													<th className="text-left p-2 sm:p-4 font-semibold text-xs sm:text-sm text-gray-700">Description</th>
+													<th className="text-left p-2 sm:p-4 font-semibold text-xs sm:text-sm text-gray-700">Type</th>
+													<th className="text-left p-2 sm:p-4 font-semibold text-xs sm:text-sm text-gray-700 text-right">Amount</th>
+													<th className="text-left p-2 sm:p-4 font-semibold text-xs sm:text-sm text-gray-700">Status</th>
+													<th className="text-left p-2 sm:p-4 font-semibold text-xs sm:text-sm text-gray-700">Actions</th>
+												</tr>
+											</thead>
+											<tbody>
+												{walletTransactions.map((tx, index) => (
+													<tr key={tx.id} className={`border-b ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+														<td className="p-2 sm:p-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">{formatDateTime(new Date(tx.createdAt))}</td>
+														<td className="p-2 sm:p-4 font-medium text-xs sm:text-sm text-[#05324f] break-all">{tx.user?.name || tx.user?.email || 'Unknown User'}</td>
+														<td className="p-2 sm:p-4 text-xs sm:text-sm text-gray-700 max-w-xs break-all" title={tx.description}>{tx.description}</td>
+														<td className="p-2 sm:p-4">
+															<Badge className="bg-gray-100 text-gray-700 whitespace-nowrap">{tx.type}</Badge>
+														</td>
+														<td className={`p-2 sm:p-4 font-semibold text-xs sm:text-sm text-right whitespace-nowrap ${tx.amount > 0 ? 'text-green-600' : 'text-gray-900'}`}>{tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('sv-SE', { minimumFractionDigits: 2 })} SEK</td>
+														<td className="p-2 sm:p-4">
+															<Badge
+																style={
+																	tx.status === 'Completed' ? { backgroundColor: '#34C759', color: '#FFFFFF' }
+																	: tx.status === 'Pending' ? { backgroundColor: '#F59E0B', color: '#FFFFFF' }
+																	: { backgroundColor: '#EF4444', color: '#FFFFFF' }
+																}
+															>
+																{tx.status}
+															</Badge>
+														</td>
+														<td className="p-2 sm:p-4">
+															{tx.type === 'Withdrawal' && tx.status === 'Pending' && (
+																<div className="flex gap-2">
+																	<Button size="sm" onClick={() => handleUpdateWalletTransactionStatus(tx.id, 'Completed')} className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-auto font-semibold">
+																		Approve
+																	</Button>
+																	<Button size="sm" variant="outline" onClick={() => handleUpdateWalletTransactionStatus(tx.id, 'Failed')} className="border-red-600 text-red-600 hover:bg-red-50 text-xs px-2 py-1 h-auto font-semibold">
+																		Reject
+																	</Button>
+																</div>
+															)}
+														</td>
+													</tr>
+												))}
+											</tbody>
+										</table>
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 				)}

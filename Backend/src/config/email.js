@@ -56,93 +56,100 @@ const style = {
 /** All templates return { subject, heading, body } – same structure for EmailJS (English only) */
 export const emailTemplates = {
 	accountVerification: (verificationUrl) => ({
-		subject: 'Verify your Fixa2an account',
-		heading: 'Welcome to Fixa2an!',
-		body: `<p>Click the link below to verify your account:</p>
-<p><a href="${verificationUrl}" style="${style.button}">Verify account</a></p>
-<p style="${style.footer}">If the link doesn't work, copy: ${verificationUrl}</p>`,
+		subject: 'Bekräfta ditt Fixa2an-konto',
+		heading: 'Välkommen till Fixa2an!',
+		body: `<p>Klicka på länken nedan för att bekräfta ditt konto:</p>
+<p><a href="${verificationUrl}" style="${style.button}">Bekräfta konto</a></p>
+<p style="${style.footer}">Om länken inte fungerar, kopiera: ${verificationUrl}</p>`,
 	}),
 	emailVerificationCode: (code) => ({
-		subject: 'Your verification code – Fixa2an',
-		heading: 'Welcome to Fixa2an!',
-		body: `<p>Use the code below to verify your email address:</p>
+		subject: 'Din verifieringskod – Fixa2an',
+		heading: 'Välkommen till Fixa2an!',
+		body: `<p>Använd koden nedan för att verifiera din e-postadress:</p>
 <p style="font-size: 28px; font-weight: bold; letter-spacing: 8px; margin: 24px 0;">${code}</p>
-<p style="${style.footer}">The code is valid for 15 minutes. If you didn't request this, you can ignore this email.</p>`,
+<p style="${style.footer}">Koden är giltig i 15 minuter. Om du inte begärde detta kan du ignorera detta mejl.</p>`,
+	}),
+	passwordResetCode: (code) => ({
+		subject: 'Kod för återställning av lösenord – Fixa2an',
+		heading: 'Återställ ditt lösenord',
+		body: `<p>Använd koden nedan för att återställa ditt lösenord:</p>
+<p style="font-size: 28px; font-weight: bold; letter-spacing: 8px; margin: 24px 0;">${code}</p>
+<p style="${style.footer}">Koden är giltig i 15 minuter. Om du inte begärde detta kan du ignorera detta mejl. Ditt lösenord kommer inte att ändras förrän du skapar ett nytt.</p>`,
 	}),
 	uploadReceived: (customerName, myCasesUrl) => ({
-		subject: 'Your request has been received – Fixa2an',
-		heading: 'Request received',
-		body: `<p>Hi ${customerName || 'customer'},</p>
-<p>We have received your inspection report and request. Verified workshops can now send quotes.</p>
-<p><a href="${myCasesUrl}" style="${style.button}">View My Cases</a></p>
-<p style="${style.footer}">Best regards, Fixa2an</p>`,
+		subject: 'Din förfrågan är mottagen – Fixa2an',
+		heading: 'Förfrågan mottagen',
+		body: `<p>Hej ${customerName || 'kund'},</p>
+<p>Vi har tagit emot ditt besiktningsprotokoll och förfrågan. Verifierade verkstäder kan nu skicka offerter.</p>
+<p><a href="${myCasesUrl}" style="${style.button}">Visa mina ärenden</a></p>
+<p style="${style.footer}">Vänliga hälsningar, Fixa2an</p>`,
 	}),
 	newOffers: (customerName, offerCount, myCasesUrl) => ({
-		subject: `You have ${offerCount} new ${offerCount === 1 ? 'quote' : 'quotes'} – Fixa2an`,
-		heading: 'New quotes',
-		body: `<p>Hi ${customerName || 'customer'},</p>
-<p>You have received ${offerCount} new ${offerCount === 1 ? 'quote' : 'quotes'} for your request. Compare prices and book when ready.</p>
-<p><a href="${myCasesUrl}" style="${style.button}">View quotes</a></p>
-<p style="${style.footer}">Best regards, Fixa2an</p>`,
+		subject: `Du har ${offerCount} ${offerCount === 1 ? 'ny offert' : 'nya offerter'} – Fixa2an`,
+		heading: 'Nya offerter',
+		body: `<p>Hej ${customerName || 'kund'},</p>
+<p>Du har fått ${offerCount} ${offerCount === 1 ? 'ny offert' : 'nya offerter'} på din förfrågan. Jämför priser och boka när du är redo.</p>
+<p><a href="${myCasesUrl}" style="${style.button}">Visa offerter</a></p>
+<p style="${style.footer}">Vänliga hälsningar, Fixa2an</p>`,
 	}),
 	bookingConfirmed: (customerName, workshopName, scheduledAt, myCasesUrl) => ({
-		subject: 'Booking confirmed – Fixa2an',
-		heading: 'Booking confirmed',
-		body: `<p>Hi ${customerName || 'customer'},</p>
-<p>Your booking at <strong>${workshopName || 'the workshop'}</strong> has been confirmed.</p>
-<p><strong>Date/time:</strong> ${scheduledAt}</p>
-<p><a href="${myCasesUrl}" style="${style.button}">View My Cases</a></p>
-<p style="${style.footer}">Best regards, Fixa2an</p>`,
+		subject: 'Bokning bekräftad – Fixa2an',
+		heading: 'Bokning bekräftad',
+		body: `<p>Hej ${customerName || 'kund'},</p>
+<p>Din bokning hos <strong>${workshopName || 'verkstaden'}</strong> har bekräftats.</p>
+<p><strong>Datum/tid:</strong> ${scheduledAt}</p>
+<p><a href="${myCasesUrl}" style="${style.button}">Visa mina ärenden</a></p>
+<p style="${style.footer}">Vänliga hälsningar, Fixa2an</p>`,
 	}),
 	reminder24h: (customerName, workshopName, scheduledAt, myCasesUrl) => ({
-		subject: 'Reminder: your booking tomorrow – Fixa2an',
-		heading: 'Booking reminder',
-		body: `<p>Hi ${customerName || 'customer'},</p>
-<p>This is a reminder about your booking at <strong>${workshopName || 'the workshop'}</strong>.</p>
-<p><strong>Date/time:</strong> ${scheduledAt}</p>
-<p><a href="${myCasesUrl}" style="${style.button}">View booking</a></p>
-<p style="${style.footer}">Best regards, Fixa2an</p>`,
+		subject: 'Påminnelse: din bokning imorgon – Fixa2an',
+		heading: 'Bokningspåminnelse',
+		body: `<p>Hej ${customerName || 'kund'},</p>
+<p>Detta är en påminnelse om din bokning hos <strong>${workshopName || 'verkstaden'}</strong>.</p>
+<p><strong>Datum/tid:</strong> ${scheduledAt}</p>
+<p><a href="${myCasesUrl}" style="${style.button}">Visa bokning</a></p>
+<p style="${style.footer}">Vänliga hälsningar, Fixa2an</p>`,
 	}),
 	jobCompleteReviewRequest: (customerName, workshopName, myCasesUrl) => ({
-		subject: 'How did it go? Leave a review – Fixa2an',
-		heading: 'Thanks for using Fixa2an',
-		body: `<p>Hi ${customerName || 'customer'},</p>
-<p>Your booking at <strong>${workshopName || 'the workshop'}</strong> is complete. Help others by leaving a review.</p>
-<p><a href="${myCasesUrl}" style="${style.button}">Leave review</a></p>
-<p style="${style.footer}">Best regards, Fixa2an</p>`,
+		subject: 'Hur gick det? Lämna ett omdöme – Fixa2an',
+		heading: 'Tack för att du använder Fixa2an',
+		body: `<p>Hej ${customerName || 'kund'},</p>
+<p>Din bokning hos <strong>${workshopName || 'verkstaden'}</strong> är klar. Hjälp andra genom att lämna ett omdöme.</p>
+<p><a href="${myCasesUrl}" style="${style.button}">Lämna omdöme</a></p>
+<p style="${style.footer}">Vänliga hälsningar, Fixa2an</p>`,
 	}),
 	workshopRegistrationPending: (companyName) => ({
-		subject: 'Workshop registration received – Fixa2an',
-		heading: 'Thanks for registering!',
-		body: `<p>Hi ${companyName},</p>
-<p>Your workshop registration has been received and is awaiting admin approval.</p>
-<p style="${style.footer}">Best regards, the Fixa2an team</p>`,
+		subject: 'Verkstadsregistrering mottagen – Fixa2an',
+		heading: 'Tack för din registrering!',
+		body: `<p>Hej ${companyName},</p>
+<p>Din verkstadsregistrering är mottagen och väntar på godkännande av administratör.</p>
+<p style="${style.footer}">Vänliga hälsningar, Fixa2an-teamet</p>`,
 	}),
 	workshopWelcome: (companyName, loginUrl) => ({
-		subject: 'Welcome to Fixa2an – your workshop is approved',
-		heading: 'Welcome to Fixa2an!',
-		body: `<p>Hi ${companyName},</p>
-<p>Your workshop has been approved. You can now log in and start receiving requests.</p>
-<p><a href="${loginUrl}" style="${style.button}">Log in</a></p>
-<p style="${style.footer}">Best regards, the Fixa2an team</p>`,
+		subject: 'Välkommen till Fixa2an – din verkstad är godkänd',
+		heading: 'Välkommen till Fixa2an!',
+		body: `<p>Hej ${companyName},</p>
+<p>Din verkstad är godkänd. Du kan nu logga in och börja ta emot förfrågningar.</p>
+<p><a href="${loginUrl}" style="${style.button}">Logga in</a></p>
+<p style="${style.footer}">Vänliga hälsningar, Fixa2an-teamet</p>`,
 	}),
 	newRequest: (workshopName, requestsUrl) => ({
-		subject: 'New request in your area – Fixa2an',
-		heading: 'New request',
-		body: `<p>Hi ${workshopName},</p>
-<p>A customer has submitted a new request that might suit your workshop.</p>
-<p><a href="${requestsUrl}" style="${style.button}">View requests</a></p>
-<p style="${style.footer}">Best regards, Fixa2an</p>`,
+		subject: 'Ny förfrågan i ditt område – Fixa2an',
+		heading: 'Ny förfrågan',
+		body: `<p>Hej ${workshopName},</p>
+<p>En kund har skickat in en ny förfrågan som kan passa din verkstad.</p>
+<p><a href="${requestsUrl}" style="${style.button}">Visa förfrågningar</a></p>
+<p style="${style.footer}">Vänliga hälsningar, Fixa2an</p>`,
 	}),
 	workshopBookingConfirmed: (workshopName, customerName, scheduledAt, requestsUrl) => ({
-		subject: 'New booking confirmed – Fixa2an',
-		heading: 'New booking',
-		body: `<p>Hi ${workshopName},</p>
-<p>A customer has booked an appointment with you.</p>
-<p><strong>Customer:</strong> ${customerName || 'Customer'}</p>
-<p><strong>Date/time:</strong> ${scheduledAt}</p>
-<p><a href="${requestsUrl}" style="${style.button}">View booking</a></p>
-<p style="${style.footer}">Best regards, Fixa2an</p>`,
+		subject: 'Ny bokning bekräftad – Fixa2an',
+		heading: 'Ny bokning',
+		body: `<p>Hej ${workshopName},</p>
+<p>En kund har bokat en tid hos dig.</p>
+<p><strong>Kund:</strong> ${customerName || 'Kund'}</p>
+<p><strong>Datum/tid:</strong> ${scheduledAt}</p>
+<p><a href="${requestsUrl}" style="${style.button}">Visa bokning</a></p>
+<p style="${style.footer}">Vänliga hälsningar, Fixa2an</p>`,
 	}),
 }
 

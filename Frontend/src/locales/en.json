@@ -54,6 +54,7 @@
 		"login": "Login",
 		"register": "Register",
 		"logout": "Logout",
+		"wallet": "My Wallet",
 		"dashboard": "Dashboard",
 		"profile": "Profile",
 		"settings": "Settings",
@@ -155,6 +156,19 @@
 			"workshop_signup_text": "Are you a workshop?",
 			"workshop_signup_link": "Register here",
 			"submitting": "Creating account..."
+		},
+		"forgot_password": {
+			"title": "Reset Password",
+			"subtitle_1": "Enter your email address and we'll send you a recovery code.",
+			"subtitle_2": "Enter the 6-digit code sent to your email.",
+			"subtitle_3": "Enter your new password below.",
+			"code_sent": "If an account exists, a code was sent.",
+			"code_verified": "Code verified. Please set a new password.",
+			"success": "Password reset successfully",
+			"send_code": "Send Code",
+			"back_to_email": "Try another email",
+			"set_password": "Update Password",
+			"back_to_login": "← Back to Sign In"
 		}
 	},
 	"upload": {
@@ -739,7 +753,7 @@
 				"address": "Address",
 				"city": "City",
 				"postal_code": "Postal code",
-				"description": "Workshop description",
+				"description_label": "Workshop description",
 				"company_name_placeholder": "Your Workshop AB",
 				"organization_number_placeholder": "123456-7890",
 				"address_placeholder": "Street name 123",

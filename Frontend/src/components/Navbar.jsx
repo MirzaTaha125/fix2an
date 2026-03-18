@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { walletAPI } from '../services/api'
 import { Button } from './ui/Button'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from './LanguageSwitcher'
-import { User, LogOut, Menu, X, Building2, Users, ChevronDown } from 'lucide-react'
+import { User, LogOut, Menu, X, Building2, Users, ChevronDown, Wallet } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/Dialog'
 
 function Navbar() {
@@ -16,6 +17,29 @@ function Navbar() {
 	const [isScrolled, setIsScrolled] = useState(false)
 	const [registerModalOpen, setRegisterModalOpen] = useState(false)
 	const [userDropdownOpen, setUserDropdownOpen] = useState(false)
+	const [walletBalance, setWalletBalance] = useState(null)
+
+	// Fetch wallet balance
+	useEffect(() => {
+		let isMounted = true
+		const fetchBalance = async () => {
+			if (!user || user.role === 'ADMIN') return
+			try {
+				const { data } = await walletAPI.getWallet()
+				if (isMounted) setWalletBalance(data.wallet.balance)
+			} catch (error) {
+				console.error('Failed to fetch wallet balance', error)
+			}
+		}
+
+		fetchBalance()
+		const handleWalletUpdate = () => fetchBalance()
+		window.addEventListener('walletUpdate', handleWalletUpdate)
+		return () => {
+			isMounted = false
+			window.removeEventListener('walletUpdate', handleWalletUpdate)
+		}
+	}, [user])
 
 	// Detect scroll position
 	useEffect(() => {
@@ -201,6 +225,26 @@ function Navbar() {
 										</Link>
 									</>
 								)}
+								
+								{/* Wallet Balance Pill */}
+								<Link 
+									to="/wallet" 
+									className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 ${
+										shouldUseWhiteNavbar 
+											? 'text-gray-700 bg-gray-50 border border-gray-200 hover:bg-gray-100 shadow-sm' 
+											: 'text-white/90 bg-white/10 border border-white/20 backdrop-blur-sm hover:bg-white/20'
+									}`}
+								>
+									<Wallet className={`w-4 h-4 ${shouldUseWhiteNavbar ? 'text-[#05324f]' : 'text-white/90'}`} />
+									{walletBalance === null ? (
+										<div className="h-4 w-16 bg-gray-300 animate-pulse rounded"></div>
+									) : (
+										<span className={`text-sm font-bold whitespace-nowrap ${shouldUseWhiteNavbar ? 'text-[#05324f]' : 'text-white'}`}>
+											{walletBalance.toLocaleString('sv-SE', { minimumFractionDigits: 2 })} <span className={`text-xs font-semibold ${shouldUseWhiteNavbar ? 'text-gray-500' : 'text-white/70'}`}>SEK</span>
+										</span>
+									)}
+								</Link>
+
 								<div className="relative">
 									<button
 										onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -241,6 +285,18 @@ function Navbar() {
 													: 'bg-white/95 backdrop-blur-md border-white/20'
 											}`}>
 												<div className="py-1">
+													<Link
+														to="/wallet"
+														onClick={() => setUserDropdownOpen(false)}
+														className={`flex items-center gap-3 px-4 py-2.5 text-sm w-full text-left transition-colors duration-200 ${
+															shouldUseWhiteNavbar
+																? 'text-gray-700 hover:bg-gray-50'
+																: 'text-white/90 hover:bg-white/10'
+														}`}
+													>
+														<Wallet className="w-4 h-4" />
+														<span>{t('navigation.wallet') || 'My Wallet'}</span>
+													</Link>
 													<button
 														onClick={() => {
 															setUserDropdownOpen(false)
@@ -371,6 +427,18 @@ function Navbar() {
 											>
 												<div className={`w-2 h-2 rounded-full ${isActive('/profile') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
 												<span>{t('navigation.profile') || 'Profile'}</span>
+											</Link>
+											<Link
+												to="/wallet"
+												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+													isActive('/wallet') 
+														? 'text-[#05324f] font-semibold'
+														: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
+												}`}
+												onClick={() => setMobileMenuOpen(false)}
+											>
+												<div className={`w-2 h-2 rounded-full ${isActive('/wallet') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
+												<span>{t('navigation.wallet') || 'My Wallet'}</span>
 											</Link>
 										</>
 									)}
