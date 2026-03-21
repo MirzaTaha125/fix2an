@@ -6,6 +6,7 @@ import { Input } from '../components/ui/Input'
 import { Label } from '../components/ui/Label'
 import { Textarea } from '../components/ui/Textarea'
 import { Badge } from '../components/ui/Badge'
+import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
@@ -264,15 +265,103 @@ export default function WorkshopProfilePage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-white flex items-center justify-center pt-20">
+			<div className="min-h-screen bg-white">
 				<Navbar />
-				<div className="text-center space-y-4">
-					<div className="relative">
-						<div className="w-20 h-20 border-4 border-green-500/20 border-t-green-500 rounded-full animate-spin mx-auto"></div>
-						<User className="w-10 h-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-green-500" />
+				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-32 pb-12">
+					{/* Header Skeleton */}
+					<div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+						<div className="flex items-center gap-4 flex-1">
+							<Skeleton className="w-20 h-20 sm:w-24 sm:h-24 rounded-full" />
+							<div className="space-y-3">
+								<Skeleton className="h-8 sm:h-10 w-48 sm:w-64" />
+							</div>
+						</div>
+						<Skeleton className="h-9 w-24 sm:w-32 rounded-md shrink-0" />
 					</div>
-					<p className="text-gray-600 font-medium text-lg">{t('common.loading')}</p>
+					<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+						{/* Main Profile Form Box Skeleton */}
+						<Card className="lg:col-span-2 shadow-sm border-gray-200">
+							<CardHeader className="border-b border-gray-100 pb-5">
+								<Skeleton className="h-6 w-48" />
+							</CardHeader>
+							<CardContent className="p-6 space-y-8">
+								<div className="space-y-4">
+									<Skeleton className="h-5 w-32" />
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										{[...Array(3)].map((_, i) => (
+											<div key={`skel-personal-${i}`} className="space-y-2">
+												<Skeleton className="h-4 w-20" />
+												<Skeleton className="h-10 w-full" />
+											</div>
+										))}
+									</div>
+								</div>
+								<div className="space-y-4">
+									<Skeleton className="h-5 w-40" />
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										{[...Array(2)].map((_, i) => (
+											<div key={`skel-comp-${i}`} className="space-y-2">
+												<Skeleton className="h-4 w-24" />
+												<Skeleton className="h-10 w-full" />
+											</div>
+										))}
+									</div>
+								</div>
+								<div className="space-y-4">
+									<Skeleton className="h-5 w-44" />
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<div className="space-y-2 md:col-span-2">
+											<Skeleton className="h-4 w-16" />
+											<Skeleton className="h-10 w-full" />
+										</div>
+										{[...Array(2)].map((_, i) => (
+											<div key={`skel-loc-${i}`} className="space-y-2">
+												<Skeleton className="h-4 w-20" />
+												<Skeleton className="h-10 w-full" />
+											</div>
+										))}
+									</div>
+								</div>
+								<div className="space-y-4">
+									<Skeleton className="h-5 w-48" />
+									<div className="space-y-4">
+										<div className="space-y-2">
+											<Skeleton className="h-4 w-16" />
+											<Skeleton className="h-10 w-full" />
+										</div>
+										<div className="space-y-2">
+											<Skeleton className="h-4 w-24" />
+											<Skeleton className="h-24 w-full" />
+										</div>
+									</div>
+								</div>
+							</CardContent>
+						</Card>
+						{/* Sidebar Extraneous Data Block Skeleton */}
+						<div className="space-y-6">
+							<Card className="shadow-sm border-gray-200">
+								<CardHeader className="border-b border-gray-100 pb-5">
+									<Skeleton className="h-6 w-32" />
+								</CardHeader>
+								<CardContent className="p-6 space-y-6">
+									<div>
+										<div className="flex justify-between items-center mb-2">
+											<Skeleton className="h-4 w-16" />
+											<Skeleton className="h-6 w-12" />
+										</div>
+										<Skeleton className="h-4 w-24" />
+									</div>
+									<div className="pt-4 border-t border-gray-100 flex justify-between items-center">
+										<Skeleton className="h-4 w-20" />
+										<Skeleton className="h-6 w-8" />
+									</div>
+								</CardContent>
+							</Card>
+						</div>
+					</div>
 				</div>
+				<WorkshopBottomNav />
+				<Footer />
 			</div>
 		)
 	}

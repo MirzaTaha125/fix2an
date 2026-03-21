@@ -48,7 +48,8 @@
 		"payout_marked_paid": "Utbetalning markerad som betald",
 		"failed_mark_paid": "Kunde inte markera utbetalning som betald",
 		"select_placeholder": "Välj...",
-		"no_data": "N/A"
+		"no_data": "N/A",
+		"go_back": "Gå tillbaka"
 	},
 	"navigation": {
 		"home": "Hem",
@@ -76,20 +77,48 @@
 		"how_it_works": {
 			"title": "Så funkar det",
 			"subtitle": "Tre enkla steg till din nya verkstad",
-			"step1": {"title": "Fota", "description": "Take a photo & upload your inspection report."},
-			"step2": {"title": "Få offerter", "description": "Receive quotes from garages near you."},
-			"step3": {"title": "Välj verkstad", "description": "Choose a garage and book instantly."}
+			"step1": {
+				"title": "Fota",
+				"description": "Take a photo & upload your inspection report."
+			},
+			"step2": {
+				"title": "Få offerter",
+				"description": "Receive quotes from garages near you."
+			},
+			"step3": {
+				"title": "Välj verkstad",
+				"description": "Choose a garage and book instantly."
+			}
 		},
 		"features": {
 			"title": "Varför välja Fixa2an?",
 			"subtitle": "Vi kopplar dig med pålitliga, verifierade verkstäder. Få konkurrenskraftiga erbjudanden, transparenta priser och säkra betalningar - allt på ett ställe.",
-			"verified": {"title": "Kvalitetskontrollerade", "description": "Endast godkända verkstäder"},
-			"free": {"title": "Helt gratis", "description": "Inga dolda avgifter"},
-			"fast": {"title": "Snabbt", "description": "Få offerter inom 24 timmar"},
-			"transparent": {"title": "Transparenta priser", "description": "Jämför priser, tider och recensioner innan du bestämmer dig."},
-			"secure": {"title": "Säker betalning", "description": "Betala säkert via Klarna med alla deras betalningsalternativ."}
+			"verified": {
+				"title": "Kvalitetskontrollerade",
+				"description": "Endast godkända verkstäder"
+			},
+			"free": {
+				"title": "Helt gratis",
+				"description": "Inga dolda avgifter"
+			},
+			"fast": {
+				"title": "Snabbt",
+				"description": "Få offerter inom 24 timmar"
+			},
+			"transparent": {
+				"title": "Transparenta priser",
+				"description": "Jämför priser, tider och recensioner innan du bestämmer dig."
+			},
+			"secure": {
+				"title": "Säker betalning",
+				"description": "Betala säkert via Klarna med alla deras betalningsalternativ."
+			}
 		},
-		"cta": {"title": "Redo att hitta din verkstad?", "subtitle": "Ladda upp din inspektionsrapport och få erbjudanden idag", "button": "Börja nu - Det är gratis"},
+		"cta": {
+			"title": "Redo att hitta din verkstad?",
+			"subtitle": "Ladda upp din inspektionsrapport och få erbjudanden idag",
+			"button": "Börja nu - Det är gratis"
+		},
 		"workshop": {
 			"title": "Få nya kunder direkt från besiktningen",
 			"subtitle": "Vi skickar förfrågningar när bilägare får nedslag. Du väljer vilka jobb du vill lämna offert på. Ingen fast avgift - du betalar bara när du får jobb.",
@@ -167,7 +196,9 @@
 			"back_to_email": "Försök med en annan e-post",
 			"set_password": "Uppdatera lösenord",
 			"back_to_login": "← Tillbaka till inloggning"
-		}
+		},
+		"login_short": "Logga in",
+		"register_short": "Registrera"
 	},
 	"upload": {
 		"title": "Ladda upp din inspektionsrapport",
@@ -190,7 +221,11 @@
 			"make_placeholder": "Välj märke",
 			"model_placeholder": "t.ex. V70, Golf, X3"
 		},
-		"description": {"title": "Beskrivning", "description": "Beskriv vad som behöver fixas eller om du har några speciella önskemål", "placeholder": "Beskriv vad som behöver fixas på din bil..."},
+		"description": {
+			"title": "Beskrivning",
+			"description": "Beskriv vad som behöver fixas eller om du har några speciella önskemål",
+			"placeholder": "Beskriv vad som behöver fixas på din bil..."
+		},
 		"submit": "Skicka förfrågan",
 		"submitting": "Skickar förfrågan..."
 	},
@@ -205,18 +240,41 @@
 		"completed_cases_tab": "Slutförda",
 		"cancelled_cases_tab": "Avbrutna",
 		"rescheduled_cases_tab": "Ombokade",
-		"no_cases": {"title": "Inga förfrågningar än", "description": "Du har inte skickat några förfrågningar än. Börja med att ladda upp din inspektionsrapport.", "button": "Ladda upp rapport"},
-		"no_booked_cases": {"title": "Inga bokade möten", "description": "Du har inga bokade möten än."},
-		"no_completed_cases": {"title": "Inga slutförda jobb", "description": "Du har inte slutfört några jobb än."},
-		"no_cancelled_cases": {"title": "Inga avbrutna möten", "description": "Du har inga avbrutna möten."},
-		"no_rescheduled_cases": {"title": "Inga ombokade ärenden", "description": "Du har inga ombokade möten."},
+		"no_cases": {
+			"title": "Inga förfrågningar än",
+			"description": "Du har inte skickat några förfrågningar än. Börja med att ladda upp din inspektionsrapport.",
+			"button": "Ladda upp rapport"
+		},
+		"no_booked_cases": {
+			"title": "Inga bokade möten",
+			"description": "Du har inga bokade möten än."
+		},
+		"no_completed_cases": {
+			"title": "Inga slutförda jobb",
+			"description": "Du har inte slutfört några jobb än."
+		},
+		"no_cancelled_cases": {
+			"title": "Inga avbrutna möten",
+			"description": "Du har inga avbrutna möten."
+		},
+		"no_rescheduled_cases": {
+			"title": "Inga ombokade ärenden",
+			"description": "Du har inga ombokade möten."
+		},
 		"rescheduled_for": "Ombokad för",
 		"reschedule_again": "Boka om igen",
 		"view_details": "Visa detaljer",
 		"cancelled_booking": "Avbruten bokning",
 		"completed_with": "Kontrakt med",
 		"accepted": "Accepterad",
-		"status": {"new": "Ny", "in_bidding": "Väntar på erbjudanden", "bidding_closed": "Erbjudanden klara", "booked": "Bokad", "completed": "Klar", "cancelled": "Avbruten"},
+		"status": {
+			"new": "Ny",
+			"in_bidding": "Väntar på erbjudanden",
+			"bidding_closed": "Erbjudanden klara",
+			"booked": "Bokad",
+			"completed": "Klar",
+			"cancelled": "Avbruten"
+		},
 		"vehicle_info": "Bilinformation",
 		"offers": "Erbjudanden",
 		"actions": "Åtgärder",
@@ -282,7 +340,9 @@
 		"amount": "Belopp",
 		"contract_with": "Kontrakt med",
 		"star": "stjärna",
-		"stars": "stjärnor"
+		"stars": "stjärnor",
+		"review_no_booking": "Ingen slutförd bokning hittades för denna förfrågan",
+		"no_description": "Ingen beskrivning angiven"
 	},
 	"profile": {
 		"title": "Min profil",
@@ -326,7 +386,8 @@
 		"country": "Land",
 		"country_placeholder": "Ange land",
 		"update_success": "Profil uppdaterad framgångsrikt",
-		"update_error": "Kunde inte uppdatera profil"
+		"update_error": "Kunde inte uppdatera profil",
+		"fetch_error": "Misslyckades att hämta profil"
 	},
 	"offers_page": {
 		"title": "Erbjudanden",
@@ -403,7 +464,11 @@
 		"book_workshop": "Boka verkstad",
 		"book_this_workshop": "Boka denna verkstad",
 		"view_on_map": "Visa på karta",
-		"go_back": "Tillbaka"
+		"go_back": "Tillbaka",
+		"no_offer_selected": "Inget erbjudande valt",
+		"offer_not_found": "Erbjudandet hittades inte",
+		"request_id_required": "Förfrågnings-ID krävs",
+		"booking_failed": "Bokningen misslyckades"
 	},
 	"offer_detail": {
 		"title": "Erbjudandedetaljer",
@@ -498,10 +563,11 @@
 			"account": "Konto",
 			"offer_inbox": "Offertinbox",
 			"view_all": "Visa alla",
-			"offer_sent": "Offert skickad",
-			"submit_offer": "Lämna offert",
+			"offer_sent": "Erbjudande skickat",
+			"submit_offer": "Skicka erbjudande",
 			"no_active_jobs": "Inga aktiva jobb",
-			"latest": "Senast"
+			"latest": "Senast",
+			"no_requests": "Inga förfrågningar tillgängliga"
 		},
 		"profile": {
 			"title": "Profil",
@@ -722,7 +788,8 @@
 			"submitting": "Skickar...",
 			"submit_offer": "Skicka erbjudande",
 			"update_offer": "Uppdatera erbjudande",
-			"updating": "Uppdaterar..."
+			"updating": "Uppdaterar...",
+			"already_accepted": "Erbjudandet är redan accepterat"
 		},
 		"signup": {
 			"title": "Registrera din verkstad",
@@ -886,7 +953,10 @@
 				"closed": "Stängt",
 				"workshop_not_found": "Verkstad hittades inte",
 				"failed_load_details": "Kunde inte ladda verkstadsdetaljer"
-			}
+			},
+			"offers": "Erbjudanden",
+			"bookings": "Bokningar",
+			"reviews": "Recensioner"
 		},
 		"requests": {
 			"title": "Förfrågningar",
@@ -1019,7 +1089,8 @@
 		"fetch_offer_failed": "Kunde inte hämta erbjudandedetaljer",
 		"request_not_found": "Förfrågan hittades inte eller är inte tillgänglig",
 		"required_fields": "Vänligen fyll i alla obligatoriska fält",
-		"at_least_one_date": "Vänligen lägg till minst en tillgänglig tidslucka"
+		"at_least_one_date": "Vänligen lägg till minst en tillgänglig tidslucka",
+		"offer_update_failed": "Misslyckades att uppdatera erbjudandet"
 	},
 	"success": {
 		"account_created": "Konto skapat",
@@ -1048,5 +1119,17 @@
 		"privacy": "Integritet",
 		"cookies": "Cookies",
 		"copyright": "© 2024 Fixa2an. Alla rättigheter förbehållna."
+	},
+	"customer_reviews": {
+		"title": "Recensioner",
+		"subtitle": "Läs vad andra kunder tycker",
+		"generic_workshop": "Verkstad",
+		"back_to_booking": "Tillbaka",
+		"review": "recension",
+		"reviews": "recensioner",
+		"no_reviews": "Inga recensioner ännu",
+		"no_reviews_desc": "Denna verkstad har inte fått några recensioner ännu.",
+		"anonymous_customer": "Kund",
+		"fetch_error": "Misslyckades att hämta recensioner"
 	}
 }

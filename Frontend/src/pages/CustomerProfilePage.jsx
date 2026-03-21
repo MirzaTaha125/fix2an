@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { Label } from '../components/ui/Label'
+import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
@@ -254,15 +255,86 @@ export default function CustomerProfilePage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-white flex items-center justify-center pt-20">
+			<div className="min-h-screen bg-white flex flex-col">
 				<Navbar />
-				<div className="text-center space-y-4">
-					<div className="relative">
-						<div className="w-20 h-20 border-4 border-green-500/20 border-t-green-500 rounded-full animate-spin mx-auto"></div>
-						<User className="w-10 h-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-green-500" />
+				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 max-md:pb-24 w-full flex-1">
+					{/* Skeleton Header */}
+					<div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+						<div className="flex items-center gap-4">
+							<Skeleton className="w-20 h-20 sm:w-24 sm:h-24 rounded-full" />
+							<Skeleton className="h-8 sm:h-10 w-48 sm:w-64" />
+						</div>
 					</div>
-					<p className="text-gray-600 font-medium text-lg">{t('common.loading')}</p>
+
+					{/* Skeleton Stats */}
+					<div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+						{[...Array(3)].map((_, i) => (
+							<div key={i} className={`bg-white border border-gray-100 rounded-xl p-6 shadow-sm ${i === 2 ? 'col-span-2 lg:col-span-1' : ''}`}>
+								<div className="flex justify-between items-center mb-4">
+									<Skeleton className="w-10 h-10 rounded-lg" />
+									<Skeleton className="h-8 w-16" />
+								</div>
+								<Skeleton className="h-4 w-24 mb-2" />
+								<Skeleton className="h-3 w-16" />
+							</div>
+						))}
+					</div>
+
+					<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+						{/* Profile Details Skeleton */}
+						<div className="lg:col-span-2">
+							<div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+								<div className="border-b border-gray-100 p-5 bg-gray-50/50 flex justify-between items-center">
+									<div className="flex items-center gap-3">
+										<Skeleton className="w-8 h-8 rounded-lg" />
+										<Skeleton className="h-6 w-40" />
+									</div>
+								</div>
+								<div className="p-6 space-y-8">
+									<div>
+										<Skeleton className="h-5 w-32 mb-4" />
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+											{[...Array(3)].map((_, i) => (
+												<div key={`pd-${i}`} className="space-y-2">
+													<Skeleton className="h-4 w-16" />
+													<Skeleton className="h-10 w-full" />
+												</div>
+											))}
+										</div>
+									</div>
+									<div>
+										<Skeleton className="h-5 w-40 mb-4" />
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+											<div className="space-y-2 md:col-span-2">
+												<Skeleton className="h-4 w-16" />
+												<Skeleton className="h-10 w-full" />
+											</div>
+											{[...Array(2)].map((_, i) => (
+												<div key={`ad-${i}`} className="space-y-2">
+													<Skeleton className="h-4 w-16" />
+													<Skeleton className="h-10 w-full" />
+												</div>
+											))}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						{/* Sidebar Actions Skeleton */}
+						<div className="space-y-6">
+							<div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+								<Skeleton className="h-5 w-32 mb-6" />
+								<div className="space-y-3">
+									<Skeleton className="h-10 w-full rounded-md" />
+									<Skeleton className="h-10 w-full rounded-md" />
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
+				<CustomerBottomNav />
+				<Footer />
 			</div>
 		)
 	}
@@ -393,88 +465,59 @@ export default function CustomerProfilePage() {
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 					{/* Profile Information */}
 					<div className="lg:col-span-2">
-						{/* Edit Button - Mobile: Outside container, Desktop: Inside */}
-						<div className="flex justify-end mb-4 lg:hidden">
-							{!isEditing ? (
-								<Button
-									onClick={() => setIsEditing(true)}
-									className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-								>
-									<Edit className="w-4 h-4" />
-									{t('profile.edit_profile')}
-								</Button>
-							) : (
-								<div className="flex items-center gap-2">
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={handleCancel}
-										disabled={isSaving}
-										className="flex items-center gap-2"
-									>
-										<X className="w-4 h-4" />
-										{t('profile.cancel')}
-									</Button>
-									<Button
-										size="sm"
-										onClick={handleSave}
-										disabled={isSaving}
-										className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-									>
-										<Save className="w-4 h-4" />
-										{isSaving ? t('profile.saving') : t('profile.save')}
-									</Button>
-								</div>
-							)}
-						</div>
-					<Card className="bg-white border border-gray-200 shadow-sm">
-						<CardHeader className="border-b border-gray-200 bg-white">
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-3">
-									<div className="p-2 bg-green-600 rounded-lg">
-										<User className="w-5 h-5 text-white" />
+						<Card className="bg-white border border-gray-200 shadow-sm relative overflow-hidden">
+							<CardHeader className="border-b border-gray-200 bg-gray-50/50">
+								<div className="flex items-center justify-between">
+									<div className="flex items-center gap-3">
+										<div className="p-2 bg-green-600 rounded-lg shadow-sm">
+											<User className="w-5 h-5 text-white" />
+										</div>
+										<CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+											{t('profile.profile_info') || 'Profile Information'}
+											{/* Inline Edit Icon */}
+											{!isEditing && (
+												<button
+													onClick={() => setIsEditing(true)}
+													className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-full transition-colors ml-1 focus:outline-none focus:ring-2 focus:ring-green-500/50"
+													title={t('profile.edit_profile')}
+												>
+													<Edit className="w-4.5 h-4.5" />
+												</button>
+											)}
+										</CardTitle>
 									</div>
-									<CardTitle className="text-xl font-bold text-gray-900">
-										{t('profile.profile_info') || 'Profile Information'}
-									</CardTitle>
-								</div>
-								{/* Edit Button - Desktop: Inside container */}
-								<div className="hidden lg:block">
-									{!isEditing ? (
-										<Button
-											onClick={() => setIsEditing(true)}
-											className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-										>
-											<Edit className="w-4 h-4" />
-											{t('profile.edit_profile')}
-										</Button>
-									) : (
-										<div className="flex items-center gap-2">
+									
+									{/* Save / Cancel Controls (visible only when editing) */}
+									{isEditing && (
+										<div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-200">
 											<Button
 												variant="outline"
 												size="sm"
 												onClick={handleCancel}
 												disabled={isSaving}
-												className="flex items-center gap-2"
+												className="flex items-center gap-1.5 h-8 px-3 text-xs sm:text-sm"
 											>
-												<X className="w-4 h-4" />
-												{t('profile.cancel')}
+												<X className="w-3.5 h-3.5" />
+												<span className="hidden sm:inline">{t('profile.cancel')}</span>
 											</Button>
 											<Button
 												size="sm"
 												onClick={handleSave}
 												disabled={isSaving}
-												className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+												className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white h-8 px-3 text-xs sm:text-sm shadow-sm"
 											>
-												<Save className="w-4 h-4" />
-												{isSaving ? t('profile.saving') : t('profile.save')}
+												<Save className="w-3.5 h-3.5" />
+												{isSaving ? (
+													<span className="hidden sm:inline">{t('profile.saving')}</span>
+												) : (
+													<span className="hidden sm:inline">{t('profile.save')}</span>
+												)}
 											</Button>
 										</div>
 									)}
 								</div>
-							</div>
-						</CardHeader>
-						<CardContent className="p-6 space-y-6">
+							</CardHeader>
+							<CardContent className="p-6 space-y-6">
 							{/* Personal Details */}
 							<div>
 								<div className="flex items-center gap-2 mb-4">

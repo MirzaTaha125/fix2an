@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Badge } from '../components/ui/Badge'
 import { Input } from '../components/ui/Input'
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/Dialog'
+import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice, formatDate, calculateDistance } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
@@ -226,15 +227,63 @@ export default function WorkshopRequestsPage() {
 		)
 	})
 
+	const formatK = (value) => {
+		if (!value) return '0'
+		const num = Number(value)
+		if (isNaN(num)) return '0'
+		if (num >= 1000) {
+			return (num / 1000).toFixed(2).replace(/\.00$/, '') + 'k'
+		}
+		return num.toString()
+	}
+
 	return (
 	<div className="min-h-screen bg-gray-50 flex flex-col">
 		<Navbar />
 
 		{(authLoading || loading) ? (
-			<div className="flex items-center justify-center min-h-screen">
-				<div className="text-center">
-					<div className="w-14 h-14 border-4 border-[#34C759]/20 border-t-[#34C759] rounded-full animate-spin mx-auto mb-4"></div>
-					<p className="text-gray-500 font-medium">{t('common.loading')}</p>
+			<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24 w-full">
+				{/* Desktop Header Skeletons */}
+				<div className="mb-8 max-md:mb-4 max-md:hidden">
+					<Skeleton className="h-4 w-32 mb-2" />
+					<Skeleton className="h-10 w-64 mb-8" />
+					<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+						<Skeleton className="h-32 w-full rounded-xl" />
+						<Skeleton className="h-32 w-full rounded-xl" />
+						<Skeleton className="h-32 w-full rounded-xl" />
+					</div>
+				</div>
+				{/* Mobile Stats Skeletons */}
+				<div className="md:hidden grid grid-cols-3 gap-2 mb-6">
+					<Skeleton className="h-28 w-full rounded-xl" />
+					<Skeleton className="h-28 w-full rounded-xl" />
+					<Skeleton className="h-28 w-full rounded-xl" />
+				</div>
+				{/* Inbox Skeletons */}
+				<div className="mb-6">
+					<Skeleton className="h-8 w-48 mb-6 max-md:mb-3" />
+					<div className="space-y-0 max-md:space-y-3">
+						{[...Array(4)].map((_, i) => (
+							<div key={`skel-req-${i}`} className="grid grid-cols-1 md:grid-cols-3 items-center py-4 px-4 sm:px-6 gap-3 sm:gap-4 max-md:flex max-md:flex-col max-md:items-start max-md:gap-3 max-md:bg-white max-md:rounded-xl max-md:border max-md:border-gray-200 max-md:p-5 max-md:shadow-sm border-b border-gray-200 md:border-b max-md:border-b-0">
+								<div className="min-w-0 flex-1 w-full space-y-2">
+									<Skeleton className="h-5 w-3/4 max-w-[250px]" />
+									<Skeleton className="h-4 w-[90%] max-w-[400px]" />
+									<Skeleton className="h-3 w-1/2 max-w-[200px]" />
+									<div className="hidden md:flex items-center gap-2 mt-2">
+										<Skeleton className="h-4 w-24" />
+										<Skeleton className="h-4 w-32" />
+									</div>
+								</div>
+								<div className="hidden md:flex justify-center">
+									<Skeleton className="h-4 w-20" />
+								</div>
+								<div className="flex justify-end gap-2 flex-wrap max-md:w-full max-md:mt-1 max-md:grid max-md:grid-cols-2 max-md:gap-3">
+									<Skeleton className="h-9 md:h-10 w-full md:w-24 rounded-md" />
+									<Skeleton className="h-9 md:h-10 w-full md:w-32 rounded-md" />
+								</div>
+							</div>
+						))}
+					</div>
 				</div>
 			</div>
 		) : (
@@ -268,7 +317,7 @@ export default function WorkshopRequestsPage() {
 							<div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mb-3">
 								<DollarSign size={20} className="text-[#34C759]" />
 							</div>
-							<p className="text-3xl font-bold text-[#05324f] leading-none mb-1">{formatPrice(stats.monthlyRevenue)}</p>
+							<p className="text-3xl font-bold text-[#05324f] leading-none mb-1">{formatK(stats.monthlyRevenue)}</p>
 							<p className="text-small text-gray-500 font-medium">{t('workshop.requests.revenue_this_month')}</p>
 						</div>
 					</div>
@@ -295,7 +344,7 @@ export default function WorkshopRequestsPage() {
 					<div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mb-2">
 						<DollarSign className="w-5 h-5 text-[#34C759]" />
 					</div>
-					<p className="text-xl font-bold text-[#05324f] leading-none">{formatPrice(stats.monthlyRevenue)}</p>
+					<p className="text-xl font-bold text-[#05324f] leading-none">{formatK(stats.monthlyRevenue)}</p>
 					<p className="text-xs text-gray-500 mt-1">{t('workshop.requests.income')}</p>
 				</div>
 			</div>
@@ -353,10 +402,10 @@ export default function WorkshopRequestsPage() {
 									return (
 										<div
 											key={requestId}
-											className={`grid grid-cols-1 md:grid-cols-3 items-center py-4 px-4 sm:px-6 gap-3 sm:gap-4 max-md:flex max-md:flex-row max-md:items-center max-md:gap-4 max-md:bg-white max-md:rounded-xl max-md:border max-md:border-gray-200 max-md:p-5 max-md:shadow-sm max-md:min-h-0 ${index !== filteredRequests.length - 1 ? 'border-b border-gray-200 md:border-b' : ''} max-md:border-b-0`}
+											className={`grid grid-cols-1 md:grid-cols-3 items-center py-4 px-4 sm:px-6 gap-3 sm:gap-4 max-md:flex max-md:flex-col max-md:items-start max-md:gap-3 max-md:bg-white max-md:rounded-xl max-md:border max-md:border-gray-200 max-md:p-5 max-md:shadow-sm max-md:min-h-0 ${index !== filteredRequests.length - 1 ? 'border-b border-gray-200 md:border-b' : ''} max-md:border-b-0`}
 										>
 											{/* Left: Vehicle (bold) + Description + "X km away · Latest date" - reference card layout */}
-											<div className="min-w-0 flex-1">
+											<div className="min-w-0 flex-1 w-full">
 												<h3 className="text-base font-bold mb-1 max-md:text-base max-md:mb-1.5 text-gray-900" style={{ color: '#05324f' }}>
 													{vehicle?.make} {vehicle?.model} {vehicle?.year}
 												</h3>
@@ -400,12 +449,12 @@ export default function WorkshopRequestsPage() {
 											</div>
 
 											{/* Right: View report + Submit offer - both visible on mobile */}
-											<div className="flex justify-end gap-2 flex-wrap max-md:shrink-0 max-md:flex-nowrap max-md:gap-2">
+											<div className="flex justify-end gap-2 flex-wrap max-md:w-full max-md:mt-1 max-md:grid max-md:grid-cols-2 max-md:gap-3">
 												{hasReport && (
 													<Button
 														onClick={() => { setSelectedReport(report); setShowReportDialog(true) }}
 														variant="outline"
-														className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-md flex items-center gap-1.5 max-md:rounded-xl max-md:border-[#05324f] max-md:text-[#05324f] max-md:px-3 max-md:py-2.5"
+														className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-md flex items-center justify-center gap-1.5 max-md:rounded-xl max-md:border-[#05324f] max-md:text-[#05324f] max-md:px-3 max-md:py-2.5 max-md:w-full"
 														style={{ borderColor: '#05324f', color: '#05324f' }}
 													>
 														<Eye className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -413,9 +462,9 @@ export default function WorkshopRequestsPage() {
 														<span className="sm:hidden">{t('workshop.requests.view')}</span>
 													</Button>
 												)}
-												<Link to={`/workshop/requests/${requestId}/offer`}>
+												<Link to={`/workshop/requests/${requestId}/offer`} className={`max-md:w-full ${hasReport ? '' : 'max-md:col-span-2'}`}>
 													<Button 
-														className="px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg max-md:rounded-xl max-md:!bg-[#34C759] max-md:!text-white max-md:px-4 max-md:py-3 max-md:whitespace-nowrap"
+														className="px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg max-md:rounded-xl max-md:!bg-[#34C759] max-md:!text-white max-md:px-4 max-md:py-3 max-md:whitespace-nowrap max-md:w-full"
 														style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
 													>
 														{t('workshop.requests.submit_offer')}

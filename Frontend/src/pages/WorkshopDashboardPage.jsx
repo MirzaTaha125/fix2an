@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent } from '../components/ui/Card'
-import { Badge } from '../components/ui/Badge'
 import { StatCard } from '../components/ui/StatCard'
+import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
@@ -93,12 +93,51 @@ export default function WorkshopDashboardPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+			<div className="min-h-screen bg-gray-50 flex flex-col">
 				<Navbar />
-				<div className="text-center">
-					<div className="w-14 h-14 border-4 border-[#34C759]/20 border-t-[#34C759] rounded-full animate-spin mx-auto mb-4"></div>
-					<p className="text-gray-500 font-medium">{t('common.loading')}</p>
+				<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24 w-full flex-1">
+					<div className="mb-8 max-md:mb-6">
+						<Skeleton className="h-4 w-32 mb-2 max-md:hidden" />
+						<Skeleton className="h-8 md:h-10 w-48 max-md:w-40" />
+					</div>
+					<div className="grid grid-cols-3 gap-2 sm:gap-6 mb-10 max-md:mb-6">
+						<Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
+						<Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
+						<Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
+					</div>
+					<div className="mb-10 max-md:mb-6">
+						<div className="flex items-center justify-between mb-4 max-md:mb-3">
+							<Skeleton className="h-8 w-40" />
+							<Skeleton className="h-8 w-20 max-md:hidden rounded-lg" />
+						</div>
+						<div className="space-y-3 max-md:space-y-2">
+							{[...Array(3)].map((_, i) => (
+								<Card key={`skel-inbox-${i}`} className="max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:border">
+									<CardContent className="p-5 max-md:p-4">
+										<div className="flex items-center justify-between gap-4">
+											<div className="flex-1 w-full space-y-2">
+												<Skeleton className="h-5 w-3/4 max-w-[250px]" />
+												<Skeleton className="h-4 w-1/2 max-w-[150px]" />
+											</div>
+											<Skeleton className="h-8 w-24 rounded-md" />
+										</div>
+									</CardContent>
+								</Card>
+							))}
+						</div>
+					</div>
+					<div>
+						<Skeleton className="h-8 w-32 mb-4" />
+						<Card>
+							<CardContent className="py-12 flex flex-col justify-center items-center">
+								<Skeleton className="h-10 w-10 rounded-full mb-3" />
+								<Skeleton className="h-4 w-24" />
+							</CardContent>
+						</Card>
+					</div>
 				</div>
+				<WorkshopBottomNav />
+				<Footer />
 			</div>
 		)
 	}

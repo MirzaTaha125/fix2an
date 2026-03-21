@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
+import { Skeleton } from '../components/ui/Skeleton'
 import { VerifiedBadge, RatingBadge, WarrantyBadge } from '../components/ui/Badge'
 import toast from 'react-hot-toast'
 import { formatPrice } from '../utils/cn'
@@ -114,11 +115,45 @@ export default function OffersPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
-				<div className="text-center">
-					<div className="w-14 h-14 border-4 border-[#34C759]/20 border-t-[#34C759] rounded-full animate-spin mx-auto mb-4"></div>
-					<p className="text-gray-500 font-medium">{t('common.loading')}</p>
+			<div className="min-h-screen bg-gray-50 flex flex-col">
+				<Navbar />
+				<div className="flex-1 max-w-3xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-20 w-full space-y-6">
+					<div className="mb-8 text-center max-md:text-left">
+						<Skeleton className="h-10 w-3/4 mx-auto mb-4 max-md:mx-0 max-md:w-full" />
+						<Skeleton className="h-5 w-1/2 mx-auto mb-8 max-md:mx-0 max-md:w-3/4" />
+						<div className="inline-flex gap-2 max-md:w-full">
+							<Skeleton className="h-10 w-24 rounded-lg max-md:flex-1 max-md:rounded-full" />
+							<Skeleton className="h-10 w-24 rounded-lg max-md:flex-1 max-md:rounded-full" />
+							<Skeleton className="h-10 w-24 rounded-lg max-md:flex-1 max-md:rounded-full" />
+						</div>
+					</div>
+					<div className="space-y-4">
+						{[1, 2, 3].map(i => (
+							<div key={i} className="bg-white rounded-xl border border-gray-100 p-6 max-md:p-4 shadow-sm">
+								<div className="flex items-center gap-4 mb-4">
+									<Skeleton className="w-12 h-12 rounded-full hidden max-md:block" />
+									<div className="flex-1">
+										<Skeleton className="h-6 w-1/3 mb-2" />
+										<Skeleton className="h-8 w-1/4" />
+									</div>
+								</div>
+								<div className="hidden md:flex gap-4 mb-4 mt-2">
+									<Skeleton className="h-6 w-20 rounded-full" />
+									<Skeleton className="h-6 w-24 rounded-full" />
+									<Skeleton className="h-6 w-32 rounded-full" />
+								</div>
+								<div className="flex justify-between items-end md:border-t border-gray-100 md:pt-4">
+									<div className="hidden md:block">
+										<Skeleton className="h-4 w-12 mb-2" />
+										<Skeleton className="h-8 w-24" />
+									</div>
+									<Skeleton className="h-10 w-full md:w-32 rounded-lg" />
+								</div>
+							</div>
+						))}
+					</div>
 				</div>
+				<Footer />
 			</div>
 		)
 	}
@@ -182,10 +217,31 @@ export default function OffersPage() {
 				) : (
 					<div className="space-y-4">
 						{listLoading ? (
-							<div className="text-center py-12">
-								<div className="w-8 h-8 border-4 border-[#34C759]/20 border-t-[#34C759] rounded-full animate-spin mx-auto mb-2"></div>
-								<p className="text-small text-gray-400">{t('common.loading')}</p>
-							</div>
+							<>
+								{[1, 2, 3].map(i => (
+									<div key={i} className="bg-white rounded-xl border border-gray-100 p-6 max-md:p-4 shadow-sm">
+										<div className="flex items-center gap-4 mb-4">
+											<Skeleton className="w-12 h-12 rounded-full hidden max-md:block" />
+											<div className="flex-1">
+												<Skeleton className="h-6 w-1/3 mb-2" />
+												<Skeleton className="h-8 w-1/4" />
+											</div>
+										</div>
+										<div className="hidden md:flex gap-4 mb-4 mt-2">
+											<Skeleton className="h-6 w-20 rounded-full" />
+											<Skeleton className="h-6 w-24 rounded-full" />
+											<Skeleton className="h-6 w-32 rounded-full" />
+										</div>
+										<div className="flex justify-between items-end md:border-t border-gray-100 md:pt-4">
+											<div className="hidden md:block">
+												<Skeleton className="h-4 w-12 mb-2" />
+												<Skeleton className="h-8 w-24" />
+											</div>
+											<Skeleton className="h-10 w-full md:w-32 rounded-lg" />
+										</div>
+									</div>
+								))}
+							</>
 						) : (
 							sortedOffers.map((offer) => {
 								const offerId = offer._id || offer.id

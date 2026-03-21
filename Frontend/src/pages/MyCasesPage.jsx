@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
+import { Skeleton } from '../components/ui/Skeleton'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../components/ui/Dialog'
 import { Label } from '../components/ui/Label'
 import { Textarea } from '../components/ui/Textarea'
@@ -303,15 +304,50 @@ export default function MyCasesPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-white flex items-center justify-center pt-20">
+			<div className="min-h-screen bg-gray-50 flex flex-col">
 				<Navbar />
-				<div className="text-center space-y-4">
-					<div className="relative">
-						<div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto"></div>
-						<Car className="w-10 h-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-primary" />
+				<div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-28 flex-1 w-full">
+					<div className="mb-8">
+						<h1 className="text-3xl font-bold text-gray-900 mb-2">{t('my_cases.title') || 'My Cases'}</h1>
+						<p className="text-gray-500">{t('my_cases.subtitle')}</p>
 					</div>
-					<p className="text-gray-600 font-medium text-lg">{t('common.loading') || t('my_cases.loading_cases')}</p>
+					
+					{/* Skeleton Tabs */}
+					<div className="flex overflow-x-auto pb-4 mb-6 gap-2 hide-scrollbar">
+						{[...Array(5)].map((_, i) => (
+							<Skeleton key={`tab-${i}`} className="h-10 w-24 sm:w-32 rounded-full flex-shrink-0" />
+						))}
+					</div>
+
+					{/* Skeleton List */}
+					<div className="space-y-4">
+						{[...Array(3)].map((_, i) => (
+							<div key={`case-skel-${i}`} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-6 mb-4">
+								<div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+									<div className="space-y-3 flex-1 w-full">
+										<div className="flex justify-between sm:justify-start items-center gap-3">
+											<Skeleton className="h-6 w-3/4 max-w-[200px]" />
+											<Skeleton className="h-6 w-20 rounded-full sm:hidden" />
+										</div>
+										<Skeleton className="h-4 w-1/2 max-w-[150px]" />
+										<Skeleton className="h-4 w-[90%] sm:w-[80%] max-w-[400px]" />
+										<Skeleton className="h-4 w-[70%] max-w-[300px] mt-1" />
+									</div>
+									<div className="hidden sm:flex flex-col items-end gap-3 shrink-0">
+										<Skeleton className="h-6 w-24 rounded-full" />
+										<Skeleton className="h-10 w-28 rounded-md" />
+									</div>
+								</div>
+								<div className="border-t border-gray-100 pt-4 flex gap-3 mt-4">
+									<Skeleton className="h-10 w-full sm:w-1/4 rounded-md" />
+									<Skeleton className="h-10 w-full sm:w-1/4 rounded-md hidden sm:block" />
+								</div>
+							</div>
+						))}
+					</div>
 				</div>
+				<CustomerBottomNav />
+				<Footer />
 			</div>
 		)
 	}
@@ -357,7 +393,7 @@ export default function MyCasesPage() {
 							{t('my_cases.subtitle')}
 						</p>
 					</div>
-					<Link to="/upload" className="self-start sm:self-auto shrink-0 max-md:hidden">
+					<Link to="/upload" className="self-start sm:self-auto shrink-0">
 						<Button>
 							<span className="md:hidden">{t('my_cases.upload_case')}</span>
 							<span className="hidden md:inline">{t('my_cases.upload_new_protocol')}</span>
@@ -367,47 +403,51 @@ export default function MyCasesPage() {
 			</div>
 
 			{/* Navigation Tabs */}
-			<div className="flex flex-wrap gap-2 mb-6">
-				{[
-					{ key: 'my_cases', label: t('my_cases.my_cases_tab') || 'My Cases', icon: Car },
-					{ key: 'booked_cases', label: t('my_cases.booked_cases_tab') || 'Booked', icon: Calendar },
-					{ key: 'completed_cases', label: t('my_cases.completed_cases_tab') || 'Completed', icon: CheckCircle },
-					{ key: 'cancelled_cases', label: t('my_cases.cancelled_cases_tab') || 'Cancelled', icon: XCircle },
-					{ key: 'rescheduled_cases', label: t('my_cases.rescheduled_cases_tab') || 'Rescheduled', icon: RotateCcw },
-				].map(({ key, label, icon: Icon }) => (
-					<button
-						key={key}
-						onClick={() => setActiveTab(key)}
-						className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-btn text-sm font-semibold transition-all duration-200 ${
-							activeTab === key
-								? 'bg-[#34C759] text-white shadow-sm'
-								: 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-[#05324f]'
-						}`}
-					>
-						<Icon size={14} />
-						{label}
-					</button>
-				))}
+			<div className="flex flex-col gap-2 mb-6">
+				<div className="grid grid-cols-3 gap-2">
+					{[
+						{ key: 'my_cases', label: t('my_cases.my_cases_tab') || 'My Cases' },
+						{ key: 'booked_cases', label: t('my_cases.booked_cases_tab') || 'Booked' },
+						{ key: 'completed_cases', label: t('my_cases.completed_cases_tab') || 'Completed' },
+					].map(({ key, label }) => (
+						<button
+							key={key}
+							onClick={() => setActiveTab(key)}
+							className={`px-2 py-2 rounded-btn text-xs sm:text-sm font-semibold transition-all duration-200 text-center ${
+								activeTab === key
+									? 'bg-[#34C759] text-white shadow-sm'
+									: 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-[#05324f]'
+							}`}
+						>
+							{label}
+						</button>
+					))}
+				</div>
+				<div className="grid grid-cols-2 gap-2">
+					{[
+						{ key: 'cancelled_cases', label: t('my_cases.cancelled_cases_tab') || 'Cancelled' },
+						{ key: 'rescheduled_cases', label: t('my_cases.rescheduled_cases_tab') || 'Rescheduled' },
+					].map(({ key, label }) => (
+						<button
+							key={key}
+							onClick={() => setActiveTab(key)}
+							className={`px-2 py-2 rounded-btn text-xs sm:text-sm font-semibold transition-all duration-200 text-center ${
+								activeTab === key
+									? 'bg-[#34C759] text-white shadow-sm'
+									: 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-[#05324f]'
+							}`}
+						>
+							{label}
+						</button>
+					))}
+				</div>
 			</div>
 
 				{filteredRequests.length === 0 ? (
 					<Card className="border-0 shadow-xl overflow-hidden">
 						<CardContent className="text-center py-12 sm:py-16 px-4 bg-white">
-							<div className="relative inline-block mb-6">
-								<div className="absolute inset-0 bg-gradient-to-br from-[#34C759]/20 to-[#2db04a]/20 rounded-full blur-3xl animate-pulse"></div>
-								<div className="relative bg-gradient-to-br from-[#34C759]/10 to-[#2db04a]/10 p-6 sm:p-8 rounded-2xl border-2 border-gray-200">
-									{activeTab === 'completed_cases' ? (
-										<CheckCircle className="w-16 h-16 sm:w-20 sm:h-20 mx-auto" style={{ color: '#34C759' }} />
-									) : activeTab === 'booked_cases' ? (
-										<Calendar className="w-16 h-16 sm:w-20 sm:h-20 mx-auto" style={{ color: '#34C759' }} />
-									) : activeTab === 'cancelled_cases' ? (
-										<XCircle className="w-16 h-16 sm:w-20 sm:h-20 mx-auto" style={{ color: '#ef4444' }} />
-									) : activeTab === 'rescheduled_cases' ? (
-										<RotateCcw className="w-16 h-16 sm:w-20 sm:h-20 mx-auto" style={{ color: '#34C759' }} />
-									) : (
-										<Car className="w-16 h-16 sm:w-20 sm:h-20 mx-auto" style={{ color: '#34C759' }} />
-									)}
-								</div>
+							<div className="relative inline-block mb-2">
+								{/* Removed the animated glowing background and large icon */}
 							</div>
 							<h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
 									{activeTab === 'completed_cases' 
@@ -477,7 +517,7 @@ export default function MyCasesPage() {
 									{/* Left: Title, Date, Description */}
 									<div className="min-w-0 pr-20 md:pr-0">
 										{/* Title (Vehicle Name) */}
-										<h3 className="text-sm sm:text-base font-bold mb-1" style={{ color: '#05324f' }}>
+										<h3 className="text-xl font-bold mb-1" style={{ color: '#05324f' }}>
 											{vehicle?.make} {vehicle?.model}-{vehicle?.year}
 										</h3>
 										{/* Date */}
@@ -674,7 +714,7 @@ export default function MyCasesPage() {
 											style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
 										>
 											<Star className="w-3 h-3 mr-1" />
-											{t('my_cases.write_review') || 'Write Review'}
+											{t('my_cases.leave_review') || 'Write Review'}
 										</Button>
 									)}
 

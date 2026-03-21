@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
+import { Skeleton } from '../components/ui/Skeleton'
 import { Label } from '../components/ui/Label'
 import toast from 'react-hot-toast'
 import { formatPrice } from '../utils/cn'
@@ -153,14 +154,71 @@ export default function BookAppointmentPage() {
 
 	if (loading || authLoading) {
 		return (
-			<div className="min-h-screen bg-white">
+			<div className="min-h-screen bg-gray-50 flex flex-col">
 				<Navbar />
-				<div className="flex items-center justify-center min-h-screen">
-					<div className="text-center">
-						<div className="w-8 h-8 border-4 border-[#34C759] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-						<p className="text-gray-600">{t('common.loading') || 'Loading...'}</p>
+				<div className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full space-y-8">
+					<div className="text-center max-md:hidden mb-8">
+						<Skeleton className="h-10 w-1/2 mx-auto mb-4" />
+						<Skeleton className="h-5 w-1/3 mx-auto" />
+					</div>
+
+					<div className="md:hidden space-y-5">
+						<Skeleton className="h-10 w-32 mb-6" />
+						<Skeleton className="h-32 w-full rounded-xl" />
+						<Skeleton className="h-40 w-full rounded-xl" />
+						<div className="space-y-3">
+							<Skeleton className="h-5 w-32" />
+							<div className="flex gap-2">
+								<Skeleton className="h-10 w-24 rounded-lg" />
+								<Skeleton className="h-10 w-24 rounded-lg" />
+							</div>
+							<Skeleton className="h-5 w-24 mt-4" />
+							<Skeleton className="h-16 w-full rounded-lg" />
+						</div>
+						<Skeleton className="h-14 w-full rounded-xl mt-4" />
+					</div>
+
+					<div className="hidden md:block">
+						<div className="bg-white rounded-card border border-gray-100 shadow-card p-6 sm:p-8 space-y-8">
+							<div className="grid grid-cols-2 gap-6">
+								<div>
+									<Skeleton className="h-8 w-1/3 mb-6" />
+									<Skeleton className="h-24 w-full rounded-lg" />
+								</div>
+								<div className="flex items-start justify-end">
+									<Skeleton className="h-12 w-48 rounded-lg" />
+								</div>
+							</div>
+							<div className="grid grid-cols-2 gap-8">
+								<div>
+									<Skeleton className="h-64 w-full rounded-lg" />
+									<Skeleton className="h-6 w-3/4 mt-4" />
+								</div>
+								<div className="space-y-6">
+									<div>
+										<Skeleton className="h-6 w-32 mb-2" />
+										<Skeleton className="h-12 w-full" />
+									</div>
+									<div>
+										<Skeleton className="h-6 w-40 mb-2" />
+										<Skeleton className="h-24 w-full" />
+									</div>
+								</div>
+							</div>
+							<div className="pt-6 border-t border-gray-100">
+								<Skeleton className="h-6 w-48 mb-3" />
+								<div className="flex gap-2 mb-6">
+									<Skeleton className="h-10 w-24 rounded-lg" />
+									<Skeleton className="h-10 w-24 rounded-lg" />
+									<Skeleton className="h-10 w-32 rounded-lg" />
+								</div>
+								<Skeleton className="h-6 w-24 mb-3" />
+								<Skeleton className="h-24 w-full rounded-lg" />
+							</div>
+						</div>
 					</div>
 				</div>
+				<Footer />
 			</div>
 		)
 	}
@@ -192,6 +250,7 @@ export default function BookAppointmentPage() {
 	const postalCode = workshop?.postalCode || ''
 	const fullAddress = `${address}${postalCode ? `, ${postalCode}` : ''} ${city}`.trim()
 	const workshopRating = workshop?.rating != null ? Number(workshop.rating) : null
+	const reviewCount = workshop?.reviewCount || 0
 	const isVerified = workshop?.isVerified === true
 	// Format opening hours
 	const formatOpeningHours = (openingHoursStr) => {
@@ -301,15 +360,23 @@ export default function BookAppointmentPage() {
 								</div>
 							)}
 							{workshopRating != null && (
-								<div className="flex items-center gap-1.5 mt-2">
-									{[1,2,3,4,5].map((i) => (
-										<Star
-											key={i}
-											className={`w-4 h-4 shrink-0 ${i <= Math.round(workshopRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
-										/>
-									))}
-									<span className="text-sm text-gray-600 ml-0.5">{workshopRating.toFixed(1).replace('.', ',')}</span>
-								</div>
+								<button 
+									onClick={() => navigate(`/workshop/${workshop._id || workshop.id}/reviews`, { state: { workshopName } })}
+									className="flex items-center gap-1.5 mt-2 hover:bg-gray-50 p-1.5 -ml-1.5 rounded-lg transition-colors text-left w-fit"
+								>
+									<div className="flex">
+										{[1,2,3,4,5].map((i) => (
+											<Star
+												key={i}
+												className={`w-4 h-4 shrink-0 ${i <= Math.round(workshopRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
+											/>
+										))}
+									</div>
+									<span className="text-sm font-semibold text-gray-700 ml-0.5">{workshopRating.toFixed(1).replace('.', ',')}</span>
+									<span className="text-sm text-[#34C759] hover:text-[#2eaa4e] underline decoration-[#34C759]/30 underline-offset-2 ml-1">
+										({reviewCount} {t('customer_reviews.reviews') || 'reviews'})
+									</span>
+								</button>
 							)}
 						</div>
 						{mapSrc && (
@@ -404,6 +471,25 @@ export default function BookAppointmentPage() {
 								<div className="flex items-center gap-2 text-sm sm:text-base text-gray-700 mt-4">
 									<CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" /><span>{warrantyText}</span>
 								</div>
+							)}
+							{workshopRating != null && (
+								<button 
+									onClick={() => navigate(`/workshop/${workshop._id || workshop.id}/reviews`, { state: { workshopName } })}
+									className="flex items-center gap-1.5 mt-4 hover:bg-gray-50 p-2 -ml-2 rounded-lg transition-colors text-left w-fit"
+								>
+									<div className="flex">
+										{[1,2,3,4,5].map((i) => (
+											<Star
+												key={i}
+												className={`w-5 h-5 shrink-0 ${i <= Math.round(workshopRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
+											/>
+										))}
+									</div>
+									<span className="text-base font-semibold text-gray-700 ml-0.5">{workshopRating.toFixed(1).replace('.', ',')}</span>
+									<span className="text-base text-[#34C759] hover:text-[#2eaa4e] underline decoration-[#34C759]/30 underline-offset-2 ml-1">
+										({reviewCount} {t('customer_reviews.reviews') || 'reviews'})
+									</span>
+								</button>
 							)}
 						</div>
 						<div className="space-y-4 sm:space-y-6">

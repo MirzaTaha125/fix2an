@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../components/ui/Dialog'
+import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice, formatDate } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
@@ -231,15 +232,47 @@ export default function WorkshopContractsPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-white flex items-center justify-center pt-20">
+			<div className="min-h-screen bg-gray-50 flex flex-col">
 				<Navbar />
-				<div className="text-center space-y-4">
-					<div className="relative">
-						<div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto"></div>
-						<FileText className="w-10 h-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-primary" />
+				<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
+					{/* Header Skeleton */}
+					<div className="mb-8">
+						<Skeleton className="h-8 md:h-10 w-48" />
 					</div>
-					<p className="text-gray-600 font-medium text-lg">{t('common.loading')}</p>
+					{/* Tabs Skeleton */}
+					<div className="flex flex-wrap gap-2 mb-6">
+						{[...Array(2)].map((_, i) => (
+							<Skeleton key={`tab-${i}`} className="h-9 w-24 rounded-md" />
+						))}
+					</div>
+					{/* Contracts List Skeleton */}
+					<div className="bg-white border border-gray-200 rounded-lg overflow-hidden space-y-0">
+						{[...Array(4)].map((_, i) => (
+							<div key={`skel-comp-${i}`} className="border-b border-gray-100 last:border-b-0">
+								<div className="p-4 sm:p-6 block hover:bg-gray-50 transition-colors">
+									<div className="flex flex-col sm:flex-row justify-between gap-4">
+										<div className="space-y-3 flex-1">
+											<div className="flex items-center gap-3">
+												<Skeleton className="h-5 w-48" />
+												<Skeleton className="h-6 w-20 rounded-full hidden sm:block" />
+											</div>
+											<Skeleton className="h-4 w-3/4 max-w-[400px]" />
+											<div className="flex flex-wrap gap-4 mt-2">
+												<Skeleton className="h-4 w-24" />
+												<Skeleton className="h-4 w-32 hidden sm:block" />
+											</div>
+										</div>
+										<div className="hidden sm:flex flex-col items-end gap-2 shrink-0">
+											<Skeleton className="h-6 w-24 rounded-full" />
+										</div>
+									</div>
+								</div>
+							</div>
+						))}
+					</div>
 				</div>
+				<WorkshopBottomNav />
+				<Footer />
 			</div>
 		)
 	}
@@ -288,7 +321,7 @@ export default function WorkshopContractsPage() {
 		<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
 			{/* Header */}
 			<div className="mb-8">
-				<h1 className="text-h1 font-bold text-[#05324f]">
+				<h1 className="text-xl md:text-h1 font-bold text-[#05324f]">
 					{t('workshop.contracts.title') || 'Contracts'}
 				</h1>
 			</div>

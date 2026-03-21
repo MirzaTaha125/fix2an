@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
+import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice, formatDate } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
@@ -139,17 +140,61 @@ export default function WorkshopProposalsPage() {
 		return offer.status === activeTab.toUpperCase()
 	})
 
+	const formatK = (value) => {
+		if (!value) return '0'
+		const num = Number(value)
+		if (isNaN(num)) return '0'
+		if (num >= 1000) {
+			return (num / 1000).toFixed(2).replace(/\.00$/, '') + 'k'
+		}
+		return num.toString()
+	}
+
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-white flex items-center justify-center pt-20">
+			<div className="min-h-screen bg-gray-50 flex flex-col">
 				<Navbar />
-				<div className="text-center space-y-4">
-					<div className="relative">
-						<div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto"></div>
-						<FileText className="w-10 h-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-primary" />
+				<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
+					{/* Header Skeleton */}
+					<div className="mb-8">
+						<Skeleton className="h-8 md:h-10 w-48" />
 					</div>
-					<p className="text-gray-600 font-medium text-lg">{t('common.loading')}</p>
+					{/* Tabs Skeleton */}
+					<div className="flex flex-wrap gap-2 mb-6">
+						{[...Array(5)].map((_, i) => (
+							<Skeleton key={`tab-${i}`} className="h-9 w-20 rounded-md" />
+						))}
+					</div>
+					{/* Proposals List Skeleton */}
+					<div className="space-y-4">
+						{[...Array(3)].map((_, i) => (
+							<Card key={`skel-prop-${i}`}>
+								<CardContent className="p-4 sm:p-6">
+									<div className="flex flex-col sm:flex-row justify-between gap-4">
+										<div className="space-y-3 flex-1">
+											<div className="flex items-center gap-3">
+												<Skeleton className="h-5 w-48" />
+												<Skeleton className="h-6 w-20 rounded-full hidden sm:block" />
+											</div>
+											<Skeleton className="h-4 w-3/4 max-w-[400px]" />
+											<Skeleton className="h-4 w-1/2 max-w-[300px]" />
+										</div>
+										<div className="hidden sm:flex flex-col items-end gap-2 shrink-0">
+											<Skeleton className="h-6 w-24" />
+											<Skeleton className="h-4 w-20" />
+										</div>
+									</div>
+									<div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
+										<Skeleton className="h-9 w-full sm:w-28 rounded-md" />
+										<Skeleton className="h-9 w-full sm:w-28 rounded-md" />
+									</div>
+								</CardContent>
+							</Card>
+						))}
+					</div>
 				</div>
+				<WorkshopBottomNav />
+				<Footer />
 			</div>
 		)
 	}
@@ -164,7 +209,7 @@ export default function WorkshopProposalsPage() {
 		<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
 			{/* Header */}
 			<div className="mb-8">
-				<h1 className="text-h1 font-bold text-[#05324f]">
+				<h1 className="text-xl md:text-h1 font-bold text-[#05324f]">
 					{t('workshop.proposals.title') || 'Proposals'}
 				</h1>
 			</div>
@@ -282,7 +327,7 @@ export default function WorkshopProposalsPage() {
 											{/* Description/Note or Price with Edit Button (Mobile) */}
 											<div className="flex items-center justify-between gap-2">
 												<p className="text-sm" style={{ color: '#05324f' }}>
-													{offer.note || formatPrice(offer.price)}
+													{offer.note || formatK(offer.price)}
 												</p>
 												{/* Mobile: Edit button next to price */}
 												{offer.status === 'SENT' && (

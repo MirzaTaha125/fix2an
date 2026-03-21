@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Input } from '../components/ui/Input'
+import { Skeleton } from '../components/ui/Skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import toast from 'react-hot-toast'
@@ -488,10 +489,75 @@ export default function AdminPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-gray-50">
-				<div className="text-center">
-					<RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: '#34C759' }} />
-					<p className="text-gray-600">{t('common.loading')}</p>
+			<div className="min-h-screen flex flex-col bg-white">
+				{/* Header Skeleton */}
+				<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 max-md:border-gray-200">
+					<div className="flex items-center gap-2 sm:gap-3">
+						<Skeleton className="lg:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-lg" />
+						<Skeleton className="w-24 h-8 sm:h-10" />
+						<Skeleton className="hidden max-md:block w-16 h-6 ml-1" />
+					</div>
+					<div className="flex items-center gap-2 sm:gap-3">
+						<Skeleton className="w-24 h-8 sm:h-10 rounded-lg" />
+						<Skeleton className="w-24 h-8 sm:h-10 rounded-lg" />
+					</div>
+				</header>
+				
+				{/* KPI Cards Skeleton */}
+				<div className="bg-gray-50 px-3 sm:px-6 py-4 sm:py-5 max-md:bg-white max-md:py-4">
+					<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-md:gap-2">
+						{[...Array(4)].map((_, i) => (
+							<div key={`skel-kpi-${i}`} className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5 max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:p-4 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
+								<Skeleton className="w-4 h-4 mb-2 max-md:mb-2 max-md:w-8 max-md:h-8 rounded-full" />
+								<Skeleton className="h-8 sm:h-10 w-24 mb-1 max-md:h-8 max-md:w-16" />
+								<Skeleton className="h-4 w-20 max-md:h-3 max-md:w-16" />
+							</div>
+						))}
+					</div>
+				</div>
+
+				{/* Content Area Skeleton */}
+				<div className="flex-1 flex min-h-0 pb-3 sm:pb-6">
+					{/* Sidebar Skeleton */}
+					<div className="hidden lg:flex flex-col w-64 flex-shrink-0 rounded-2xl p-4 ml-3 sm:ml-6 mb-3 sm:mb-6" style={{ backgroundColor: '#05324f' }}>
+						<div className="flex-1 space-y-2">
+							{[...Array(9)].map((_, i) => (
+								<Skeleton key={`skel-nav-${i}`} className="h-12 w-full rounded-lg bg-white/10" />
+							))}
+						</div>
+					</div>
+
+					{/* Main Content Area Skeleton */}
+					<div className="flex-1 flex flex-col min-w-0">
+						<main className="flex-1 overflow-y-auto bg-white p-3 sm:p-4 lg:p-6 max-md:pb-8">
+							<div className="space-y-6">
+								<Skeleton className="h-6 sm:h-7 w-48 mb-4" />
+								<div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+									<div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between">
+										<Skeleton className="h-4 w-24" />
+										<Skeleton className="h-4 w-32" />
+										<Skeleton className="h-4 w-20" />
+										<Skeleton className="h-4 w-16" />
+										<Skeleton className="h-4 w-24" />
+									</div>
+									<div className="divide-y divide-gray-100">
+										{[...Array(5)].map((_, i) => (
+											<div key={`skel-row-${i}`} className="p-4 flex justify-between items-center bg-white">
+												<Skeleton className="h-4 w-32" />
+												<Skeleton className="h-4 w-48" />
+												<Skeleton className="h-4 w-24" />
+												<Skeleton className="h-6 w-20 rounded-full" />
+												<div className="flex gap-2">
+													<Skeleton className="h-8 w-24 rounded-md" />
+													<Skeleton className="h-8 w-24 rounded-md" />
+												</div>
+											</div>
+										))}
+									</div>
+								</div>
+							</div>
+						</main>
+					</div>
 				</div>
 			</div>
 		)

@@ -5,7 +5,7 @@ import { walletAPI } from '../services/api'
 import { Button } from './ui/Button'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from './LanguageSwitcher'
-import { User, LogOut, Menu, X, Building2, Users, ChevronDown, Wallet } from 'lucide-react'
+import { User, LogOut, Menu, X, Building2, Users, ChevronDown, Wallet, ArrowLeft } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/Dialog'
 
 function Navbar() {
@@ -59,6 +59,9 @@ function Navbar() {
 	// Check if we're on the home page
 	const isHomePage = location.pathname === '/' || location.pathname === ''
 
+	// Check if we're on auth or registration pages
+	const isAuthPage = location.pathname.includes('/auth') || location.pathname.includes('/signup') || location.pathname.includes('/forgot') || location.pathname.includes('/verify')
+
 	// Determine if navbar should have white background and black text
 	// Always use white navbar on homepage by default for visibility
 	const shouldUseWhiteNavbar = true
@@ -79,13 +82,25 @@ function Navbar() {
 			}}
 		>
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-1 sm:pb-0">
-				<div className="flex justify-between items-center py-2 sm:py-2.5">
-					<div className="flex items-center gap-3">
+				<div className="grid grid-cols-3 md:flex justify-between items-center py-2 sm:py-2.5 w-full">
+					<div className="flex justify-start md:hidden">
+						{isAuthPage && (
+							<Link to="/" className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
+								<ArrowLeft className="w-6 h-6 text-[#05324f]" />
+							</Link>
+						)}
+					</div>
+					<div className="flex items-center justify-center md:justify-start gap-3 w-full">
+						{isAuthPage && (
+							<Link to="/" className="p-2 -ml-2 hidden md:inline-flex text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
+								<ArrowLeft className="w-5 h-5 text-[#05324f]" />
+							</Link>
+						)}
 						<Link 
 							to="/" 
 							className="flex items-center transition-all duration-300 hover:scale-105"
 						>
-							<span className="text-2xl sm:text-3xl md:text-4xl font-bold">
+							<span className="text-4xl sm:text-5xl md:text-5xl font-extrabold tracking-tight">
 								<span className="text-[#05324f]">Fix</span>
 								<span className="text-green-500">2an</span>
 							</span>
@@ -348,25 +363,9 @@ function Navbar() {
 						<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} />
 					</nav>
 
-					{/* Mobile Menu Button */}
-					<div className="md:hidden flex items-center gap-2">
+					{/* Mobile Menu Button (Globe Only) */}
+					<div className="md:hidden flex items-center justify-end pr-2">
 						<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} />
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-							className={`transition-all duration-300 rounded-lg ${
-								shouldUseWhiteNavbar 
-									? 'bg-white border-gray-300 text-gray-900 hover:bg-gray-50 hover:border-gray-400 shadow-sm' 
-									: 'bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm hover:border-white/50'
-							}`}
-						>
-							{mobileMenuOpen ? (
-								<X className="w-5 h-5" />
-							) : (
-								<Menu className="w-5 h-5" />
-							)}
-						</Button>
 					</div>
 				</div>
 

@@ -13,6 +13,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../components/ui/Select'
+import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { Upload, X, Car } from 'lucide-react'
 import { validateFile, getFileIcon } from '../utils/cn'
@@ -72,7 +73,50 @@ export default function UploadPage() {
 
 	// Show loading state while checking auth
 	if (authLoading) {
-		return <div className="min-h-screen flex items-center justify-center">{t('common.loading')}</div>
+		return (
+			<div className="min-h-screen bg-gray-50">
+				<Navbar />
+				<div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24">
+					<div className="text-center mb-8">
+						<Skeleton className="h-10 sm:h-12 w-64 md:w-80 mx-auto mb-4" />
+						<Skeleton className="h-5 w-48 md:w-64 mx-auto" />
+					</div>
+					<div className="space-y-5 sm:space-y-6 md:space-y-8">
+						{/* Upload Box Skeleton */}
+						<Card>
+							<CardHeader className="pb-3 sm:pb-4">
+								<Skeleton className="h-6 w-40 mb-2" />
+								<Skeleton className="h-4 w-64 max-w-[80%]" />
+							</CardHeader>
+							<CardContent className="px-4 sm:px-6">
+								<Skeleton className="h-32 sm:h-40 md:h-48 w-full rounded-xl" />
+							</CardContent>
+						</Card>
+						{/* Form Box Skeleton */}
+						<Card>
+							<CardHeader className="pb-3 sm:pb-4">
+								<Skeleton className="h-6 w-48 mb-2" />
+								<Skeleton className="h-4 w-72 max-w-[90%]" />
+							</CardHeader>
+							<CardContent className="px-4 sm:px-6 space-y-5">
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+									<div className="space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-10 lg:h-11 w-full rounded-md" /></div>
+									<div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-10 lg:h-11 w-full rounded-md" /></div>
+									<div className="space-y-2"><Skeleton className="h-4 w-12" /><Skeleton className="h-10 lg:h-11 w-full rounded-md" /></div>
+									<div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 lg:h-11 w-full rounded-md" /></div>
+									<div className="space-y-2 sm:col-span-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-24 w-full rounded-md" /></div>
+								</div>
+								<div className="pt-4 border-t border-gray-100 flex justify-end">
+									<Skeleton className="h-10 w-full sm:w-32 rounded-md" />
+								</div>
+							</CardContent>
+						</Card>
+					</div>
+				</div>
+				<CustomerBottomNav />
+				<Footer />
+			</div>
+		)
 	}
 
 	// Redirect if not authenticated
@@ -212,8 +256,8 @@ export default function UploadPage() {
 			<Navbar />
 		<div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24">
 			<div className="text-center mb-8">
-				<h1 className="text-h1 font-bold text-[#05324f] mb-2">{t('upload.title')}</h1>
-				<p className="text-base text-gray-500">{t('upload.subtitle')}</p>
+				<h1 className="text-xl md:text-h1 font-bold text-[#05324f] mb-2">{t('upload.title')}</h1>
+				<p className="text-sm md:text-base text-gray-500">{t('upload.subtitle')}</p>
 			</div>
 
 				<form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 md:space-y-8">

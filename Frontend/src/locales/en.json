@@ -47,7 +47,9 @@
 		"payout_marked_paid": "Payout marked as paid",
 		"failed_mark_paid": "Failed to mark payout as paid",
 		"select_placeholder": "Select...",
-		"no_data": "N/A"
+		"no_data": "N/A",
+		"go_back": "Go back",
+		"wallet": "Wallet"
 	},
 	"navigation": {
 		"home": "Home",
@@ -79,19 +81,44 @@
 				"title": "Photo",
 				"description": "Take a photo & upload your inspection report."
 			},
-			"step2": {"title": "Get offers", "description": "Receive quotes from garages near you."},
-			"step3": {"title": "Choose workshop", "description": "Choose a garage and book instantly."}
+			"step2": {
+				"title": "Get offers",
+				"description": "Receive quotes from garages near you."
+			},
+			"step3": {
+				"title": "Choose workshop",
+				"description": "Choose a garage and book instantly."
+			}
 		},
 		"features": {
 			"title": "Why choose Fixa2an?",
 			"subtitle": "We connect you with trusted, verified workshops. Get competitive offers, transparent pricing, and secure payments - all in one place.",
-			"verified": {"title": "Quality controlled", "description": "Only approved workshops"},
-			"free": {"title": "Completely free", "description": "No hidden fees"},
-			"fast": {"title": "Fast", "description": "Get offers within 24 hours"},
-			"transparent": {"title": "Transparent prices", "description": "Compare prices, times and reviews before you decide."},
-			"secure": {"title": "Secure payment", "description": "Pay securely via Klarna with all their payment options."}
+			"verified": {
+				"title": "Quality controlled",
+				"description": "Only approved workshops"
+			},
+			"free": {
+				"title": "Completely free",
+				"description": "No hidden fees"
+			},
+			"fast": {
+				"title": "Fast",
+				"description": "Get offers within 24 hours"
+			},
+			"transparent": {
+				"title": "Transparent prices",
+				"description": "Compare prices, times and reviews before you decide."
+			},
+			"secure": {
+				"title": "Secure payment",
+				"description": "Pay securely via Klarna with all their payment options."
+			}
 		},
-		"cta": {"title": "Ready to find your workshop?", "subtitle": "Upload your inspection report and get offers today", "button": "Start now - It's free"},
+		"cta": {
+			"title": "Ready to find your workshop?",
+			"subtitle": "Upload your inspection report and get offers today",
+			"button": "Start now - It's free"
+		},
 		"workshop": {
 			"title": "Get new customers directly from inspection",
 			"subtitle": "We send requests when car owners get issues. You choose which jobs you want to quote on. No fixed fee - you only pay when you get a job.",
@@ -169,7 +196,9 @@
 			"back_to_email": "Try another email",
 			"set_password": "Update Password",
 			"back_to_login": "← Back to Sign In"
-		}
+		},
+		"login_short": "Login",
+		"register_short": "Register"
 	},
 	"upload": {
 		"title": "Upload your inspection report",
@@ -192,7 +221,11 @@
 			"make_placeholder": "Select brand",
 			"model_placeholder": "e.g. V70, Golf, X3"
 		},
-		"description": {"title": "Description", "description": "Describe what needs to be fixed or if you have any special requests", "placeholder": "Describe what needs to be fixed on your car..."},
+		"description": {
+			"title": "Description",
+			"description": "Describe what needs to be fixed or if you have any special requests",
+			"placeholder": "Describe what needs to be fixed on your car..."
+		},
 		"submit": "Send request",
 		"submitting": "Sending request..."
 	},
@@ -207,18 +240,41 @@
 		"completed_cases_tab": "Completed",
 		"cancelled_cases_tab": "Cancelled",
 		"rescheduled_cases_tab": "Rescheduled",
-		"no_cases": {"title": "No requests yet", "description": "You haven't sent any requests yet. Start by uploading your inspection report.", "button": "Upload report"},
-		"no_booked_cases": {"title": "No booked appointments", "description": "You don't have any booked appointments yet."},
-		"no_completed_cases": {"title": "No completed jobs", "description": "You haven't completed any jobs yet."},
-		"no_cancelled_cases": {"title": "No cancelled appointments", "description": "You don't have any cancelled appointments."},
-		"no_rescheduled_cases": {"title": "No rescheduled cases", "description": "You don't have any rescheduled appointments."},
+		"no_cases": {
+			"title": "No requests yet",
+			"description": "You haven't sent any requests yet. Start by uploading your inspection report.",
+			"button": "Upload report"
+		},
+		"no_booked_cases": {
+			"title": "No booked appointments",
+			"description": "You don't have any booked appointments yet."
+		},
+		"no_completed_cases": {
+			"title": "No completed jobs",
+			"description": "You haven't completed any jobs yet."
+		},
+		"no_cancelled_cases": {
+			"title": "No cancelled appointments",
+			"description": "You don't have any cancelled appointments."
+		},
+		"no_rescheduled_cases": {
+			"title": "No rescheduled cases",
+			"description": "You don't have any rescheduled appointments."
+		},
 		"rescheduled_for": "Rescheduled for",
 		"reschedule_again": "Reschedule Again",
 		"view_details": "View Details",
 		"cancelled_booking": "Cancelled Booking",
 		"completed_with": "Contract with",
 		"accepted": "Accepted",
-		"status": {"new": "New", "in_bidding": "Waiting for offers", "bidding_closed": "Offers ready", "booked": "Booked", "completed": "Completed", "cancelled": "Cancelled"},
+		"status": {
+			"new": "New",
+			"in_bidding": "Waiting for offers",
+			"bidding_closed": "Offers ready",
+			"booked": "Booked",
+			"completed": "Completed",
+			"cancelled": "Cancelled"
+		},
 		"vehicle_info": "Vehicle information",
 		"offers": "Offers",
 		"actions": "Actions",
@@ -284,7 +340,9 @@
 		"amount": "Amount",
 		"contract_with": "Contract with",
 		"star": "star",
-		"stars": "stars"
+		"stars": "stars",
+		"review_no_booking": "No completed booking found for this request",
+		"no_description": "No description provided"
 	},
 	"profile": {
 		"title": "My Profile",
@@ -328,7 +386,8 @@
 		"country": "Country",
 		"country_placeholder": "Enter country",
 		"update_success": "Profile updated successfully",
-		"update_error": "Failed to update profile"
+		"update_error": "Failed to update profile",
+		"fetch_error": "Failed to fetch profile"
 	},
 	"offers_page": {
 		"title": "Offers",
@@ -405,7 +464,11 @@
 		"book_workshop": "Book workshop",
 		"book_this_workshop": "Book this workshop",
 		"view_on_map": "View on Map",
-		"go_back": "Go Back"
+		"go_back": "Go Back",
+		"no_offer_selected": "No offer selected",
+		"offer_not_found": "Offer not found",
+		"request_id_required": "Request ID required",
+		"booking_failed": "Booking failed"
 	},
 	"offer_detail": {
 		"title": "Offer Details",
@@ -503,7 +566,8 @@
 			"offer_sent": "Offer sent",
 			"submit_offer": "Submit offer",
 			"no_active_jobs": "No active jobs",
-			"latest": "Latest"
+			"latest": "Latest",
+			"no_requests": "No requests available"
 		},
 		"profile": {
 			"title": "Profile",
@@ -724,7 +788,8 @@
 			"submitting": "Submitting...",
 			"submit_offer": "Submit Offer",
 			"update_offer": "Update Offer",
-			"updating": "Updating..."
+			"updating": "Updating...",
+			"already_accepted": "Offer already accepted"
 		},
 		"signup": {
 			"title": "Register your workshop",
@@ -818,7 +883,12 @@
 			"workshops": "Workshops",
 			"requests": "Requests",
 			"monthly_revenue": "Monthly Revenue",
-			"pending_workshops": "pending"
+			"pending_workshops": "pending",
+			"total_customers": "Total Customers",
+			"total_workshops": "Total Workshops",
+			"total_requests": "Total Requests",
+			"total_revenue": "Total Revenue",
+			"more_features_coming": "More features coming soon"
 		},
 		"workshops": {
 			"title": "Workshops",
@@ -1019,7 +1089,8 @@
 		"fetch_offer_failed": "Failed to fetch offer details",
 		"request_not_found": "Request not found or not available",
 		"required_fields": "Please fill in all required fields",
-		"at_least_one_date": "Please add at least one available time slot"
+		"at_least_one_date": "Please add at least one available time slot",
+		"offer_update_failed": "Failed to update offer"
 	},
 	"success": {
 		"account_created": "Account created",
@@ -1048,5 +1119,17 @@
 		"privacy": "Privacy",
 		"cookies": "Cookies",
 		"copyright": "© 2024 Fixa2an. All rights reserved."
+	},
+	"customer_reviews": {
+		"title": "Reviews",
+		"subtitle": "Read what other customers have to say",
+		"generic_workshop": "Workshop",
+		"back_to_booking": "Back to Details",
+		"review": "review",
+		"reviews": "reviews",
+		"no_reviews": "No reviews yet",
+		"no_reviews_desc": "This workshop has not received any reviews yet.",
+		"anonymous_customer": "Customer",
+		"fetch_error": "Failed to load reviews"
 	}
 }

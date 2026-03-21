@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
+import { Skeleton } from './components/ui/Skeleton'
+import Navbar from './components/Navbar'
 import HomePage from './pages/HomePage'
 import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage'
@@ -13,6 +15,7 @@ import WorkshopDashboardPage from './pages/WorkshopDashboardPage'
 import WorkshopRequestsPage from './pages/WorkshopRequestsPage'
 import WorkshopProfilePage from './pages/WorkshopProfilePage'
 import WorkshopReviewsPage from './pages/WorkshopReviewsPage'
+import CustomerWorkshopReviewsPage from './pages/CustomerWorkshopReviewsPage'
 import WorkshopContractsPage from './pages/WorkshopContractsPage'
 import WorkshopProposalsPage from './pages/WorkshopProposalsPage'
 import CreateOfferPage from './pages/CreateOfferPage'
@@ -28,7 +31,21 @@ function PrivateRoute({ children, allowedRoles = [] }) {
 	const { user, loading } = useAuth()
 
 	if (loading) {
-		return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+		return (
+			<div className="min-h-screen bg-gray-50 flex flex-col">
+				<Navbar />
+				<div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
+					<div className="space-y-8 animate-pulse">
+						<div className="h-10 w-1/3 bg-gray-200 rounded-lg mx-auto sm:mx-0"></div>
+						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+							{[1, 2, 3, 4, 5, 6].map(i => (
+								<div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-48"></div>
+							))}
+						</div>
+					</div>
+				</div>
+			</div>
+		)
 	}
 
 	if (!user) {
@@ -124,6 +141,14 @@ function AppRoutes() {
 				element={
 					<PrivateRoute allowedRoles={['WORKSHOP']}>
 						<WorkshopReviewsPage />
+					</PrivateRoute>
+				}
+			/>
+			<Route
+				path="/workshop/:id/reviews"
+				element={
+					<PrivateRoute allowedRoles={['CUSTOMER']}>
+						<CustomerWorkshopReviewsPage />
 					</PrivateRoute>
 				}
 			/>

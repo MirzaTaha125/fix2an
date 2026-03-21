@@ -29,12 +29,12 @@ export default function HowItWorksPage() {
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="space-y-16 md:space-y-24">
 						{/* Step 1 */}
-						<div className="flex flex-col md:flex-row items-center gap-8">
-							<Card className="w-full md:w-1/2 text-left border-0 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-visible bg-white group" style={{ borderRadius: '20px' }}>
+						<div className="flex flex-col-reverse md:flex-row items-center gap-8 md:gap-12">
+							<Card className="w-full md:w-1/2 text-left border-0 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-visible bg-white group mt-4 md:mt-0" style={{ borderRadius: '20px' }}>
 								<div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" style={{ backgroundColor: '#34C759' }}></div>
 								<CardHeader className="relative z-10 pb-4 pt-6">
-									<div className="w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-2xl group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: '#34C759' }}>
-										<Camera className="w-10 h-10 text-white" />
+									<div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 shadow-2xl group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: '#34C759' }}>
+										<Camera className="w-8 h-8 md:w-10 md:h-10 text-white" />
 									</div>
 									<div className="flex items-center gap-2 mb-2">
 										<span className="text-sm font-semibold text-gray-500">STEP 1</span>
@@ -44,25 +44,25 @@ export default function HowItWorksPage() {
 									</CardTitle>
 								</CardHeader>
 								<CardContent className="relative z-10 pb-6 px-6">
-									<CardDescription className="text-sm md:text-base leading-relaxed" style={{ color: '#666666', lineHeight: '1.8' }}>
+									<CardDescription className="text-base md:text-lg leading-relaxed" style={{ color: '#666666', lineHeight: '1.8' }}>
 										{t('homepage.how_it_works.step1.description')}
 									</CardDescription>
 								</CardContent>
 							</Card>
 							<div className="w-full md:w-1/2 flex justify-center md:justify-end">
-								<div className="w-64 h-64 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center opacity-50">
-									<Camera className="w-32 h-32 text-green-400" />
+								<div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center opacity-60 md:opacity-50">
+									<Camera className="w-24 h-24 md:w-32 md:h-32 text-green-400" />
 								</div>
 							</div>
 						</div>
 
 						{/* Step 2 */}
-						<div className="flex flex-col md:flex-row-reverse items-center gap-8">
-							<Card className="w-full md:w-1/2 text-left border-0 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-visible bg-white group" style={{ borderRadius: '20px' }}>
+						<div className="flex flex-col-reverse md:flex-row-reverse items-center gap-8 md:gap-12">
+							<Card className="w-full md:w-1/2 text-left border-0 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-visible bg-white group mt-4 md:mt-0" style={{ borderRadius: '20px' }}>
 								<div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" style={{ backgroundColor: '#34C759' }}></div>
 								<CardHeader className="relative z-10 pb-4 pt-6">
-									<div className="w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-2xl group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: '#34C759' }}>
-										<Receipt className="w-10 h-10 text-white" />
+									<div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 shadow-2xl group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: '#34C759' }}>
+										<Receipt className="w-8 h-8 md:w-10 md:h-10 text-white" />
 									</div>
 									<div className="flex items-center gap-2 mb-2">
 										<span className="text-sm font-semibold text-gray-500">STEP 2</span>
@@ -72,25 +72,25 @@ export default function HowItWorksPage() {
 									</CardTitle>
 								</CardHeader>
 								<CardContent className="relative z-10 pb-6 px-6">
-									<CardDescription className="text-sm md:text-base leading-relaxed" style={{ color: '#666666', lineHeight: '1.8' }}>
+									<CardDescription className="text-base md:text-lg leading-relaxed" style={{ color: '#666666', lineHeight: '1.8' }}>
 										{t('homepage.how_it_works.step2.description')}
 									</CardDescription>
 								</CardContent>
 							</Card>
 							<div className="w-full md:w-1/2 flex justify-center md:justify-start">
-								<div className="w-64 h-64 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center opacity-50">
-									<Receipt className="w-32 h-32 text-green-400" />
+								<div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center opacity-60 md:opacity-50">
+									<Receipt className="w-24 h-24 md:w-32 md:h-32 text-green-400" />
 								</div>
 							</div>
 						</div>
 
 						{/* Step 3 */}
-						<div className="flex flex-col md:flex-row items-center gap-8">
-							<Card className="w-full md:w-1/2 text-left border-0 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-visible bg-white group" style={{ borderRadius: '20px' }}>
+						<div className="flex flex-col-reverse md:flex-row items-center gap-8 md:gap-12">
+							<Card className="w-full md:w-1/2 text-left border-0 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-visible bg-white group mt-4 md:mt-0" style={{ borderRadius: '20px' }}>
 								<div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" style={{ backgroundColor: '#34C759' }}></div>
 								<CardHeader className="relative z-10 pb-4 pt-6">
-									<div className="w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-2xl group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: '#34C759' }}>
-										<Calendar className="w-10 h-10 text-white" />
+									<div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 shadow-2xl group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: '#34C759' }}>
+										<Calendar className="w-8 h-8 md:w-10 md:h-10 text-white" />
 									</div>
 									<div className="flex items-center gap-2 mb-2">
 										<span className="text-sm font-semibold text-gray-500">STEP 3</span>
@@ -100,14 +100,14 @@ export default function HowItWorksPage() {
 									</CardTitle>
 								</CardHeader>
 								<CardContent className="relative z-10 pb-6 px-6">
-									<CardDescription className="text-sm md:text-base leading-relaxed" style={{ color: '#666666', lineHeight: '1.8' }}>
+									<CardDescription className="text-base md:text-lg leading-relaxed" style={{ color: '#666666', lineHeight: '1.8' }}>
 										{t('homepage.how_it_works.step3.description')}
 									</CardDescription>
 								</CardContent>
 							</Card>
 							<div className="w-full md:w-1/2 flex justify-center md:justify-end">
-								<div className="w-64 h-64 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center opacity-50">
-									<Calendar className="w-32 h-32 text-emerald-400" />
+								<div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center opacity-60 md:opacity-50">
+									<Calendar className="w-24 h-24 md:w-32 md:h-32 text-emerald-400" />
 								</div>
 							</div>
 						</div>
