@@ -82,7 +82,7 @@ export default function VerifyEmailPage() {
 						<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#34C759' }}>
 							<Mail className="w-8 h-8 text-white" />
 						</div>
-						<h2 className="text-h2 font-bold mb-2" style={{ color: '#05324f' }}>{t('auth.verify_email.title')}</h2>
+						<h2 className="text-xl font-bold mb-2" style={{ color: '#05324f' }}>{t('auth.verify_email.title')}</h2>
 						<p className="text-gray-600 text-sm">{t('auth.verify_email.subtitle')}</p>
 						<p className="text-gray-700 font-medium mt-2">{email}</p>
 					</div>

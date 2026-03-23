@@ -176,7 +176,7 @@ export default function OffersPage() {
 
 				{/* Page Header */}
 				<div className="mb-8 text-center max-md:mb-6 max-md:text-left">
-					<h1 className="text-h1 font-bold text-[#05324f] mb-2 max-md:text-xl max-md:mb-1">
+					<h1 className="text-xl font-bold text-[#05324f] mb-2 max-md:text-xl max-md:mb-1">
 						{sortedOffers.length === 1
 							? t('offers_page.found_workshops_near_you', { count: 1 })
 							: t('offers_page.found_workshops_near_you_plural', { count: sortedOffers.length })}

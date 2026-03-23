@@ -1,19 +1,40 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { FolderOpen, Wallet, User, LogOut } from 'lucide-react'
+import { FolderOpen, User, LogOut } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { walletAPI } from '../services/api'
 
 /**
  * Bottom navigation for customer users. Shown on mobile.
- * Links: My Cases | Wallet | Profile (with dropdown)
+ * Links: My Cases | Profile (with dropdown)
  */
+
+const NavItemContent = ({ active, icon: Icon, label }) => {
+	return (
+		<div className="flex flex-col items-center w-full h-full relative z-20">
+			<div 
+				className={`absolute transition-all duration-300 flex items-center justify-center ${
+					active ? 'top-[11px] text-white' : 'top-[16px] text-gray-400'
+				}`}
+			>
+				<Icon className="w-[22px] h-[22px]" />
+			</div>
+			
+			<span 
+				className={`absolute w-full text-center px-1 transition-all duration-300 ${
+					active ? 'bottom-[6px] text-[10px] font-bold text-[#05324f]' : 'bottom-[8px] text-[10px] font-medium text-gray-500'
+				}`}
+			>
+				{label}
+			</span>
+		</div>
+	)
+}
+
 export default function CustomerBottomNav() {
 	const { pathname } = useLocation()
 	const { t } = useTranslation()
 	const { user, logout } = useAuth()
-	const [walletBalance, setWalletBalance] = useState(null)
 	const [profileMenuOpen, setProfileMenuOpen] = useState(false)
 	const menuRef = useRef(null)
 
@@ -30,60 +51,63 @@ export default function CustomerBottomNav() {
 		}
 	}, [menuRef])
 
-	useEffect(() => {
-		let isMounted = true
-		const fetchBalance = async () => {
-			if (!user || user.role === 'ADMIN') return
-			try {
-				const { data } = await walletAPI.getWallet()
-				if (isMounted) setWalletBalance(data.wallet.balance)
-			} catch (error) {
-				console.error('Failed to fetch wallet balance', error)
-			}
-		}
-
-		fetchBalance()
-		const handleWalletUpdate = () => fetchBalance()
-		window.addEventListener('walletUpdate', handleWalletUpdate)
-		return () => {
-			isMounted = false
-			window.removeEventListener('walletUpdate', handleWalletUpdate)
-		}
-	}, [user])
-
 	const isActive = (path) => (path === '/profile' ? pathname === '/profile' : pathname.startsWith(path))
 
-	const linkClass = (path) =>
-		`flex flex-col items-center gap-0.5 relative rounded-lg px-3 py-1 transition-all ${isActive(path) ? 'text-[#05324f] font-semibold' : 'text-gray-500 hover:text-[#05324f]'}`
+	const getActiveIndex = () => {
+		if (profileMenuOpen || isActive('/profile')) return 1;
+		if (isActive('/my-cases')) return 0;
+		return 0;
+	}
+	const activeIndex = getActiveIndex();
 
 	return (
-		<nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 max-md:flex md:hidden justify-around items-center py-2 safe-area-pb shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-			<Link to="/my-cases" className={linkClass('/my-cases')} onClick={() => setProfileMenuOpen(false)}>
-				<FolderOpen className={`w-6 h-6 ${isActive('/my-cases') ? 'fill-[#05324f]/10' : ''}`} />
-				<span className="text-[10px] font-medium mt-0.5">{t('navigation.my_cases') || 'My Cases'}</span>
-				{isActive('/my-cases') && <span className="absolute -top-2 w-8 h-1 bg-[#05324f] rounded-b-full"></span>}
-			</Link>
+		<nav className="fixed bottom-0 left-0 right-0 h-[70px] bg-white border-t border-gray-100 z-50 max-md:block md:hidden safe-area-pb shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
 			
-			<Link to="/wallet" className={linkClass('/wallet')} onClick={() => setProfileMenuOpen(false)}>
-				<Wallet className={`w-6 h-6 ${isActive('/wallet') ? 'fill-[#05324f]/10' : ''}`} />
-				<span className="text-[10px] font-medium mt-0.5">
-					{walletBalance !== null ? `${walletBalance.toLocaleString('sv-SE', { maximumFractionDigits: 0 })} SEK` : t('navigation.wallet') || 'Wallet'}
-				</span>
-				{isActive('/wallet') && <span className="absolute -top-2 w-8 h-1 bg-[#05324f] rounded-b-full"></span>}
-			</Link>
+			{/* Magic Slider Indicator */}
+			<div 
+				className="absolute top-0 h-full flex flex-col items-center z-10 transition-transform duration-300 ease-in-out"
+				style={{ 
+					width: '50%', 
+					transform: `translateX(${activeIndex * 100}%)` 
+				}}
+			>
+				<div className="absolute top-0 w-[56px] h-[46px] bg-[#34C759] rounded-b-[20px] shadow-sm">
+					<svg width="16" height="16" viewBox="0 0 16 16" className="absolute top-0 -left-[15.5px] text-[#34C759]">
+						<path d="M 16 0 V 16 Q 16 0 0 0 Z" fill="currentColor" />
+					</svg>
+					<svg width="16" height="16" viewBox="0 0 16 16" className="absolute top-0 -right-[15.5px] text-[#34C759]">
+						<path d="M 0 0 V 16 Q 0 0 16 0 Z" fill="currentColor" />
+					</svg>
+				</div>
+			</div>
 
-			<div className="relative flex flex-col items-center" ref={menuRef}>
-				<button 
-					onClick={(e) => {
-						e.preventDefault();
-						setProfileMenuOpen(!profileMenuOpen)
-					}} 
-					className={linkClass('/profile')}
+			<div className="flex justify-around items-stretch w-full h-full relative z-20">
+				<Link 
+					to="/my-cases" 
+					onClick={() => setProfileMenuOpen(false)}
+					className="flex-1 w-full h-full relative"
 				>
-					<User className={`w-6 h-6 ${isActive('/profile') || profileMenuOpen ? 'fill-[#05324f]/10 text-[#05324f]' : 'text-gray-500'}`} />
-					<span className={`text-[10px] font-medium mt-0.5 ${profileMenuOpen ? 'text-[#05324f]' : ''}`}>{t('navigation.profile') || 'Profile'}</span>
-					{(isActive('/profile') || profileMenuOpen) && <span className="absolute -top-2 w-8 h-1 bg-[#05324f] rounded-b-full"></span>}
-				</button>
+					<NavItemContent 
+						active={activeIndex === 0} 
+						icon={FolderOpen} 
+						label={t('navigation.my_cases') || 'My Cases'} 
+					/>
+				</Link>
+				
+				<div className="flex-1 w-full h-full relative" ref={menuRef}>
+					<button 
+						onClick={(e) => {
+							e.preventDefault();
+							setProfileMenuOpen(!profileMenuOpen)
+						}} 
+						className="w-full h-full relative outline-none"
+					>
+						<NavItemContent 
+							active={activeIndex === 1} 
+							icon={User} 
+							label={t('navigation.profile') || 'Profile'} 
+						/>
+					</button>
 				
 				{profileMenuOpen && (
 					<div className="absolute bottom-full mb-4 right-0 bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-xl border border-gray-100 py-2 w-48 flex flex-col items-start z-50 animate-in slide-in-from-bottom-2 fade-in">
@@ -114,6 +138,7 @@ export default function CustomerBottomNav() {
 						</button>
 					</div>
 				)}
+			</div>
 			</div>
 		</nav>
 	)

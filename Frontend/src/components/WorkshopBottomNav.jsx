@@ -1,14 +1,36 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { FileText, Send, FileCheck, User, LogOut, Wallet } from 'lucide-react'
+import { FileText, Send, FileCheck, User, LogOut } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { walletAPI } from '../services/api'
 
 /**
  * Bottom navigation for workshop users. Shown on mobile across all workshop pages.
  * Links: Jobs (requests) | Proposals | Contracts | Profile
  */
+
+const NavItemContent = ({ active, icon: Icon, label }) => {
+	return (
+		<div className="flex flex-col items-center w-full h-full relative z-20">
+			<div 
+				className={`absolute transition-all duration-300 flex items-center justify-center ${
+					active ? 'top-[11px] text-white' : 'top-[16px] text-gray-400'
+				}`}
+			>
+				<Icon className="w-[22px] h-[22px]" />
+			</div>
+			
+			<span 
+				className={`absolute w-full text-center px-1 transition-all duration-300 ${
+					active ? 'bottom-[6px] text-[10px] font-bold text-[#05324f]' : 'bottom-[8px] text-[10px] font-medium text-gray-500'
+				}`}
+			>
+				{label}
+			</span>
+		</div>
+	)
+}
+
 export default function WorkshopBottomNav() {
 	const { pathname } = useLocation()
 	const { t } = useTranslation()
@@ -16,17 +38,22 @@ export default function WorkshopBottomNav() {
 	const navigate = useNavigate()
 	const [dropdownOpen, setDropdownOpen] = useState(false)
 	const dropdownRef = useRef(null)
-	const [walletBalance, setWalletBalance] = useState(null)
 
 	const isActive = (path) => pathname.startsWith(path)
-
-	const linkClass = (path) =>
-		`flex flex-col items-center gap-0.5 ${isActive(path) ? 'text-[#05324f] font-medium' : 'text-gray-500'}`
 
 	const handleLogout = () => {
 		logout()
 		navigate('/')
 	}
+
+	const getActiveIndex = () => {
+		if (dropdownOpen || isActive('/workshop/profile')) return 3;
+		if (isActive('/workshop/contracts')) return 2;
+		if (isActive('/workshop/proposals')) return 1;
+		if (isActive('/workshop/requests')) return 0;
+		return 0;
+	}
+	const activeIndex = getActiveIndex();
 
 	useEffect(() => {
 		const handleClickOutside = (event) => {
@@ -38,58 +65,47 @@ export default function WorkshopBottomNav() {
 		return () => document.removeEventListener('mousedown', handleClickOutside)
 	}, [])
 
-	useEffect(() => {
-		let isMounted = true
-		const fetchBalance = async () => {
-			if (!user || user.role === 'ADMIN') return
-			try {
-				const { data } = await walletAPI.getWallet()
-				if (isMounted) setWalletBalance(data.wallet.balance)
-			} catch (error) {
-				console.error('Failed to fetch wallet balance', error)
-			}
-		}
-
-		fetchBalance()
-		const handleWalletUpdate = () => fetchBalance()
-		window.addEventListener('walletUpdate', handleWalletUpdate)
-		return () => {
-			isMounted = false
-			window.removeEventListener('walletUpdate', handleWalletUpdate)
-		}
-	}, [user])
-
 	return (
-		<nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 max-md:flex md:hidden justify-around items-center py-2 safe-area-pb">
-			<Link to="/workshop/requests" className={linkClass('/workshop/requests')}>
-				<FileText className="w-5 h-5" />
-				<span className="text-xs font-medium">{t('navigation.jobs') || 'Jobs'}</span>
-			</Link>
-			<Link to="/workshop/proposals" className={linkClass('/workshop/proposals')}>
-				<Send className="w-5 h-5" />
-				<span className="text-xs font-medium">{t('navigation.proposals') || 'Proposals'}</span>
-			</Link>
-			<Link to="/workshop/contracts" className={linkClass('/workshop/contracts')}>
-				<FileCheck className="w-5 h-5" />
-				<span className="text-xs font-medium">{t('navigation.contracts') || 'Contracts'}</span>
-			</Link>
-			<div className="relative" ref={dropdownRef}>
-				<button onClick={() => setDropdownOpen(!dropdownOpen)} className={linkClass('/workshop/profile')}>
-					{user?.image && user.image.trim() !== '' ? (
-						<img 
-							src={user.image} 
-							alt={user?.name || 'User'} 
-							className="w-6 h-6 rounded-full object-cover border border-gray-200"
-							onError={(e) => {
-								e.target.style.display = 'none'
-								const fallback = e.target.nextElementSibling
-								if (fallback) fallback.style.display = 'block'
-							}}
-						/>
-					) : null}
-					<User className={`w-6 h-6 p-0.5 ${user?.image && user.image.trim() !== '' ? 'hidden' : 'block'}`} />
-					<span className="text-xs font-medium">{t('navigation.profile') || 'Profile'}</span>
-				</button>
+		<nav className="fixed bottom-0 left-0 right-0 h-[70px] bg-white border-t border-gray-100 z-50 max-md:block md:hidden safe-area-pb shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+			
+			{/* Magic Slider Indicator */}
+			<div 
+				className="absolute top-0 h-full flex flex-col items-center z-10 transition-transform duration-300 ease-in-out"
+				style={{ 
+					width: '25%', 
+					transform: `translateX(${activeIndex * 100}%)` 
+				}}
+			>
+				<div className="absolute top-0 w-[56px] h-[46px] bg-[#34C759] rounded-b-[20px] shadow-sm">
+					<svg width="16" height="16" viewBox="0 0 16 16" className="absolute top-0 -left-[15.5px] text-[#34C759]">
+						<path d="M 16 0 V 16 Q 16 0 0 0 Z" fill="currentColor" />
+					</svg>
+					<svg width="16" height="16" viewBox="0 0 16 16" className="absolute top-0 -right-[15.5px] text-[#34C759]">
+						<path d="M 0 0 V 16 Q 0 0 16 0 Z" fill="currentColor" />
+					</svg>
+				</div>
+			</div>
+
+			<div className="flex justify-around items-stretch w-full h-full relative z-20">
+				<Link to="/workshop/requests" className="flex-1 w-full h-full relative" onClick={() => setDropdownOpen(false)}>
+					<NavItemContent active={activeIndex === 0} icon={FileText} label={t('navigation.jobs') || 'Jobs'} />
+				</Link>
+				<Link to="/workshop/proposals" className="flex-1 w-full h-full relative" onClick={() => setDropdownOpen(false)}>
+					<NavItemContent active={activeIndex === 1} icon={Send} label={t('navigation.proposals') || 'Proposals'} />
+				</Link>
+				<Link to="/workshop/contracts" className="flex-1 w-full h-full relative" onClick={() => setDropdownOpen(false)}>
+					<NavItemContent active={activeIndex === 2} icon={FileCheck} label={t('navigation.contracts') || 'Contracts'} />
+				</Link>
+				<div className="flex-1 w-full h-full relative" ref={dropdownRef}>
+					<button 
+						onClick={(e) => {
+							e.preventDefault();
+							setDropdownOpen(!dropdownOpen);
+						}} 
+						className="w-full h-full relative outline-none"
+					>
+						<NavItemContent active={activeIndex === 3} icon={User} label={t('navigation.profile') || 'Profile'} />
+					</button>
 				
 				{dropdownOpen && (
 					<div className="absolute bottom-full mb-3 right-[-12px] w-48 bg-white border border-gray-200 shadow-xl rounded-xl py-2 z-50">
@@ -103,19 +119,7 @@ export default function WorkshopBottomNav() {
 								<User className="w-4 h-4 text-[#05324f]" />
 								<span className="font-medium">{t('navigation.profile') || 'My Profile'}</span>
 							</Link>
-							<Link 
-								to="/wallet" 
-								onClick={() => setDropdownOpen(false)}
-								className="flex items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100 w-full"
-							>
-								<div className="flex items-center gap-3">
-									<Wallet className="w-4 h-4 text-[#05324f]" />
-									<span className="font-medium">{t('navigation.wallet') || 'Wallet'}</span>
-								</div>
-								<span className="font-bold text-[#34C759]">
-									{walletBalance !== null ? `${walletBalance.toLocaleString('sv-SE', { maximumFractionDigits: 0 })} SEK` : '...'}
-								</span>
-							</Link>
+
 							<button 
 								onClick={() => {
 									setDropdownOpen(false)
@@ -129,6 +133,7 @@ export default function WorkshopBottomNav() {
 						</div>
 					</div>
 				)}
+			</div>
 			</div>
 		</nav>
 	)

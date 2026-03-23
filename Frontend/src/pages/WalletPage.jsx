@@ -9,8 +9,8 @@ import { walletAPI } from '../services/api'
 import { toast } from 'react-hot-toast'
 import moment from 'moment'
 import { useAuth } from '../context/AuthContext'
-import CustomerBottomNav from '../components/CustomerBottomNav'
-import WorkshopBottomNav from '../components/WorkshopBottomNav'
+
+
 
 export default function WalletPage() {
 	const { user } = useAuth()
@@ -77,7 +77,7 @@ export default function WalletPage() {
 						{/* Header Section */}
 						<div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
 							<div>
-								<h1 className="text-xl md:text-3xl font-bold text-gray-900 mb-2">My Wallet</h1>
+								<h1 className="text-xl md:text-xl font-bold text-gray-900 mb-2">My Wallet</h1>
 								<p className="text-sm md:text-base text-gray-500">Manage your funds, deposits, and payouts securely.</p>
 							</div>
 						</div>
@@ -85,7 +85,7 @@ export default function WalletPage() {
 						{/* Balance Card Section */}
 						<div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col md:flex-row justify-between items-center md:items-end gap-6 md:gap-0 w-full mb-8">
 							<div className="flex flex-col items-center md:items-start text-center md:text-left w-full md:w-auto">
-								<h2 className="text-gray-400 font-semibold uppercase tracking-widest text-xs mb-3">Total Balance</h2>
+								<h2 className="text-xl text-gray-400 font-semibold uppercase tracking-widest text-xs mb-3">Total Balance</h2>
 								{loading ? (
 									<div className="h-10 sm:h-14 w-48 sm:w-64 bg-gray-50 animate-pulse rounded-full"></div>
 								) : (
@@ -101,16 +101,16 @@ export default function WalletPage() {
 							<div className="flex flex-row items-center justify-center gap-3 w-full md:w-auto">
 								<button
 									onClick={() => setIsDepositOpen(true)}
-									className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3.5 bg-[#34C759] hover:bg-[#2FB350] text-white rounded-xl font-bold transition-all shadow-md shadow-[#34C759]/20"
+									className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-[#34C759] hover:bg-[#2FB350] text-white rounded-xl font-bold transition-all shadow-md shadow-[#34C759]/20"
 								>
-									<Plus size={20} />
+									<Plus size={16} />
 									<span>Deposit</span>
 								</button>
 								<button
 									onClick={() => setIsWithdrawOpen(true)}
-									className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3.5 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-[#05324f] rounded-xl font-bold transition-all shadow-sm shadow-gray-200/50"
+									className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-[#05324f] rounded-xl font-bold transition-all shadow-sm shadow-gray-200/50"
 								>
-									<ArrowUpRight size={20} />
+									<ArrowUpRight size={16} />
 									<span>Withdraw</span>
 								</button>
 							</div>
@@ -251,7 +251,7 @@ export default function WalletPage() {
 				currentBalance={balance}
 			/>
 
-			{user?.role === 'WORKSHOP' ? <WorkshopBottomNav /> : <CustomerBottomNav />}
+			{user?.role === 'WORKSHOP' ?  : }
 		</div>
 	)
 }

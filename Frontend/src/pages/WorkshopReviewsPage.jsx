@@ -97,7 +97,7 @@ export default function WorkshopReviewsPage() {
 						<ArrowLeft className="w-4 h-4" />
 						{t('workshop.reviews.back_to_profile') || 'Back to Profile'}
 					</Link>
-					<h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+					<h1 className="text-xl sm:text-xl font-bold text-gray-900">
 						{t('workshop.reviews.title') || 'Your Reviews'}
 					</h1>
 					<p className="text-gray-600 mt-1">

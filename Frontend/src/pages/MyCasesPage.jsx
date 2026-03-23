@@ -29,7 +29,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import CustomerBottomNav from '../components/CustomerBottomNav'
+
 import { requestsAPI, bookingsAPI, reviewsAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 
@@ -308,7 +308,7 @@ export default function MyCasesPage() {
 				<Navbar />
 				<div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-28 flex-1 w-full">
 					<div className="mb-8">
-						<h1 className="text-3xl font-bold text-gray-900 mb-2">{t('my_cases.title') || 'My Cases'}</h1>
+						<h1 className="text-xl font-bold text-gray-900 mb-2">{t('my_cases.title') || 'My Cases'}</h1>
 						<p className="text-gray-500">{t('my_cases.subtitle')}</p>
 					</div>
 					
@@ -346,7 +346,7 @@ export default function MyCasesPage() {
 						))}
 					</div>
 				</div>
-				<CustomerBottomNav />
+				
 				<Footer />
 			</div>
 		)
@@ -386,7 +386,7 @@ export default function MyCasesPage() {
 			<div className="mb-8">
 				<div className="flex flex-row justify-between items-start sm:items-center gap-4">
 					<div className="flex-1 max-md:flex-1">
-						<h1 className="text-h1 font-bold mb-1.5 text-[#05324f] max-md:text-xl">
+						<h1 className="text-xl font-bold mb-1.5 text-[#05324f] max-md:text-xl">
 							{t('my_cases.title')}
 						</h1>
 						<p className="text-base text-gray-500 max-md:text-sm">
@@ -1087,7 +1087,7 @@ export default function MyCasesPage() {
 					</DialogContent>
 				</Dialog>
 
-			<CustomerBottomNav />
+			
 			<Footer />
 		</div>
 	)

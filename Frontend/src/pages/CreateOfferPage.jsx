@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import WorkshopBottomNav from '../components/WorkshopBottomNav'
+
 import { requestsAPI, offersAPI } from '../services/api'
 
 export default function CreateOfferPage() {
@@ -212,7 +212,7 @@ export default function CreateOfferPage() {
 				{/* Header */}
 				<div className="mb-8 sm:mb-10 md:mb-12">
 					<div className="mb-2">
-						<h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+						<h1 className="text-xl sm:text-xl md:text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
 							{existingOffer 
 								? (t('workshop.offer.edit_title') || 'Edit Offer')
 								: (t('workshop.offer.title') || 'Create Offer')
@@ -514,7 +514,7 @@ export default function CreateOfferPage() {
 					</CardContent>
 				</Card>
 			</div>
-			<WorkshopBottomNav />
+			
 			<Footer />
 		</div>
 	)

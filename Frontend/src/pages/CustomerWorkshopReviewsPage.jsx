@@ -127,7 +127,7 @@ export default function CustomerWorkshopReviewsPage() {
 						<ArrowLeft className="w-4 h-4" />
 						{t('customer_reviews.back_to_booking') || 'Back to Details'}
 					</button>
-					<h1 className="text-2xl sm:text-3xl font-bold text-[#05324f]">
+					<h1 className="text-xl sm:text-xl font-bold text-[#05324f]">
 						{workshopName} {t('customer_reviews.title') || 'Reviews'}
 					</h1>
 					<p className="text-gray-600 mt-1">

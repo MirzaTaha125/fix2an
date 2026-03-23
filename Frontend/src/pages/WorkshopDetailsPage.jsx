@@ -252,7 +252,7 @@ export default function WorkshopDetailsPage() {
 					</Link>
 					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
 						<div>
-							<h1 className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: '#05324f' }}>
+							<h1 className="text-xl sm:text-xl font-bold mb-1" style={{ color: '#05324f' }}>
 								{t('admin.workshops.details.title')}
 							</h1>
 							<p className="text-sm text-gray-600">
@@ -327,7 +327,7 @@ export default function WorkshopDetailsPage() {
 							{/* Basic Information */}
 							<Card className="border border-gray-200 shadow-sm">
 								<CardContent className="p-5">
-									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+									<h2 className="text-xl text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
 										{t('admin.workshops.details.basic_information')}
 									</h2>
 									<div className="space-y-3">
@@ -377,7 +377,7 @@ export default function WorkshopDetailsPage() {
 							{/* Address Information */}
 							<Card className="border border-gray-200 shadow-sm">
 								<CardContent className="p-5">
-									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+									<h2 className="text-xl text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
 										{t('admin.workshops.details.address')}
 									</h2>
 									<div className="space-y-3">
@@ -409,7 +409,7 @@ export default function WorkshopDetailsPage() {
 						{workshop.description && (
 							<Card className="border border-gray-200 shadow-sm">
 								<CardContent className="p-5">
-									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+									<h2 className="text-xl text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
 										{t('admin.workshops.details.description')}
 									</h2>
 									<p className="text-sm leading-relaxed" style={{ color: '#05324f' }}>{workshop.description}</p>
@@ -423,7 +423,7 @@ export default function WorkshopDetailsPage() {
 							{workshop.brandsHandled && (
 								<Card className="border border-gray-200 shadow-sm">
 									<CardContent className="p-5">
-										<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200 flex items-center gap-2" style={{ color: '#05324f' }}>
+										<h2 className="text-xl text-lg font-bold mb-4 pb-2 border-b border-gray-200 flex items-center gap-2" style={{ color: '#05324f' }}>
 											<Car className="w-4 h-4" />
 											{t('admin.workshops.details.brands_handled')}
 										</h2>
@@ -436,7 +436,7 @@ export default function WorkshopDetailsPage() {
 							{workshop.openingHours && (
 								<Card className="border border-gray-200 shadow-sm">
 									<CardContent className="p-5">
-										<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200 flex items-center gap-2" style={{ color: '#05324f' }}>
+										<h2 className="text-xl text-lg font-bold mb-4 pb-2 border-b border-gray-200 flex items-center gap-2" style={{ color: '#05324f' }}>
 											<Clock className="w-4 h-4" />
 											{t('admin.workshops.details.opening_hours')}
 										</h2>
@@ -477,7 +477,7 @@ export default function WorkshopDetailsPage() {
 						{workshop.documents && workshop.documents.length > 0 && (
 							<Card className="border border-gray-200 shadow-sm sticky top-24">
 								<CardContent className="p-5">
-									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200 flex items-center gap-2" style={{ color: '#05324f' }}>
+									<h2 className="text-xl text-lg font-bold mb-4 pb-2 border-b border-gray-200 flex items-center gap-2" style={{ color: '#05324f' }}>
 										<FileText className="w-4 h-4" />
 										{t('admin.workshops.details.documents_certifications')}
 									</h2>

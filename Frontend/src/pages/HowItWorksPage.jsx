@@ -16,7 +16,7 @@ export default function HowItWorksPage() {
 				{/* Header Section */}
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
 					<div className="text-center">
-						<h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-6" style={{ color: '#34C759' }}>
+						<h1 className="text-xl md:text-xl lg:text-xl font-extrabold mb-6" style={{ color: '#34C759' }}>
 							{t('homepage.how_it_works.title')}
 						</h1>
 						<p className="text-base md:text-lg max-w-3xl mx-auto leading-relaxed text-gray-600">
@@ -117,7 +117,7 @@ export default function HowItWorksPage() {
 				{/* CTA Section */}
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
 					<div className="bg-gradient-to-r from-green-600 to-green-800 rounded-2xl p-8 md:p-12 text-center text-white">
-						<h2 className="text-2xl md:text-3xl font-bold mb-4 text-center">
+						<h2 className="text-xl md:text-xl font-bold mb-4 text-center">
 							{t('homepage.cta.title') || 'Ready to find your workshop?'}
 						</h2>
 						<p className="text-lg mb-8 opacity-90 text-center">

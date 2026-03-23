@@ -567,7 +567,7 @@ export default function AdminPage() {
 		return null
 	}
 
-	const tabs = ['dashboard', 'customers', 'workshops', 'requests', 'offers', 'bookings', 'payouts', 'wallet', 'settings']
+	const tabs = ['dashboard', 'customers', 'workshops', 'requests', 'offers', 'bookings', 'payouts', 'settings']
 	const sidebarBgColor = '#05324f' // Dark blue color
 
 	return (

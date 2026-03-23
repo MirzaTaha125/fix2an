@@ -8,9 +8,9 @@ import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import { HeroCarousel } from '../components/HeroCarousel'
 import Footer from '../components/Footer'
-import CustomerBottomNav from '../components/CustomerBottomNav'
-import WorkshopBottomNav from '../components/WorkshopBottomNav'
-import GuestBottomNav from '../components/GuestBottomNav'
+
+
+
 import FrameImage from '../assets/Frame.png'
 import CertifiedImage from '../assets/certified.png'
 
@@ -352,13 +352,7 @@ export default function HomePage() {
 
 			<Footer />
 
-			{!user ? (
-				<GuestBottomNav />
-			) : user.role === 'WORKSHOP' ? (
-				<WorkshopBottomNav />
-			) : (
-				<CustomerBottomNav />
-			)}
+
 		</div>
 	)
 }

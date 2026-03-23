@@ -25,7 +25,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import WorkshopBottomNav from '../components/WorkshopBottomNav'
+
 import { requestsAPI, workshopAPI } from '../services/api'
 
 export default function WorkshopDashboardPage() {
@@ -136,7 +136,7 @@ export default function WorkshopDashboardPage() {
 						</Card>
 					</div>
 				</div>
-				<WorkshopBottomNav />
+				
 				<Footer />
 			</div>
 		)
@@ -171,7 +171,7 @@ export default function WorkshopDashboardPage() {
 					<p className="text-small text-gray-400 font-medium uppercase tracking-wide mb-1 max-md:hidden">
 						{t('workshop.dashboard.welcome') || 'Welcome back'}
 					</p>
-					<h1 className="text-h1 font-bold text-[#05324f] max-md:text-xl">
+					<h1 className="text-xl font-bold text-[#05324f] max-md:text-xl">
 						{user?.workshop?.companyName || user?.name || 'Workshop'}
 					</h1>
 				</div>
@@ -198,7 +198,7 @@ export default function WorkshopDashboardPage() {
 				{/* Offer Inbox - mobile: reference list style */}
 				<div className="mb-10 max-md:mb-6">
 					<div className="flex items-center justify-between mb-4 max-md:mb-3">
-						<h2 className="text-h2 font-bold text-[#05324f] max-md:text-lg">
+						<h2 className="text-xl font-bold text-[#05324f] max-md:text-lg">
 							{t('workshop.dashboard.offer_inbox') || 'Offer Inbox'}
 						</h2>
 						<Link to="/workshop/requests" className="max-md:hidden">
@@ -270,7 +270,7 @@ export default function WorkshopDashboardPage() {
 
 				{/* Active Jobs */}
 				<div>
-					<h2 className="text-h2 font-bold text-[#05324f] mb-4">
+					<h2 className="text-xl font-bold text-[#05324f] mb-4">
 						{t('workshop.dashboard.my_jobs') || 'My Jobs'}
 					</h2>
 					<Card>
@@ -284,7 +284,7 @@ export default function WorkshopDashboardPage() {
 				</div>
 			</div>
 
-			<WorkshopBottomNav />
+			
 			<Footer />
 		</div>
 	)

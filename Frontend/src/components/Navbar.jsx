@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { walletAPI } from '../services/api'
 import { Button } from './ui/Button'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from './LanguageSwitcher'
-import { User, LogOut, Menu, X, Building2, Users, ChevronDown, Wallet, ArrowLeft } from 'lucide-react'
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/Dialog'
+import { User, LogOut, Menu, X, Building2, Users, ChevronDown, ArrowLeft } from 'lucide-react'
+import { Dialog } from './ui/Dialog'
+import RegisterTypeModal from './RegisterTypeModal'
 
 function Navbar() {
 	const { user, loading, logout } = useAuth()
@@ -17,29 +17,6 @@ function Navbar() {
 	const [isScrolled, setIsScrolled] = useState(false)
 	const [registerModalOpen, setRegisterModalOpen] = useState(false)
 	const [userDropdownOpen, setUserDropdownOpen] = useState(false)
-	const [walletBalance, setWalletBalance] = useState(null)
-
-	// Fetch wallet balance
-	useEffect(() => {
-		let isMounted = true
-		const fetchBalance = async () => {
-			if (!user || user.role === 'ADMIN') return
-			try {
-				const { data } = await walletAPI.getWallet()
-				if (isMounted) setWalletBalance(data.wallet.balance)
-			} catch (error) {
-				console.error('Failed to fetch wallet balance', error)
-			}
-		}
-
-		fetchBalance()
-		const handleWalletUpdate = () => fetchBalance()
-		window.addEventListener('walletUpdate', handleWalletUpdate)
-		return () => {
-			isMounted = false
-			window.removeEventListener('walletUpdate', handleWalletUpdate)
-		}
-	}, [user])
 
 	// Detect scroll position
 	useEffect(() => {
@@ -84,17 +61,17 @@ function Navbar() {
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-1 sm:pb-0">
 				<div className="grid grid-cols-3 md:flex justify-between items-center py-2 sm:py-2.5 w-full">
 					<div className="flex justify-start md:hidden">
-						{isAuthPage && (
-							<Link to="/" className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
+						{!isHomePage && (
+							<button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
 								<ArrowLeft className="w-6 h-6 text-[#05324f]" />
-							</Link>
+							</button>
 						)}
 					</div>
 					<div className="flex items-center justify-center md:justify-start gap-3 w-full">
-						{isAuthPage && (
-							<Link to="/" className="p-2 -ml-2 hidden md:inline-flex text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
+						{!isHomePage && (
+							<button onClick={() => navigate(-1)} className="p-2 -ml-2 hidden md:inline-flex text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
 								<ArrowLeft className="w-5 h-5 text-[#05324f]" />
-							</Link>
+							</button>
 						)}
 						<Link 
 							to="/" 
@@ -240,25 +217,6 @@ function Navbar() {
 										</Link>
 									</>
 								)}
-								
-								{/* Wallet Balance Pill */}
-								<Link 
-									to="/wallet" 
-									className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 ${
-										shouldUseWhiteNavbar 
-											? 'text-gray-700 bg-gray-50 border border-gray-200 hover:bg-gray-100 shadow-sm' 
-											: 'text-white/90 bg-white/10 border border-white/20 backdrop-blur-sm hover:bg-white/20'
-									}`}
-								>
-									<Wallet className={`w-4 h-4 ${shouldUseWhiteNavbar ? 'text-[#05324f]' : 'text-white/90'}`} />
-									{walletBalance === null ? (
-										<div className="h-4 w-16 bg-gray-300 animate-pulse rounded"></div>
-									) : (
-										<span className={`text-sm font-bold whitespace-nowrap ${shouldUseWhiteNavbar ? 'text-[#05324f]' : 'text-white'}`}>
-											{walletBalance.toLocaleString('sv-SE', { minimumFractionDigits: 2 })} <span className={`text-xs font-semibold ${shouldUseWhiteNavbar ? 'text-gray-500' : 'text-white/70'}`}>SEK</span>
-										</span>
-									)}
-								</Link>
 
 								<div className="relative">
 									<button
@@ -300,18 +258,7 @@ function Navbar() {
 													: 'bg-white/95 backdrop-blur-md border-white/20'
 											}`}>
 												<div className="py-1">
-													<Link
-														to="/wallet"
-														onClick={() => setUserDropdownOpen(false)}
-														className={`flex items-center gap-3 px-4 py-2.5 text-sm w-full text-left transition-colors duration-200 ${
-															shouldUseWhiteNavbar
-																? 'text-gray-700 hover:bg-gray-50'
-																: 'text-white/90 hover:bg-white/10'
-														}`}
-													>
-														<Wallet className="w-4 h-4" />
-														<span>{t('navigation.wallet') || 'My Wallet'}</span>
-													</Link>
+
 													<button
 														onClick={() => {
 															setUserDropdownOpen(false)
@@ -427,18 +374,7 @@ function Navbar() {
 												<div className={`w-2 h-2 rounded-full ${isActive('/profile') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
 												<span>{t('navigation.profile') || 'Profile'}</span>
 											</Link>
-											<Link
-												to="/wallet"
-												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-													isActive('/wallet') 
-														? 'text-[#05324f] font-semibold'
-														: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
-												}`}
-												onClick={() => setMobileMenuOpen(false)}
-											>
-												<div className={`w-2 h-2 rounded-full ${isActive('/wallet') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
-												<span>{t('navigation.wallet') || 'My Wallet'}</span>
-											</Link>
+
 										</>
 									)}
 									{user.role === 'WORKSHOP' && (
@@ -572,60 +508,10 @@ function Navbar() {
 			</div>
 
 			{/* Registration Type Selection Modal */}
-			<Dialog open={registerModalOpen} onOpenChange={setRegisterModalOpen}>
-				<DialogContent onClose={() => setRegisterModalOpen(false)}>
-					<DialogTitle>{t('common.select_registration_type') || 'Select Registration Type'}</DialogTitle>
-					<DialogDescription>
-						{t('common.select_registration_type_desc') || 'Choose how you want to register'}
-					</DialogDescription>
-					<div className="space-y-2 sm:space-y-3">
-						<Button
-							onClick={() => {
-								setRegisterModalOpen(false)
-								navigate('/auth/signup')
-							}}
-							className="w-full justify-start h-auto py-3 sm:py-4 px-3 sm:px-4"
-							variant="outline"
-						>
-							<div className="flex items-center gap-2 sm:gap-3 w-full">
-								<div className="p-1.5 sm:p-2 rounded-lg bg-green-100 flex-shrink-0">
-									<Users className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-								</div>
-								<div className="flex-1 text-left min-w-0">
-									<div className="font-semibold text-sm sm:text-base text-gray-900">
-										{t('common.register_as_customer') || 'Register as Customer'}
-									</div>
-									<div className="text-xs sm:text-sm text-gray-500 mt-0.5">
-										{t('common.register_as_customer_desc') || 'Create an account to request services'}
-									</div>
-								</div>
-							</div>
-						</Button>
-						<Button
-							onClick={() => {
-								setRegisterModalOpen(false)
-								navigate('/workshop/signup')
-							}}
-							className="w-full justify-start h-auto py-3 sm:py-4 px-3 sm:px-4 bg-transparent hover:bg-gray-50"
-							variant="outline"
-						>
-							<div className="flex items-center gap-2 sm:gap-3 w-full">
-								<div className="p-1.5 sm:p-2 rounded-lg flex-shrink-0">
-									<Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-								</div>
-								<div className="flex-1 text-left min-w-0">
-									<div className="font-semibold text-sm sm:text-base text-gray-900 mb-1">
-										{t('common.register_as_workshop') || 'Register as Workshop'}
-									</div>
-									<div className="text-xs sm:text-sm text-gray-500 mt-0.5">
-										{t('common.register_as_workshop_desc') || 'Register your workshop to offer services'}
-									</div>
-								</div>
-							</div>
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
+			<RegisterTypeModal 
+				isOpen={registerModalOpen} 
+				onClose={() => setRegisterModalOpen(false)} 
+			/>
 		</header>
 	)
 }

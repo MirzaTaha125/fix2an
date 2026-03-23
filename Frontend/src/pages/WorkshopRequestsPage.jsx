@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import WorkshopBottomNav from '../components/WorkshopBottomNav'
+
 import { requestsAPI, workshopAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 import {
@@ -294,7 +294,7 @@ export default function WorkshopRequestsPage() {
 					<p className="text-small text-gray-400 font-medium uppercase tracking-wide mb-1">
 						{t('workshop.requests.hi') || 'Welcome'}
 					</p>
-					<h1 className="text-h1 font-bold text-[#05324f] mb-8">
+					<h1 className="text-xl font-bold text-[#05324f] mb-8">
 						{workshopName}
 					</h1>
 
@@ -351,7 +351,7 @@ export default function WorkshopRequestsPage() {
 
 			{/* Offer Inbox Section */}
 			<div className="mb-6">
-				<h2 className="text-h2 font-bold text-[#05324f] mb-6 max-md:mb-3 max-md:text-lg">{t('workshop.requests.offer_inbox')}</h2>
+				<h2 className="text-xl font-bold text-[#05324f] mb-6 max-md:mb-3 max-md:text-lg">{t('workshop.requests.offer_inbox')}</h2>
 					
 					<div className="bg-white border border-gray-200 rounded-lg overflow-hidden max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:bg-transparent max-md:border-0">
 						{filteredRequests.length === 0 ? (
@@ -537,7 +537,7 @@ export default function WorkshopRequestsPage() {
 				</div>
 			</Dialog>
 
-			<WorkshopBottomNav />
+			
 
 			<Footer />
 		</div>

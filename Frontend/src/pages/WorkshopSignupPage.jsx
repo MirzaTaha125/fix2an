@@ -323,7 +323,7 @@ export default function WorkshopSignupPage() {
 						<div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-6 shadow-lg transform hover:scale-105 transition-transform" style={{ backgroundColor: '#34C759' }}>
 							<Building2 className="w-10 h-10 text-white" />
 						</div>
-						<h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2" style={{ color: '#05324f' }}>
+						<h1 className="text-xl sm:text-xl md:text-xl font-bold mb-2" style={{ color: '#05324f' }}>
 							{t('workshop.signup.title')}
 						</h1>
 						<p className="text-sm sm:text-base md:text-lg" style={{ color: '#05324f' }}>

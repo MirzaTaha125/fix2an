@@ -34,7 +34,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import WorkshopBottomNav from '../components/WorkshopBottomNav'
+
 import { workshopAPI, authAPI, uploadAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 
@@ -360,7 +360,7 @@ export default function WorkshopProfilePage() {
 						</div>
 					</div>
 				</div>
-				<WorkshopBottomNav />
+				
 				<Footer />
 			</div>
 		)
@@ -431,7 +431,7 @@ export default function WorkshopProfilePage() {
 						</div>
 						<div>
 							<div className="flex items-center gap-3 flex-wrap">
-								<h1 className="text-xl sm:text-4xl font-bold text-gray-900 mb-2">
+								<h1 className="text-xl sm:text-xl font-bold text-gray-900 mb-2">
 									{profileData.companyName || profileData.name || t('workshop.profile.workshop')}
 								</h1>
 								<Badge 
@@ -782,7 +782,7 @@ export default function WorkshopProfilePage() {
 					</div>
 				</div>
 			</div>
-			<WorkshopBottomNav />
+			
 			<Footer />
 		</div>
 	)

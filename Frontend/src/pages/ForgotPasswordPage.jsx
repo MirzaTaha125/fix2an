@@ -96,7 +96,7 @@ export default function ForgotPasswordPage() {
 						<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#34C759' }}>
 							<KeyRound className="w-8 h-8 text-white" />
 						</div>
-						<h2 className="text-h2 font-bold mb-2" style={{ color: '#05324f' }}>
+						<h2 className="text-xl font-bold mb-2" style={{ color: '#05324f' }}>
 							{t('auth.forgot_password.title', 'Reset Password')}
 						</h2>
 						<p style={{ color: '#05324f' }}>

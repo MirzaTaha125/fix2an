@@ -28,7 +28,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import CustomerBottomNav from '../components/CustomerBottomNav'
+
 import { authAPI, requestsAPI, bookingsAPI, uploadAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 
@@ -333,7 +333,7 @@ export default function CustomerProfilePage() {
 						</div>
 					</div>
 				</div>
-				<CustomerBottomNav />
+				
 				<Footer />
 			</div>
 		)
@@ -403,7 +403,7 @@ export default function CustomerProfilePage() {
 							/>
 						</div>
 							<div>
-								<h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">
+								<h1 className="text-xl sm:text-xl font-bold text-gray-900 mb-2">
 									{profileData.name || 'User'}
 								</h1>
 							</div>
@@ -676,7 +676,7 @@ export default function CustomerProfilePage() {
 					</div>
 				</div>
 			</div>
-			<CustomerBottomNav />
+			
 			<Footer />
 		</div>
 	)

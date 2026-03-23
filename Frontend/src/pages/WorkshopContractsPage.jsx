@@ -24,7 +24,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import WorkshopBottomNav from '../components/WorkshopBottomNav'
+
 import { offersAPI, bookingsAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 
@@ -271,7 +271,7 @@ export default function WorkshopContractsPage() {
 						))}
 					</div>
 				</div>
-				<WorkshopBottomNav />
+				
 				<Footer />
 			</div>
 		)
@@ -321,7 +321,7 @@ export default function WorkshopContractsPage() {
 		<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
 			{/* Header */}
 			<div className="mb-8">
-				<h1 className="text-xl md:text-h1 font-bold text-[#05324f]">
+				<h1 className="text-xl md:text-xl font-bold text-[#05324f]">
 					{t('workshop.contracts.title') || 'Contracts'}
 				</h1>
 			</div>
@@ -498,7 +498,7 @@ export default function WorkshopContractsPage() {
 					)}
 				</div>
 			</div>
-			<WorkshopBottomNav />
+			
 			<Footer />
 		</div>
 	)

@@ -5,6 +5,7 @@ import { Eye, EyeOff, LogIn, Mail, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import RegisterTypeModal from '../components/RegisterTypeModal'
 import { useTranslation } from 'react-i18next'
 
 export default function SignInPage() {
@@ -13,6 +14,7 @@ export default function SignInPage() {
 	const [password, setPassword] = useState('')
 	const [isLoading, setIsLoading] = useState(false)
 	const [showPassword, setShowPassword] = useState(false)
+	const [registerModalOpen, setRegisterModalOpen] = useState(false)
 	const { login, user, loading } = useAuth()
 	const navigate = useNavigate()
 
@@ -94,12 +96,12 @@ export default function SignInPage() {
 					<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#34C759' }}>
 						<LogIn className="w-8 h-8 text-white" />
 					</div>
-					<h2 className="text-h2 font-bold mb-2" style={{ color: '#05324f' }}>{t('auth.signin.title')}</h2>
+					<h2 className="text-xl font-bold mb-2" style={{ color: '#05324f' }}>{t('auth.signin.title')}</h2>
 						<p style={{ color: '#05324f' }}>
 							{t('auth.signin.subtitle')}{' '}
-							<Link to="/auth/signup" className="font-semibold hover:opacity-80 transition-colors underline-offset-4 hover:underline" style={{ color: '#05324f' }}>
+							<button onClick={() => setRegisterModalOpen(true)} className="font-semibold hover:opacity-80 transition-colors underline-offset-4 hover:underline" style={{ color: '#05324f' }}>
 								{t('navigation.register')}
-							</Link>
+							</button>
 						</p>
 					</div>
 
@@ -128,14 +130,9 @@ export default function SignInPage() {
 							</div>
 							<div>
 								<label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-									<div className="flex items-center justify-between w-full">
-										<div className="flex items-center gap-2">
-											<Lock className="w-4 h-4 text-gray-500" />
-											{t('auth.signin.password')}
-										</div>
-										<Link tabIndex="-1" to="/auth/forgot-password" className="text-sm font-medium hover:underline text-[#05324f]" style={{ color: '#05324f' }}>
-											{t('auth.signin.forgot_password', 'Forgot your password?')}
-										</Link>
+									<div className="flex items-center gap-2">
+										<Lock className="w-4 h-4 text-gray-500" />
+										{t('auth.signin.password')}
 									</div>
 								</label>
 								<div className="relative">
@@ -155,6 +152,11 @@ export default function SignInPage() {
 									>
 										{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
 									</button>
+								</div>
+								<div className="flex justify-end mt-2">
+									<Link tabIndex="-1" to="/auth/forgot-password" className="text-sm font-medium hover:underline text-[#05324f]" style={{ color: '#05324f' }}>
+										{t('auth.signin.forgot_password', 'Forgot your password?')}
+									</Link>
 								</div>
 							</div>
 							<button
@@ -193,6 +195,10 @@ export default function SignInPage() {
 				</div>
 			</div>
 			<Footer />
+			<RegisterTypeModal 
+				isOpen={registerModalOpen} 
+				onClose={() => setRegisterModalOpen(false)} 
+			/>
 		</div>
 	)
 }

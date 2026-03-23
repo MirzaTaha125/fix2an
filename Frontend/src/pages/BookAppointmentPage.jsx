@@ -327,7 +327,7 @@ export default function BookAppointmentPage() {
 		<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-28">
 			{/* Desktop: Header */}
 			<div className="text-center mb-8 max-md:hidden">
-				<h1 className="text-h1 font-bold mb-2 text-[#05324f]">{workshopName}</h1>
+				<h1 className="text-xl font-bold mb-2 text-[#05324f]">{workshopName}</h1>
 				<p className="text-gray-500 text-base">{t('offers_page.your_chosen_workshop')}</p>
 			</div>
 
@@ -337,7 +337,7 @@ export default function BookAppointmentPage() {
 
 				{/* Price breakdown card - only Total on mobile */}
 				<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-					<h2 className="text-base font-bold text-gray-900 mb-4">{t('offers_page.price_breakdown')}</h2>
+					<h2 className="text-xl text-base font-bold text-gray-900 mb-4">{t('offers_page.price_breakdown')}</h2>
 					<div className="flex justify-between text-sm text-gray-700">
 						<span>{t('offers_page.total')}</span>
 						<span className="font-medium">{formatPrice(totalPrice)}</span>
@@ -441,7 +441,7 @@ export default function BookAppointmentPage() {
 				<div className="bg-white rounded-card border border-gray-100 shadow-card p-6 sm:p-8 space-y-6 sm:space-y-8">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div>
-							<h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Offer Price</h2>
+							<h2 className="text-xl sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Offer Price</h2>
 							<div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
 								<div className="flex justify-between items-center">
 									<span className="font-semibold text-base text-gray-700">Total</span>
