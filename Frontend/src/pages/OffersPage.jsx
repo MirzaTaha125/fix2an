@@ -264,62 +264,69 @@ export default function OffersPage() {
 										className="bg-white rounded-card border border-gray-100 shadow-card hover:shadow-card-hover transition-shadow duration-200 overflow-hidden max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:border"
 									>
 										<div className="p-6 max-md:p-4">
-											{/* Mobile only: row with avatar left, content middle, Select right */}
-											<div className="flex items-stretch gap-4 max-md:gap-3 md:hidden">
-												{/* Avatar - visible on mobile like reference */}
-												<div className="hidden max-md:flex w-12 h-12 rounded-full bg-[#05324f] text-white items-center justify-center text-sm font-bold shrink-0">
-													{initials}
-												</div>
-												<div className="flex-1 min-w-0">
-													<div className="flex flex-wrap items-center gap-2 mb-1">
-														<h3 className="text-lg font-bold text-[#05324f] max-md:text-base">
-															{workshop?.companyName || 'Workshop'}
-														</h3>
-														{workshop?.isVerified && <VerifiedBadge />}
+											{/* Mobile only: Vertical layout with avatar at top */}
+											<div className="flex flex-col md:hidden">
+												<div className="flex items-center gap-4 mb-4">
+													{/* Avatar at top-left of the info block */}
+													<div className="flex w-12 h-12 rounded-full bg-[#05324f] text-white items-center justify-center text-sm font-bold shrink-0 shadow-sm border border-white">
+														{initials}
 													</div>
-													<p className="text-xl max-md:text-lg font-bold text-[#05324f] mb-0.5">
-														{formatPrice(offer.price)}
-													</p>
-													{distance != null && (
-														<p className="text-sm text-gray-500 mb-1">
-															{distance.toFixed(1)} km {t('offers_page.from_you') || 'from you'}
-														</p>
-													)}
-													{workshop?.isVerified && (
-														<p className="inline-flex items-center gap-1 text-sm text-gray-600 max-md:text-xs">
-															<CheckCircle className="w-4 h-4 text-[#34C759] shrink-0" />
-															{t('offers_page.certified')}
-														</p>
-													)}
-													{workshopRating != null && (
-														<div className="flex items-center gap-1 mt-1">
-															{[1,2,3,4,5].map((i) => (
-																<Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" size={14} />
-															))}
-															<span className="text-sm text-gray-500 ml-0.5">{workshopRating.toFixed(1)}</span>
+													<div className="flex-1 min-w-0">
+														<div className="flex flex-wrap items-center gap-2">
+															<h3 className="text-base font-bold text-[#05324f]">
+																{workshop?.companyName || 'Workshop'}
+															</h3>
+															{workshop?.isVerified && <VerifiedBadge />}
 														</div>
-													)}
+														{workshopRating != null && (
+															<div className="flex items-center gap-1 mt-0.5">
+																<Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+																<span className="text-xs font-bold text-gray-700">{workshopRating.toFixed(1)}</span>
+															</div>
+														)}
+													</div>
 												</div>
-												{/* CTA - green button on right for mobile */}
-												<div className="max-md:flex max-md:items-center max-md:shrink-0">
-													{offer.status !== 'ACCEPTED' ? (
-														<Button
-															onClick={() => handleAcceptOffer(offer)}
-															className="flex items-center gap-2 shrink-0 max-md:!bg-[#34C759] max-md:!text-white max-md:rounded-xl max-md:px-4 max-md:py-2.5"
-														>
-															{t('offers_page.choose')}
-															<ArrowRight size={16} className="max-md:hidden" />
-														</Button>
-													) : (
-														<span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-semibold text-sm px-4 py-2.5 rounded-btn border border-green-200">
-															{t('offers_page.accepted')}
-														</span>
-													)}
+
+												<div className="flex items-end justify-between gap-4">
+													<div className="flex-1 min-w-0">
+														<p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">{t('offers_page.price') || 'Price'}</p>
+														<p className="text-2xl font-bold text-[#34C759] leading-none">
+															{formatPrice(offer.price)}
+														</p>
+														{distance != null && (
+															<p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
+																<MapPin size={12} />
+																{distance.toFixed(1)} km {t('offers_page.from_you') || 'from you'}
+															</p>
+														)}
+													</div>
+													
+													<div className="shrink-0">
+														{offer.status !== 'ACCEPTED' ? (
+															<Button
+																onClick={() => handleAcceptOffer(offer)}
+																className="!bg-[#34C759] !text-white rounded-xl px-5 py-2.5 font-semibold shadow-sm"
+															>
+																{t('offers_page.choose')}
+															</Button>
+														) : (
+															<span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-bold text-xs px-4 py-2 rounded-full border border-green-200">
+																<CheckCircle size={14} />
+																{t('offers_page.accepted')}
+															</span>
+														)}
+													</div>
 												</div>
 											</div>
 
 											{/* Desktop: original layout */}
 											<div className="md:block hidden">
+												<div className="flex items-center gap-3 mb-4">
+													<h3 className="text-xl font-bold text-[#05324f]">
+														{workshop?.companyName || 'Workshop'}
+													</h3>
+													{workshop?.isVerified && <VerifiedBadge />}
+												</div>
 												{/* Meta row */}
 												<div className="flex flex-wrap items-center gap-2 mb-5">
 													{workshopRating != null && (

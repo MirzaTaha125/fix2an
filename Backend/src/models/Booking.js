@@ -11,10 +11,7 @@ const bookingSchema = new mongoose.Schema({
 		default: 'CONFIRMED', 
 		enum: ['CONFIRMED', 'RESCHEDULED', 'CANCELLED', 'DONE', 'NO_SHOW'] 
 	},
-	klarnaOrderId: { type: String },
 	totalAmount: { type: Number, required: true },
-	commission: { type: Number, required: true },
-	workshopAmount: { type: Number, required: true },
 	notes: { type: String },
 	reminder24hSentAt: { type: Date },
 }, {

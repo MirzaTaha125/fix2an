@@ -159,7 +159,19 @@ router.patch('/:id', authenticate, requireRole('WORKSHOP'), async (req, res) => 
 			const booking = await Booking.findOne({ offerId: offer._id })
 			if (booking) {
 				await Booking.findByIdAndUpdate(booking._id, { status: 'CANCELLED' })
-				await Request.findByIdAndUpdate(booking.requestId, { status: 'BIDDING_CLOSED' })
+				// Update the offer status to CANCELLED specifically
+				await Offer.findByIdAndUpdate(offer._id, { status: 'CANCELLED' })
+				// Revert request to IN_BIDDING so other workshops can be chosen
+				await Request.findByIdAndUpdate(booking.requestId, { status: 'IN_BIDDING' })
+				
+				// Restore all other "EXPIRED" offers for this request back to "SENT"
+				await Offer.updateMany(
+					{ 
+						requestId: booking.requestId, 
+						status: 'EXPIRED' 
+					},
+					{ status: 'SENT' }
+				)
 			}
 		}
 

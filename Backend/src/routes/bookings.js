@@ -37,11 +37,7 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 			return res.status(409).json({ message: 'This offer has already been booked or is no longer available' })
 		}
 
-		// Calculate commission
-		const commissionRate = parseFloat(process.env.COMMISSION_RATE) || 0.1
 		const totalAmount = offer.price
-		const commission = totalAmount * commissionRate
-		const workshopAmount = totalAmount - commission
 
 		// Create booking
 		const booking = await Booking.create({
@@ -51,13 +47,21 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 			workshopId: offer.workshopId._id,
 			scheduledAt: new Date(scheduledAt),
 			totalAmount,
-			commission,
-			workshopAmount,
 			notes,
 		})
 
 		// Update request status
 		await Request.findByIdAndUpdate(offer.requestId._id, { status: 'BOOKED' })
+
+		// Mark all other "SENT" offers for this request as "EXPIRED"
+		await Offer.updateMany(
+			{ 
+				requestId: offer.requestId._id, 
+				status: 'SENT', 
+				_id: { $ne: offerId } 
+			},
+			{ status: 'EXPIRED' }
+		)
 
 		const populatedBooking = await Booking.findById(booking._id)
 			.populate('requestId')
@@ -86,7 +90,7 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 		const bookings = await Booking.find({ customerId })
 			.populate('requestId')
 			.populate('offerId')
-			.populate('workshopId', 'companyName rating')
+			.populate('workshopId', 'companyName rating email phone')
 			.sort({ createdAt: -1 })
 
 		return res.json(bookings)
@@ -203,7 +207,26 @@ router.patch('/:id', authenticate, async (req, res) => {
 			.populate('workshopId', 'companyName')
 
 		if (updateData.status === 'CANCELLED' && booking.requestId) {
-			await Request.findByIdAndUpdate(booking.requestId, { status: 'BIDDING_CLOSED' })
+			// Revert request to IN_BIDDING
+			await Request.findByIdAndUpdate(booking.requestId, { status: 'IN_BIDDING' })
+			
+			// Mark the offer for THIS booking as SENT again so it can be re-booked if desired
+			// Actually, if it was cancelled by the workshop, it should stay DECLINED/CANCELLED.
+			// But if we want it to be bookable again, we set it to SENT.
+			// Given the user's request, let's keep the cancelling workshop's offer as DECLINED
+			// and restore all EXPIRED ones to SENT.
+			
+			// Mark the offer for THIS booking as CANCELLED
+			await Offer.findByIdAndUpdate(booking.offerId, { status: 'CANCELLED' })
+			
+			// Restore all other "EXPIRED" offers back to "SENT"
+			await Offer.updateMany(
+				{ 
+					requestId: booking.requestId, 
+					status: 'EXPIRED' 
+				},
+				{ status: 'SENT' }
+			)
 		}
 
 		if (updateData.status === 'DONE' && booking.status !== 'DONE') {
@@ -212,36 +235,6 @@ router.patch('/:id', authenticate, async (req, res) => {
 				notifyJobCompleteReviewRequest(updatedBooking).catch(() => {})
 			}
 
-			// Safely credit the workshop's wallet
-			try {
-				const Workshop = (await import('../models/Workshop.js')).default
-				const Wallet = (await import('../models/Wallet.js')).default
-				const WalletTransaction = (await import('../models/WalletTransaction.js')).default
-
-				const workshop = await Workshop.findById(booking.workshopId)
-				if (workshop && updatedBooking.workshopAmount > 0) {
-					let wallet = await Wallet.findOne({ user: workshop.userId })
-					if (!wallet) {
-						wallet = await Wallet.create({ user: workshop.userId, balance: 0 })
-					}
-
-					// Credit the balance
-					wallet.balance += updatedBooking.workshopAmount
-					await wallet.save()
-
-					// Record the payment
-					await WalletTransaction.create({
-						walletId: wallet._id,
-						amount: updatedBooking.workshopAmount,
-						type: 'Payment',
-						status: 'Completed',
-						description: `Earning from completed booking`,
-						referenceId: booking._id
-					})
-				}
-			} catch (walletError) {
-				console.error('Failed to credit workshop wallet for booking', booking._id, walletError)
-			}
 		}
 
 		return res.json(updatedBooking)

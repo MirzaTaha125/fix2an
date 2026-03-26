@@ -10,6 +10,7 @@
 		"view": "View",
 		"close": "Close",
 		"back": "Back",
+		"back_to_requests": "Back to Requests",
 		"next": "Next",
 		"previous": "Previous",
 		"submit": "Submit",
@@ -41,22 +42,14 @@
 		"workshop_blocked": "Workshop blocked",
 		"workshop_unblocked": "Workshop unblocked",
 		"failed_update_workshop": "Failed to update workshop",
-		"generated_reports_one": "Generated 1 report",
-		"generated_reports_other": "Generated {count} reports",
-		"failed_generate_reports": "Failed to generate reports",
-		"payout_marked_paid": "Payout marked as paid",
-		"failed_mark_paid": "Failed to mark payout as paid",
 		"select_placeholder": "Select...",
-		"no_data": "N/A",
-		"go_back": "Go back",
-		"wallet": "Wallet"
+		"go_back": "Go back"
 	},
 	"navigation": {
 		"home": "Home",
 		"login": "Login",
 		"register": "Register",
 		"logout": "Logout",
-		"wallet": "My Wallet",
 		"dashboard": "Dashboard",
 		"profile": "Profile",
 		"settings": "Settings",
@@ -111,7 +104,7 @@
 			},
 			"secure": {
 				"title": "Secure payment",
-				"description": "Pay securely via Klarna with all their payment options."
+				"description": "Pay the workshop directly and securely."
 			}
 		},
 		"cta": {
@@ -264,6 +257,10 @@
 		"rescheduled_for": "Rescheduled for",
 		"reschedule_again": "Reschedule Again",
 		"view_details": "View Details",
+		"workshop_details": "Workshop Details",
+		"company_name": "Company Name",
+		"email": "Email",
+		"phone": "Phone",
 		"cancelled_booking": "Cancelled Booking",
 		"completed_with": "Contract with",
 		"accepted": "Accepted",
@@ -650,8 +647,6 @@
 			"customer_info": "Customer Information",
 			"booking_details": "Booking Details",
 			"total_amount": "Total Amount",
-			"workshop_amount": "Your Amount",
-			"commission": "Commission",
 			"vehicle_info": "Vehicle Information",
 			"year": "Year",
 			"notes": "Notes",
@@ -714,14 +709,17 @@
 				"sent": "Sent",
 				"accepted": "Accepted",
 				"declined": "Declined",
-				"expired": "Expired"
+				"expired": "Expired",
+				"cancelled": "Cancelled"
 			},
 			"status": {
 				"sent": "Sent",
 				"accepted": "Accepted",
 				"declined": "Declined",
-				"expired": "Expired"
-			}
+				"expired": "Expired",
+				"cancelled": "Cancelled"
+			},
+			"request_unavailable": "Request unavailable"
 		},
 		"requests": {
 			"title": "Jobs",
@@ -801,7 +799,10 @@
 			"submit_offer": "Submit Offer",
 			"update_offer": "Update Offer",
 			"updating": "Updating...",
-			"already_accepted": "Offer already accepted"
+			"already_accepted": "This offer has been accepted and cannot be edited.",
+			"already_accepted_title": "Offer Accepted",
+			"expired_title": "Offer Expired",
+			"expired_description": "This offer has expired because the customer chose another workshop for this request."
 		},
 		"signup": {
 			"title": "Register your workshop",
@@ -887,19 +888,13 @@
 			"requests": "Requests",
 			"offers": "Offers",
 			"bookings": "Bookings",
-			"payouts": "Payouts & Commission",
 			"settings": "Settings"
 		},
 		"stats": {
 			"customers": "Customers",
 			"workshops": "Workshops",
 			"requests": "Requests",
-			"monthly_revenue": "Monthly Revenue",
-			"pending_workshops": "pending",
-			"total_customers": "Total Customers",
-			"total_workshops": "Total Workshops",
 			"total_requests": "Total Requests",
-			"total_revenue": "Total Revenue",
 			"more_features_coming": "More features coming soon"
 		},
 		"workshops": {
@@ -922,6 +917,11 @@
 			"company_name": "Company Name",
 			"organization_number": "Organization Number",
 			"view_details": "View Details",
+			"view_details_short": "View",
+			"approve_short": "Approve",
+			"reject_short": "Reject",
+			"block_short": "Block",
+			"unblock_short": "Unblock",
 			"details": {
 				"title": "Workshop Details",
 				"subtitle": "Complete information about this workshop",
@@ -966,6 +966,12 @@
 			"status": "Status",
 			"active": "Active",
 			"inactive": "Inactive",
+			"toggle_status": "Change Status",
+			"active_success": "User account activated successfully",
+			"inactive_success": "User account deactivated successfully",
+			"update_failed": "Failed to update user status",
+			"requests_label": "Requests",
+			"search_placeholder": "Search by name or email...",
 			"no_customers": "No customers found",
 			"loading_customers": "Loading customers...",
 			"no_customers_search": "Try adjusting your search"
@@ -1005,7 +1011,6 @@
 			"workshop": "Workshop",
 			"scheduled": "Scheduled",
 			"amount": "Amount",
-			"commission": "Commission",
 			"status": "Status",
 			"confirmed": "Confirmed",
 			"rescheduled": "Rescheduled",
@@ -1014,28 +1019,6 @@
 			"no_show": "No Show",
 			"no_bookings": "No bookings found",
 			"search": "Search bookings..."
-		},
-		"payouts": {
-			"title": "Payouts & Commission",
-			"subtitle": "Generate and manage workshop payouts",
-			"month": "Month",
-			"year": "Year",
-			"generate": "Generate Reports",
-			"generating": "Generating...",
-			"workshop": "Workshop",
-			"total_jobs": "Total Jobs",
-			"total_amount": "Total Amount",
-			"workshop_amount": "Workshop Amount",
-			"paid": "Paid",
-			"unpaid": "Unpaid",
-			"mark_paid": "Mark as Paid",
-			"export_csv": "Export CSV",
-			"export": "Export",
-			"no_reports": "No payout reports found",
-			"select_month_year": "Select month and year to generate reports",
-			"search": "Search payouts...",
-			"commission": "Commission",
-			"status": "Status"
 		},
 		"settings": {
 			"title": "Settings",

@@ -4,7 +4,6 @@ import Workshop from '../models/Workshop.js'
 import Request from '../models/Request.js'
 import Offer from '../models/Offer.js'
 import Booking from '../models/Booking.js'
-import Payout from '../models/Payout.js'
 import EmailConfig from '../models/EmailConfig.js'
 import { notifyWorkshopWelcome } from '../services/notificationService.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
@@ -24,28 +23,13 @@ router.get('/stats', async (req, res) => {
 		const pendingWorkshops = await Workshop.countDocuments({ isVerified: false })
 		const totalRequests = await Request.countDocuments()
 		const totalBookings = await Booking.countDocuments()
-		
-		// Calculate revenue from completed bookings
-		const bookings = await Booking.find({ status: 'DONE' })
-		const totalRevenue = bookings.reduce((sum, booking) => sum + (booking.commission || 0), 0)
-		
-		// Monthly revenue (current month)
-		const now = new Date()
-		const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-		const monthlyBookings = await Booking.find({
-			status: 'DONE',
-			createdAt: { $gte: startOfMonth }
-		})
-		const monthlyRevenue = monthlyBookings.reduce((sum, booking) => sum + (booking.commission || 0), 0)
-
+		// Calculate stats — removing commission-based revenue
 		res.json({
 			totalCustomers,
 			totalWorkshops,
 			pendingWorkshops,
 			totalRequests,
 			totalBookings,
-			totalRevenue,
-			monthlyRevenue,
 		})
 	} catch (error) {
 		console.error('Admin stats error:', error)
@@ -407,135 +391,6 @@ router.get('/bookings', async (req, res) => {
 	}
 })
 
-// Get payouts (simplified - generate on demand)
-router.get('/payouts', async (req, res) => {
-	try {
-		const { month, year } = req.query
-		
-		if (!month || !year) {
-			return res.json({ reports: [] })
-		}
-
-		// Get all bookings for the month/year that are DONE
-		const startDate = new Date(parseInt(year), parseInt(month) - 1, 1)
-		const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59)
-
-		const bookings = await Booking.find({
-			status: 'DONE',
-			createdAt: { $gte: startDate, $lte: endDate }
-		})
-			.populate('workshopId', 'companyName')
-			.lean()
-
-		// Group by workshop
-		const workshopMap = new Map()
-		bookings.forEach((booking) => {
-			const workshopId = booking.workshopId?._id?.toString()
-			if (!workshopId) return
-
-			if (!workshopMap.has(workshopId)) {
-				workshopMap.set(workshopId, {
-					workshopId,
-					workshop: booking.workshopId,
-					month: parseInt(month),
-					year: parseInt(year),
-					totalJobs: 0,
-					totalAmount: 0,
-					commission: 0,
-					workshopAmount: 0,
-					isPaid: false,
-				})
-			}
-
-			const report = workshopMap.get(workshopId)
-			report.totalJobs++
-			report.totalAmount += booking.totalAmount || 0
-			report.commission += booking.commission || 0
-			report.workshopAmount += (booking.totalAmount || 0) - (booking.commission || 0)
-		})
-
-		// Fetch persisted payout status
-		const payouts = await Payout.find({
-			month: parseInt(month),
-			year: parseInt(year),
-			workshopId: { $in: Array.from(workshopMap.keys()) },
-		}).lean()
-		const payoutByWorkshop = new Map(payouts.map(p => [p.workshopId.toString(), p]))
-
-		const reports = Array.from(workshopMap.values()).map((report, index) => {
-			const persisted = payoutByWorkshop.get(report.workshopId)
-			return {
-				...report,
-				id: `payout-${report.workshopId}-${month}-${year}-${index}`,
-				isPaid: persisted?.isPaid ?? report.isPaid,
-				paidAt: persisted?.paidAt,
-			}
-		})
-
-		res.json({ reports })
-	} catch (error) {
-		console.error('Admin payouts error:', error)
-		res.status(500).json({ message: 'Failed to fetch payouts' })
-	}
-})
-
-// Generate payouts (same as get, but POST)
-router.post('/payouts', async (req, res) => {
-	try {
-		const { month, year } = req.body
-		
-		if (!month || !year) {
-			return res.status(400).json({ message: 'Month and year are required' })
-		}
-
-		// Same logic as GET
-		const startDate = new Date(parseInt(year), parseInt(month) - 1, 1)
-		const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59)
-
-		const bookings = await Booking.find({
-			status: 'DONE',
-			createdAt: { $gte: startDate, $lte: endDate }
-		})
-			.populate('workshopId', 'companyName')
-			.lean()
-
-		const workshopMap = new Map()
-		bookings.forEach((booking) => {
-			const workshopId = booking.workshopId?._id?.toString()
-			if (!workshopId) return
-
-			if (!workshopMap.has(workshopId)) {
-				workshopMap.set(workshopId, {
-					workshopId,
-					workshop: booking.workshopId,
-					month: parseInt(month),
-					year: parseInt(year),
-					totalJobs: 0,
-					totalAmount: 0,
-					commission: 0,
-					workshopAmount: 0,
-					isPaid: false,
-				})
-			}
-
-			const report = workshopMap.get(workshopId)
-			report.totalJobs++
-			report.totalAmount += booking.totalAmount || 0
-			report.commission += booking.commission || 0
-			report.workshopAmount += (booking.totalAmount || 0) - (booking.commission || 0)
-		})
-
-		const reports = Array.from(workshopMap.values()).map((report, index) => ({
-			...report,
-			id: `payout-${report.workshopId}-${month}-${year}-${index}`,
-		}))
-
-		res.json({ reports, count: reports.length })
-	} catch (error) {
-		console.error('Generate payouts error:', error)
-		res.status(500).json({ message: 'Failed to generate payouts' })
-	}
-})
 
 // Get email config (password/privateKey not returned)
 router.get('/email-config', async (req, res) => {
@@ -605,123 +460,6 @@ router.patch('/email-config', async (req, res) => {
 	}
 })
 
-// Mark payout as paid
-router.patch('/payouts/:id/mark-paid', async (req, res) => {
-	try {
-		// Parse id format: payout-{workshopId}-{month}-{year}-{index}
-		const match = req.params.id.match(/^payout-([a-f0-9]+)-(\d+)-(\d+)-(\d+)$/)
-		if (!match) {
-			return res.status(400).json({ message: 'Invalid payout ID format' })
-		}
-		const [, workshopId, month, year] = match
-
-		await Payout.findOneAndUpdate(
-			{ workshopId, month: parseInt(month), year: parseInt(year) },
-			{ isPaid: true, paidAt: new Date() },
-			{ upsert: true, new: true }
-		)
-		res.json({ message: 'Payout marked as paid' })
-	} catch (error) {
-		console.error('Mark payout paid error:', error)
-		res.status(500).json({ message: 'Failed to mark payout as paid' })
-	}
-})
-// Get Wallet Transactions
-router.get('/wallet/transactions', async (req, res) => {
-	try {
-		const { search, page = 1, limit = 20, status } = req.query
-		const query = {}
-
-		if (status && status !== 'all') {
-			query.status = status
-		}
-
-		// Pagination
-		const skip = (parseInt(page) - 1) * parseInt(limit)
-
-		// Search could be complicated because we need to search across user emails/names via Wallet
-		// We'll skip complex search for now or just search by description
-		if (search) {
-			query.$or = [
-				{ description: { $regex: search, $options: 'i' } }
-			]
-		}
-
-		// First, fetch transactions
-		const txs = await import('../models/WalletTransaction.js').then(m => m.default)
-			.find(query)
-			.populate({
-				path: 'walletId',
-				populate: { path: 'user', select: 'name email role' }
-			})
-			.sort({ createdAt: -1 })
-			.skip(skip)
-			.limit(parseInt(limit))
-			.lean()
-
-		// Restructure the response to easily access user details on frontend
-		const transactions = txs.map(tx => ({
-			...tx,
-			id: tx._id,
-			user: tx.walletId?.user,
-			wallet: tx.walletId
-		}))
-
-		const total = await import('../models/WalletTransaction.js').then(m => m.default).countDocuments(query)
-
-		res.json({
-			transactions,
-			total,
-			page: parseInt(page),
-			limit: parseInt(limit),
-		})
-	} catch (error) {
-		console.error('Admin wallet transactions get error:', error)
-		res.status(500).json({ message: 'Failed to fetch wallet transactions' })
-	}
-})
-
-// Update Wallet Transaction Status (Approve/Reject Withdrawals)
-router.patch('/wallet/transactions/:id', async (req, res) => {
-	try {
-		const { id } = req.params
-		const { status } = req.body
-
-		if (!['Completed', 'Failed', 'Cancelled'].includes(status)) {
-			return res.status(400).json({ message: 'Invalid status update' })
-		}
-
-		const WalletTransactionModel = await import('../models/WalletTransaction.js').then(m => m.default)
-		const WalletModel = await import('../models/Wallet.js').then(m => m.default)
-
-		const tx = await WalletTransactionModel.findById(id)
-
-		if (!tx) {
-			return res.status(404).json({ message: 'Transaction not found' })
-		}
-
-		if (tx.status !== 'Pending') {
-			return res.status(400).json({ message: 'Transaction is already processed' })
-		}
-
-		tx.status = status
-		await tx.save()
-
-		// If a withdrawal is rejected/cancelled, refund the wallet balance
-		if (tx.type === 'Withdrawal' && (status === 'Failed' || status === 'Cancelled')) {
-			const wallet = await WalletModel.findById(tx.walletId)
-			if (wallet) {
-				wallet.balance += Math.abs(tx.amount)
-				await wallet.save()
-			}
-		}
-
-		res.json({ message: 'Transaction status updated successfully', transaction: tx })
-	} catch (error) {
-		console.error('Admin update wallet transaction error:', error)
-		res.status(500).json({ message: 'Failed to update transaction status' })
-	}
-})
 
 export default router
 

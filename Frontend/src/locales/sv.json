@@ -10,6 +10,7 @@
 		"view": "Visa",
 		"close": "Stäng",
 		"back": "Tillbaka",
+		"back_to_requests": "Tillbaka till förfrågningar",
 		"next": "Nästa",
 		"previous": "Föregående",
 		"submit": "Skicka",
@@ -34,7 +35,6 @@
 		"pending": "Väntande",
 		"registered": "Registrerad",
 		"logout": "Logga ut",
-		"wallet": "Min Plånbok",
 		"actions": "Åtgärder",
 		"could_not_fetch": "Kunde inte hämta data",
 		"workshop_approved": "Verkstad godkänd",
@@ -42,13 +42,7 @@
 		"workshop_blocked": "Verkstad blockerad",
 		"workshop_unblocked": "Verkstad avblockerad",
 		"failed_update_workshop": "Kunde inte uppdatera verkstad",
-		"generated_reports_one": "Genererade 1 rapport",
-		"generated_reports_other": "Genererade {count} rapporter",
-		"failed_generate_reports": "Kunde inte generera rapporter",
-		"payout_marked_paid": "Utbetalning markerad som betald",
-		"failed_mark_paid": "Kunde inte markera utbetalning som betald",
 		"select_placeholder": "Välj...",
-		"no_data": "N/A",
 		"go_back": "Gå tillbaka"
 	},
 	"navigation": {
@@ -56,7 +50,6 @@
 		"login": "Logga in",
 		"register": "Registrera dig",
 		"logout": "Logga ut",
-		"wallet": "Min Plånbok",
 		"dashboard": "Dashboard",
 		"profile": "Profil",
 		"settings": "Inställningar",
@@ -111,7 +104,7 @@
 			},
 			"secure": {
 				"title": "Säker betalning",
-				"description": "Betala säkert via Klarna med alla deras betalningsalternativ."
+				"description": "Betala verkstaden direkt och säkert."
 			}
 		},
 		"cta": {
@@ -264,6 +257,10 @@
 		"rescheduled_for": "Ombokad för",
 		"reschedule_again": "Boka om igen",
 		"view_details": "Visa detaljer",
+		"workshop_details": "Verkstadsdetaljer",
+		"company_name": "Företagsnamn",
+		"email": "E-post",
+		"phone": "Telefon",
 		"cancelled_booking": "Avbruten bokning",
 		"completed_with": "Kontrakt med",
 		"accepted": "Accepterad",
@@ -650,8 +647,6 @@
 			"customer_info": "Kundinformation",
 			"booking_details": "Bokningsdetaljer",
 			"total_amount": "Totalt belopp",
-			"workshop_amount": "Ditt belopp",
-			"commission": "Provision",
 			"vehicle_info": "Bilinformation",
 			"year": "År",
 			"notes": "Anteckningar",
@@ -714,14 +709,17 @@
 				"sent": "Skickad",
 				"accepted": "Accepterad",
 				"declined": "Avslagen",
-				"expired": "Utgången"
+				"expired": "Utgången",
+				"cancelled": "Avbruten"
 			},
 			"status": {
 				"sent": "Skickad",
 				"accepted": "Accepterad",
 				"declined": "Avslagen",
-				"expired": "Utgången"
-			}
+				"expired": "Utgången",
+				"cancelled": "Avbruten"
+			},
+			"request_unavailable": "Förfrågan ej tillgänglig"
 		},
 		"requests": {
 			"title": "Jobb",
@@ -801,7 +799,10 @@
 			"submit_offer": "Skicka erbjudande",
 			"update_offer": "Uppdatera erbjudande",
 			"updating": "Uppdaterar...",
-			"already_accepted": "Erbjudandet är redan accepterat"
+			"already_accepted": "Detta erbjudande har accepterats och kan inte redigeras.",
+			"already_accepted_title": "Erbjudande accepterat",
+			"expired_title": "Erbjudande utgått",
+			"expired_description": "Detta erbjudande har utgått eftersom kunden valde en annan verkstad för denna förfrågan."
 		},
 		"signup": {
 			"title": "Registrera din verkstad",
@@ -887,19 +888,13 @@
 			"requests": "Förfrågningar",
 			"offers": "Erbjudanden",
 			"bookings": "Bokningar",
-			"payouts": "Utbetalningar & Provision",
 			"settings": "Inställningar"
 		},
 		"stats": {
 			"customers": "Kunder",
 			"workshops": "Verkstäder",
 			"requests": "Förfrågningar",
-			"monthly_revenue": "Intäkter denna månad",
-			"total_customers": "Totalt antal kunder",
-			"total_workshops": "Totalt antal verkstäder",
 			"total_requests": "Totalt antal förfrågningar",
-			"total_revenue": "Total omsättning",
-			"pending_workshops": "väntande",
 			"more_features_coming": "Fler funktioner kommer snart..."
 		},
 		"customers": {
@@ -915,6 +910,12 @@
 			"status": "Status",
 			"active": "Aktiv",
 			"inactive": "Inaktiv",
+			"toggle_status": "Ändra status",
+			"active_success": "Användarkontot har aktiverats",
+			"inactive_success": "Användarkontot har inaktiverats",
+			"update_failed": "Det gick inte att uppdatera användarstatus",
+			"requests_label": "Förfrågningar",
+			"search_placeholder": "Sök efter namn eller e-post...",
 			"no_customers": "Inga kunder hittades",
 			"loading_customers": "Laddar kunder...",
 			"no_customers_search": "Försök justera din sökning"
@@ -936,6 +937,11 @@
 			"company_name": "Företagsnamn",
 			"organization_number": "Organisationsnummer",
 			"view_details": "Visa detaljer",
+			"view_details_short": "Visa",
+			"approve_short": "Godkänn",
+			"reject_short": "Avvisa",
+			"block_short": "Blocka",
+			"unblock_short": "Lås upp",
 			"details": {
 				"title": "Verkstadsdetaljer",
 				"subtitle": "Fullständig information om denna verkstad",
@@ -1005,7 +1011,6 @@
 			"workshop": "Verkstad",
 			"scheduled": "Schemalagd",
 			"amount": "Belopp",
-			"commission": "Provision",
 			"status": "Status",
 			"confirmed": "Bekräftad",
 			"rescheduled": "Omschemalagd",
@@ -1014,28 +1019,6 @@
 			"no_show": "Utebliven",
 			"no_bookings": "Inga bokningar hittades",
 			"search": "Sök bokningar..."
-		},
-		"payouts": {
-			"title": "Utbetalningar & Provision",
-			"subtitle": "Generera och hantera verkstadsutbetalningar",
-			"month": "Månad",
-			"year": "År",
-			"generate": "Generera Rapporter",
-			"generating": "Genererar...",
-			"workshop": "Verkstad",
-			"total_jobs": "Totalt antal jobb",
-			"total_amount": "Totalt belopp",
-			"workshop_amount": "Verkstadsbelopp",
-			"paid": "Betald",
-			"unpaid": "Obetald",
-			"mark_paid": "Markera som betald",
-			"export_csv": "Exportera CSV",
-			"export": "Exportera",
-			"no_reports": "Inga utbetalningsrapporter hittades",
-			"select_month_year": "Välj månad och år för att generera rapporter",
-			"search": "Sök utbetalningar...",
-			"commission": "Provision",
-			"status": "Status"
 		},
 		"settings": {
 			"title": "Inställningar",

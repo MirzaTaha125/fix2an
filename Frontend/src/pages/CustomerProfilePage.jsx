@@ -466,36 +466,30 @@ export default function CustomerProfilePage() {
 					{/* Profile Information */}
 					<div className="lg:col-span-2">
 						<Card className="bg-white border border-gray-200 shadow-sm relative overflow-hidden">
-							<CardHeader className="border-b border-gray-200 bg-gray-50/50">
-								<div className="flex items-center justify-between">
-									<div className="flex items-center gap-3">
-										<div className="p-2 bg-green-600 rounded-lg shadow-sm">
-											<User className="w-5 h-5 text-white" />
-										</div>
-										<CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
-											{t('profile.profile_info') || 'Profile Information'}
-											{/* Inline Edit Icon */}
-											{!isEditing && (
-												<button
-													onClick={() => setIsEditing(true)}
-													className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-full transition-colors ml-1 focus:outline-none focus:ring-2 focus:ring-green-500/50"
-													title={t('profile.edit_profile')}
-												>
-													<Edit className="w-4.5 h-4.5" />
-												</button>
-											)}
-										</CardTitle>
-									</div>
+							<CardHeader className="border-b border-gray-200 bg-white">
+								<div className="flex items-center justify-between gap-4">
+									<CardTitle className="text-xl font-bold text-gray-900">
+										{t('profile.profile_info')}
+									</CardTitle>
 									
-									{/* Save / Cancel Controls (visible only when editing) */}
-									{isEditing && (
-										<div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-200">
+									{!isEditing ? (
+										<Button
+											size="sm"
+											variant="outline"
+											onClick={() => setIsEditing(true)}
+											className="flex items-center gap-1.5 h-8 px-3 text-xs sm:text-sm border-gray-200 hover:bg-gray-50 text-gray-700 shadow-sm transition-all"
+										>
+											<Edit className="w-3.5 h-3.5" />
+											{t('profile.edit')}
+										</Button>
+									) : (
+										<div className="flex items-center gap-2">
 											<Button
-												variant="outline"
 												size="sm"
-												onClick={handleCancel}
+												variant="ghost"
+												onClick={() => setIsEditing(false)}
 												disabled={isSaving}
-												className="flex items-center gap-1.5 h-8 px-3 text-xs sm:text-sm"
+												className="flex items-center gap-1.5 h-8 px-3 text-xs sm:text-sm text-gray-600 hover:text-gray-900"
 											>
 												<X className="w-3.5 h-3.5" />
 												<span className="hidden sm:inline">{t('profile.cancel')}</span>

@@ -225,17 +225,33 @@ export default function CreateOfferPage() {
 		return null
 	}
 
-	// Block editing if offer was already accepted (booking created)
-	if (existingOffer && existingOffer.status === 'ACCEPTED') {
+	// Block editing if offer was already accepted or expired
+	if (existingOffer && (existingOffer.status === 'ACCEPTED' || existingOffer.status === 'EXPIRED')) {
 		return (
 			<div className="min-h-screen bg-white">
 				<Navbar />
 				<div className="max-w-5xl mx-auto px-4 py-24 text-center">
-					<p className="text-gray-600 mb-4">
-						{t('workshop.offer.already_accepted') || 'This offer has been accepted and cannot be edited.'}
+					<div className="mb-6 flex justify-center">
+						<div className="p-4 bg-gray-50 rounded-full">
+							<Clock className="w-12 h-12 text-gray-400" />
+						</div>
+					</div>
+					<h2 className="text-2xl font-bold text-[#05324f] mb-4">
+						{existingOffer.status === 'ACCEPTED' 
+							? (t('workshop.offer.already_accepted_title') || 'Offer Accepted')
+							: (t('workshop.offer.expired_title') || 'Offer Expired')
+						}
+					</h2>
+					<p className="text-gray-600 mb-8 max-w-md mx-auto">
+						{existingOffer.status === 'ACCEPTED'
+							? (t('workshop.offer.already_accepted') || 'This offer has been accepted and cannot be edited.')
+							: (t('workshop.offer.expired_description') || 'This offer has expired because the customer chose another workshop for this request.')
+						}
 					</p>
 					<Link to="/workshop/requests">
-						<Button>{t('common.back') || 'Back to Requests'}</Button>
+						<Button className="bg-[#34C759] hover:bg-[#2eb34f]">
+							{t('common.back_to_requests') || 'Back to Requests'}
+						</Button>
 					</Link>
 				</div>
 			</div>
@@ -528,7 +544,7 @@ export default function CreateOfferPage() {
 									type="submit"
 									disabled={submitting}
 									size="default"
-									className="w-full sm:w-auto px-6 sm:px-8 shadow-md hover:shadow-lg transition-all text-sm sm:text-base"
+									className="w-full sm:w-auto px-6 sm:px-8 shadow-md hover:shadow-lg transition-all text-sm sm:text-base font-normal"
 									style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
 								>
 									{submitting ? (
@@ -541,7 +557,6 @@ export default function CreateOfferPage() {
 										</>
 									) : (
 										<>
-											<Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
 											{existingOffer
 												? (t('workshop.offer.update_offer') || 'Update Offer')
 												: (t('workshop.offer.submit_offer') || 'Submit Offer')

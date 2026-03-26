@@ -74,11 +74,6 @@ function Navbar() {
 						)}
 					</div>
 					<div className="flex items-center justify-center md:justify-start gap-3 w-full">
-						{shouldShowBackButton && (
-							<button onClick={() => navigate(-1)} className="p-2 -ml-2 hidden md:inline-flex text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
-								<ArrowLeft className="w-5 h-5 text-[#05324f]" />
-							</button>
-						)}
 						<Link 
 							to="/" 
 							className="flex items-center transition-all duration-300 hover:scale-105"
@@ -104,7 +99,7 @@ function Navbar() {
 								{user.role === 'ADMIN' && (
 									<Link 
 										to="/admin" 
-										className={`relative transition-all duration-300 px-4 py-2.5 rounded-lg ${
+										className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${
 											isActive('/admin') 
 												? shouldUseWhiteNavbar 
 													? 'text-[#05324f] font-semibold' 
@@ -121,7 +116,7 @@ function Navbar() {
 									<>
 										<Link 
 											to="/my-cases" 
-											className={`relative transition-all duration-300 px-4 py-2.5 rounded-lg ${
+											className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${
 												isActive('/my-cases') 
 													? shouldUseWhiteNavbar 
 														? 'text-[#05324f] font-semibold' 
@@ -135,7 +130,7 @@ function Navbar() {
 										</Link>
 										<Link 
 											to="/upload" 
-											className={`relative transition-all duration-300 px-4 py-2.5 rounded-lg ${
+											className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${
 												isActive('/upload') 
 													? shouldUseWhiteNavbar 
 														? 'text-[#05324f] font-semibold' 
@@ -149,7 +144,7 @@ function Navbar() {
 										</Link>
 										<Link 
 											to="/profile" 
-											className={`relative transition-all duration-300 px-4 py-2.5 rounded-lg ${
+											className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${
 												isActive('/profile') 
 													? shouldUseWhiteNavbar 
 														? 'text-[#05324f] font-semibold' 
@@ -167,7 +162,7 @@ function Navbar() {
 									<>
 										<Link 
 											to="/workshop/requests" 
-											className={`relative transition-all duration-300 px-4 py-2.5 rounded-lg ${
+											className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${
 												isActive('/workshop/requests') 
 													? shouldUseWhiteNavbar 
 														? 'text-[#05324f] font-semibold' 
@@ -181,7 +176,7 @@ function Navbar() {
 										</Link>
 										<Link 
 											to="/workshop/proposals" 
-											className={`relative transition-all duration-300 px-4 py-2.5 rounded-lg ${
+											className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${
 												isActive('/workshop/proposals') 
 													? shouldUseWhiteNavbar 
 														? 'text-[#05324f] font-semibold' 
@@ -195,7 +190,7 @@ function Navbar() {
 										</Link>
 										<Link 
 											to="/workshop/contracts" 
-											className={`relative transition-all duration-300 px-4 py-2.5 rounded-lg ${
+											className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${
 												isActive('/workshop/contracts') 
 													? shouldUseWhiteNavbar 
 														? 'text-[#05324f] font-semibold' 

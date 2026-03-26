@@ -393,7 +393,7 @@ A: Payment is handled directly with the workshop. Fixa2an facilitates the connec
 ### For Workshops
 
 **Q: How much does it cost to join Fixa2an?**
-A: Registration is free. Fixa2an charges a commission on completed jobs (typically around 10%).
+A: Registration is free. There are no commissions or hidden fees for jobs completed through the platform.
 
 **Q: How do I get verified?**
 A: After registration, our admin team reviews your workshop information and documents. Once approved, you can start receiving requests.
@@ -408,7 +408,7 @@ A: Requests are matched based on:
 A: If cancelled 24+ hours before the appointment, there's no penalty. Cancellations within 24 hours are handled on a case-by-case basis.
 
 **Q: When do I get paid?**
-A: Payment is handled directly with the customer. Fixa2an sends monthly invoices for platform commission.
+A: Payment is handled directly with the workshop at the time of service. Fixa2an does not process payments or charge platform commissions.
 
 **Q: Can I edit my offer after submitting?**
 A: Once submitted, offers cannot be edited. However, you can contact the customer directly if needed, or wait for the offer to expire and submit a new one.

@@ -410,7 +410,7 @@ export default function BookAppointmentPage() {
 
 							<Button
 								onClick={() => navigate('/my-cases')}
-								className="w-full py-4 rounded-xl font-bold"
+								className="w-full py-4 rounded-xl font-normal"
 								style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
 							>
 								{t('offers_page.go_to_my_cases') || 'Go to My Cases'}
@@ -543,7 +543,7 @@ export default function BookAppointmentPage() {
 					<Button
 						onClick={handleBooking}
 						disabled={availableSlots.length === 0 || !scheduledAt || !agreeToTerms || isBooking}
-						className="w-full py-4 rounded-xl font-bold text-white text-base"
+						className="w-full py-4 rounded-xl font-normal text-white text-base"
 						style={{ backgroundColor: agreeToTerms ? '#34C759' : '#9ca3af' }}
 					>
 						{isBooking ? (
@@ -660,13 +660,13 @@ export default function BookAppointmentPage() {
 							<Button 
 								onClick={handleBooking} 
 								disabled={availableSlots.length === 0 || !scheduledAt || !agreeToTerms || isBooking} 
-								className="px-12 py-5 text-lg font-bold rounded-2xl shadow-xl transition-all hover:translate-y-[-2px] active:translate-y-[0px] w-full md:w-auto" 
+								className="px-12 py-5 text-lg font-normal rounded-2xl shadow-xl transition-all hover:translate-y-[-2px] active:translate-y-[0px] w-full md:w-auto" 
 								style={{ backgroundColor: agreeToTerms ? '#34C759' : '#9ca3af', color: '#FFFFFF' }}
 							>
 								{isBooking ? (
 									<><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-3 inline-block" />{t('offers_page.booking')}</>
 								) : (
-									<><Calendar className="w-6 h-6 mr-3" />{t('offers_page.book_this_workshop')}</>
+									t('offers_page.book_this_workshop')
 								)}
 							</Button>
 						</div>

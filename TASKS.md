@@ -27,28 +27,19 @@ Legend: **✅ Done** | **🔶 Partial** | **⬜ Missing / To do**
 
 ---
 
-## 3. Payments (Klarna)
+## 3. Payments (Direct)
 
 | Item | Status | Gap |
 |------|--------|-----|
-| Klarna Checkout | ⬜ | Klarna Checkout API integration. |
-| Embed Klarna Checkout | ⬜ | Hosted checkout in booking flow. |
-| Payment on booking | ⬜ | Book → Klarna → confirm payment flow. |
-| Commission allocation | 🔶 | DB fields exist; amounts not coming from Klarna yet. |
-| Klarna order creation | ⬜ | Create order + link with booking. |
-| klarnaOrderId usage | 🔶 | Field exists; full flow not wired. |
+| Direct Payment | ✅ | Customers pay workshop directly. |
+| Price Transparency | ✅ | Offers show full price including VAT. |
+| No Commission | ✅ | Platform is free for workshops. |
 
 ---
 
-## 4. Workshop Payouts
+## 4. Workshop Payouts (OBSOLETE)
 
-| Item | Status | Gap |
-|------|--------|-----|
-| Payout from Klarna | ⬜ | Manual based on Klarna dashboard. |
-| Payout reports | 🔶 | Admin reports exist; no sync with Klarna. |
-| Mark payout as paid | ✅ | Admin UI done. |
-| Export CSV | ✅ | — |
-| Export PDF | ⬜ | PDF export feature. |
+*Decommissioned: Platform no longer handles financial settlements.*
 
 ---
 
@@ -86,8 +77,7 @@ Legend: **✅ Done** | **🔶 Partial** | **⬜ Missing / To do**
 | Item | Status | Gap |
 |------|--------|-----|
 | Requests / offers / bookings | ✅ | — |
-| Payout status (read-only) | 🔶 | Simple reports; no Klarna payout status. |
-| Commission reports | 🔶 | Backend / DB ready; no Klarna integration. |
+| Revenue stats | ✅ | Updated to show total booking amounts. |
 
 ---
 
@@ -98,11 +88,8 @@ Legend: **✅ Done** | **🔶 Partial** | **⬜ Missing / To do**
 | Manage users, workshops, etc. | ✅ | — |
 | Approve/deny workshops | ✅ | — |
 | Fixa2an Verified badge | 🔶 | Verification exists; badge spec unclear. |
-| Commission & payouts dashboard | 🔶 | Basic payouts; not linked to Klarna. |
 | Export CSV | ✅ | — |
-| Export PDF | ⬜ | — |
 | Block workshops | ✅ | — |
-| Refund management | ⬜ | Refund request + Klarna refund flow. |
 | Email config (SMTP in DB) | ✅ | Admin Settings → Email; DB-only, no env. |
 | 2FA (Admin) | ✅ | Enable/disable in Settings; TOTP at login. |
 
@@ -116,14 +103,12 @@ Legend: **✅ Done** | **🔶 Partial** | **⬜ Missing / To do**
 | Customer: upload received | ✅ | — |
 | Customer: new offers | ✅ | — |
 | Customer: booking confirmed | ✅ | — |
-| Customer: payment confirmed | ⬜ | Depends on Klarna flow. |
+| Customer: payment confirmed | ✅ | Payment happens directly at workshop. |
 | Customer: 24h reminder | ✅ | Cron/sendReminder24h. |
 | Customer: job complete + review request | ✅ | — |
 | Workshop: welcome | ✅ | After admin approval. |
 | Workshop: new request | ✅ | — |
 | Workshop: booking confirmed | ✅ | — |
-| Workshop: payout report | ⬜ | — |
-| Admin: payout/commission reports | ⬜ | — |
 
 *Email sending uses DB config only (Admin Settings → SMTP).*
 

@@ -11,7 +11,7 @@ const offerSchema = new mongoose.Schema({
 	status: { 
 		type: String, 
 		default: 'SENT', 
-		enum: ['SENT', 'ACCEPTED', 'DECLINED', 'EXPIRED'] 
+		enum: ['SENT', 'ACCEPTED', 'DECLINED', 'EXPIRED', 'CANCELLED'] 
 	},
 }, {
 	timestamps: true,

@@ -445,64 +445,63 @@ export default function WorkshopProfilePage() {
 								</Badge>
 							</div>
 						</div>
-						</div>
-						<div className="flex justify-end">
-							{!isEditing ? (
-								<Button
-									onClick={() => setIsEditing(true)}
-									size="sm"
-									className="flex items-center gap-1.5 sm:gap-2 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-2 sm:px-4 py-1.5 sm:py-2"
-								>
-									<Edit className="w-3 h-3 sm:w-4 sm:h-4" />
-									<span className="hidden sm:inline">{t('workshop.profile.edit') || 'Edit Profile'}</span>
-									<span className="sm:hidden">{t('workshop.profile.edit') || 'Edit'}</span>
-								</Button>
-							) : (
-								<div className="flex items-center gap-2">
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={handleCancel}
-										disabled={isSaving}
-										className="flex items-center gap-2"
-									>
-										<X className="w-4 h-4" />
-										{t('workshop.profile.cancel') || 'Cancel'}
-									</Button>
-									<Button
-										size="sm"
-										onClick={handleSave}
-										disabled={isSaving}
-										className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-									>
-										<Save className="w-4 h-4" />
-										{isSaving ? (t('workshop.profile.saving') || 'Saving...') : (t('workshop.profile.save') || 'Save')}
-									</Button>
-								</div>
-							)}
-						</div>
 					</div>
 				</div>
-
-				{/* Main Content Grid */}
+			</div>
+				
+			{/* Main Content Grid */}
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 					{/* Profile Information */}
 					<Card className="lg:col-span-2 bg-white border border-gray-200 shadow-sm">
 						<CardHeader className="border-b border-gray-200 bg-white">
-							<div className="flex items-center gap-3">
-								<div className="p-2 bg-green-600 rounded-lg">
-									<Briefcase className="w-5 h-5 text-white" />
-								</div>
+							<div className="flex items-center justify-between gap-4">
 								<CardTitle className="text-xl font-bold text-gray-900">
 									{t('workshop.profile.profile_info') || 'Profile Information'}
 								</CardTitle>
+								
+								{!isEditing ? (
+									<Button
+										size="sm"
+										variant="outline"
+										onClick={() => setIsEditing(true)}
+										className="flex items-center gap-1.5 h-8 px-3 text-xs sm:text-sm border-gray-200 hover:bg-gray-50 text-gray-700 shadow-sm transition-all"
+									>
+										<Edit className="w-3.5 h-3.5" />
+										{t('workshop.profile.edit') || 'Edit'}
+									</Button>
+								) : (
+									<div className="flex items-center gap-2">
+										<Button
+											size="sm"
+											variant="ghost"
+											onClick={handleCancel}
+											disabled={isSaving}
+											className="flex items-center gap-1.5 h-8 px-3 text-xs sm:text-sm text-gray-600 hover:text-gray-900"
+										>
+											<X className="w-3.5 h-3.5" />
+											<span className="hidden sm:inline">{t('workshop.profile.cancel') || 'Cancel'}</span>
+										</Button>
+										<Button
+											size="sm"
+											onClick={handleSave}
+											disabled={isSaving}
+											className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white h-8 px-3 text-xs sm:text-sm shadow-sm"
+										>
+											<Save className="w-3.5 h-3.5" />
+											{isSaving ? (
+												<span className="hidden sm:inline">{t('workshop.profile.saving') || 'Saving...'}</span>
+											) : (
+												<span className="hidden sm:inline">{t('workshop.profile.save') || 'Save'}</span>
+											)}
+										</Button>
+									</div>
+								)}
 							</div>
 						</CardHeader>
 						<CardContent className="p-6 space-y-8">
 							{/* Personal Details */}
 							<div>
 								<div className="flex items-center gap-2 mb-4">
-									<User className="w-5 h-5 text-gray-600" />
 									<h3 className="text-lg font-semibold text-gray-900">{t('workshop.profile.personal_details') || 'Personal Details'}</h3>
 								</div>
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -570,7 +569,6 @@ export default function WorkshopProfilePage() {
 							{/* Company Details */}
 							<div>
 								<div className="flex items-center gap-2 mb-4">
-									<Building2 className="w-5 h-5 text-gray-600" />
 									<h3 className="text-lg font-semibold text-gray-900">{t('workshop.profile.company_details') || 'Company Details'}</h3>
 								</div>
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">

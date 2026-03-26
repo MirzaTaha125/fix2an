@@ -15,7 +15,6 @@ import uploadRouter from './routes/upload.js'
 import workshopRouter from './routes/workshop.js'
 import adminRouter from './routes/admin.js'
 import reviewsRouter from './routes/reviews.js'
-import walletRouter from './routes/wallet.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -108,7 +107,6 @@ app.use('/api/upload', uploadRouter)
 app.use('/api/workshop', workshopRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/reviews', reviewsRouter)
-app.use('/api/wallet', walletRouter)
 
 const port = process.env.PORT ? Number(process.env.PORT) : 4000
 app.listen(port, () => {

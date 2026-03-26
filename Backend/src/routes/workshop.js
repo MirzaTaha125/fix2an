@@ -228,15 +228,15 @@ router.get('/stats', authenticate, requireRole('WORKSHOP'), async (req, res) => 
 				status: { $in: ['NEW', 'IN_BIDDING'] },
 				expiresAt: { $gt: now },
 			}),
-			// Total revenue from completed bookings
+			// Total revenue from completed/confirmed bookings
 			Booking.aggregate([
-				{ $match: { workshopId: workshop._id, status: 'DONE' } },
-				{ $group: { _id: null, total: { $sum: '$workshopAmount' } } },
+				{ $match: { workshopId: workshop._id, status: { $in: ['DONE', 'CONFIRMED', 'RESCHEDULED'] } } },
+				{ $group: { _id: null, total: { $sum: '$totalAmount' } } },
 			]),
-			// Monthly revenue from completed bookings this month
+			// Monthly revenue from completed/confirmed bookings this month
 			Booking.aggregate([
-				{ $match: { workshopId: workshop._id, status: 'DONE', createdAt: { $gte: startOfMonth } } },
-				{ $group: { _id: null, total: { $sum: '$workshopAmount' } } },
+				{ $match: { workshopId: workshop._id, status: { $in: ['DONE', 'CONFIRMED', 'RESCHEDULED'] }, createdAt: { $gte: startOfMonth } } },
+				{ $group: { _id: null, total: { $sum: '$totalAmount' } } },
 			]),
 			// Completed contracts (offers with ACCEPTED status)
 			Offer.countDocuments({ 

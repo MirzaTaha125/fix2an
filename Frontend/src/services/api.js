@@ -153,21 +153,7 @@ export const adminAPI = {
 	getRequests: (params) => api.get('/api/admin/requests', { params }),
 	getOffers: (params) => api.get('/api/admin/offers', { params }),
 	getBookings: (params) => api.get('/api/admin/bookings', { params }),
-	getPayouts: (params) => api.get('/api/admin/payouts', { params }),
-	generatePayouts: (data) => api.post('/api/admin/payouts', data),
-	markPayoutPaid: (id) => api.patch(`/api/admin/payouts/${id}/mark-paid`),
 	getEmailConfig: () => api.get('/api/admin/email-config'),
-	updateEmailConfig: (data) => api.patch('/api/admin/email-config', data),
-	getWalletTransactions: (params) => api.get('/api/admin/wallet/transactions', { params }),
-	updateWalletTransaction: (id, data) => api.patch(`/api/admin/wallet/transactions/${id}`, data),
-}
-
-// Wallet API
-export const walletAPI = {
-	getWallet: () => api.get('/api/wallet/my-wallet'),
-	getTransactions: (params) => api.get('/api/wallet/transactions', { params }),
-	deposit: (amount) => api.post('/api/wallet/deposit', { amount }),
-	withdraw: (amount, bankDetails) => api.post('/api/wallet/withdraw', { amount, bankDetails }),
 }
 
 export { api }

@@ -24,6 +24,8 @@ import {
 	RotateCcw,
 	Building2,
 	Camera,
+	Mail,
+	Phone as PhoneIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
@@ -58,6 +60,8 @@ export default function MyCasesPage() {
 	const [completeConfirmOpen, setCompleteConfirmOpen] = useState(false)
 	const [completeRating, setCompleteRating] = useState(0)
 	const [completeReviewText, setCompleteReviewText] = useState('')
+	const [detailsModalOpen, setDetailsModalOpen] = useState(false)
+	const [selectedBookingForDetails, setSelectedBookingForDetails] = useState(null)
 
 	// Redirect if not authenticated or wrong role
 	useEffect(() => {
@@ -386,7 +390,7 @@ export default function MyCasesPage() {
 			<div className="mb-8">
 				<div className="flex flex-row justify-between items-start sm:items-center gap-4">
 					<div className="flex-1 max-md:flex-1">
-						<h1 className="text-xl font-bold mb-1.5 text-[#05324f] max-md:text-xl">
+						<h1 className="text-xl font-bold mb-1.5 text-[#05324f] max-md:text-xl whitespace-nowrap">
 							{t('my_cases.title')}
 						</h1>
 						<p className="text-base text-gray-500 max-md:text-sm">
@@ -403,35 +407,19 @@ export default function MyCasesPage() {
 			</div>
 
 			{/* Navigation Tabs */}
-			<div className="flex flex-col gap-2 mb-6">
-				<div className="grid grid-cols-3 gap-2">
+			<div className="flex flex-col mb-6">
+				<div className="grid grid-cols-3 md:grid-cols-5 gap-2">
 					{[
 						{ key: 'my_cases', label: t('my_cases.my_cases_tab') || 'My Cases' },
 						{ key: 'booked_cases', label: t('my_cases.booked_cases_tab') || 'Booked' },
 						{ key: 'completed_cases', label: t('my_cases.completed_cases_tab') || 'Completed' },
-					].map(({ key, label }) => (
-						<button
-							key={key}
-							onClick={() => setActiveTab(key)}
-							className={`px-2 py-2 rounded-btn text-xs sm:text-sm font-semibold transition-all duration-200 text-center ${
-								activeTab === key
-									? 'bg-[#34C759] text-white shadow-sm'
-									: 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-[#05324f]'
-							}`}
-						>
-							{label}
-						</button>
-					))}
-				</div>
-				<div className="grid grid-cols-2 gap-2">
-					{[
 						{ key: 'cancelled_cases', label: t('my_cases.cancelled_cases_tab') || 'Cancelled' },
 						{ key: 'rescheduled_cases', label: t('my_cases.rescheduled_cases_tab') || 'Rescheduled' },
 					].map(({ key, label }) => (
 						<button
 							key={key}
 							onClick={() => setActiveTab(key)}
-							className={`px-2 py-2 rounded-btn text-xs sm:text-sm font-semibold transition-all duration-200 text-center ${
+							className={`px-2 py-2 md:py-3.5 rounded-btn text-xs sm:text-sm font-semibold transition-all duration-200 text-center ${
 								activeTab === key
 									? 'bg-[#34C759] text-white shadow-sm'
 									: 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-[#05324f]'
@@ -646,54 +634,35 @@ export default function MyCasesPage() {
 										{activeTab === 'booked_cases' && request.status === 'BOOKED' && bookings.length > 0 && (
 											<div className="flex flex-row gap-2 w-full md:w-auto md:justify-end">
 												<Button 
-													onClick={() => openCompleteConfirm(bookings[0])}
+													onClick={() => {
+														setSelectedBookingForDetails(bookings[0])
+														setDetailsModalOpen(true)
+													}}
 													size="sm" 
 													className="flex-1 md:flex-none md:w-auto px-2 md:px-3 py-1 text-xs font-semibold rounded-md whitespace-nowrap"
 													style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
 												>
-													{t('my_cases.complete_job') || 'Complete'}
-												</Button>
-												<Button 
-													onClick={() => openRescheduleModal(bookings[0])}
-													size="sm" 
-													variant="outline"
-													className="flex-1 md:flex-none md:w-auto px-2 md:px-3 py-1 text-xs font-semibold rounded-md whitespace-nowrap"
-													style={{ borderColor: '#05324f', color: '#05324f' }}
-												>
-													{t('my_cases.reschedule_job') || 'Reschedule'}
-												</Button>
-												<Button 
-													onClick={() => openCancelConfirm(bookings[0])}
-													size="sm" 
-													variant="destructive"
-													className="flex-1 md:flex-none md:w-auto px-2 md:px-3 py-1 text-xs font-semibold rounded-md whitespace-nowrap"
-												>
-													{t('my_cases.cancel_job') || 'Cancel'}
+													{t('my_cases.view_details') || 'View Details'}
 												</Button>
 											</div>
 										)}
 
-										{/* Rescheduled Cases - Show buttons */}
+										{/* Rescheduled Cases - Show View Details button */}
 										{activeTab === 'rescheduled_cases' && bookings.length > 0 && bookings.some(b => b.status === 'RESCHEDULED') && (
 											<div className="flex flex-col gap-2 w-full md:w-auto md:items-end">
 												{bookings.filter(b => b.status === 'RESCHEDULED').map((booking, idx) => (
 													<div key={idx} className="flex flex-col gap-2 w-full md:w-auto md:items-end">
 														<Button 
-															onClick={() => openRescheduleModal(booking)}
+															onClick={() => {
+																setSelectedBookingForDetails(booking)
+																setDetailsModalOpen(true)
+															}}
 															size="sm" 
 															variant="outline"
 															className="w-full md:w-auto px-3 py-1 text-xs font-semibold rounded-md whitespace-nowrap"
 															style={{ borderColor: '#05324f', color: '#05324f' }}
 														>
-															{t('my_cases.reschedule_again') || 'Reschedule'}
-														</Button>
-														<Button 
-															onClick={() => openCancelConfirm(booking)}
-															size="sm" 
-															variant="destructive"
-															className="w-full md:w-auto px-3 py-1 text-xs font-semibold rounded-md whitespace-nowrap"
-														>
-															{t('my_cases.cancel_job') || 'Cancel'}
+															{t('my_cases.view_details') || 'View Details'}
 														</Button>
 													</div>
 												))}
@@ -1082,7 +1051,118 @@ export default function MyCasesPage() {
 					</DialogContent>
 				</Dialog>
 
-			
+				{/* View Details Modal */}
+				<Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
+					<DialogContent onClose={() => setDetailsModalOpen(false)}>
+						<div className="flex flex-col h-full">
+							<DialogTitle className="text-xl font-bold text-[#05324f]">
+								{t('my_cases.workshop_details') || 'Workshop Details'}
+							</DialogTitle>
+							<DialogDescription className="text-sm text-gray-500 mt-1">
+								{t('my_cases.workshop_details_desc') || 'Contact information for your booked workshop.'}
+							</DialogDescription>
+							
+							{selectedBookingForDetails && (
+								<div className="space-y-6 pt-6">
+									<div className="space-y-4">
+										{/* Workshop Name */}
+										<div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 transition-colors hover:bg-gray-100/50">
+											<div className="p-2 bg-white rounded-lg shadow-sm">
+												<Building2 className="w-5 h-5 text-[#34C759]" />
+											</div>
+											<div className="flex-1 min-w-0">
+												<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">
+													{t('my_cases.company_name') || 'Company Name'}
+												</p>
+												<p className="text-sm font-bold text-[#05324f] break-words">
+													{selectedBookingForDetails.workshopId?.companyName || 'N/A'}
+												</p>
+											</div>
+										</div>
+
+										{/* Email */}
+										<div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 transition-colors hover:bg-gray-100/50">
+											<div className="p-2 bg-white rounded-lg shadow-sm">
+												<Mail className="w-5 h-5 text-[#34C759]" />
+											</div>
+											<div className="flex-1 min-w-0">
+												<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">
+													{t('my_cases.email') || 'Email'}
+												</p>
+												<p className="text-sm font-semibold text-[#05324f] break-words">
+													{selectedBookingForDetails.workshopId?.email || 'N/A'}
+												</p>
+											</div>
+										</div>
+
+										{/* Phone */}
+										<div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 transition-colors hover:bg-gray-100/50">
+											<div className="p-2 bg-white rounded-lg shadow-sm">
+												<PhoneIcon className="w-5 h-5 text-[#34C759]" />
+											</div>
+											<div className="flex-1 min-w-0">
+												<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">
+													{t('my_cases.phone') || 'Phone'}
+												</p>
+												<p className="text-sm font-semibold text-[#05324f] break-words">
+													{selectedBookingForDetails.workshopId?.phone || 'N/A'}
+												</p>
+											</div>
+										</div>
+									</div>
+
+									{/* Action Buttons */}
+									<div className="flex flex-col gap-3 pt-2">
+										{selectedBookingForDetails.status === 'BOOKED' && (
+											<Button 
+												onClick={() => {
+													setDetailsModalOpen(false)
+													openCompleteConfirm(selectedBookingForDetails)
+												}}
+												className="w-full h-11 bg-[#34C759] hover:bg-[#2eb34f] text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all"
+											>
+												<CheckCircle className="w-4 h-4 mr-2" />
+												{t('my_cases.complete_job') || 'Complete Job'}
+											</Button>
+										)}
+										
+										{(selectedBookingForDetails.status === 'BOOKED' || selectedBookingForDetails.status === 'RESCHEDULED') && (
+											<Button 
+												onClick={() => {
+													setDetailsModalOpen(false)
+													openRescheduleModal(selectedBookingForDetails)
+												}}
+												variant="outline"
+												className="w-full h-11 border-2 border-[#05324f] text-[#05324f] font-bold rounded-xl hover:bg-[#05324f]/5 transition-all"
+											>
+												<RotateCcw className="w-4 h-4 mr-2" />
+												{selectedBookingForDetails.status === 'RESCHEDULED' 
+													? (t('my_cases.reschedule_again') || 'Reschedule Again')
+													: (t('my_cases.reschedule_job') || 'Reschedule Job')
+												}
+											</Button>
+										)}
+
+										{(selectedBookingForDetails.status === 'BOOKED' || selectedBookingForDetails.status === 'RESCHEDULED') && (
+											<Button 
+												onClick={() => {
+													setDetailsModalOpen(false)
+													openCancelConfirm(selectedBookingForDetails)
+												}}
+												variant="destructive"
+												className="w-full h-11 font-bold rounded-xl shadow-sm hover:shadow-md transition-all"
+											>
+												<XCircle className="w-4 h-4 mr-2" />
+												{t('my_cases.cancel_job') || 'Cancel Job'}
+											</Button>
+										)}
+									</div>
+								</div>
+							)}
+						</div>
+					</DialogContent>
+				</Dialog>
+
 			<Footer />
 		</div>
 	)

@@ -95,6 +95,10 @@ export default function WorkshopProposalsPage() {
 				label: t('workshop.proposals.status.expired') || 'Expired',
 				className: 'bg-gray-100 text-gray-800 border-gray-200',
 			},
+			CANCELLED: {
+				label: t('workshop.proposals.status.cancelled') || 'Cancelled',
+				className: 'bg-orange-100 text-orange-800 border-orange-200',
+			},
 		}
 
 		const statusInfo = statusMap[status] || statusMap.SENT
@@ -115,6 +119,8 @@ export default function WorkshopProposalsPage() {
 				return <XCircle className="w-4 h-4" />
 			case 'EXPIRED':
 				return <AlertCircle className="w-4 h-4" />
+			case 'CANCELLED':
+				return <XCircle className="w-4 h-4" />
 			default:
 				return <Clock className="w-4 h-4" />
 		}
@@ -130,6 +136,8 @@ export default function WorkshopProposalsPage() {
 				return '#ef4444' // red-500
 			case 'EXPIRED':
 				return '#6b7280' // gray-500
+			case 'CANCELLED':
+				return '#f97316' // orange-500
 			default:
 				return '#34C759' // green
 		}
@@ -256,6 +264,14 @@ export default function WorkshopProposalsPage() {
 					>
 						{t('workshop.proposals.tabs.expired') || 'Expired'}
 					</Button>
+					<Button
+						variant={activeTab === 'cancelled' ? 'default' : 'outline'}
+						size="sm"
+						onClick={() => setActiveTab('cancelled')}
+						className={activeTab === 'cancelled' ? 'bg-[#34C759] text-white' : ''}
+					>
+						{t('workshop.proposals.tabs.cancelled') || 'Cancelled'}
+					</Button>
 				</div>
 
 				{/* Proposals List */}
@@ -357,19 +373,25 @@ export default function WorkshopProposalsPage() {
 											</div>
 											{offer.status === 'SENT' && (
 												<div className="flex-shrink-0">
-													<Link to={`/workshop/requests/${request?._id || request?.id}/offer`}>
-														<Button
-															size="sm"
-															className="px-3 py-1 text-xs font-semibold rounded-md"
-															style={{ 
-																backgroundColor: '#34C759',
-																color: '#FFFFFF'
-															}}
-														>
-															<Edit className="w-3 h-3 mr-1.5" />
-															{t('workshop.proposals.edit') || 'Edit'}
-														</Button>
-													</Link>
+													{(request?._id || request?.id) ? (
+														<Link to={`/workshop/requests/${request?._id || request?.id}/offer`}>
+															<Button
+																size="sm"
+																className="px-3 py-1 text-xs font-semibold rounded-md"
+																style={{ 
+																	backgroundColor: '#34C759',
+																	color: '#FFFFFF'
+																}}
+															>
+																<Edit className="w-3 h-3 mr-1.5" />
+																{t('workshop.proposals.edit') || 'Edit'}
+															</Button>
+														</Link>
+													) : (
+														<span className="text-xs text-gray-400 italic">
+															{t('workshop.proposals.request_unavailable') || 'Request unavailable'}
+														</span>
+													)}
 												</div>
 											)}
 										</div>

@@ -582,12 +582,12 @@ export default function WorkshopSignupPage() {
 								{['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(
 									(day) => (
 										<div key={day} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 bg-gray-50/50 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-											<Label className="capitalize text-sm sm:text-base font-semibold text-gray-700 sm:min-w-[100px] sm:min-w-[120px]">
+											<Label className="capitalize text-sm sm:text-base font-semibold text-gray-700 sm:min-w-[120px]">
 												{t(`workshop.signup.opening_hours.days.${day}`)}
 											</Label>
-											<div className="flex items-center justify-between gap-2 sm:gap-3 flex-1">
-												<div className="w-28 sm:w-32">
-													<Label className="text-xs text-gray-500 mb-1 block">
+											<div className="grid grid-cols-2 gap-3 sm:gap-4 flex-1">
+												<div className="space-y-1">
+													<Label className="text-[10px] sm:text-xs text-gray-500 block uppercase tracking-wider font-medium">
 														{t('workshop.signup.opening_hours.open') || 'Open'}
 													</Label>
 													<Input
@@ -596,11 +596,11 @@ export default function WorkshopSignupPage() {
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Open`]: e.target.value }))
 														}
-														className="w-full"
+														className="w-full h-10 sm:h-11 px-3 bg-white"
 													/>
 												</div>
-												<div className="w-28 sm:w-32">
-													<Label className="text-xs text-gray-500 mb-1 block">
+												<div className="space-y-1">
+													<Label className="text-[10px] sm:text-xs text-gray-500 block uppercase tracking-wider font-medium">
 														{t('workshop.signup.opening_hours.close') || 'Close'}
 													</Label>
 													<Input
@@ -609,7 +609,7 @@ export default function WorkshopSignupPage() {
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Close`]: e.target.value }))
 														}
-														className="w-full"
+														className="w-full h-10 sm:h-11 px-3 bg-white"
 													/>
 												</div>
 											</div>
