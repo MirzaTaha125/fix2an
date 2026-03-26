@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Input } from '../components/ui/Input'
 import { Label } from '../components/ui/Label'
 import { Textarea } from '../components/ui/Textarea'
+import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice, formatDate } from '../utils/cn'
 import { Car, Send, Clock, DollarSign, FileText, Shield, Calendar, User, MessageSquare } from 'lucide-react'
@@ -168,15 +169,54 @@ export default function CreateOfferPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-white flex items-center justify-center pt-20">
+			<div className="min-h-screen bg-gray-50 flex flex-col">
 				<Navbar />
-				<div className="text-center space-y-4">
-					<div className="relative">
-						<div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto"></div>
-						<Send className="w-10 h-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{ color: '#34C759' }} />
+				<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
+					{/* Header Skeleton */}
+					<div className="mb-8 space-y-2">
+						<Skeleton className="h-8 md:h-10 w-48" />
+						<Skeleton className="h-4 w-64" />
 					</div>
-					<p className="text-gray-600 font-medium text-lg">{t('common.loading')}</p>
+					
+					{/* Request Info Card Skeleton */}
+					<Card className="mb-8 sm:mb-10 md:mb-12 shadow-lg border border-gray-200 bg-white">
+						<CardHeader className="pb-4 sm:pb-5 px-5 sm:px-7 pt-5 sm:pt-7">
+							<Skeleton className="h-6 w-40" />
+							<Skeleton className="h-4 w-full mt-2" />
+						</CardHeader>
+						<CardContent className="pt-0 px-5 sm:px-7 pb-5 sm:pb-7 flex flex-col md:flex-row gap-6">
+							<div className="flex-1 space-y-4">
+								<Skeleton className="h-12 w-full" />
+								<Skeleton className="h-12 w-full" />
+							</div>
+							<div className="flex-1 space-y-4">
+								<Skeleton className="h-12 w-full" />
+								<Skeleton className="h-12 w-full" />
+							</div>
+						</CardContent>
+					</Card>
+
+					{/* Form Skeleton */}
+					<Card className="shadow-lg border border-gray-200 bg-white">
+						<CardHeader className="pb-4 sm:pb-5 px-5 sm:px-7 pt-5 sm:pt-7">
+							<Skeleton className="h-6 w-48" />
+							<Skeleton className="h-4 w-full mt-2" />
+						</CardHeader>
+						<CardContent className="pt-0 px-5 sm:px-7 pb-5 sm:pb-7 space-y-6">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+								<Skeleton className="h-12 w-full" />
+								<Skeleton className="h-12 w-full" />
+							</div>
+							<Skeleton className="h-12 w-full" />
+							<Skeleton className="h-24 w-full" />
+							<div className="flex justify-end gap-4 pt-6">
+								<Skeleton className="h-10 w-24" />
+								<Skeleton className="h-10 w-32" />
+							</div>
+						</CardContent>
+					</Card>
 				</div>
+				<Footer />
 			</div>
 		)
 	}

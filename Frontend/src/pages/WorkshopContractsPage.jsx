@@ -288,31 +288,28 @@ export default function WorkshopContractsPage() {
 			{/* Cancel Confirmation Dialog */}
 			<Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
 				<DialogContent onClose={handleCancelDialogClose}>
-					<div className="flex items-start gap-4">
-						<div className="p-3 bg-red-100 rounded-full flex-shrink-0">
-							<AlertTriangle className="w-6 h-6 text-red-600" />
-						</div>
-						<div className="flex-1">
-							<DialogTitle>{t('workshop.contracts.cancel_contract') || 'Cancel Contract'}</DialogTitle>
-							<DialogDescription>
-								{t('workshop.contracts.cancel_confirm') || 'Are you sure you want to cancel this contract? This action cannot be undone.'}
-							</DialogDescription>
-							<div className="flex gap-3 mt-6">
-								<Button
-									variant="destructive"
-									onClick={handleCancelConfirm}
-									className="flex-1"
-								>
-									{t('workshop.contracts.yes_cancel') || 'Yes, Cancel Contract'}
-								</Button>
-								<Button
-									variant="outline"
-									onClick={handleCancelDialogClose}
-									className="flex-1"
-								>
-									{t('workshop.contracts.no_keep') || 'No, Keep It'}
-								</Button>
-							</div>
+					<div className="flex-1">
+						<DialogTitle>{t('workshop.contracts.cancel_contract') || 'Cancel Contract'}</DialogTitle>
+						<DialogDescription>
+							{t('workshop.contracts.cancel_confirm') || 'Are you sure you want to cancel this contract? This action cannot be undone.'}
+						</DialogDescription>
+						<div className="flex justify-start gap-2 mt-6">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={handleCancelDialogClose}
+								className="px-4 py-2 text-xs"
+							>
+								{t('workshop.contracts.no_keep') || 'No, Keep It'}
+							</Button>
+							<Button
+								variant="destructive"
+								size="sm"
+								onClick={handleCancelConfirm}
+								className="px-4 py-2 text-xs"
+							>
+								{t('workshop.contracts.yes_cancel') || 'Yes, Cancel Contract'}
+							</Button>
 						</div>
 					</div>
 				</DialogContent>
@@ -353,18 +350,13 @@ export default function WorkshopContractsPage() {
 					{filteredContracts.length === 0 ? (
 						<Card className="border-0 shadow-2xl overflow-hidden">
 							<CardContent className="text-center py-20 sm:py-24 px-6 bg-white">
-								<div className="relative inline-block mb-8">
-									<div className="relative p-10 sm:p-12 rounded-3xl border-2 border-gray-200">
-										<FileText className="w-24 h-24 sm:w-28 sm:h-28 mx-auto" style={{ color: '#34C759' }} />
-									</div>
-								</div>
-								<h3 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: '#05324f' }}>
+								<h3 className="text-xl font-bold mb-4" style={{ color: '#05324f' }}>
 									{activeTab === 'current' 
 										? (t('workshop.contracts.no_current_contracts') || 'No Current Contracts')
 										: (t('workshop.contracts.no_completed_contracts') || 'No Completed Contracts')
 									}
 								</h3>
-								<p className="text-lg sm:text-xl max-w-xl mx-auto leading-relaxed" style={{ color: '#05324f' }}>
+								<p className="text-lg max-w-xl mx-auto leading-relaxed" style={{ color: '#05324f' }}>
 									{activeTab === 'current'
 										? (t('workshop.contracts.no_current_contracts_desc') || 'You don\'t have any active contracts at the moment.')
 										: (t('workshop.contracts.no_completed_contracts_desc') || 'You don\'t have any completed contracts yet.')

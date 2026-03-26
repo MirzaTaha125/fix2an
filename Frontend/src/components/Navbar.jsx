@@ -33,11 +33,17 @@ function Navbar() {
 		return location.pathname === path || location.pathname?.startsWith(path + '/')
 	}
 
-	// Check if we're on the home page
-	const isHomePage = location.pathname === '/' || location.pathname === ''
-
-	// Check if we're on auth or registration pages
-	const isAuthPage = location.pathname.includes('/auth') || location.pathname.includes('/signup') || location.pathname.includes('/forgot') || location.pathname.includes('/verify')
+	// Check if navbar should show back button
+	const shouldShowBackButton = (
+		location.pathname === '/upload' ||
+		location.pathname === '/profile' ||
+		location.pathname === '/workshop/profile' ||
+		location.pathname === '/offers' ||
+		location.pathname === '/book-appointment' ||
+		location.pathname.includes('/offer') ||
+		location.pathname.includes('/workshop/reviews') ||
+		location.pathname.includes('/admin/workshops/')
+	)
 
 	// Determine if navbar should have white background and black text
 	// Always use white navbar on homepage by default for visibility
@@ -61,14 +67,14 @@ function Navbar() {
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-1 sm:pb-0">
 				<div className="grid grid-cols-3 md:flex justify-between items-center py-2 sm:py-2.5 w-full">
 					<div className="flex justify-start md:hidden">
-						{!isHomePage && (
+						{shouldShowBackButton && (
 							<button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
 								<ArrowLeft className="w-6 h-6 text-[#05324f]" />
 							</button>
 						)}
 					</div>
 					<div className="flex items-center justify-center md:justify-start gap-3 w-full">
-						{!isHomePage && (
+						{shouldShowBackButton && (
 							<button onClick={() => navigate(-1)} className="p-2 -ml-2 hidden md:inline-flex text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
 								<ArrowLeft className="w-5 h-5 text-[#05324f]" />
 							</button>

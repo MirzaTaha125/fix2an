@@ -15,6 +15,7 @@ import {
 	CheckCircle,
 	Calendar,
 	Star,
+	Building2,
 } from 'lucide-react'
 
 export default function BookAppointmentPage() {
@@ -29,6 +30,8 @@ export default function BookAppointmentPage() {
 	const [scheduledAt, setScheduledAt] = useState('')
 	const [bookingNotes, setBookingNotes] = useState('')
 	const [isBooking, setIsBooking] = useState(false)
+	const [agreeToTerms, setAgreeToTerms] = useState(false)
+	const [bookingSuccess, setBookingSuccess] = useState(false)
 
 	// Parse workshop's available times from offer (stored as JSON string)
 	const availableSlots = (() => {
@@ -127,6 +130,10 @@ export default function BookAppointmentPage() {
 			toast.error(t('offers_page.select_workshop_time') || "Please select one of the workshop's available times")
 			return
 		}
+		if (!agreeToTerms) {
+			toast.error(t('offers_page.agree_to_terms_required') || "Please agree to the booking terms and no-show policy")
+			return
+		}
 
 		setIsBooking(true)
 		try {
@@ -138,7 +145,8 @@ export default function BookAppointmentPage() {
 
 			if (response.data) {
 				toast.success(t('offers_page.booking_success') || 'Booking created successfully!')
-				navigate('/my-cases', { replace: true })
+				setBookingSuccess(true)
+				window.scrollTo(0, 0)
 			}
 		} catch (error) {
 			console.error('Booking error:', error)
@@ -321,227 +329,352 @@ export default function BookAppointmentPage() {
 		? `https://www.google.com/maps?q=${workshop.latitude},${workshop.longitude}&output=embed&z=15`
 		: fullAddress ? `https://www.google.com/maps?q=${encodeURIComponent(fullAddress)}&output=embed&z=15` : null
 
-	return (
-	<div className="min-h-screen bg-gray-50">
-		<Navbar />
-		<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-28">
-			{/* Desktop: Header */}
-			<div className="text-center mb-8 max-md:hidden">
-				<h1 className="text-xl font-bold mb-2 text-[#05324f]">{workshopName}</h1>
-				<p className="text-gray-500 text-base">{t('offers_page.your_chosen_workshop')}</p>
-			</div>
-
-			{/* Mobile: reference layout - Total price then cards then button */}
-			<div className="max-md:block hidden space-y-5">
-				<p className="text-3xl font-bold text-[#05324f] max-md:text-center">{formatPrice(totalPrice)}</p>
-
-				{/* Price breakdown card - only Total on mobile */}
-				<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-					<h2 className="text-xl text-base font-bold text-gray-900 mb-4">{t('offers_page.price_breakdown')}</h2>
-					<div className="flex justify-between text-sm text-gray-700">
-						<span>{t('offers_page.total')}</span>
-						<span className="font-medium">{formatPrice(totalPrice)}</span>
+	if (offer?.status === 'ACCEPTED' && !bookingSuccess) {
+		return (
+			<div className="min-h-screen bg-gray-50 flex flex-col">
+				<Navbar />
+				<div className="flex-1 max-w-xl mx-auto px-4 pt-24 pb-20 w-full flex items-center justify-center">
+					<div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center space-y-4">
+						<div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-2">
+							<span className="text-3xl">⚠️</span>
+						</div>
+						<h1 className="text-2xl font-bold text-gray-900">{t('offers_page.already_booked') || 'Offer Already Booked'}</h1>
+						<p className="text-gray-600">{t('offers_page.already_booked_desc') || "This offer has already been accepted and booked. Please check your cases for details."}</p>
+						<Button
+							onClick={() => navigate('/my-cases')}
+							className="w-full py-4 rounded-xl font-bold mt-4"
+							style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
+						>
+							{t('offers_page.go_to_my_cases') || 'Go to My Cases'}
+						</Button>
 					</div>
-					{offer.note && (
-						<p className="text-sm text-gray-600 mt-3 pt-3 border-t border-gray-200">{offer.note}</p>
-					)}
 				</div>
+				<Footer />
+			</div>
+		)
+	}
 
-				{/* Workshop card - reference (name, city, certified, rating, map) */}
-				<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-					<div className="flex gap-4">
-						<div className="flex-1 min-w-0">
-							<h3 className="text-base font-bold text-gray-900">{workshopName}</h3>
-							{city && <p className="text-sm text-gray-600 mt-0.5">{city}</p>}
-							{isVerified && (
-								<div className="flex items-center gap-1.5 mt-2">
-									<CheckCircle className="w-4 h-4 text-[#34C759] shrink-0" />
-									<span className="text-sm text-gray-700">{t('offers_page.certified')}</span>
-								</div>
-							)}
-							{workshopRating != null && (
-								<button 
-									onClick={() => navigate(`/workshop/${workshop._id || workshop.id}/reviews`, { state: { workshopName } })}
-									className="flex items-center gap-1.5 mt-2 hover:bg-gray-50 p-1.5 -ml-1.5 rounded-lg transition-colors text-left w-fit"
-								>
-									<div className="flex">
-										{[1,2,3,4,5].map((i) => (
-											<Star
-												key={i}
-												className={`w-4 h-4 shrink-0 ${i <= Math.round(workshopRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
-											/>
-										))}
+	if (bookingSuccess) {
+		return (
+			<div className="min-h-screen bg-gray-50">
+				<Navbar />
+				<div className="max-w-xl mx-auto px-4 pt-24 pb-20">
+					<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+						<div className="p-8 text-center space-y-4">
+							<div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+								<CheckCircle className="w-10 h-10 text-[#34C759]" />
+							</div>
+							<h1 className="text-2xl font-bold text-gray-900">{t('offers_page.booking_confirmed') || 'Booking Confirmed!'}</h1>
+							<p className="text-gray-600">{t('offers_page.booking_confirmed_desc') || "Your appointment has been successfully scheduled. You'll receive a confirmation email shortly."}</p>
+						</div>
+
+						<div className="p-6 border-t border-gray-100 space-y-6">
+							<div className="space-y-4">
+								<h2 className="text-lg font-bold text-gray-900">{t('offers_page.workshop_details') || 'Workshop Details'}</h2>
+								<div className="space-y-3">
+									<div className="flex items-start gap-3">
+										<Building2 className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+										<div>
+											<p className="text-sm font-semibold text-gray-900">{workshopName}</p>
+											<p className="text-xs text-gray-500">{fullAddress}</p>
+										</div>
 									</div>
-									<span className="text-sm font-semibold text-gray-700 ml-0.5">{workshopRating.toFixed(1).replace('.', ',')}</span>
-									<span className="text-sm text-[#34C759] hover:text-[#2eaa4e] underline decoration-[#34C759]/30 underline-offset-2 ml-1">
-										({reviewCount} {t('customer_reviews.reviews') || 'reviews'})
-									</span>
-								</button>
-							)}
-						</div>
-						{mapSrc && (
-							<div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 shrink-0">
-								<iframe title="Map" width="96" height="96" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={mapSrc} className="pointer-events-none scale-150 origin-top-left w-[200%] h-[200%]" />
-							</div>
-						)}
-					</div>
-				</div>
-
-				{/* Workshop's available times + notes */}
-				<div className="space-y-3">
-					<Label className="text-sm font-semibold text-gray-900 block">
-						{t('offers_page.workshop_available_times') || "Workshop's available times"} *
-					</Label>
-					{availableSlots.length === 0 ? (
-						<p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-							{t('offers_page.no_available_times') || "Workshop hasn't set available times."}
-						</p>
-					) : (
-						<div className="flex flex-wrap gap-2">
-							{availableSlots.map((slot) => {
-								const isSelected = scheduledAt === slot
-								return (
-									<button
-										key={slot}
-										type="button"
-										onClick={() => setScheduledAt(slot)}
-										className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
-											isSelected
-												? 'border-[#34C759] bg-[#34C759]/10 text-[#34C759]'
-												: 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
-										}`}
-									>
-										{formatSlotLabel(slot)}
-									</button>
-								)
-							})}
-						</div>
-					)}
-					<Label htmlFor="notes" className="text-sm font-semibold text-gray-900 block">{t('offers_page.notes')}</Label>
-					<textarea id="notes" value={bookingNotes} onChange={(e) => setBookingNotes(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] outline-none text-sm" rows={2} placeholder={t('offers_page.notes_placeholder')} />
-				</div>
-
-				{/* Full-width green button - reference "Boka verkstad" */}
-				<Button
-					onClick={handleBooking}
-					disabled={availableSlots.length === 0 || !scheduledAt || isBooking}
-					className="w-full py-4 rounded-xl font-bold text-white text-base"
-					style={{ backgroundColor: '#34C759' }}
-				>
-					{isBooking ? (
-						<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block" />{t('offers_page.booking')}</>
-					) : (
-						t('offers_page.book_workshop')
-					)}
-				</Button>
-			</div>
-
-			{/* Desktop (PC): original layout - no reference style */}
-			<div className="hidden md:block">
-				<div className="bg-white rounded-card border border-gray-100 shadow-card p-6 sm:p-8 space-y-6 sm:space-y-8">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div>
-							<h2 className="text-xl sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Offer Price</h2>
-							<div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-								<div className="flex justify-between items-center">
-									<span className="font-semibold text-base text-gray-700">Total</span>
-									<span className="font-bold text-2xl sm:text-3xl" style={{ color: '#05324f' }}>{formatPrice(totalPrice)}</span>
+									{workshop?.phone && (
+										<div className="flex items-center gap-3">
+											<div className="w-5 h-5 flex items-center justify-center">
+												<span className="text-gray-400">📞</span>
+											</div>
+											<p className="text-sm text-gray-700">{workshop.phone}</p>
+										</div>
+									)}
+									{workshop?.email && (
+										<div className="flex items-center gap-3">
+											<div className="w-5 h-5 flex items-center justify-center">
+												<span className="text-gray-400">✉️</span>
+											</div>
+											<p className="text-sm text-gray-700">{workshop.email}</p>
+										</div>
+									)}
 								</div>
-								{offer.note && <p className="text-sm text-gray-500 mt-3 pt-3 border-t border-gray-200">{offer.note}</p>}
 							</div>
-						</div>
-						<div className="flex items-start justify-end">
-							<Button onClick={handleBooking} disabled={availableSlots.length === 0 || !scheduledAt || isBooking} className="px-8 py-3 text-base font-semibold w-full md:w-auto" style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}>
-								{isBooking ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block" />{t('offers_page.booking')}</> : <><Calendar className="w-5 h-5 mr-2" />{t('offers_page.book_this_workshop')}</>}
+
+							<div className="p-4 bg-gray-50 rounded-xl space-y-2">
+								<div className="flex justify-between items-center text-sm">
+									<span className="text-gray-600">{t('offers_page.accepted_price') || 'Accepted Price'}</span>
+									<span className="font-bold text-lg text-[#05324f]">{formatPrice(totalPrice)}</span>
+								</div>
+								<p className="text-xs text-amber-700 font-medium">
+									* {t('offers_page.payment_notice') || 'Payment happens directly with the workshop upon completion.'}
+								</p>
+							</div>
+
+							<Button
+								onClick={() => navigate('/my-cases')}
+								className="w-full py-4 rounded-xl font-bold"
+								style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
+							>
+								{t('offers_page.go_to_my_cases') || 'Go to My Cases'}
 							</Button>
 						</div>
 					</div>
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-						<div>
-							{mapSrc ? (
-								<div className="w-full h-48 sm:h-64 rounded-lg overflow-hidden border border-gray-300">
-									<iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={mapSrc} />
-								</div>
-							) : (
-								<div className="w-full h-48 sm:h-64 bg-gray-200 rounded-lg flex items-center justify-center border border-gray-300">
-									<MapPin className="w-12 h-12 text-gray-400" />
-								</div>
-							)}
-							{warrantyText && (
-								<div className="flex items-center gap-2 text-sm sm:text-base text-gray-700 mt-4">
-									<CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" /><span>{warrantyText}</span>
-								</div>
-							)}
-							{workshopRating != null && (
-								<button 
-									onClick={() => navigate(`/workshop/${workshop._id || workshop.id}/reviews`, { state: { workshopName } })}
-									className="flex items-center gap-1.5 mt-4 hover:bg-gray-50 p-2 -ml-2 rounded-lg transition-colors text-left w-fit"
-								>
-									<div className="flex">
-										{[1,2,3,4,5].map((i) => (
-											<Star
-												key={i}
-												className={`w-5 h-5 shrink-0 ${i <= Math.round(workshopRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
-											/>
-										))}
-									</div>
-									<span className="text-base font-semibold text-gray-700 ml-0.5">{workshopRating.toFixed(1).replace('.', ',')}</span>
-									<span className="text-base text-[#34C759] hover:text-[#2eaa4e] underline decoration-[#34C759]/30 underline-offset-2 ml-1">
-										({reviewCount} {t('customer_reviews.reviews') || 'reviews'})
-									</span>
-								</button>
-							)}
+				</div>
+				<Footer />
+			</div>
+		)
+	}
+
+	return (
+		<div className="min-h-screen bg-gray-50 flex flex-col">
+			<Navbar />
+			<div className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
+				
+				{/* Desktop Header */}
+				<div className="text-center mb-8 max-md:hidden">
+					<h1 className="text-xl font-bold mb-2 text-[#05324f]">{workshopName}</h1>
+					<p className="text-gray-500 text-base">{t('offers_page.your_chosen_workshop')}</p>
+				</div>
+
+				{/* Mobile Layout */}
+				<div className="max-md:block hidden space-y-5 pb-10">
+					<p className="text-3xl font-bold text-[#05324f] text-center">{formatPrice(totalPrice)}</p>
+
+					<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+						<h2 className="text-base font-bold text-gray-900 mb-4">{t('offers_page.price_breakdown')}</h2>
+						<div className="flex justify-between text-sm text-gray-700">
+							<span>{t('offers_page.total')}</span>
+							<span className="font-medium">{formatPrice(totalPrice)}</span>
 						</div>
-						<div className="space-y-4 sm:space-y-6">
-							{fullAddress && (
-								<div>
-									<h3 className="font-bold text-base sm:text-lg text-gray-900 mb-2">Address</h3>
-									<p className="text-sm sm:text-base text-gray-700">{fullAddress}</p>
+						{offer.note && (
+							<p className="text-sm text-gray-600 mt-3 pt-3 border-t border-gray-200">{offer.note}</p>
+						)}
+					</div>
+
+					<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+						<div className="flex gap-4">
+							<div className="flex-1 min-w-0">
+								<h3 className="text-base font-bold text-gray-900">{workshopName}</h3>
+								{city && <p className="text-sm text-gray-600 mt-0.5">{city}</p>}
+								{isVerified && (
+									<div className="flex items-center gap-1.5 mt-2">
+										<CheckCircle className="w-4 h-4 text-[#34C759] shrink-0" />
+										<span className="text-sm text-gray-700">{t('offers_page.certified')}</span>
+									</div>
+								)}
+								{workshopRating != null && (
+									<button 
+										onClick={() => navigate(`/workshop/${workshop._id || workshop.id}/reviews`, { state: { workshopName } })}
+										className="flex items-center gap-1.5 mt-2 hover:bg-gray-50 p-1.5 -ml-1.5 rounded-lg transition-colors text-left w-fit"
+									>
+										<div className="flex">
+											{[1,2,3,4,5].map((i) => (
+												<Star
+													key={i}
+													className={`w-4 h-4 shrink-0 ${i <= Math.round(workshopRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
+												/>
+											))}
+										</div>
+										<span className="text-sm font-semibold text-gray-700 ml-0.5">{workshopRating.toFixed(1).replace('.', ',')}</span>
+										<span className="text-sm text-[#34C759] hover:text-[#2eaa4e] underline decoration-[#34C759]/30 underline-offset-2 ml-1">
+											({reviewCount} {t('customer_reviews.reviews') || 'reviews'})
+										</span>
+									</button>
+								)}
+							</div>
+							{mapSrc && (
+								<div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 shrink-0">
+									<iframe title="Map" width="96" height="96" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={mapSrc} className="pointer-events-none scale-150 origin-top-left w-[200%] h-[200%]" />
 								</div>
 							)}
-							<div>
-								<h3 className="font-bold text-base sm:text-lg text-gray-900 mb-2">Opening hours</h3>
-								<div className="text-sm sm:text-base text-gray-700 whitespace-pre-line">{openingHoursFormatted}</div>
-							</div>
 						</div>
 					</div>
-					<div className="border-t border-gray-300 pt-6">
-						<Label className="text-base sm:text-lg font-semibold text-gray-900 mb-3 block">{t('offers_page.workshop_available_times') || "Workshop's available times"} *</Label>
+
+					<div className="space-y-3 px-1">
+						<Label className="text-sm font-semibold text-gray-900 block">
+							{t('offers_page.workshop_available_times') || "Workshop's available times"} *
+						</Label>
 						{availableSlots.length === 0 ? (
 							<p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
 								{t('offers_page.no_available_times') || "Workshop hasn't set available times."}
 							</p>
 						) : (
 							<div className="flex flex-wrap gap-2">
-								{availableSlots.map((slot) => {
-									const isSelected = scheduledAt === slot
-									return (
-										<button
-											key={slot}
-											type="button"
-											onClick={() => setScheduledAt(slot)}
-											className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
-												isSelected
-													? 'border-[#34C759] bg-[#34C759]/10 text-[#34C759]'
-													: 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
-											}`}
-										>
-											{formatSlotLabel(slot)}
-										</button>
-									)
-								})}
+								{availableSlots.map((slot) => (
+									<button
+										key={slot}
+										type="button"
+										onClick={() => setScheduledAt(slot)}
+										className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
+											scheduledAt === slot
+												? 'border-[#34C759] bg-[#34C759]/10 text-[#34C759]'
+												: 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+										}`}
+									>
+										{formatSlotLabel(slot)}
+									</button>
+								))}
 							</div>
 						)}
+						<Label htmlFor="notes-m" className="text-sm font-semibold text-gray-900 block pt-2">{t('offers_page.notes')}</Label>
+						<textarea id="notes-m" value={bookingNotes} onChange={(e) => setBookingNotes(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] outline-none text-sm" rows={2} placeholder={t('offers_page.notes_placeholder')} />
 					</div>
-					<div>
-						<Label htmlFor="notes-d" className="text-base sm:text-lg font-semibold text-gray-900 mb-3 block">{t('offers_page.notes')}</Label>
-						<textarea id="notes-d" value={bookingNotes} onChange={(e) => setBookingNotes(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] outline-none" rows={3} placeholder={t('offers_page.notes_placeholder')} />
+
+					<div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+						<div className="flex items-start gap-3">
+							<CheckCircle className="w-4 h-4 text-amber-600 mt-0.5" />
+							<p className="text-xs text-amber-800 leading-relaxed">
+								<span className="font-bold">{t('offers_page.notice_title')}:</span>{' '}
+								{t('offers_page.no_show_notice')}
+							</p>
+						</div>
+						<div className="flex items-center gap-3 pt-1">
+							<input
+								type="checkbox"
+								id="agreeToTerms-m"
+								checked={agreeToTerms}
+								onChange={(e) => setAgreeToTerms(e.target.checked)}
+								className="w-5 h-5 rounded border-gray-300 text-[#34C759] focus:ring-[#34C759]"
+							/>
+							<label htmlFor="agreeToTerms-m" className="text-sm font-semibold text-gray-900 cursor-pointer">
+								{t('offers_page.agree_to_terms')} *
+							</label>
+						</div>
+					</div>
+
+					<Button
+						onClick={handleBooking}
+						disabled={availableSlots.length === 0 || !scheduledAt || !agreeToTerms || isBooking}
+						className="w-full py-4 rounded-xl font-bold text-white text-base"
+						style={{ backgroundColor: agreeToTerms ? '#34C759' : '#9ca3af' }}
+					>
+						{isBooking ? (
+							<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block" />{t('offers_page.booking')}</>
+						) : (
+							t('offers_page.book_workshop')
+						)}
+					</Button>
+				</div>
+
+				{/* Desktop Layout */}
+				<div className="hidden md:block">
+					<div className="bg-white rounded-card border border-gray-100 shadow-card p-8 space-y-10">
+						<div className="grid grid-cols-2 gap-10">
+							<div className="space-y-6">
+								<div>
+									<h2 className="text-lg font-bold text-gray-900 mb-4">Offer Price</h2>
+									<div className="p-5 bg-gray-50 rounded-xl border border-gray-200">
+										<div className="flex justify-between items-center">
+											<span className="font-semibold text-gray-600">Total Price</span>
+											<span className="font-bold text-3xl text-[#05324f]">{formatPrice(totalPrice)}</span>
+										</div>
+										{offer.note && <p className="text-sm text-gray-500 mt-4 pt-4 border-t border-gray-200 italic">{offer.note}</p>}
+									</div>
+								</div>
+
+								{mapSrc ? (
+									<div className="w-full h-64 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
+										<iframe width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={mapSrc} />
+									</div>
+								) : (
+									<div className="w-full h-64 bg-gray-100 rounded-xl flex items-center justify-center border border-gray-200">
+										<MapPin className="w-12 h-12 text-gray-300" />
+									</div>
+								)}
+							</div>
+
+							<div className="space-y-8">
+								<div className="grid grid-cols-1 gap-6">
+									<div>
+										<h3 className="font-bold text-lg text-gray-900 mb-3">Address</h3>
+										<p className="text-gray-700 leading-relaxed">{fullAddress}</p>
+									</div>
+									<div>
+										<h3 className="font-bold text-lg text-gray-900 mb-3">Opening Hours</h3>
+										<div className="text-gray-700 whitespace-pre-line text-sm leading-relaxed">{openingHoursFormatted}</div>
+									</div>
+									{warrantyText && (
+										<div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-100 w-fit">
+											<CheckCircle className="w-5 h-5 text-[#34C759]" />
+											<span className="text-sm font-medium text-green-800">{warrantyText}</span>
+										</div>
+									)}
+								</div>
+
+								<div className="pt-6 border-t border-gray-100 space-y-4">
+									<Label className="text-lg font-bold text-gray-900 block">{t('offers_page.workshop_available_times')} *</Label>
+									{availableSlots.length === 0 ? (
+										<p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+											{t('offers_page.no_available_times')}
+										</p>
+									) : (
+										<div className="flex flex-wrap gap-2">
+											{availableSlots.map((slot) => (
+												<button
+													key={slot}
+													type="button"
+													onClick={() => setScheduledAt(slot)}
+													className={`px-4 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${
+														scheduledAt === slot
+															? 'border-[#34C759] bg-[#34C759]/10 text-[#34C759] shadow-sm'
+															: 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+													}`}
+												>
+													{formatSlotLabel(slot)}
+												</button>
+											))}
+										</div>
+									)}
+								</div>
+
+								<div className="space-y-3">
+									<Label htmlFor="notes-d" className="text-lg font-bold text-gray-900 block">{t('offers_page.notes')}</Label>
+									<textarea id="notes-d" value={bookingNotes} onChange={(e) => setBookingNotes(e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] outline-none transition-all shadow-sm" rows={3} placeholder={t('offers_page.notes_placeholder')} />
+								</div>
+							</div>
+						</div>
+
+						<div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 space-y-4">
+							<div className="flex items-start gap-4">
+								<CheckCircle className="w-6 h-6 text-amber-600 mt-0.5 shrink-0" />
+								<div>
+									<h4 className="font-bold text-amber-900 text-lg mb-1">{t('offers_page.notice_title')}</h4>
+									<p className="text-amber-800 leading-relaxed text-sm">
+										{t('offers_page.no_show_notice')}
+									</p>
+								</div>
+							</div>
+							<div className="flex items-center gap-3 pt-2">
+								<input
+									type="checkbox"
+									id="agreeToTerms-d"
+									checked={agreeToTerms}
+									onChange={(e) => setAgreeToTerms(e.target.checked)}
+									className="w-6 h-6 rounded border-gray-300 text-[#34C759] focus:ring-[#34C759] cursor-pointer"
+								/>
+								<label htmlFor="agreeToTerms-d" className="text-lg font-bold text-gray-900 cursor-pointer select-none">
+									{t('offers_page.agree_to_terms')} *
+								</label>
+							</div>
+						</div>
+
+						<div className="flex justify-end pt-4">
+							<Button 
+								onClick={handleBooking} 
+								disabled={availableSlots.length === 0 || !scheduledAt || !agreeToTerms || isBooking} 
+								className="px-12 py-5 text-lg font-bold rounded-2xl shadow-xl transition-all hover:translate-y-[-2px] active:translate-y-[0px] w-full md:w-auto" 
+								style={{ backgroundColor: agreeToTerms ? '#34C759' : '#9ca3af', color: '#FFFFFF' }}
+							>
+								{isBooking ? (
+									<><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-3 inline-block" />{t('offers_page.booking')}</>
+								) : (
+									<><Calendar className="w-6 h-6 mr-3" />{t('offers_page.book_this_workshop')}</>
+								)}
+							</Button>
+						</div>
 					</div>
 				</div>
 			</div>
+			<Footer />
 		</div>
-		<Footer />
-	</div>
 	)
 }
 

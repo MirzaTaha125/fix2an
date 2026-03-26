@@ -394,7 +394,7 @@ export default function MyCasesPage() {
 						</p>
 					</div>
 					<Link to="/upload" className="self-start sm:self-auto shrink-0">
-						<Button>
+						<Button size="sm">
 							<span className="md:hidden">{t('my_cases.upload_case')}</span>
 							<span className="hidden md:inline">{t('my_cases.upload_new_protocol')}</span>
 						</Button>
@@ -476,8 +476,8 @@ export default function MyCasesPage() {
 							{activeTab === 'my_cases' && (
 								<Link to="/upload" className="inline-block">
 									<Button 
-										size="default" 
-										className="shadow-md hover:shadow-lg transition-all text-sm sm:text-base font-semibold"
+										size="sm" 
+										className="shadow-md hover:shadow-lg transition-all text-xs sm:text-sm font-semibold"
 										style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
 									>
 										<Car className="w-4 h-4 mr-2" />
@@ -507,7 +507,7 @@ export default function MyCasesPage() {
 							return (
 								<div
 									key={requestId}
-									className={`grid grid-cols-1 md:grid-cols-3 items-start py-3 px-3 sm:px-6 gap-4 relative max-md:bg-white max-md:rounded-xl max-md:border max-md:border-gray-200 max-md:p-4 max-md:shadow-none ${index !== filteredRequests.length - 1 ? 'border-b border-gray-200 md:border-b' : ''} max-md:border-b-0`}
+									className={`grid grid-cols-1 md:grid-cols-3 items-start py-3 px-3 sm:px-6 gap-2 sm:gap-4 relative max-md:bg-white max-md:rounded-xl max-md:border max-md:border-gray-200 max-md:p-3 max-md:shadow-none ${index !== filteredRequests.length - 1 ? 'border-b border-gray-200 md:border-b' : ''} max-md:border-b-0`}
 								>
 									{/* Badge in Top Right Corner - Mobile Only */}
 									<div className="absolute top-3 right-3 md:hidden">
@@ -816,30 +816,31 @@ export default function MyCasesPage() {
 								/>
 							</div>
 
-							{/* Action Buttons */}
-							<div className="flex gap-3 pt-2">
+							<div className="flex justify-start gap-2 mt-6">
 								<Button
 									variant="outline"
+									size="sm"
 									onClick={() => {
 										setCompleteConfirmOpen(false)
 										setBookingToComplete(null)
 										setCompleteRating(0)
 										setCompleteReviewText('')
 									}}
-									className="flex-1"
+									className="px-4 py-2 text-xs"
 									disabled={isCompleting}
 								>
 									{t('common.cancel') || 'Cancel'}
 								</Button>
 								<Button
 									onClick={handleCompleteJob}
+									size="sm"
 									disabled={isCompleting}
-									className="flex-1 font-semibold"
+									className="px-4 py-2 text-xs font-semibold"
 									style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
 								>
 									{isCompleting ? (
 										<>
-											<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block"></div>
+											<div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block"></div>
 											{t('my_cases.completing') || 'Completing...'}
 										</>
 									) : (
@@ -861,35 +862,27 @@ export default function MyCasesPage() {
 						<DialogDescription>
 							{t('my_cases.cancel_job_confirm_description') || 'Are you sure you want to cancel this job? This action cannot be undone.'}
 						</DialogDescription>
-						<div className="flex gap-3 pt-4">
+						<div className="flex justify-start gap-2 mt-6">
 							<Button
 								variant="outline"
+								size="sm"
 								onClick={() => {
 									setCancelConfirmOpen(false)
 									setBookingToCancel(null)
 								}}
-								className="flex-1"
+								className="px-4 py-2 text-xs"
 								disabled={isCancelling}
 							>
-								{t('common.cancel') || 'Cancel'}
+								{t('common.no') || 'No'}
 							</Button>
 							<Button
-								onClick={handleCancelJob}
-								disabled={isCancelling}
 								variant="destructive"
-								className="flex-1 font-semibold"
+								size="sm"
+								onClick={handleCancelJob}
+								className="px-4 py-2 text-xs"
+								disabled={isCancelling}
 							>
-								{isCancelling ? (
-									<>
-										<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block"></div>
-										{t('my_cases.cancelling') || 'Cancelling...'}
-									</>
-								) : (
-									<>
-										<XCircle className="w-4 h-4 mr-2" />
-										{t('my_cases.confirm_cancel') || 'Confirm Cancel'}
-									</>
-								)}
+								{isCancelling ? t('my_cases.cancelling') : (t('my_cases.confirm_cancel') || 'Confirm Cancel')}
 							</Button>
 						</div>
 					</DialogContent>
@@ -944,29 +937,31 @@ export default function MyCasesPage() {
 								</div>
 
 								{/* Buttons */}
-								<div className="flex gap-3 pt-2">
+								<div className="flex justify-start gap-2 mt-6">
 									<Button
 										variant="outline"
+										size="sm"
 										onClick={() => {
 											setRescheduleModalOpen(false)
 											setSelectedBookingForReschedule(null)
 											setNewScheduledDate('')
 											setNewScheduledTime('')
 										}}
-										className="flex-1"
+										className="px-4 py-2 text-xs"
 										disabled={isRescheduling}
 									>
 										{t('common.cancel') || 'Cancel'}
 									</Button>
 									<Button
 										onClick={handleRescheduleJob}
+										size="sm"
 										disabled={!newScheduledDate || !newScheduledTime || isRescheduling}
-										className="flex-1 font-semibold"
+										className="px-4 py-2 text-xs font-semibold"
 										style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
 									>
 										{isRescheduling ? (
 											<>
-												<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block"></div>
+												<div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block"></div>
 												{t('my_cases.rescheduling') || 'Rescheduling...'}
 											</>
 										) : (

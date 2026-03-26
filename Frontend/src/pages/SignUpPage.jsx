@@ -122,9 +122,6 @@ export default function SignUpPage() {
 		<div className="flex-1 flex items-center justify-center px-4 py-20">
 			<div className="max-w-2xl w-full space-y-8 animate-fade-in-up">
 				<div className="text-center">
-					<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#34C759' }}>
-						<UserPlus className="w-8 h-8 text-white" />
-					</div>
 					<h2 className="text-xl font-bold mb-2" style={{ color: '#05324f' }}>{t('auth.signup.title')}</h2>
 						<p style={{ color: '#05324f' }}>
 							{t('auth.signup.subtitle')}{' '}
@@ -321,7 +318,7 @@ export default function SignUpPage() {
 							<button
 								type="submit"
 								disabled={isLoading}
-								className="w-full flex items-center justify-center gap-2 py-4 px-6 border border-transparent rounded-xl shadow-lg text-base font-bold text-white focus:outline-none focus:ring-4 disabled:opacity-50 transition-all transform hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
+								className="w-full flex items-center justify-center gap-2 py-4 px-6 border border-transparent rounded-xl shadow-lg text-base font-normal text-white focus:outline-none focus:ring-4 disabled:opacity-50 transition-all transform hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
 								style={{ 
 									backgroundColor: '#34C759',
 									backgroundImage: 'none',
@@ -341,7 +338,6 @@ export default function SignUpPage() {
 									</>
 								) : (
 									<>
-										<UserPlus className="w-5 h-5" />
 										{t('auth.signup.submit')}
 									</>
 								)}

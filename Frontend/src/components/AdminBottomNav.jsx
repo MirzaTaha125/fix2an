@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LogIn, UserPlus } from 'lucide-react'
+import { Shield } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { cn } from '../utils/cn'
 
 const NavItemContent = ({ active, icon: Icon, label }) => {
 	return (
@@ -25,40 +24,24 @@ const NavItemContent = ({ active, icon: Icon, label }) => {
 	)
 }
 
-export default function GuestBottomNav() {
+export default function AdminBottomNav() {
 	const location = useLocation()
 	const { t } = useTranslation()
 
-	const getActiveIndex = () => {
-		if (location.pathname.includes('signup') || location.pathname.includes('register')) return 1;
-		if (location.pathname.includes('signin') || location.pathname.includes('login') || location.pathname.includes('forgot')) return 0;
-		return 0;
-	}
-	const activeIndex = getActiveIndex();
+	const activeIndex = 0;
 
 	return (
 		<nav className="fixed bottom-0 left-0 right-0 h-[70px] bg-white border-t border-gray-100 z-50 max-md:block md:hidden safe-area-pb shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
 
 			<div className="flex justify-around items-stretch w-full h-full relative z-20">
 				<Link 
-					to="/auth/signin" 
+					to="/admin" 
 					className="flex-1 w-full h-full relative"
 				>
 					<NavItemContent 
-						active={activeIndex === 0} 
-						icon={LogIn} 
-						label={t('auth.login_short') || 'Login'} 
-					/>
-				</Link>
-				
-				<Link 
-					to="/auth/signup" 
-					className="flex-1 w-full h-full relative"
-				>
-					<NavItemContent 
-						active={activeIndex === 1} 
-						icon={UserPlus} 
-						label={t('auth.register_short') || 'Register'} 
+						active={true} 
+						icon={Shield} 
+						label="Admin Panel"
 					/>
 				</Link>
 			</div>
