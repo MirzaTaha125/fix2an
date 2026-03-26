@@ -51,7 +51,7 @@ export function LanguageSwitcher({ isScrolled = false }) {
 								key={language.code}
 								onClick={() => handleLanguageChange(language.code)}
 								className={`w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-gray-50 flex items-center space-x-2 ${
-									i18n.language === language.code ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-700'
+									i18n.language === language.code ? 'bg-[#05324F]/5 text-[#05324F] font-medium' : 'text-gray-700'
 								}`}
 							>
 								<span className="text-base">{language.flag}</span>
