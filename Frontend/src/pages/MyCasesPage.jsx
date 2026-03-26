@@ -537,10 +537,9 @@ export default function MyCasesPage() {
 												<Link to={`/offers?requestId=${requestId}`} className="w-auto">
 													<Button 
 														size="sm" 
-														className="px-2 py-1 text-xs font-semibold rounded-md whitespace-nowrap"
-														style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
+														className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
 													>
-														Show offer list
+														{t('my_cases.show_offer_list') || 'Show offer list'}
 													</Button>
 												</Link>
 											)}
@@ -622,10 +621,9 @@ export default function MyCasesPage() {
 											<Link to={`/offers?requestId=${requestId}`} className="hidden md:block w-auto">
 												<Button 
 													size="sm" 
-													className="px-2 py-1 text-xs font-semibold rounded-md whitespace-nowrap"
-													style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
+													className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
 												>
-													Show offer list
+													{t('my_cases.show_offer_list') || 'Show offer list'}
 												</Button>
 											</Link>
 										)}
@@ -639,8 +637,7 @@ export default function MyCasesPage() {
 														setDetailsModalOpen(true)
 													}}
 													size="sm" 
-													className="flex-1 md:flex-none md:w-auto px-2 md:px-3 py-1 text-xs font-semibold rounded-md whitespace-nowrap"
-													style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
+													className="flex-1 md:flex-none md:w-auto px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
 												>
 													{t('my_cases.view_details') || 'View Details'}
 												</Button>
@@ -659,8 +656,7 @@ export default function MyCasesPage() {
 															}}
 															size="sm" 
 															variant="outline"
-															className="w-full md:w-auto px-3 py-1 text-xs font-semibold rounded-md whitespace-nowrap"
-															style={{ borderColor: '#05324f', color: '#05324f' }}
+															className="w-full md:w-auto px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap border-2 border-[#05324f] text-[#05324f] hover:bg-[#05324f]/5 transition-all"
 														>
 															{t('my_cases.view_details') || 'View Details'}
 														</Button>
@@ -679,8 +675,7 @@ export default function MyCasesPage() {
 												setReviewText('')
 												setReviewModalOpen(true)
 											}}
-											className="w-full md:w-auto px-3 py-1 text-xs font-semibold rounded-md whitespace-nowrap"
-											style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
+											className="w-full md:w-auto px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
 										>
 											<Star className="w-3 h-3 mr-1" />
 											{t('my_cases.leave_review') || 'Write Review'}
@@ -693,8 +688,7 @@ export default function MyCasesPage() {
 												<Button 
 													size="sm" 
 													variant="outline"
-													className="w-full md:w-auto px-3 py-1 text-xs font-semibold rounded-md whitespace-nowrap"
-													style={{ borderColor: '#05324f', color: '#05324f' }}
+													className="w-full md:w-auto px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap border-2 border-[#05324f] text-[#05324f] hover:bg-[#05324f]/5 transition-all"
 												>
 													{t('my_cases.view_details') || 'View Details'}
 												</Button>
@@ -726,7 +720,7 @@ export default function MyCasesPage() {
 							return workshopName !== 'Workshop' || booking?.workshopId || bookingToComplete?.workshopId ? (
 								<div className="mt-4 p-3 bg-white rounded-lg border border-green-200">
 									<div className="flex items-center gap-2">
-										<Building2 className="w-5 h-5" style={{ color: '#34C759' }} />
+										<Building2 className="w-5 h-5 text-[#05324f]" />
 										<div>
 											<p className="text-xs text-gray-600 mb-0.5">{t('my_cases.contract_with')}</p>
 											<p className="font-bold text-sm text-gray-900">
@@ -804,8 +798,7 @@ export default function MyCasesPage() {
 									onClick={handleCompleteJob}
 									size="sm"
 									disabled={isCompleting}
-									className="px-4 py-2 text-xs font-semibold"
-									style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
+									className="px-4 py-2 text-xs font-bold rounded-xl shadow-md hover:shadow-lg transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
 								>
 									{isCompleting ? (
 										<>
@@ -848,8 +841,8 @@ export default function MyCasesPage() {
 								variant="destructive"
 								size="sm"
 								onClick={handleCancelJob}
-								className="px-4 py-2 text-xs"
 								disabled={isCancelling}
+								className="px-4 py-2 text-xs font-bold rounded-xl shadow-md hover:shadow-lg transition-all"
 							>
 								{isCancelling ? t('my_cases.cancelling') : (t('my_cases.confirm_cancel') || 'Confirm Cancel')}
 							</Button>
@@ -1066,9 +1059,9 @@ export default function MyCasesPage() {
 								<div className="space-y-6 pt-6">
 									<div className="space-y-4">
 										{/* Workshop Name */}
-										<div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 transition-colors hover:bg-gray-100/50">
-											<div className="p-2 bg-white rounded-lg shadow-sm">
-												<Building2 className="w-5 h-5 text-[#34C759]" />
+										<div className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 transition-all hover:bg-white hover:shadow-sm">
+											<div className="p-2.5 bg-white rounded-xl shadow-sm border border-gray-50">
+												<Building2 className="w-5 h-5 text-[#05324f]" />
 											</div>
 											<div className="flex-1 min-w-0">
 												<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">
@@ -1081,9 +1074,9 @@ export default function MyCasesPage() {
 										</div>
 
 										{/* Email */}
-										<div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 transition-colors hover:bg-gray-100/50">
-											<div className="p-2 bg-white rounded-lg shadow-sm">
-												<Mail className="w-5 h-5 text-[#34C759]" />
+										<div className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 transition-all hover:bg-white hover:shadow-sm">
+											<div className="p-2.5 bg-white rounded-xl shadow-sm border border-gray-50">
+												<Mail className="w-5 h-5 text-[#05324f]" />
 											</div>
 											<div className="flex-1 min-w-0">
 												<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">
@@ -1096,9 +1089,9 @@ export default function MyCasesPage() {
 										</div>
 
 										{/* Phone */}
-										<div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 transition-colors hover:bg-gray-100/50">
-											<div className="p-2 bg-white rounded-lg shadow-sm">
-												<PhoneIcon className="w-5 h-5 text-[#34C759]" />
+										<div className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 transition-all hover:bg-white hover:shadow-sm">
+											<div className="p-2.5 bg-white rounded-xl shadow-sm border border-gray-50">
+												<PhoneIcon className="w-5 h-5 text-[#05324f]" />
 											</div>
 											<div className="flex-1 min-w-0">
 												<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">

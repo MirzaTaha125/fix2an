@@ -79,11 +79,11 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 		const requestsWithOffersAndBookings = await Promise.all(
 			requests.map(async (request) => {
 				const offers = await Offer.find({ requestId: request._id })
-					.populate('workshopId', 'companyName rating reviewCount')
+					.populate('workshopId', 'companyName rating reviewCount email phone')
 					.sort({ createdAt: -1 })
 
 				const bookings = await Booking.find({ requestId: request._id })
-					.populate('workshopId', 'companyName rating reviewCount')
+					.populate('workshopId', 'companyName rating reviewCount email phone')
 					.populate('offerId', '_id id status price')
 					.sort({ createdAt: -1 })
 
