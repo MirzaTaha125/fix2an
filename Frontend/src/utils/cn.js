@@ -12,6 +12,13 @@ export function formatPrice(price) {
 	}).format(price)
 }
 
+export function formatCompactNumber(number) {
+	if (number === undefined || number === null) return '0'
+	
+	const formatter = Intl.NumberFormat('en', { notation: 'compact' })
+	return formatter.format(number)
+}
+
 export function formatDate(date) {
 	return new Intl.DateTimeFormat('sv-SE', {
 		year: 'numeric',

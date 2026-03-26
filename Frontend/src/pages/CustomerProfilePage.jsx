@@ -6,7 +6,7 @@ import { Input } from '../components/ui/Input'
 import { Label } from '../components/ui/Label'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
-import { formatPrice } from '../utils/cn'
+import { formatPrice, formatCompactNumber } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
 import {
 	User,
@@ -412,51 +412,37 @@ export default function CustomerProfilePage() {
 				</div>
 
 				{/* Stats Grid */}
-				<div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+				<div className="grid grid-cols-3 gap-3 sm:gap-4 mb-8">
 					<Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-						<CardContent className="p-6">
-							<div className="flex items-center justify-between mb-4">
-								<div className="p-3 bg-green-100 rounded-lg">
-									<FileText className="w-5 h-5 text-green-600" />
-								</div>
-								<span className="text-2xl font-bold text-gray-900">{stats.totalRequests}</span>
+						<CardContent className="p-4 sm:p-6 text-center">
+							<div className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+								{stats.totalRequests}
 							</div>
-							<h3 className="text-sm font-semibold text-gray-900 mb-1">
-								{t('profile.my_cases') || 'Total Requests'}
+							<h3 className="text-[10px] sm:text-sm font-semibold text-gray-500 uppercase tracking-wider">
+								{t('profile.my_cases') || 'Requests'}
 							</h3>
-							<p className="text-xs text-gray-500">All requests</p>
 						</CardContent>
 					</Card>
 
 					<Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-						<CardContent className="p-6">
-							<div className="flex items-center justify-between mb-4">
-								<div className="p-3 bg-green-100 rounded-lg">
-									<CheckCircle className="w-5 h-5 text-green-600" />
-								</div>
-								<span className="text-2xl font-bold text-gray-900">{stats.completedBookings}</span>
+						<CardContent className="p-4 sm:p-6 text-center">
+							<div className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+								{stats.completedBookings}
 							</div>
-							<h3 className="text-sm font-semibold text-gray-900 mb-1">
-								{t('profile.completed_cases') || 'Completed'}
+							<h3 className="text-[10px] sm:text-sm font-semibold text-gray-500 uppercase tracking-wider">
+								{t('profile.completed_cases') || 'Finished'}
 							</h3>
-							<p className="text-xs text-gray-500">Finished</p>
 						</CardContent>
 					</Card>
 
-					<Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow col-span-2 lg:col-span-1">
-						<CardContent className="p-6">
-							<div className="flex items-center justify-between mb-4">
-								<div className="p-3 bg-green-100 rounded-lg">
-									<DollarSign className="w-5 h-5 text-green-600" />
-								</div>
-								<span className="text-2xl font-bold text-gray-900">
-									{formatPrice(stats.totalSpend)}
-								</span>
+					<Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+						<CardContent className="p-4 sm:p-6 text-center">
+							<div className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+								{formatCompactNumber(stats.totalSpend)}
 							</div>
-							<h3 className="text-sm font-semibold text-gray-900 mb-1">
-								{t('profile.total_spend') || 'Total Spend'}
+							<h3 className="text-[10px] sm:text-sm font-semibold text-gray-500 uppercase tracking-wider">
+								{t('profile.total_spend') || 'Spend'}
 							</h3>
-							<p className="text-xs text-gray-500">All time</p>
 						</CardContent>
 					</Card>
 				</div>

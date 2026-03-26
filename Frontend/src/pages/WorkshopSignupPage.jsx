@@ -596,7 +596,7 @@ export default function WorkshopSignupPage() {
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Open`]: e.target.value }))
 														}
-														className="w-full h-10 sm:h-11 px-3 bg-white"
+														className="w-full px-3 bg-white"
 													/>
 												</div>
 												<div className="space-y-1">
@@ -609,7 +609,7 @@ export default function WorkshopSignupPage() {
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Close`]: e.target.value }))
 														}
-														className="w-full h-10 sm:h-11 px-3 bg-white"
+														className="w-full px-3 bg-white"
 													/>
 												</div>
 											</div>
@@ -640,7 +640,7 @@ export default function WorkshopSignupPage() {
 									<select
 										id="brandSelect"
 										onChange={handleAddBrand}
-										className="w-full h-12 rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 py-3 pr-10 text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] hover:bg-white transition-all appearance-none cursor-pointer"
+										className="w-full rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 py-3 pr-10 text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] hover:bg-white transition-all appearance-none cursor-pointer"
 										defaultValue=""
 									>
 										<option value="" disabled hidden>

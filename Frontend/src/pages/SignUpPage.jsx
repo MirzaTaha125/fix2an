@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useTranslation } from 'react-i18next'
+import { Input } from '../components/ui/Input'
 
 export default function SignUpPage() {
 	const { t } = useTranslation()
@@ -147,13 +148,12 @@ export default function SignUpPage() {
 											{t('auth.signup.name')}
 										</div>
 									</label>
-									<input
+									<Input
 										id="name"
 										name="name"
 										type="text"
 										value={formData.name}
 										onChange={handleChange}
-										className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] transition-all bg-gray-50/50 hover:bg-white"
 										placeholder={t('auth.signup.name')}
 									/>
 									{fieldErrors.name && <p className="mt-1 text-sm text-red-600">{fieldErrors.name}</p>}
@@ -166,14 +166,13 @@ export default function SignUpPage() {
 											{t('auth.signup.email')} *
 										</div>
 									</label>
-									<input
+									<Input
 										id="email"
 										name="email"
 										type="email"
 										value={formData.email}
 										onChange={handleChange}
 										required
-										className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] transition-all bg-gray-50/50 hover:bg-white"
 										placeholder={t('auth.signup.email')}
 									/>
 									{fieldErrors.email && <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>}
@@ -189,14 +188,14 @@ export default function SignUpPage() {
 										</div>
 									</label>
 									<div className="relative">
-										<input
+										<Input
 											id="password"
 											name="password"
 											type={showPassword ? 'text' : 'password'}
 											value={formData.password}
 											onChange={handleChange}
 											required
-											className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] transition-all pr-12 bg-gray-50/50 hover:bg-white"
+											className="pr-12"
 											placeholder={t('auth.signup.password')}
 										/>
 										<button
@@ -218,14 +217,14 @@ export default function SignUpPage() {
 										</div>
 									</label>
 									<div className="relative">
-										<input
+										<Input
 											id="confirmPassword"
 											name="confirmPassword"
 											type={showConfirmPassword ? 'text' : 'password'}
 											value={formData.confirmPassword}
 											onChange={handleChange}
 											required
-											className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] transition-all pr-12 bg-gray-50/50 hover:bg-white"
+											className="pr-12"
 											placeholder={t('auth.signup.confirm_password')}
 										/>
 										<button
@@ -249,13 +248,12 @@ export default function SignUpPage() {
 										{t('auth.signup.phone')}
 									</div>
 								</label>
-								<input
+								<Input
 									id="phone"
 									name="phone"
 									type="tel"
 									value={formData.phone}
 									onChange={handleChange}
-									className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] transition-all bg-gray-50/50 hover:bg-white"
 									placeholder={t('auth.signup.phone')}
 								/>
 							</div>
@@ -267,13 +265,12 @@ export default function SignUpPage() {
 										{t('auth.signup.address')}
 									</div>
 								</label>
-								<input
+								<Input
 									id="address"
 									name="address"
 									type="text"
 									value={formData.address}
 									onChange={handleChange}
-									className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] transition-all bg-gray-50/50 hover:bg-white"
 									placeholder={t('auth.signup.address')}
 								/>
 							</div>
@@ -286,13 +283,12 @@ export default function SignUpPage() {
 											{t('auth.signup.city')}
 										</div>
 									</label>
-									<input
+									<Input
 										id="city"
 										name="city"
 										type="text"
 										value={formData.city}
 										onChange={handleChange}
-										className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] transition-all bg-gray-50/50 hover:bg-white"
 										placeholder={t('auth.signup.city')}
 									/>
 								</div>
@@ -303,13 +299,12 @@ export default function SignUpPage() {
 											{t('auth.signup.postal_code')}
 										</div>
 									</label>
-									<input
+									<Input
 										id="postalCode"
 										name="postalCode"
 										type="text"
 										value={formData.postalCode}
 										onChange={handleChange}
-										className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] transition-all bg-gray-50/50 hover:bg-white"
 										placeholder={t('auth.signup.postal_code')}
 									/>
 								</div>
