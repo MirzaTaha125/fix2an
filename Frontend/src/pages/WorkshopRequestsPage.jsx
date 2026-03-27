@@ -414,10 +414,9 @@ export default function WorkshopRequestsPage() {
 												</p>
 												{/* "8 km away · Latest 2 May" - reference line with middle dot */}
 												<p className="text-xs text-gray-500 max-md:block">
-													{distance != null && `${Math.round(distance)} ${t('workshop.requests.km_away')}`}
+													{distance != null ? `${Math.round(distance)} ${t('workshop.requests.km_away')}` : (request.city || t('common.no_data'))}
 													{distance != null && latestDate && ' · '}
 													{latestDate && `${t('workshop.requests.latest')} ${latestDate}`}
-													{distance == null && !latestDate && t('common.no_data')}
 												</p>
 												{/* Desktop only: Username + Date, Distance */}
 												<div className="hidden md:flex items-center gap-2 mb-1 flex-wrap mt-2">
@@ -434,7 +433,7 @@ export default function WorkshopRequestsPage() {
 													{distance !== null ? (
 														<p className="text-xs text-gray-500">{Math.round(distance)} {t('workshop.requests.km_from_job')}</p>
 													) : (
-														<p className="text-xs text-gray-500">{t('common.no_data')}</p>
+														<p className="text-xs text-gray-500">{request.city || t('common.no_data')}</p>
 													)}
 												</div>
 											</div>
@@ -444,7 +443,7 @@ export default function WorkshopRequestsPage() {
 												{distance !== null ? (
 													<p className="text-xs sm:text-sm" style={{ color: '#05324f' }}>{Math.round(distance)} {t('workshop.requests.km_from_job')}</p>
 												) : (
-													<p className="text-xs sm:text-sm" style={{ color: '#05324f' }}>{t('common.no_data')}</p>
+													<p className="text-xs sm:text-sm" style={{ color: '#05324f' }}>{request.city || t('common.no_data')}</p>
 												)}
 											</div>
 

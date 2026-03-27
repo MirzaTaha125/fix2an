@@ -8,11 +8,21 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://peristomati
 // Helper function to get full URL for relative paths (like /uploads/...)
 export const getFullUrl = (relativePath) => {
 	if (!relativePath) return ''
+	let url = ''
 	if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
-		return relativePath
+		url = relativePath
+	} else {
+		const base = (API_BASE_URL || '').replace(/\/+$/, '')
+		const path = '/' + (relativePath || '').replace(/^\/+/, '')
+		url = base ? base + path : path
 	}
-	const base = (API_BASE_URL || '').replace(/\/+$/, '')
-	const path = '/' + (relativePath || '').replace(/^\/+/, '')
-	return base ? base + path : path
+
+	// Add ngrok skip warning parameter if it's an ngrok URL
+	if (url.includes('ngrok-free.dev') || url.includes('ngrok.io')) {
+		const separator = url.includes('?') ? '&' : '?'
+		return `${url}${separator}ngrok-skip-browser-warning=true`
+	}
+
+	return url
 }
 

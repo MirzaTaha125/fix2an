@@ -20,6 +20,7 @@
 		"required": "Obligatoriskt",
 		"optional": "Valfritt",
 		"or": "Eller",
+		"no_data": "Saknas",
 		"admin_tagline": "Hantera & Övervaka",
 		"select_registration_type": "Välj registreringstyp",
 		"select_registration_type_desc": "Välj hur du vill registrera dig",
@@ -43,7 +44,8 @@
 		"workshop_unblocked": "Verkstad avblockerad",
 		"failed_update_workshop": "Kunde inte uppdatera verkstad",
 		"select_placeholder": "Välj...",
-		"go_back": "Gå tillbaka"
+		"go_back": "Gå tillbaka",
+		"contact_support": "Kontakta support"
 	},
 	"navigation": {
 		"home": "Hem",
@@ -517,6 +519,16 @@
 		}
 	},
 	"workshop": {
+		"pending": {
+			"title": "Ansökan under behandling",
+			"message": "Vi granskar för närvarande din registrering. Du kommer att få ett e-postmeddelande när ditt konto har godkänts.",
+			"logout": "Logga ut"
+		},
+		"rejected": {
+			"title": "Ansökan avslogs",
+			"message": "Tyvärr har din verkstadsregistrering avslagits av våra administratörer.",
+			"reapply": "Skicka in ansökan på nytt"
+		},
 		"dashboard": {
 			"title": "Verkstadsdashboard",
 			"subtitle": "Hantera dina förfrågningar och erbjudanden",
@@ -928,6 +940,12 @@
 			"no_pending": "Inga väntande verkstäder",
 			"approve": "Godkänn",
 			"reject": "Avvisa",
+			"reject_title": "Avvisa verkstad",
+			"reject_desc": "Är du säker på att du vill avvisa {{name}}?",
+			"reason_label": "Anledning till avvisning",
+			"reason_placeholder": "Vänligen förklara varför denna verkstad avvisas...",
+			"reason_required": "Vänligen ange en anledning",
+			"confirm_reject": "Bekräfta avvisning",
 			"block": "Blockera",
 			"unblock": "Avblockera",
 			"verified": "Verifierad",

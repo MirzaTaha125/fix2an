@@ -68,6 +68,20 @@ export default {
         body: ['16px', { lineHeight: '1.6' }],
         small: ['14px', { lineHeight: '1.5' }],
       },
+      keyframes: {
+        shimmer: {
+          '0%': { backgroundPosition: '-1000px 0' },
+          '100%': { backgroundPosition: '1000px 0' },
+        },
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 2s infinite linear',
+        'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
+      },
     },
   },
   plugins: [],

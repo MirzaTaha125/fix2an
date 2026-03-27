@@ -77,6 +77,7 @@ export const authAPI = {
 	get2FASetup: () => api.get('/api/auth/2fa/setup'),
 	verify2FASetup: (data) => api.post('/api/auth/2fa/verify-setup', data),
 	disable2FA: (data) => api.post('/api/auth/2fa/disable', data),
+	deleteAccount: () => api.delete('/api/auth/self-delete'),
 }
 
 // Vehicles API

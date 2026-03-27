@@ -27,7 +27,11 @@ export default function SignInPage() {
 			if (role === 'ADMIN') {
 				navigate('/admin', { replace: true })
 			} else if (role === 'WORKSHOP') {
-				navigate('/workshop/requests', { replace: true })
+				if (user.isVerified) {
+					navigate('/workshop/requests', { replace: true })
+				} else {
+					navigate('/workshop/pending', { replace: true })
+				}
 			} else {
 				navigate('/my-cases', { replace: true })
 			}
@@ -56,7 +60,13 @@ export default function SignInPage() {
 				toast.success(t('success.login_successful'))
 				const role = result.user?.role?.toUpperCase()
 				if (role === 'ADMIN') navigate('/admin')
-				else if (role === 'WORKSHOP') navigate('/workshop/requests')
+				else if (role === 'WORKSHOP') {
+					if (result.user?.isVerified) {
+						navigate('/workshop/requests')
+					} else {
+						navigate('/workshop/pending')
+					}
+				}
 				else navigate('/my-cases')
 			} else if (result.requiresTwoFactor && result.tempToken) {
 				navigate('/auth/2fa-verify', { state: { tempToken: result.tempToken, email: result.email } })

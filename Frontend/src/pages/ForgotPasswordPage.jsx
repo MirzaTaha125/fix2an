@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Mail, KeyRound, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
@@ -93,9 +93,6 @@ export default function ForgotPasswordPage() {
 			<div className="flex-1 flex items-center justify-center px-4 py-20 relative z-10">
 				<div className="max-w-md w-full space-y-8 animate-fade-in-up">
 					<div className="text-center">
-						<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#34C759' }}>
-							<KeyRound className="w-8 h-8 text-white" />
-						</div>
 						<h2 className="text-xl font-bold mb-2" style={{ color: '#05324f' }}>
 							{t('auth.forgot_password.title', 'Reset Password')}
 						</h2>

@@ -20,6 +20,7 @@
 		"required": "Required",
 		"optional": "Optional",
 		"or": "Or",
+		"no_data": "N/A",
 		"admin_tagline": "Manage & Monitor",
 		"select_registration_type": "Select Registration Type",
 		"select_registration_type_desc": "Choose how you want to register",
@@ -43,7 +44,8 @@
 		"workshop_unblocked": "Workshop unblocked",
 		"failed_update_workshop": "Failed to update workshop",
 		"select_placeholder": "Select...",
-		"go_back": "Go back"
+		"go_back": "Go back",
+		"contact_support": "Contact Support"
 	},
 	"navigation": {
 		"home": "Home",
@@ -517,6 +519,16 @@
 		}
 	},
 	"workshop": {
+		"pending": {
+			"title": "Application Pending",
+			"message": "We are currently reviewing your registration. You will receive an email once your account has been approved.",
+			"logout": "Logout"
+		},
+		"rejected": {
+			"title": "Application Rejected",
+			"message": "Unfortunately, your workshop registration has been rejected by our administrators.",
+			"reapply": "Re-apply Now"
+		},
 		"dashboard": {
 			"title": "Workshop dashboard",
 			"subtitle": "Manage your requests and offers",
@@ -905,6 +917,12 @@
 			"no_pending": "No Pending Workshops",
 			"approve": "Approve",
 			"reject": "Reject",
+			"reject_title": "Reject Workshop",
+			"reject_desc": "Are you sure you want to reject {{name}}?",
+			"reason_label": "Rejection Reason",
+			"reason_placeholder": "Please explain why this workshop is being rejected...",
+			"confirm_reject": "Confirm Reject",
+			"reason_required": "Please provide a reason",
 			"block": "Block",
 			"unblock": "Unblock",
 			"verified": "Verified",

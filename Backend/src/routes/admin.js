@@ -20,7 +20,7 @@ router.get('/stats', async (req, res) => {
 	try {
 		const totalCustomers = await User.countDocuments({ role: 'CUSTOMER' })
 		const totalWorkshops = await Workshop.countDocuments()
-		const pendingWorkshops = await Workshop.countDocuments({ isVerified: false })
+		const pendingWorkshops = await Workshop.countDocuments({ isVerified: false, verificationStatus: 'PENDING' })
 		const totalRequests = await Request.countDocuments()
 		const totalBookings = await Booking.countDocuments()
 		// Calculate stats — removing commission-based revenue
@@ -123,7 +123,8 @@ router.patch('/users/:id', async (req, res) => {
 // Get pending workshops
 router.get('/pending-workshops', async (req, res) => {
 	try {
-		const workshops = await Workshop.find({ isVerified: false })
+		// Only show workshops with PENDING status
+		const workshops = await Workshop.find({ isVerified: false, verificationStatus: 'PENDING' })
 			.populate('userId', 'name email')
 			.lean()
 
@@ -228,11 +229,13 @@ router.get('/workshops/:id', async (req, res) => {
 // Update workshop status
 router.patch('/workshops', async (req, res) => {
 	try {
-		const { id, isVerified, isActive } = req.body
+		const { id, isVerified, isActive, verificationStatus, rejectionReason } = req.body
 
 		const updateData = {}
 		if (isVerified !== undefined) updateData.isVerified = isVerified
 		if (isActive !== undefined) updateData.isActive = isActive
+		if (verificationStatus !== undefined) updateData.verificationStatus = verificationStatus
+		if (rejectionReason !== undefined) updateData.rejectionReason = rejectionReason
 
 		const previous = await Workshop.findById(id).select('isVerified').lean()
 		const workshop = await Workshop.findByIdAndUpdate(id, updateData, { new: true })
@@ -242,7 +245,13 @@ router.patch('/workshops', async (req, res) => {
 		}
 
 		if (isVerified === true && previous && !previous.isVerified) {
+			updateData.verificationStatus = 'APPROVED'
+			await Workshop.findByIdAndUpdate(id, { verificationStatus: 'APPROVED' })
 			notifyWorkshopWelcome(workshop._id).catch(() => {})
+		} else if (verificationStatus === 'REJECTED') {
+			// This block should not be reached due to the handle at top, but kept for logic safety
+			updateData.isVerified = false
+			await Workshop.findByIdAndUpdate(id, { isVerified: false })
 		}
 
 		res.json(workshop)

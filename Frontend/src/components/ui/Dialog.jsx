@@ -30,9 +30,9 @@ export function Dialog({ open, onOpenChange, children, className = '' }) {
 		: dialogContent
 }
 
-export function DialogContent({ children, onClose }) {
+export function DialogContent({ children, onClose, className = '' }) {
 	return (
-		<div className="relative">
+		<div className={`relative ${className}`}>
 			{onClose && (
 				<button
 					onClick={onClose}
@@ -62,3 +62,18 @@ export function DialogDescription({ children }) {
 	)
 }
 
+export function DialogHeader({ children, className = '' }) {
+	return (
+		<div className={`flex flex-col space-y-1.5 text-center sm:text-left ${className}`}>
+			{children}
+		</div>
+	)
+}
+
+export function DialogFooter({ children, className = '' }) {
+	return (
+		<div className={`flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 ${className}`}>
+			{children}
+		</div>
+	)
+}

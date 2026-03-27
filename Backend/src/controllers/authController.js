@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
+import Workshop from '../models/Workshop.js'
 import PendingRegistration from '../models/PendingRegistration.js'
 import { sendEmail, emailTemplates, isEmailConfigured } from '../config/email.js'
 
@@ -166,6 +167,19 @@ export const login = async (req, res) => {
 			{ expiresIn: '7d' }
 		)
 
+		let isVerified = true
+		let workshopData = null
+		if (user.role === 'WORKSHOP') {
+			const workshop = await Workshop.findOne({ userId: user._id })
+			if (workshop) {
+				isVerified = workshop.isVerified
+				workshopData = {
+					verificationStatus: workshop.verificationStatus || (workshop.isVerified ? 'APPROVED' : 'PENDING'),
+					rejectionReason: workshop.rejectionReason
+				}
+			}
+		}
+
 		return res.json({
 			token,
 			user: {
@@ -173,6 +187,8 @@ export const login = async (req, res) => {
 				email: user.email,
 				name: user.name,
 				role: user.role,
+				isVerified,
+				workshop: workshopData
 			},
 		})
 	} catch (error) {
@@ -184,7 +200,28 @@ export const login = async (req, res) => {
 export const getMe = async (req, res) => {
 	try {
 		const user = await User.findById(req.user._id).select('-password -twoFactorSecret')
-		return res.json(user)
+		if (!user) {
+			return res.status(404).json({ message: 'User not found' })
+		}
+
+		const userData = user.toObject()
+		if (user.role === 'WORKSHOP') {
+			const workshop = await Workshop.findOne({ userId: user._id })
+			if (workshop) {
+				userData.isVerified = workshop.isVerified
+				userData.workshop = {
+					verificationStatus: workshop.verificationStatus || (workshop.isVerified ? 'APPROVED' : 'PENDING'),
+					rejectionReason: workshop.rejectionReason
+				}
+			} else {
+				userData.isVerified = false
+				userData.workshop = { verificationStatus: 'PENDING' }
+			}
+		} else {
+			userData.isVerified = true
+		}
+
+		return res.json(userData)
 	} catch (error) {
 		console.error('Get me error:', error)
 		return res.status(500).json({ message: 'Something went wrong' })
@@ -329,5 +366,19 @@ export const resetPassword = async (req, res) => {
 	} catch (error) {
 		console.error('Reset password error:', error)
 		return res.status(500).json({ message: 'Something went wrong' })
+	}
+}
+export const selfDelete = async (req, res) => {
+	try {
+		const userId = req.user._id
+		const workshop = await Workshop.findOne({ userId })
+		if (workshop) {
+			await Workshop.findByIdAndDelete(workshop._id)
+		}
+		await User.findByIdAndDelete(userId)
+		return res.json({ message: 'Account deleted successfully' })
+	} catch (error) {
+		console.error('Self delete error:', error)
+		return res.status(500).json({ message: 'Failed to delete account' })
 	}
 }

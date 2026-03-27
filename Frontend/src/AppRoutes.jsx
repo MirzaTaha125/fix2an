@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { Skeleton } from './components/ui/Skeleton'
 import Navbar from './components/Navbar'
@@ -26,10 +26,13 @@ import HowItWorksPage from './pages/HowItWorksPage'
 import WorkshopSignupPage from './pages/WorkshopSignupPage'
 import OffersPage from './pages/OffersPage'
 import BookAppointmentPage from './pages/BookAppointmentPage'
+import WorkshopPendingPage from './pages/WorkshopPendingPage'
+import WorkshopRejectedPage from './pages/WorkshopRejectedPage'
 
 
 function PrivateRoute({ children, allowedRoles = [] }) {
 	const { user, loading } = useAuth()
+	const location = useLocation()
 
 	if (loading) {
 		return (
@@ -62,6 +65,22 @@ function PrivateRoute({ children, allowedRoles = [] }) {
 			return <Navigate to="/my-cases" replace />
 		}
 	}
+    
+    
+    // Workshop verification check
+    if (user.role === 'WORKSHOP') {
+        const verificationStatus = user.workshop?.verificationStatus || (user.isVerified ? 'APPROVED' : 'PENDING');
+        
+        if (verificationStatus === 'REJECTED' && location.pathname !== '/workshop/rejected') {
+            return <Navigate to="/workshop/rejected" replace />
+        }
+        if (verificationStatus === 'PENDING' && location.pathname !== '/workshop/pending') {
+            return <Navigate to="/workshop/pending" replace />
+        }
+        if ((verificationStatus === 'APPROVED' || user.isVerified) && (location.pathname === '/workshop/pending' || location.pathname === '/workshop/rejected')) {
+            return <Navigate to="/workshop/requests" replace />
+        }
+    }
 
 	return children
 }
@@ -107,6 +126,22 @@ function AppRoutes() {
 					}
 				/>
 
+				<Route
+					path="/workshop/pending"
+					element={
+						<PrivateRoute allowedRoles={['WORKSHOP']}>
+							<WorkshopPendingPage />
+						</PrivateRoute>
+					}
+				/>
+				<Route
+					path="/workshop/rejected"
+					element={
+						<PrivateRoute allowedRoles={['WORKSHOP']}>
+							<WorkshopRejectedPage />
+						</PrivateRoute>
+					}
+				/>
 				<Route
 					path="/workshop/dashboard"
 					element={

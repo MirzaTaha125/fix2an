@@ -17,6 +17,12 @@ const workshopSchema = new mongoose.Schema({
 	openingHours: { type: String },
 	brandsHandled: { type: String },
 	isVerified: { type: Boolean, default: false },
+	verificationStatus: { 
+		type: String, 
+		enum: ['PENDING', 'APPROVED', 'REJECTED'], 
+		default: 'PENDING' 
+	},
+	rejectionReason: { type: String },
 	isActive: { type: Boolean, default: true },
 	rating: { type: Number, default: 0 },
 	reviewCount: { type: Number, default: 0 },

@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Input } from '../components/ui/Input'
 import { Skeleton } from '../components/ui/Skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/Select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/Dialog'
+import { Textarea } from '../components/ui/Textarea'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import toast from 'react-hot-toast'
 import { formatPrice, formatDate, formatDateTime } from '../utils/cn'
@@ -46,7 +48,8 @@ export default function AdminPage() {
 	const navigate = useNavigate()
 	const { user, loading: authLoading, logout } = useAuth()
 	const { t } = useTranslation()
-	const [activeTab, setActiveTab] = useState('dashboard')
+	const [searchParams, setSearchParams] = useSearchParams()
+	const activeTab = searchParams.get('tab') || 'dashboard'
 	const [loading, setLoading] = useState(true)
 	const [listLoading, setListLoading] = useState(false)
 	const [stats, setStats] = useState({
@@ -71,6 +74,9 @@ export default function AdminPage() {
 	
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 	const [workshopActionConfirm, setWorkshopActionConfirm] = useState({ open: false, workshopId: null, action: null, workshopName: '' })
+	const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false)
+	const [rejectionReason, setRejectionReason] = useState('')
+	const [selectedWorkshopForRejection, setSelectedWorkshopForRejection] = useState(null)
 	const mobileMenuRef = useRef(null)
 	const [emailConfig, setEmailConfig] = useState({
 		provider: 'smtp',
@@ -349,10 +355,43 @@ export default function AdminPage() {
 	}
 
 	const confirmWorkshopAction = (workshopId, action, workshopName = '') => {
-		if (action === 'approve' || action === 'reject') {
+		if (action === 'approve') {
 			setWorkshopActionConfirm({ open: true, workshopId, action, workshopName })
+		} else if (action === 'reject') {
+			setSelectedWorkshopForRejection({ id: workshopId, name: workshopName })
+			setRejectionReason('')
+			setRejectionDialogOpen(true)
 		} else {
 			handleWorkshopAction(workshopId, action)
+		}
+	}
+
+	const handleRejectWithReason = async () => {
+		if (!rejectionReason.trim()) {
+			toast.error(t('admin.workshops.reason_required') || 'Please provide a reason')
+			return
+		}
+		
+		const workshopId = selectedWorkshopForRejection.id
+		setRejectionDialogOpen(false)
+		
+		try {
+			const response = await adminAPI.updateWorkshop({ 
+				id: workshopId, 
+				verificationStatus: 'REJECTED',
+				rejectionReason: rejectionReason,
+				isVerified: false
+			})
+
+			if (response.data) {
+				toast.success(t('common.workshop_rejected') || 'Workshop rejected')
+				setWorkshops((prev) => prev.filter((w) => (w.id || w._id) !== workshopId))
+				fetchStats()
+				if (activeTab !== 'dashboard') fetchTabData()
+				else fetchPendingWorkshops()
+			}
+		} catch (error) {
+			toast.error(t('common.failed_update_workshop'))
 		}
 	}
 
@@ -493,7 +532,7 @@ export default function AdminPage() {
 				<Button 
 					variant="outline" 
 					className="flex-1 min-w-[70px] text-[10px] font-bold h-8 border-red-100 text-red-600 hover:bg-red-50 uppercase tracking-tight"
-					onClick={() => confirmWorkshopAction(workshop.id, 'reject', workshop.companyName)}
+					onClick={() => confirmWorkshopAction(workshop.id || workshop._id, 'reject', workshop.companyName)}
 				>
 					{t('admin.workshops.reject_short')}
 				</Button>
@@ -608,7 +647,7 @@ export default function AdminPage() {
 
 			<div className="flex items-center justify-between pt-3 border-t border-gray-50">
 				<div className="flex items-center gap-1.5">
-					<div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+					<div className="w-2 h-2 rounded-full bg-blue-400"></div>
 					<span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{request._count?.offers || 0} {t('admin.requests.offers')}</span>
 				</div>
 				<p className="text-[9px] text-gray-300 font-medium uppercase tracking-tighter">ID: {request.id.substring(0, 8)}</p>
@@ -708,6 +747,48 @@ export default function AdminPage() {
 		</div>
 	)
 
+	const LoadingCard = () => (
+		<div className="bg-white p-4 rounded-xl border border-gray-100">
+			<div className="flex justify-between mb-3">
+				<div className="flex items-center gap-3">
+					<div className="w-9 h-9 rounded-full bg-gray-50"></div>
+					<div className="space-y-2">
+						<div className="h-3 w-20 bg-gray-100 rounded"></div>
+						<div className="h-2 w-12 bg-gray-100 rounded"></div>
+					</div>
+				</div>
+				<div className="h-5 w-14 bg-gray-100 rounded-full"></div>
+			</div>
+			<div className="space-y-2 mb-4">
+				<div className="h-3 w-full bg-gray-100 rounded"></div>
+				<div className="h-3 w-2/3 bg-gray-100 rounded"></div>
+			</div>
+			<div className="h-8 w-full bg-gray-100 rounded-lg"></div>
+		</div>
+	)
+
+	const TableSkeleton = ({ rows = 5, cols = 5 }) => (
+		<div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+			<div className="bg-gray-50/50 p-4 flex justify-between">
+				{[...Array(cols)].map((_, i) => (
+					<Skeleton key={i} className="h-4 w-20" />
+				))}
+			</div>
+			<div className="divide-y divide-gray-50">
+				{[...Array(rows)].map((_, i) => (
+					<div key={i} className="p-4 flex justify-between items-center bg-white">
+						<Skeleton className="h-4 w-32" />
+						<Skeleton className="h-4 w-40 max-md:hidden" />
+						<Skeleton className="h-4 w-24 max-sm:hidden" />
+						<Skeleton className="h-6 w-16 rounded-full" />
+						<div className="flex gap-2">
+							<Skeleton className="h-8 w-24 rounded-md" />
+						</div>
+					</div>
+				))}
+			</div>
+		</div>
+	)
 
 	const handleLogout = () => {
 		logout()
@@ -867,7 +948,7 @@ export default function AdminPage() {
 									<button
 										key={tab}
 										onClick={() => {
-											setActiveTab(tab)
+											setSearchParams({ tab })
 											setSearchQuery('')
 											setStatusFilter('all')
 											setPagination({ ...pagination, page: 1 })
@@ -902,30 +983,30 @@ export default function AdminPage() {
 				)}
 				<div 
 					ref={mobileMenuRef}
-					className={`fixed left-0 top-0 bottom-0 w-56 z-50 transform transition-transform duration-300 lg:hidden ${
+					className={`fixed left-0 top-0 bottom-0 w-40 z-50 transform transition-transform duration-300 lg:hidden ${
 						mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
 					}`}
 					style={{ backgroundColor: sidebarBgColor }}
 				>
-					<div className="p-4 border-b flex items-center justify-end" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+					<div className="p-3 border-b flex items-center justify-end" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
 						<button onClick={() => setMobileMenuOpen(false)} className="text-white">
-							<X className="w-6 h-6" />
+							<X className="w-5 h-5" />
 						</button>
 					</div>
-					<nav className="flex-1 p-4 space-y-2">
+					<nav className="flex-1 p-3 space-y-1.5">
 						{tabs.map((tab, index) => (
 								<button
 									key={tab}
 									onClick={() => {
-										setActiveTab(tab)
+										setSearchParams({ tab })
 										setSearchQuery('')
 										setStatusFilter('all')
 										setPagination({ ...pagination, page: 1 })
 									setMobileMenuOpen(false)
 									}}
-								className={`w-full text-left px-4 py-3 transition-all rounded-lg ${
+								className={`w-full text-left px-3 py-2.5 transition-all rounded-lg text-[13px] ${
 										activeTab === tab
-										? 'bg-white text-gray-900 font-semibold'
+										? 'bg-white text-gray-900 font-bold shadow-sm'
 										: 'text-white/80 hover:text-white hover:bg-white/10'
 								}`}
 								>
@@ -933,15 +1014,15 @@ export default function AdminPage() {
 								</button>
 							))}
 					</nav>
-					<div className="p-4 mt-auto space-y-4">
+					<div className="p-3 mt-auto space-y-3">
 						<button
 							onClick={handleLogout}
-							className="flex items-center gap-3 w-full text-left px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
+							className="flex items-center gap-2.5 w-full text-left px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all text-[13px] font-medium"
 						>
-							<LogOut className="w-5 h-5" />
+							<LogOut className="w-4 h-4" />
 							<span>{t('common.logout')}</span>
 						</button>
-						<p className="text-white/60 text-xs px-4">{t('admin.version')}</p>
+						<p className="text-white/40 text-[10px] px-3">{t('admin.version')}</p>
 					</div>
 				</div>
 
@@ -1048,7 +1129,7 @@ export default function AdminPage() {
 																			<Button
 																				size="sm"
 																				variant="outline"
-																				onClick={() => confirmWorkshopAction(workshop.id, 'reject', workshop.companyName)}
+																				onClick={() => confirmWorkshopAction(workshop.id || workshop._id, 'reject', workshop.companyName)}
 																				className="h-8 text-[10px] font-bold border-red-100 text-red-600 hover:bg-red-50 uppercase tracking-tight"
 																			>
 																				<XCircle className="w-3 h-3 mr-1" />
@@ -1065,7 +1146,52 @@ export default function AdminPage() {
 									</>
 								)}
 							</div>
-					</div>
+
+							{/* Rejection Reason Dialog */}
+							{/* Rejection Reason Dialog */}
+							<Dialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
+								<DialogContent className="sm:max-w-[425px] rounded-3xl border-none shadow-2xl p-0 overflow-hidden bg-white">
+									<div className="p-8 space-y-6">
+										<div className="space-y-2">
+											<DialogTitle className="text-2xl font-black tracking-tight text-[#05324f]">
+												{t('admin.workshops.reject_title') || 'Reject Workshop'}
+											</DialogTitle>
+											<DialogDescription className="text-gray-500 text-sm font-medium leading-relaxed">
+												{t('admin.workshops.reject_desc', { name: selectedWorkshopForRejection?.name }) || `Are you sure you want to reject ${selectedWorkshopForRejection?.name}?`}
+											</DialogDescription>
+										</div>
+
+										<div className="space-y-3">
+											<label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">
+												{t('admin.workshops.reason_label') || 'Rejection Reason'}
+											</label>
+											<Textarea
+												placeholder={t('admin.workshops.reason_placeholder') || "Please explain why this workshop is being rejected..."}
+												value={rejectionReason}
+												onChange={(e) => setRejectionReason(e.target.value)}
+												className="min-h-[120px] rounded-2xl border-gray-100 bg-gray-50/30 p-4 text-sm focus:bg-white focus:ring-2 focus:ring-red-500/20 focus:border-red-500/50 transition-all resize-none"
+											/>
+										</div>
+
+										<div className="flex gap-3 pt-2">
+											<Button
+												variant="outline"
+												onClick={() => setRejectionDialogOpen(false)}
+												className="flex-1 rounded-2xl h-12 font-bold text-xs border-gray-100 hover:bg-gray-50 text-gray-500 transition-all"
+											>
+												{t('common.cancel')}
+											</Button>
+											<Button
+												onClick={handleRejectWithReason}
+												className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-2xl h-12 font-bold text-xs shadow-md shadow-red-500/10 border-none transition-all"
+											>
+												{t('admin.workshops.confirm_reject') || 'Confirm Reject'}
+											</Button>
+										</div>
+									</div>
+								</DialogContent>
+							</Dialog>
+						</div>
 				)}
 
 				{/* Customers Tab */}
@@ -1134,25 +1260,7 @@ export default function AdminPage() {
 								<div className="md:hidden">
 									{listLoading ? (
 										<div className="grid grid-cols-1 gap-4">
-											{[1, 2, 3].map(i => (
-												<div key={i} className="bg-white p-4 rounded-xl border border-gray-100 animate-pulse">
-													<div className="flex justify-between mb-3">
-														<div className="flex items-center gap-3">
-															<div className="w-9 h-9 rounded-full bg-gray-50"></div>
-															<div className="space-y-2">
-																<div className="h-3 w-20 bg-gray-50 rounded"></div>
-																<div className="h-2 w-12 bg-gray-50 rounded"></div>
-															</div>
-														</div>
-														<div className="h-5 w-14 bg-gray-50 rounded-full"></div>
-													</div>
-													<div className="space-y-2 mb-4">
-														<div className="h-3 w-full bg-gray-50 rounded"></div>
-														<div className="h-3 w-2/3 bg-gray-50 rounded"></div>
-													</div>
-													<div className="h-8 w-full bg-gray-50 rounded-lg"></div>
-												</div>
-											))}
+											{[1, 2, 3].map(i => <LoadingCard key={i} />)}
 										</div>
 									) : customers.length === 0 ? (
 										<div className="bg-white rounded-xl p-10 text-center border border-dashed border-gray-200">
@@ -1171,10 +1279,7 @@ export default function AdminPage() {
 								{/* Desktop View: Table */}
 								<div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
 								{listLoading ? (
-										<div className="text-center py-12">
-											<RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3" style={{ color: '#34C759' }} />
-											<p className="text-gray-600 font-medium">{t('admin.customers.loading_customers')}</p>
-									</div>
+									<TableSkeleton rows={5} cols={5} />
 								) : customers.length === 0 ? (
 										<div className="text-center py-12">
 											<Users className="w-12 h-12 mx-auto mb-3 text-gray-400" />
@@ -1301,9 +1406,13 @@ export default function AdminPage() {
 								</div>
 							</div>
 								{listLoading ? (
-									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100/50">
-										<RefreshCw className="w-10 h-10 animate-spin mx-auto mb-4 text-[#34C759]" />
-										<p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{t('common.loading')}</p>
+									<div className="space-y-6">
+										<div className="md:hidden grid grid-cols-1 gap-4">
+											{[1, 2, 3].map(i => <LoadingCard key={i} />)}
+										</div>
+										<div className="hidden md:block">
+											<TableSkeleton rows={8} cols={5} />
+										</div>
 									</div>
 								) : workshops.length === 0 ? (
 									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100">
@@ -1481,9 +1590,13 @@ export default function AdminPage() {
 								</div>
 							</div>
 								{listLoading ? (
-									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100/50">
-										<RefreshCw className="w-10 h-10 animate-spin mx-auto mb-4 text-[#34C759]" />
-										<p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{t('common.loading')}</p>
+									<div className="space-y-6">
+										<div className="md:hidden grid grid-cols-1 gap-4">
+											{[1, 2, 3].map(i => <LoadingCard key={i} />)}
+										</div>
+										<div className="hidden md:block">
+											<TableSkeleton rows={8} cols={6} />
+										</div>
 									</div>
 								) : requests.length === 0 ? (
 									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100">
@@ -1625,9 +1738,13 @@ export default function AdminPage() {
 								</div>
 							</div>
 								{listLoading ? (
-									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100/50">
-										<RefreshCw className="w-10 h-10 animate-spin mx-auto mb-4 text-[#34C759]" />
-										<p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{t('common.loading')}</p>
+									<div className="space-y-6">
+										<div className="md:hidden grid grid-cols-1 gap-4">
+											{[1, 2, 3].map(i => <LoadingCard key={i} />)}
+										</div>
+										<div className="hidden md:block">
+											<TableSkeleton rows={8} cols={5} />
+										</div>
 									</div>
 								) : offers.length === 0 ? (
 									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100">
@@ -1760,9 +1877,13 @@ export default function AdminPage() {
 								</div>
 							</div>
 								{listLoading ? (
-									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100/50">
-										<RefreshCw className="w-10 h-10 animate-spin mx-auto mb-4 text-[#34C759]" />
-										<p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">{t('common.loading')}</p>
+									<div className="space-y-6">
+										<div className="md:hidden grid grid-cols-1 gap-4">
+											{[1, 2, 3].map(i => <LoadingCard key={i} />)}
+										</div>
+										<div className="hidden md:block">
+											<TableSkeleton rows={8} cols={5} />
+										</div>
 									</div>
 								) : bookings.length === 0 ? (
 									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100">
@@ -2015,36 +2136,45 @@ export default function AdminPage() {
 			</main>
 		</div>
 		{/* Workshop approve/reject confirmation dialog */}
-		{workshopActionConfirm.open && (
-			<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-				<div className="bg-white rounded-card border border-gray-200 p-6 max-w-sm w-full mx-4">
-					<h3 className="text-lg font-bold text-gray-900 mb-2">
-						{workshopActionConfirm.action === 'approve' ? 'Approve Workshop' : 'Reject Workshop'}
-					</h3>
-					<p className="text-sm text-gray-600 mb-6">
-						{workshopActionConfirm.action === 'approve'
-							? `Are you sure you want to approve "${workshopActionConfirm.workshopName}"? They will be publicly listed and able to submit offers.`
-							: `Are you sure you want to reject "${workshopActionConfirm.workshopName}"? They will not be listed.`}
-					</p>
-					<div className="flex gap-3 justify-end">
+		<Dialog 
+			open={workshopActionConfirm.open} 
+			onOpenChange={(open) => !open && setWorkshopActionConfirm({ ...workshopActionConfirm, open: false })}
+		>
+			<DialogContent className="sm:max-w-[425px] rounded-3xl border-none shadow-2xl p-0 overflow-hidden bg-white">
+				<div className="p-8 space-y-6">
+					<div className="space-y-2">
+						<DialogTitle className="text-2xl font-black tracking-tight text-[#05324f]">
+							{workshopActionConfirm.action === 'approve' ? 'Approve Workshop' : 'Confirm Action'}
+						</DialogTitle>
+						<DialogDescription className="text-gray-500 text-sm font-medium leading-relaxed">
+							{workshopActionConfirm.action === 'approve'
+								? `Are you sure you want to approve "${workshopActionConfirm.workshopName}"? They will be publicly listed and able to submit offers.`
+								: `Are you sure you want to proceed with this action for "${workshopActionConfirm.workshopName}"?`}
+						</DialogDescription>
+					</div>
+
+					<div className="flex gap-3 pt-2">
 						<Button
 							variant="outline"
-							size="sm"
 							onClick={() => setWorkshopActionConfirm({ open: false, workshopId: null, action: null, workshopName: '' })}
+							className="flex-1 rounded-2xl h-12 font-bold text-xs border-gray-100 hover:bg-gray-50 text-gray-500 transition-all text-center"
 						>
-							Cancel
+							{t('common.cancel')}
 						</Button>
 						<Button
-							size="sm"
 							onClick={() => handleWorkshopAction(workshopActionConfirm.workshopId, workshopActionConfirm.action)}
-							className={workshopActionConfirm.action === 'approve' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'}
+							className={`flex-1 text-white rounded-2xl h-12 font-bold text-xs shadow-md border-none transition-all ${
+								workshopActionConfirm.action === 'approve' 
+									? 'bg-[#34C759] shadow-[#34C759]/10 hover:bg-[#2eb34f]' 
+									: 'bg-red-500 shadow-red-500/10 hover:bg-red-600'
+							}`}
 						>
-							{workshopActionConfirm.action === 'approve' ? 'Yes, Approve' : 'Yes, Reject'}
+							{workshopActionConfirm.action === 'approve' ? 'Yes, Approve' : 'Confirm'}
 						</Button>
 					</div>
 				</div>
-			</div>
-		)}
+			</DialogContent>
+		</Dialog>
 		</div>
 	</div>
 	)

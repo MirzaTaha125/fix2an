@@ -18,7 +18,8 @@
 		"no": "Nej",
 		"required": "Obligatoriskt",
 		"optional": "Valfritt",
-		"or": "Eller"
+		"or": "Eller",
+		"no_data": "Saknas"
 	},
 	"navigation": {
 		"home": "Hem",
@@ -77,5 +78,34 @@
 	"success": {
 		"account_created": "Konto skapat",
 		"account_created_message": "Ditt konto har skapats. Logga in för att fortsätta."
+	},
+	"workshop": {
+		"requests": {
+			"hi": "Välkommen",
+			"new_requests": "Nya förfrågningar",
+			"won_jobs": "Vunna jobb",
+			"revenue_this_month": "Intäkter denna månad",
+			"new_inquiries": "Nya förfrågningar",
+			"income": "Inkomst",
+			"offer_inbox": "Offertinkorg",
+			"km_away": "km bort",
+			"latest": "Senaste",
+			"km_from_job": "km från jobb",
+			"view_report": "Visa rapport",
+			"view": "Visa",
+			"submit_offer": "Lämna offert",
+			"inspection_report": "Inspektionsrapport",
+			"failed_to_load_image": "Misslyckades med att ladda bild",
+			"open_pdf_new_tab": "Öppna PDF i ny flik",
+			"no_requests": {
+				"title": "Inga förfrågningar än",
+				"description": "När kunder i ditt område laddar upp sina inspektionsrapporter kommer de att visas här."
+			}
+		},
+		"pending": {
+			"title": "Kontoverifiering pågår",
+			"message": "Inom 24 till 48 timmar kommer teamet att verifiera ditt konto och sedan informera dig om statusen. Vänligen återkom senare.",
+			"logout": "Logga ut"
+		}
 	}
 }

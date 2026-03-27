@@ -18,7 +18,8 @@
 		"no": "No",
 		"required": "Required",
 		"optional": "Optional",
-		"or": "Or"
+		"or": "Or",
+		"no_data": "N/A"
 	},
 	"navigation": {
 		"home": "Home",
@@ -77,5 +78,34 @@
 	"success": {
 		"account_created": "Account created",
 		"account_created_message": "Your account has been created. Please log in to continue."
+	},
+	"workshop": {
+		"requests": {
+			"hi": "Welcome",
+			"new_requests": "New Requests",
+			"won_jobs": "Won Jobs",
+			"revenue_this_month": "Revenue this month",
+			"new_inquiries": "New Inquiries",
+			"income": "Income",
+			"offer_inbox": "Offer Inbox",
+			"km_away": "km away",
+			"latest": "Latest",
+			"km_from_job": "km from job",
+			"view_report": "View Report",
+			"view": "View",
+			"submit_offer": "Submit Offer",
+			"inspection_report": "Inspection Report",
+			"failed_to_load_image": "Failed to load image",
+			"open_pdf_new_tab": "Open PDF in new tab",
+			"no_requests": {
+				"title": "No requests yet",
+				"description": "When customers in your area upload their inspection reports, they will appear here."
+			}
+		},
+		"pending": {
+			"title": "Account Verification in Progress",
+			"message": "Within 24 to 48 hours, the team will verify your account and then inform you of the status. Please check back later.",
+			"logout": "Logout"
+		}
 	}
 }

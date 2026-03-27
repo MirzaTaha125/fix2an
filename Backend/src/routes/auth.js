@@ -1,5 +1,5 @@
 import express from 'express'
-import { register, login, getMe, updateProfile, verifyEmailCode, forgotPassword, verifyPasswordResetCode, resetPassword } from '../controllers/authController.js'
+import { register, login, getMe, updateProfile, verifyEmailCode, forgotPassword, verifyPasswordResetCode, resetPassword, selfDelete } from '../controllers/authController.js'
 import {
 	get2FASetup,
 	verify2FASetup,
@@ -26,5 +26,7 @@ router.get('/2fa/status', authenticate, get2FAStatus)
 router.get('/2fa/setup', authenticate, get2FASetup)
 router.post('/2fa/verify-setup', authenticate, verify2FASetup)
 router.post('/2fa/disable', authenticate, disable2FA)
+
+router.delete('/self-delete', authenticate, selfDelete)
 
 export default router
