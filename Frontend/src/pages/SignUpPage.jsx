@@ -7,6 +7,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useTranslation } from 'react-i18next'
 import { Input } from '../components/ui/Input'
+import { Label } from '../components/ui/Label'
 
 export default function SignUpPage() {
 	const { t } = useTranslation()
@@ -142,12 +143,12 @@ export default function SignUpPage() {
 						<form onSubmit={handleSubmit} className="space-y-6">
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 								<div>
-									<label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+									<Label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
 										<div className="flex items-center gap-2">
 											<User className="w-4 h-4 text-gray-500" />
 											{t('auth.signup.name')}
 										</div>
-									</label>
+									</Label>
 									<Input
 										id="name"
 										name="name"
@@ -160,12 +161,12 @@ export default function SignUpPage() {
 								</div>
 
 								<div>
-									<label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+									<Label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
 										<div className="flex items-center gap-2">
 											<Mail className="w-4 h-4 text-gray-500" />
 											{t('auth.signup.email')} *
 										</div>
-									</label>
+									</Label>
 									<Input
 										id="email"
 										name="email"
@@ -181,12 +182,12 @@ export default function SignUpPage() {
 
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 								<div>
-									<label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+									<Label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
 										<div className="flex items-center gap-2">
 											<Lock className="w-4 h-4 text-gray-500" />
 											{t('auth.signup.password')} *
 										</div>
-									</label>
+									</Label>
 									<div className="relative">
 										<Input
 											id="password"
@@ -210,12 +211,12 @@ export default function SignUpPage() {
 								</div>
 
 								<div>
-									<label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
+									<Label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
 										<div className="flex items-center gap-2">
 											<Lock className="w-4 h-4 text-gray-500" />
 											{t('auth.signup.confirm_password')} *
 										</div>
-									</label>
+									</Label>
 									<div className="relative">
 										<Input
 											id="confirmPassword"
@@ -242,12 +243,12 @@ export default function SignUpPage() {
 							</div>
 
 							<div>
-								<label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
+								<Label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
 									<div className="flex items-center gap-2">
 										<Phone className="w-4 h-4 text-gray-500" />
 										{t('auth.signup.phone')}
 									</div>
-								</label>
+								</Label>
 								<Input
 									id="phone"
 									name="phone"
@@ -259,12 +260,12 @@ export default function SignUpPage() {
 							</div>
 
 							<div>
-								<label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
+								<Label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
 									<div className="flex items-center gap-2">
 										<MapPin className="w-4 h-4 text-gray-500" />
 										{t('auth.signup.address')}
 									</div>
-								</label>
+								</Label>
 								<Input
 									id="address"
 									name="address"
@@ -277,12 +278,12 @@ export default function SignUpPage() {
 
 							<div className="grid grid-cols-2 gap-4">
 								<div>
-									<label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-2">
+									<Label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-2">
 										<div className="flex items-center gap-2">
 											<Building2 className="w-4 h-4 text-gray-500" />
 											{t('auth.signup.city')}
 										</div>
-									</label>
+									</Label>
 									<Input
 										id="city"
 										name="city"
@@ -293,12 +294,12 @@ export default function SignUpPage() {
 									/>
 								</div>
 								<div>
-									<label htmlFor="postalCode" className="block text-sm font-semibold text-gray-700 mb-2">
+									<Label htmlFor="postalCode" className="block text-sm font-semibold text-gray-700 mb-2">
 										<div className="flex items-center gap-2">
 											<MapPin className="w-4 h-4 text-gray-500" />
 											{t('auth.signup.postal_code')}
 										</div>
-									</label>
+									</Label>
 									<Input
 										id="postalCode"
 										name="postalCode"

@@ -8,7 +8,7 @@ const NavItemContent = ({ active, icon: Icon, label }) => {
 		<div className="flex flex-col items-center w-full h-full relative z-20">
 			<div 
 				className={`absolute transition-all duration-300 flex items-center justify-center top-[14px] ${
-					active ? 'text-[#34C759]' : 'text-gray-400'
+					active ? 'text-[#05324f]' : 'text-gray-400'
 				}`}
 			>
 				<Icon className="w-[24px] h-[24px]" />

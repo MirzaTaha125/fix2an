@@ -330,16 +330,16 @@ export default function WorkshopSignupPage() {
 
 				<form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
 					{/* Personal Information */}
-					<Card className="shadow-xl border border-gray-200/50 bg-white/95 backdrop-blur-sm">
-						<CardHeader className="pb-3 sm:pb-4 bg-white rounded-t-lg border-b border-gray-200/50 mb-4">
-							<CardTitle className="text-base sm:text-lg text-gray-900">
+					<Card className="rounded-card shadow-card border border-gray-100 bg-white">
+						<CardHeader className="pb-4">
+							<CardTitle className="text-xl font-bold" style={{ color: '#05324f' }}>
 								{t('workshop.signup.personal_info.title')}
 							</CardTitle>
-							<CardDescription className="text-xs sm:text-sm text-gray-600">
+							<CardDescription style={{ color: '#05324f' }}>
 								{t('workshop.signup.personal_info.description')}
 							</CardDescription>
 						</CardHeader>
-						<CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+						<CardContent className="space-y-4">
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
 								<div>
 									<Label htmlFor="name" className="text-sm sm:text-base">
@@ -371,7 +371,7 @@ export default function WorkshopSignupPage() {
 										}}
 										required
 										placeholder={t('workshop.signup.personal_info.email_placeholder')}
-										className={`px-4 py-3 rounded-xl border-2 transition-all bg-gray-50/50 hover:bg-white ${fieldErrors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759]'}`}
+										className={fieldErrors.email ? 'border-red-500 focus:ring-red-500' : ''}
 									/>
 									{fieldErrors.email && (
 										<p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
@@ -461,17 +461,17 @@ export default function WorkshopSignupPage() {
 					</Card>
 
 					{/* Company Information */}
-					<Card className="shadow-xl border border-gray-200/50 bg-white/95 backdrop-blur-sm">
-						<CardHeader className="pb-3 sm:pb-4 bg-white rounded-t-lg border-b border-gray-200/50 mb-4">
-							<CardTitle className="flex items-center gap-2 text-base sm:text-lg text-gray-900">
+					<Card className="rounded-card shadow-card border border-gray-100 bg-white">
+						<CardHeader className="pb-4">
+							<CardTitle className="flex items-center gap-2 text-xl font-bold" style={{ color: '#05324f' }}>
 								<Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#34C759]" />
 								{t('workshop.signup.company_info.title')}
 							</CardTitle>
-							<CardDescription className="text-xs sm:text-sm text-gray-600">
+							<CardDescription style={{ color: '#05324f' }}>
 								{t('workshop.signup.company_info.description')}
 							</CardDescription>
 						</CardHeader>
-						<CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+						<CardContent className="space-y-4">
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
 								<div>
 									<Label htmlFor="companyName" className="text-sm sm:text-base">
@@ -502,7 +502,7 @@ export default function WorkshopSignupPage() {
 										}}
 										required
 										placeholder={t('workshop.signup.company_info.organization_number_placeholder')}
-										className={`px-4 py-3 rounded-xl border-2 transition-all bg-gray-50/50 hover:bg-white ${fieldErrors.organizationNumber ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759]'}`}
+										className={fieldErrors.organizationNumber ? 'border-red-500 focus:ring-red-500' : ''}
 									/>
 									{fieldErrors.organizationNumber && (
 										<p className="mt-1 text-sm text-red-600">{fieldErrors.organizationNumber}</p>
@@ -567,25 +567,24 @@ export default function WorkshopSignupPage() {
 					</Card>
 
 					{/* Opening Hours */}
-					<Card className="shadow-xl border border-gray-200/50 bg-white/95 backdrop-blur-sm">
-						<CardHeader className="pb-3 sm:pb-4 bg-white rounded-t-lg border-b border-gray-200/50 mb-4">
-							<CardTitle className="flex items-center gap-2 text-base sm:text-lg text-gray-900">
-								<Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#34C759]" />
+					<Card className="rounded-card shadow-card border border-gray-100 bg-white">
+						<CardHeader className="pb-4">
+							<CardTitle className="text-xl font-bold" style={{ color: '#05324f' }}>
 								{t('workshop.signup.opening_hours.title')}
 							</CardTitle>
-							<CardDescription className="text-xs sm:text-sm text-gray-600">
+							<CardDescription style={{ color: '#05324f' }}>
 								{t('workshop.signup.opening_hours.description')}
 							</CardDescription>
 						</CardHeader>
-						<CardContent className="px-4 sm:px-6">
-							<div className="space-y-4">
+						<CardContent className="px-3 sm:px-6 pt-0">
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
 								{['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(
 									(day) => (
-										<div key={day} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 bg-gray-50/50 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
-											<Label className="capitalize text-sm sm:text-base font-semibold text-gray-700 sm:min-w-[120px]">
+										<div key={day} className="p-3 sm:p-4 rounded-xl border border-gray-100 bg-gray-50/30">
+											<Label className="text-xs sm:text-sm font-bold text-[#05324f] mb-2 sm:mb-3 block capitalize">
 												{t(`workshop.signup.opening_hours.days.${day}`)}
 											</Label>
-											<div className="grid grid-cols-2 gap-3 sm:gap-4 flex-1">
+											<div className="grid grid-cols-2 gap-2 sm:gap-4">
 												<div className="space-y-1">
 													<Label className="text-[10px] sm:text-xs text-gray-500 block uppercase tracking-wider font-medium">
 														{t('workshop.signup.opening_hours.open') || 'Open'}
@@ -596,7 +595,7 @@ export default function WorkshopSignupPage() {
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Open`]: e.target.value }))
 														}
-														className="w-full px-3 bg-white"
+														className="h-9 sm:h-12 w-full px-3 text-xs sm:text-sm bg-white"
 													/>
 												</div>
 												<div className="space-y-1">
@@ -609,7 +608,7 @@ export default function WorkshopSignupPage() {
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Close`]: e.target.value }))
 														}
-														className="w-full px-3 bg-white"
+														className="h-9 sm:h-12 w-full px-3 text-xs sm:text-sm bg-white"
 													/>
 												</div>
 											</div>
@@ -621,16 +620,16 @@ export default function WorkshopSignupPage() {
 					</Card>
 
 					{/* Brands */}
-					<Card className="shadow-xl border border-gray-200/50 bg-white/95 backdrop-blur-sm">
-						<CardHeader className="pb-3 sm:pb-4 bg-white rounded-t-lg border-b border-gray-200/50 mb-4">
-							<CardTitle className="text-base sm:text-lg text-gray-900">
+					<Card className="rounded-card shadow-card border border-gray-100 bg-white">
+						<CardHeader className="pb-4">
+							<CardTitle className="text-xl font-bold" style={{ color: '#05324f' }}>
 								{t('workshop.signup.brands.title')}
 							</CardTitle>
-							<CardDescription className="text-xs sm:text-sm text-gray-600">
+							<CardDescription style={{ color: '#05324f' }}>
 								{t('workshop.signup.brands.description')}
 							</CardDescription>
 						</CardHeader>
-						<CardContent className="px-4 sm:px-6 space-y-4">
+						<CardContent className="space-y-4">
 							{/* Dropdown to add brands */}
 							<div className="space-y-2">
 								<Label htmlFor="brandSelect" className="text-sm sm:text-base font-semibold text-gray-700 block">
@@ -690,16 +689,16 @@ export default function WorkshopSignupPage() {
 					</Card>
 
 					{/* Documents */}
-					<Card className="shadow-xl border border-gray-200/50 bg-white/95 backdrop-blur-sm">
-						<CardHeader className="pb-3 sm:pb-4 bg-white rounded-t-lg border-b border-gray-200/50 mb-4">
-							<CardTitle className="text-base sm:text-lg text-gray-900">
+					<Card className="rounded-card shadow-card border border-gray-100 bg-white">
+						<CardHeader className="pb-4">
+							<CardTitle className="text-xl font-bold" style={{ color: '#05324f' }}>
 								{t('workshop.signup.documents.title')}
 							</CardTitle>
-							<CardDescription className="text-xs sm:text-sm text-gray-600">
+							<CardDescription style={{ color: '#05324f' }}>
 								{t('workshop.signup.documents.description')}
 							</CardDescription>
 						</CardHeader>
-						<CardContent className="px-4 sm:px-6">
+						<CardContent className="space-y-4">
 							<div
 								{...getRootProps()}
 								className={`border-2 border-dashed rounded-xl p-4 sm:p-6 md:p-8 text-center cursor-pointer transition-all ${

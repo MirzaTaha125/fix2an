@@ -410,8 +410,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center">
-						<User className="w-5 h-5 text-blue-600" />
+					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
+						<User className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-bold text-gray-900 leading-tight truncate">{customer.name || 'User'}</h4>
@@ -457,8 +457,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center">
-						<Building2 className="w-5 h-5 text-blue-600" />
+					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
+						<Building2 className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-bold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
@@ -505,8 +505,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center">
-						<Building2 className="w-5 h-5 text-blue-600" />
+					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
+						<Building2 className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-bold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
@@ -567,8 +567,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center">
-						<FileText className="w-5 h-5 text-indigo-600" />
+					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
+						<FileText className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-bold text-gray-900 leading-tight truncate">
@@ -620,8 +620,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center">
-						<Package className="w-5 h-5 text-emerald-600" />
+					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
+						<Package className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-bold text-gray-900 leading-tight truncate">{offer.workshop?.companyName}</h4>
@@ -662,8 +662,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center">
-						<Calendar className="w-5 h-5 text-purple-600" />
+					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
+						<Calendar className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-bold text-gray-900 leading-tight truncate">{booking.workshop?.companyName}</h4>
@@ -902,7 +902,7 @@ export default function AdminPage() {
 				)}
 				<div 
 					ref={mobileMenuRef}
-					className={`fixed left-0 top-0 bottom-0 w-64 z-50 transform transition-transform duration-300 lg:hidden ${
+					className={`fixed left-0 top-0 bottom-0 w-56 z-50 transform transition-transform duration-300 lg:hidden ${
 						mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
 					}`}
 					style={{ backgroundColor: sidebarBgColor }}
@@ -951,27 +951,27 @@ export default function AdminPage() {
 				{activeTab === 'dashboard' && (
 						<div className="space-y-6">
 							{/* KPI Cards - only on dashboard */}
-							<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-md:gap-2 mb-8">
-								<div className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5 max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:p-4 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="flex items-center gap-2 mb-2 max-md:mb-2">
-										<Users className="w-4 h-4 text-[#05324f] max-md:w-8 max-md:h-8" />
+							<div className="flex flex-nowrap overflow-x-auto gap-2 sm:gap-4 max-md:gap-1.5 mb-8 pb-2 custom-scrollbar no-scrollbar scroll-smooth px-1">
+								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-2 sm:p-5 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-2.5 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
+									<div className="flex items-center gap-2 mb-1 max-md:mb-1 text-[#05324f]">
+										<Users className="w-3 h-3 max-md:w-5 max-md:h-5" />
 									</div>
-									<div className="text-3xl sm:text-4xl font-bold text-[#05324f] leading-none mb-1 max-md:text-2xl">{stats.totalCustomers}</div>
-									<div className="text-xs sm:text-small text-gray-500 font-medium max-md:text-xs">{t('admin.stats.customers')}</div>
+									<div className="text-lg sm:text-4xl font-bold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalCustomers}</div>
+									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.customers')}</div>
 								</div>
-								<div className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5 max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:p-4 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="flex items-center gap-2 mb-2 max-md:mb-2">
-										<Building2 className="w-4 h-4 text-[#34C759] max-md:w-8 max-md:h-8" />
+								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-2 sm:p-5 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-2.5 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
+									<div className="flex items-center gap-2 mb-1 max-md:mb-1 text-[#05324f]">
+										<Building2 className="w-3 h-3 max-md:w-5 max-md:h-5" />
 									</div>
-									<div className="text-3xl sm:text-4xl font-bold text-[#05324f] leading-none mb-1 max-md:text-2xl">{stats.totalWorkshops}</div>
-									<div className="text-xs sm:text-small text-gray-500 font-medium max-md:text-xs">{t('admin.stats.workshops')}</div>
+									<div className="text-lg sm:text-4xl font-bold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalWorkshops}</div>
+									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.workshops')}</div>
 								</div>
-								<div className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5 max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:p-4 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="flex items-center gap-2 mb-2 max-md:mb-2">
-										<FileText className="w-4 h-4 text-[#05324f] max-md:w-8 max-md:h-8" />
+								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-2 sm:p-5 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-2.5 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
+									<div className="flex items-center gap-2 mb-1 max-md:mb-1 text-[#05324f]">
+										<FileText className="w-3 h-3 max-md:w-5 max-md:h-5" />
 									</div>
-									<div className="text-3xl sm:text-4xl font-bold text-[#05324f] leading-none mb-1 max-md:text-2xl">{stats.totalRequests}</div>
-									<div className="text-xs sm:text-small text-gray-500 font-medium max-md:text-xs">{t('admin.stats.requests')}</div>
+									<div className="text-lg sm:text-4xl font-bold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalRequests}</div>
+									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.requests')}</div>
 								</div>
 							</div>
 						{/* Pending Workshops */}

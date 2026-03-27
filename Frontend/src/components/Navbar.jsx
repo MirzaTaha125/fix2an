@@ -36,8 +36,6 @@ function Navbar() {
 	// Check if navbar should show back button
 	const shouldShowBackButton = (
 		location.pathname === '/upload' ||
-		location.pathname === '/profile' ||
-		location.pathname === '/workshop/profile' ||
 		location.pathname === '/offers' ||
 		location.pathname === '/book-appointment' ||
 		location.pathname.includes('/offer') ||

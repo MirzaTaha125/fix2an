@@ -360,7 +360,7 @@ export default function WorkshopDetailsPage() {
 											</p>
 											<p className="text-sm" style={{ color: '#05324f' }}>
 												{workshop.website ? (
-													<a href={workshop.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
+													<a href={workshop.website} target="_blank" rel="noopener noreferrer" className="text-[#05324f] font-semibold hover:underline break-all">
 														{workshop.website}
 													</a>
 												) : t('common.no_data')}
@@ -498,7 +498,7 @@ export default function WorkshopDetailsPage() {
 															href={getFullUrl(doc.fileUrl)} 
 															target="_blank" 
 															rel="noopener noreferrer"
-															className="inline-block text-xs text-blue-600 hover:underline w-full text-center"
+															className="inline-block text-xs text-[#05324f] font-semibold hover:underline w-full text-center"
 														>
 															{t('admin.workshops.details.view_full_size')}
 														</a>
@@ -512,7 +512,7 @@ export default function WorkshopDetailsPage() {
 															href={getFullUrl(doc.fileUrl)} 
 															target="_blank" 
 															rel="noopener noreferrer"
-															className="inline-block text-xs text-blue-600 hover:underline w-full text-center"
+															className="inline-block text-xs text-[#05324f] font-semibold hover:underline w-full text-center"
 														>
 															{t('admin.workshops.details.view_document')}
 														</a>

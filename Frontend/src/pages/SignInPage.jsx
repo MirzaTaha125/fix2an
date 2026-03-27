@@ -7,6 +7,8 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import RegisterTypeModal from '../components/RegisterTypeModal'
 import { useTranslation } from 'react-i18next'
+import { Input } from '../components/ui/Input'
+import { Label } from '../components/ui/Label'
 
 export default function SignInPage() {
 	const { t } = useTranslation()
@@ -109,37 +111,36 @@ export default function SignInPage() {
 							noValidate
 						>
 							<div>
-								<label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+								<Label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
 									<div className="flex items-center gap-2">
 										<Mail className="w-4 h-4 text-gray-500" />
 										{t('auth.signin.email')}
 									</div>
-								</label>
-								<input
+								</Label>
+								<Input
 									id="email"
 									type="email"
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
 									required
-									className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] transition-all bg-gray-50/50 hover:bg-white"
 									placeholder={t('auth.signin.email')}
 								/>
 							</div>
 							<div>
-								<label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+								<Label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
 									<div className="flex items-center gap-2">
 										<Lock className="w-4 h-4 text-gray-500" />
 										{t('auth.signin.password')}
 									</div>
-								</label>
+								</Label>
 								<div className="relative">
-									<input
+									<Input
 										id="password"
 										type={showPassword ? 'text' : 'password'}
 										value={password}
 										onChange={(e) => setPassword(e.target.value)}
 										required
-										className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] transition-all pr-12 bg-gray-50/50 hover:bg-white"
+										className="pr-12"
 										placeholder={t('auth.signin.password')}
 									/>
 									<button
