@@ -109,7 +109,7 @@ function Navbar() {
 													: 'text-white/80 hover:text-white hover:bg-white/10'
 										}`}
 									>
-										{t('navigation.admin_panel') || 'Admin Panel'}
+										<span>Admin <span className="text-[#34C759]">Panel</span></span>
 									</Link>
 								)}
 								{user.role === 'CUSTOMER' && (
@@ -334,7 +334,7 @@ function Navbar() {
 											onClick={() => setMobileMenuOpen(false)}
 										>
 											<div className={`w-2 h-2 rounded-full ${isActive('/admin') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
-											<span>{t('navigation.admin_panel') || 'Admin Panel'}</span>
+											<span>Admin <span className="text-[#34C759]">Panel</span></span>
 										</Link>
 									)}
 									{user.role === 'CUSTOMER' && (

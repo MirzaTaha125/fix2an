@@ -896,24 +896,20 @@ export default function AdminPage() {
 		<div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#FFFFFF' }}>
 			{/* Header */}
 			<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-100 max-md:border-gray-200">
-				<div className="grid grid-cols-3 items-center">
-					{/* Left Column: Menu Button */}
-					<div className="flex items-center">
+				<div className="flex items-center justify-between gap-4">
+					{/* Left: Menu Button (Mobile) + Logo */}
+					<div className="flex items-center gap-3">
 						<button
 							onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 							className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
 						>
 							<Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
 						</button>
-					</div>
-
-					{/* Center Column: Logo */}
-					<div className="flex justify-center">
 						<Logo />
 					</div>
 
-					{/* Right Column: Language Switcher */}
-					<div className="flex justify-end">
+					{/* Right: Language Switcher */}
+					<div className="flex items-center">
 						<LanguageSwitcher isScrolled={true} />
 					</div>
 				</div>
@@ -967,13 +963,15 @@ export default function AdminPage() {
 				)}
 				<div 
 					ref={mobileMenuRef}
-					className={`fixed left-0 top-0 bottom-0 w-40 z-50 flex flex-col transform transition-transform duration-300 lg:hidden ${
+					className={`fixed left-0 top-0 bottom-0 w-64 z-50 flex flex-col transform transition-transform duration-300 lg:hidden ${
 						mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
 					}`}
 					style={{ backgroundColor: sidebarBgColor }}
 				>
 					<div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-						<h2 className="text-white font-bold text-sm tracking-tight">{t('admin.title') || 'Admin Panel'}</h2>
+						<h2 className="text-white font-bold text-xl tracking-tight">
+							Admin <span className="text-[#34C759]">Panel</span>
+						</h2>
 						<button onClick={() => setMobileMenuOpen(false)} className="p-1 hover:bg-white/10 rounded-lg transition-colors text-white">
 							<X className="w-5 h-5" />
 						</button>
@@ -1018,26 +1016,17 @@ export default function AdminPage() {
 						<div className="space-y-6">
 							{/* KPI Cards - only on dashboard */}
 							<div className="flex flex-nowrap overflow-x-auto gap-2 sm:gap-4 max-md:gap-1.5 mb-8 pb-2 custom-scrollbar no-scrollbar scroll-smooth px-1">
-								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-2 sm:p-5 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-2.5 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="w-6 h-6 sm:w-10 sm:h-10 rounded-full bg-[#EDFBF1] flex items-center justify-center mb-2 sm:mb-3">
-										<Users className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#34C759]" />
-									</div>
-									<div className="text-lg sm:text-4xl font-semibold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalCustomers}</div>
-									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.customers')}</div>
+								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-3 sm:p-6 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-3 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
+									<div className="text-xl sm:text-5xl font-semibold text-[#05324f] leading-none mb-1.5 max-md:text-2xl">{stats.totalCustomers}</div>
+									<div className="text-[10px] sm:text-sm text-gray-500 font-medium max-md:text-[10px] uppercase tracking-tighter">{t('admin.stats.customers')}</div>
 								</div>
-								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-2 sm:p-5 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-2.5 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="w-6 h-6 sm:w-10 sm:h-10 rounded-full bg-[#EDFBF1] flex items-center justify-center mb-2 sm:mb-3">
-										<Building2 className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#34C759]" />
-									</div>
-									<div className="text-lg sm:text-4xl font-semibold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalWorkshops}</div>
-									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.workshops')}</div>
+								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-3 sm:p-6 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-3 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
+									<div className="text-xl sm:text-5xl font-semibold text-[#05324f] leading-none mb-1.5 max-md:text-2xl">{stats.totalWorkshops}</div>
+									<div className="text-[10px] sm:text-sm text-gray-500 font-medium max-md:text-[10px] uppercase tracking-tighter">{t('admin.stats.workshops')}</div>
 								</div>
-								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-2 sm:p-5 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-2.5 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="w-6 h-6 sm:w-10 sm:h-10 rounded-full bg-[#EDFBF1] flex items-center justify-center mb-2 sm:mb-3">
-										<FileText className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#34C759]" />
-									</div>
-									<div className="text-lg sm:text-4xl font-semibold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalRequests}</div>
-									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.requests')}</div>
+								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-3 sm:p-6 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-3 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
+									<div className="text-xl sm:text-5xl font-semibold text-[#05324f] leading-none mb-1.5 max-md:text-2xl">{stats.totalRequests}</div>
+									<div className="text-[10px] sm:text-sm text-gray-500 font-medium max-md:text-[10px] uppercase tracking-tighter">{t('admin.stats.requests')}</div>
 								</div>
 							</div>
 						{/* Pending Workshops */}
