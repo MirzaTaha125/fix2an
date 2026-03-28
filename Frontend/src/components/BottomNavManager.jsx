@@ -20,9 +20,6 @@ export default function BottomNavManager() {
 	}
 
 	if (!user) {
-		if (isExactMatchOrBase(guestPaths)) {
-			return <GuestBottomNav />
-		}
 		return null
 	}
 

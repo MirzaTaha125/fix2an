@@ -141,6 +141,7 @@ export default function BookAppointmentPage() {
 				offerId: offer._id || offer.id,
 				scheduledAt: new Date(scheduledAt).toISOString(),
 				notes: bookingNotes,
+				isAgreedToTerms: agreeToTerms,
 			})
 
 			if (response.data) {

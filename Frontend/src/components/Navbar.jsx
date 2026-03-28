@@ -65,10 +65,19 @@ function Navbar() {
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-1 sm:pb-0">
 				<div className="grid grid-cols-3 md:flex justify-between items-center py-2 sm:py-2.5 w-full">
 					<div className="flex justify-start md:hidden">
-						{shouldShowBackButton && (
+						{shouldShowBackButton ? (
 							<button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
 								<ArrowLeft className="w-6 h-6 text-[#05324f]" />
 							</button>
+						) : (
+							!user && (
+								<button 
+									onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+									className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
+								>
+									{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
+								</button>
+							)
 						)}
 					</div>
 					<div className="flex items-center justify-center md:justify-start gap-3 w-full">
@@ -76,7 +85,7 @@ function Navbar() {
 							to="/" 
 							className="flex items-center transition-all duration-300 hover:scale-105"
 						>
-							<span className="text-4xl sm:text-5xl md:text-5xl font-extrabold tracking-tight">
+							<span className="text-5xl sm:text-5xl md:text-5xl font-extrabold tracking-tight">
 								<span className="text-[#05324f]">Fix</span>
 								<span className="text-green-500">2an</span>
 							</span>
@@ -489,16 +498,30 @@ function Navbar() {
 										<div className={`w-2 h-2 rounded-full ${isActive('/auth/signin') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
 										<span>{t('navigation.login')}</span>
 									</Link>
-									<button
-										onClick={() => {
-											setRegisterModalOpen(true)
-											setMobileMenuOpen(false)
-										}}
-										className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left w-full text-gray-700 hover:text-[#05324f] hover:bg-gray-50 font-medium"
+									<Link
+										to="/auth/signup"
+										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+											isActive('/auth/signup') 
+												? 'text-[#05324f] font-semibold'
+												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
+										}`}
+										onClick={() => setMobileMenuOpen(false)}
 									>
-										<div className="w-2 h-2 rounded-full bg-gray-300"></div>
-										<span>{t('navigation.register')}</span>
-									</button>
+										<div className={`w-2 h-2 rounded-full ${isActive('/auth/signup') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
+										<span>{t('common.register_as_customer') || 'Register as Customer'}</span>
+									</Link>
+									<Link
+										to="/workshop/signup"
+										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+											isActive('/workshop/signup') 
+												? 'text-[#05324f] font-semibold'
+												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
+										}`}
+										onClick={() => setMobileMenuOpen(false)}
+									>
+										<div className={`w-2 h-2 rounded-full ${isActive('/workshop/signup') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
+										<span>{t('common.register_as_workshop') || 'Register as Workshop'}</span>
+									</Link>
 								</>
 							)}
 						</div>

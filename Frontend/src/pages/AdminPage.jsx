@@ -453,7 +453,7 @@ export default function AdminPage() {
 						<User className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
-						<h4 className="font-bold text-gray-900 leading-tight truncate">{customer.name || 'User'}</h4>
+						<h4 className="font-semibold text-gray-900 leading-tight truncate">{customer.name || 'User'}</h4>
 						<p className="text-[10px] text-gray-400 font-medium tracking-tight uppercase">ID: {customer.id.substring(0, 8)}</p>
 					</div>
 				</div>
@@ -484,7 +484,7 @@ export default function AdminPage() {
 
 			<Button 
 				variant="outline" 
-				className="w-full text-[10px] font-bold h-8 border-gray-100 hover:bg-gray-50 uppercase tracking-widest"
+				className="w-full text-[10px] font-semibold h-8 border-gray-100 hover:bg-gray-50 uppercase tracking-widest"
 				onClick={() => handleToggleUserStatus(customer)}
 			>
 				{t('admin.customers.toggle_status') || 'Change Status'}
@@ -500,7 +500,7 @@ export default function AdminPage() {
 						<Building2 className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
-						<h4 className="font-bold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
+						<h4 className="font-semibold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
 						<p className="text-[10px] text-gray-400 font-medium tracking-tight uppercase">Reg: {formatDate(new Date(workshop.createdAt))}</p>
 					</div>
 				</div>
@@ -517,21 +517,21 @@ export default function AdminPage() {
 			<div className="flex flex-wrap gap-2">
 				<Button 
 					variant="outline" 
-					className="flex-1 min-w-[70px] text-[10px] font-bold h-8 border-gray-100 uppercase tracking-tight"
+					className="flex-1 min-w-[70px] text-[10px] font-semibold h-8 border-gray-100 uppercase tracking-tight"
 					onClick={() => navigate(`/admin/workshops/${workshop.id}`)}
 				>
 					{t('admin.workshops.view_details_short')}
 				</Button>
 				<Button 
 					variant="outline" 
-					className="flex-1 min-w-[70px] text-[10px] font-bold h-8 border-green-100 text-green-600 hover:bg-green-50 uppercase tracking-tight"
+					className="flex-1 min-w-[70px] text-[10px] font-semibold h-8 border-green-100 text-green-600 hover:bg-green-50 uppercase tracking-tight"
 					onClick={() => confirmWorkshopAction(workshop.id, 'approve', workshop.companyName)}
 				>
 					{t('admin.workshops.approve_short')}
 				</Button>
 				<Button 
 					variant="outline" 
-					className="flex-1 min-w-[70px] text-[10px] font-bold h-8 border-red-100 text-red-600 hover:bg-red-50 uppercase tracking-tight"
+					className="flex-1 min-w-[70px] text-[10px] font-semibold h-8 border-red-100 text-red-600 hover:bg-red-50 uppercase tracking-tight"
 					onClick={() => confirmWorkshopAction(workshop.id || workshop._id, 'reject', workshop.companyName)}
 				>
 					{t('admin.workshops.reject_short')}
@@ -548,7 +548,7 @@ export default function AdminPage() {
 						<Building2 className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
-						<h4 className="font-bold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
+						<h4 className="font-semibold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
 						<p className="text-[10px] text-gray-400 font-medium tracking-tight uppercase">Org: {workshop.organizationNumber}</p>
 					</div>
 				</div>
@@ -576,7 +576,7 @@ export default function AdminPage() {
 			<div className="flex flex-wrap gap-2">
 				<Button 
 					variant="outline" 
-					className="flex-1 min-w-[100px] text-[10px] font-bold h-8 border-gray-100 uppercase tracking-widest"
+					className="flex-1 min-w-[100px] text-[10px] font-semibold h-8 border-gray-100 uppercase tracking-widest"
 					onClick={() => navigate(`/admin/workshops/${workshop.id}`)}
 				>
 					{t('admin.workshops.view_details_short')}
@@ -584,7 +584,7 @@ export default function AdminPage() {
 				{workshop.isActive ? (
 					<Button 
 						variant="outline" 
-						className="flex-1 min-w-[100px] text-[10px] font-bold h-8 border-red-100 text-red-600 hover:bg-red-50 uppercase tracking-widest"
+						className="flex-1 min-w-[100px] text-[10px] font-semibold h-8 border-red-100 text-red-600 hover:bg-red-50 uppercase tracking-widest"
 						onClick={() => handleWorkshopAction(workshop.id, 'block')}
 					>
 						{t('admin.workshops.block_short')}
@@ -592,7 +592,7 @@ export default function AdminPage() {
 				) : (
 					<Button 
 						variant="outline" 
-						className="flex-1 min-w-[100px] text-[10px] font-bold h-8 border-green-100 text-green-600 hover:bg-green-50 uppercase tracking-widest"
+						className="flex-1 min-w-[100px] text-[10px] font-semibold h-8 border-green-100 text-green-600 hover:bg-green-50 uppercase tracking-widest"
 						onClick={() => handleWorkshopAction(workshop.id, 'unblock')}
 					>
 						{t('admin.workshops.unblock_short')}
@@ -610,7 +610,7 @@ export default function AdminPage() {
 						<FileText className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
-						<h4 className="font-bold text-gray-900 leading-tight truncate">
+						<h4 className="font-semibold text-gray-900 leading-tight truncate">
 							{request.vehicle?.make} {request.vehicle?.model}
 						</h4>
 						<p className="text-[10px] text-gray-400 font-medium tracking-tight uppercase">Year: {request.vehicle?.year}</p>
@@ -648,7 +648,7 @@ export default function AdminPage() {
 			<div className="flex items-center justify-between pt-3 border-t border-gray-50">
 				<div className="flex items-center gap-1.5">
 					<div className="w-2 h-2 rounded-full bg-blue-400"></div>
-					<span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{request._count?.offers || 0} {t('admin.requests.offers')}</span>
+					<span className="text-[10px] font-semibold text-blue-600 uppercase tracking-widest">{request._count?.offers || 0} {t('admin.requests.offers')}</span>
 				</div>
 				<p className="text-[9px] text-gray-300 font-medium uppercase tracking-tighter">ID: {request.id.substring(0, 8)}</p>
 			</div>
@@ -663,7 +663,7 @@ export default function AdminPage() {
 						<Package className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
-						<h4 className="font-bold text-gray-900 leading-tight truncate">{offer.workshop?.companyName}</h4>
+						<h4 className="font-semibold text-gray-900 leading-tight truncate">{offer.workshop?.companyName}</h4>
 						<p className="text-[10px] text-gray-400 font-medium tracking-tight uppercase">
 							{offer.request?.vehicle?.make} {offer.request?.vehicle?.model}
 						</p>
@@ -682,7 +682,7 @@ export default function AdminPage() {
 			</div>
 
 			<div className="flex items-center justify-between mb-3">
-				<div className="text-lg font-black text-[#34C759] tracking-tighter">
+				<div className="text-lg font-bold text-[#34C759] tracking-tighter">
 					{formatPrice(offer.price)}
 				</div>
 				<div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-medium uppercase tracking-tight">
@@ -705,7 +705,7 @@ export default function AdminPage() {
 						<Calendar className="w-5 h-5 text-[#05324f]" />
 					</div>
 					<div className="min-w-0">
-						<h4 className="font-bold text-gray-900 leading-tight truncate">{booking.workshop?.companyName}</h4>
+						<h4 className="font-semibold text-gray-900 leading-tight truncate">{booking.workshop?.companyName}</h4>
 						<div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium uppercase tracking-tight">
 							<User className="w-3 h-3 opacity-50" />
 							{booking.customer?.name || 'Customer'}
@@ -729,13 +729,13 @@ export default function AdminPage() {
 			<div className="grid grid-cols-2 gap-4 mb-3">
 				<div>
 					<p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Scheduled At</p>
-					<div className="text-xs font-bold text-gray-700 leading-tight">
+					<div className="text-xs font-semibold text-gray-700 leading-tight">
 						{formatDateTime(new Date(booking.scheduledAt))}
 					</div>
 				</div>
 				<div className="text-right">
 					<p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Total Amount</p>
-					<div className="text-sm font-black text-gray-900 tracking-tighter">
+					<div className="text-sm font-bold text-gray-900 tracking-tighter">
 						{formatPrice(booking.totalAmount)}
 					</div>
 				</div>
@@ -922,7 +922,7 @@ export default function AdminPage() {
 
 					{/* Center Column: Logo */}
 					<div className="flex justify-center">
-						<span className="text-2xl sm:text-3xl lg:text-4xl font-bold flex items-center">
+						<span className="text-3xl sm:text-3xl lg:text-4xl font-bold flex items-center">
 							<span className="text-[#05324f]">Fixa</span>
 							<span style={{ color: '#34C759' }}>2an</span>
 						</span>
@@ -1037,21 +1037,21 @@ export default function AdminPage() {
 									<div className="flex items-center gap-2 mb-1 max-md:mb-1 text-[#05324f]">
 										<Users className="w-3 h-3 max-md:w-5 max-md:h-5" />
 									</div>
-									<div className="text-lg sm:text-4xl font-bold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalCustomers}</div>
+									<div className="text-lg sm:text-4xl font-semibold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalCustomers}</div>
 									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.customers')}</div>
 								</div>
 								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-2 sm:p-5 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-2.5 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
 									<div className="flex items-center gap-2 mb-1 max-md:mb-1 text-[#05324f]">
 										<Building2 className="w-3 h-3 max-md:w-5 max-md:h-5" />
 									</div>
-									<div className="text-lg sm:text-4xl font-bold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalWorkshops}</div>
+									<div className="text-lg sm:text-4xl font-semibold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalWorkshops}</div>
 									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.workshops')}</div>
 								</div>
 								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-2 sm:p-5 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-2.5 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
 									<div className="flex items-center gap-2 mb-1 max-md:mb-1 text-[#05324f]">
 										<FileText className="w-3 h-3 max-md:w-5 max-md:h-5" />
 									</div>
-									<div className="text-lg sm:text-4xl font-bold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalRequests}</div>
+									<div className="text-lg sm:text-4xl font-semibold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalRequests}</div>
 									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.requests')}</div>
 								</div>
 							</div>

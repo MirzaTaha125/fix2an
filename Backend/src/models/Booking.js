@@ -12,6 +12,7 @@ const bookingSchema = new mongoose.Schema({
 		enum: ['CONFIRMED', 'RESCHEDULED', 'CANCELLED', 'DONE', 'NO_SHOW'] 
 	},
 	totalAmount: { type: Number, required: true },
+	isAgreedToTerms: { type: Boolean, required: true },
 	notes: { type: String },
 	reminder24hSentAt: { type: Date },
 }, {

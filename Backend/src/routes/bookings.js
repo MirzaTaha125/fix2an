@@ -10,10 +10,10 @@ const router = express.Router()
 // Create a booking
 router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 	try {
-		const { offerId, scheduledAt, notes } = req.body
+		const { offerId, scheduledAt, notes, isAgreedToTerms } = req.body
 
-		if (!offerId || !scheduledAt) {
-			return res.status(400).json({ message: 'Offer ID and scheduled date are required' })
+		if (!offerId || !scheduledAt || isAgreedToTerms === undefined) {
+			return res.status(400).json({ message: 'Offer ID, scheduled date, and agreement agreement are required' })
 		}
 
 		// Get offer and related data
@@ -47,6 +47,7 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 			workshopId: offer.workshopId._id,
 			scheduledAt: new Date(scheduledAt),
 			totalAmount,
+			isAgreedToTerms: !!isAgreedToTerms,
 			notes,
 		})
 
