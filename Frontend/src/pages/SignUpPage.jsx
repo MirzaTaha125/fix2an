@@ -121,7 +121,7 @@ export default function SignUpPage() {
 	return (
 	<div className="min-h-screen bg-gray-50 flex flex-col">
 		<Navbar />
-		<div className="flex-1 flex items-center justify-center px-4 py-20">
+		<div className="flex-1 flex items-center justify-center px-4 pt-35 pb-20 sm:py-20">
 			<div className="max-w-2xl w-full space-y-8 animate-fade-in-up">
 				<div className="text-center">
 					<h2 className="text-xl font-bold mb-2" style={{ color: '#05324f' }}>{t('auth.signup.title')}</h2>
