@@ -61,7 +61,8 @@
 		"admin_panel": "Admin Panel",
 		"jobs": "Jobs",
 		"proposals": "Proposals",
-		"contracts": "Contracts"
+		"contracts": "Contracts",
+		"contract": "Contract"
 	},
 	"homepage": {
 		"title": "Fix your car directly – fast, easy, safe",

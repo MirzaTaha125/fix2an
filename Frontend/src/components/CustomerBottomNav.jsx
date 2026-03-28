@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { FolderOpen, User, LogOut } from 'lucide-react'
+import { FolderOpen, User, LogOut, FileCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useTranslation } from 'react-i18next'
 
 /**
  * Bottom navigation for customer users. Shown on mobile.
@@ -32,7 +32,7 @@ const NavItemContent = ({ active, icon: Icon, label }) => {
 }
 
 export default function CustomerBottomNav() {
-	const { pathname } = useLocation()
+	const { pathname, search } = useLocation()
 	const { t } = useTranslation()
 	const { user, logout } = useAuth()
 	const [profileMenuOpen, setProfileMenuOpen] = useState(false)
@@ -54,7 +54,8 @@ export default function CustomerBottomNav() {
 	const isActive = (path) => (path === '/profile' ? pathname === '/profile' : pathname.startsWith(path))
 
 	const getActiveIndex = () => {
-		if (profileMenuOpen || isActive('/profile')) return 1;
+		if (profileMenuOpen || isActive('/profile')) return 2;
+		if (pathname === '/my-cases' && search.includes('tab=booked_cases')) return 1;
 		if (isActive('/my-cases')) return 0;
 		return 0;
 	}
@@ -75,6 +76,18 @@ export default function CustomerBottomNav() {
 						label={t('navigation.my_cases') || 'My Cases'} 
 					/>
 				</Link>
+
+				<Link 
+					to="/my-cases?tab=booked_cases" 
+					onClick={() => setProfileMenuOpen(false)}
+					className="flex-1 w-full h-full relative"
+				>
+					<NavItemContent 
+						active={activeIndex === 1} 
+						icon={FileCheck} 
+						label={t('navigation.contract') || 'Contract'} 
+					/>
+				</Link>
 				
 				<div className="flex-1 w-full h-full relative" ref={menuRef}>
 					<button 
@@ -85,7 +98,7 @@ export default function CustomerBottomNav() {
 						className="w-full h-full relative outline-none"
 					>
 						<NavItemContent 
-							active={activeIndex === 1} 
+							active={activeIndex === 2} 
 							icon={User} 
 							label={t('navigation.profile') || 'Profile'} 
 						/>

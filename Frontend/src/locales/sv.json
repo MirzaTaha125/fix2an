@@ -61,7 +61,8 @@
 		"admin_panel": "Admin Panel",
 		"jobs": "Jobb",
 		"proposals": "Förslag",
-		"contracts": "Kontrakt"
+		"contracts": "Kontrakt",
+		"contract": "Kontrakt"
 	},
 	"homepage": {
 		"title": "Fixa din tvåa direkt – snabbt, enkelt, tryggt",

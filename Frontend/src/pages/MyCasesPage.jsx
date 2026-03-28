@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
@@ -37,11 +37,12 @@ import { getFullUrl } from '../config/api.js'
 
 export default function MyCasesPage() {
 	const navigate = useNavigate()
+	const [searchParams] = useSearchParams()
 	const { user, loading: authLoading } = useAuth()
 	const { t } = useTranslation()
 	const [requests, setRequests] = useState([])
 	const [loading, setLoading] = useState(true)
-	const [activeTab, setActiveTab] = useState('my_cases')
+	const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'my_cases')
 	const [reviewModalOpen, setReviewModalOpen] = useState(false)
 	const [selectedRequestForReview, setSelectedRequestForReview] = useState(null)
 	const [rating, setRating] = useState(0)
@@ -103,6 +104,14 @@ export default function MyCasesPage() {
 			fetchRequests()
 		}
 	}, [user])
+
+	// Update active tab if search params change
+	useEffect(() => {
+		const tab = searchParams.get('tab')
+		if (tab && ['my_cases', 'booked_cases', 'completed_cases', 'cancelled_cases', 'rescheduled_cases'].includes(tab)) {
+			setActiveTab(tab)
+		}
+	}, [searchParams])
 
 	const handleSubmitReview = async () => {
 		if (!rating || !reviewText.trim() || !selectedRequestForReview) {
@@ -631,16 +640,45 @@ export default function MyCasesPage() {
 										
 										{/* Booked Cases - Show Complete, Reschedule, Cancel buttons */}
 										{activeTab === 'booked_cases' && request.status === 'BOOKED' && bookings.length > 0 && (
-											<div className="flex flex-row gap-2 w-full md:w-auto md:justify-end">
+											<div className="grid grid-cols-2 md:flex md:flex-row md:flex-wrap md:justify-end gap-1.5 md:gap-2 w-full mt-4 md:mt-0">
 												<Button 
 													onClick={() => {
 														setSelectedBookingForDetails(bookings[0])
 														setDetailsModalOpen(true)
 													}}
 													size="sm" 
-													className="flex-1 md:flex-none md:w-auto px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
+													className="w-full md:w-auto md:min-w-[120px] h-8 md:h-9 px-1 md:px-4 text-[9px] md:text-xs font-bold rounded-lg whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#05324f] text-white hover:bg-[#0a4a75]"
 												>
 													{t('my_cases.view_details') || 'View Details'}
+												</Button>
+
+												<Button 
+													onClick={() => openCompleteConfirm(bookings[0])}
+													size="sm" 
+													className="w-full md:w-auto md:min-w-[120px] h-8 md:h-9 px-1 md:px-4 text-[9px] md:text-xs font-bold rounded-lg whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
+												>
+													<CheckCircle className="w-3 h-3 mr-0.5 md:mr-1" />
+													{t('my_cases.complete_job') || 'Complete'}
+												</Button>
+
+												<Button 
+													onClick={() => openRescheduleModal(bookings[0])}
+													size="sm" 
+													variant="outline"
+													className="w-full md:w-auto md:min-w-[120px] h-8 md:h-9 px-1 md:px-4 text-[9px] md:text-xs font-bold rounded-lg whitespace-nowrap border-[1.5px] border-[#05324f] text-[#05324f] hover:bg-[#05324f]/5 transition-all"
+												>
+													<RotateCcw className="w-3 h-3 mr-0.5 md:mr-1" />
+													{t('my_cases.reschedule_job') || 'Reschedule'}
+												</Button>
+
+												<Button 
+													onClick={() => openCancelConfirm(bookings[0])}
+													size="sm" 
+													variant="destructive"
+													className="w-full md:w-auto md:min-w-[120px] h-8 md:h-9 px-1 md:px-4 text-[9px] md:text-xs font-bold rounded-lg whitespace-nowrap shadow-sm hover:shadow-md transition-all"
+												>
+													<XCircle className="w-3 h-3 mr-0.5 md:mr-1" />
+													{t('my_cases.cancel_job') || 'Cancel'}
 												</Button>
 											</div>
 										)}
