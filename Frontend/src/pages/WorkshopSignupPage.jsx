@@ -584,7 +584,7 @@ export default function WorkshopSignupPage() {
 											<Label className="text-xs sm:text-sm font-bold text-[#05324f] mb-2 sm:mb-3 block capitalize">
 												{t(`workshop.signup.opening_hours.days.${day}`)}
 											</Label>
-											<div className="grid grid-cols-2 gap-2 md:gap-4 max-md:max-w-[240px]">
+											<div className="grid grid-cols-2 gap-2 md:gap-4 max-md:max-w-[300px]">
 												<div className="space-y-1">
 													<Label className="text-[10px] md:text-xs text-gray-500 block uppercase tracking-wider font-medium">
 														{t('workshop.signup.opening_hours.open') || 'Open'}
@@ -595,7 +595,7 @@ export default function WorkshopSignupPage() {
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Open`]: e.target.value }))
 														}
-														className="h-9 md:h-12 w-full px-2 md:px-3 text-xs md:text-sm bg-white"
+														className="h-10 md:h-12 w-full p-0 md:px-3 text-center text-xs md:text-sm bg-white"
 													/>
 												</div>
 												<div className="space-y-1">
@@ -608,7 +608,7 @@ export default function WorkshopSignupPage() {
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Close`]: e.target.value }))
 														}
-														className="h-9 md:h-12 w-full px-2 md:px-3 text-xs md:text-sm bg-white"
+														className="h-10 md:h-12 w-full p-0 md:px-3 text-center text-xs md:text-sm bg-white"
 													/>
 												</div>
 											</div>
