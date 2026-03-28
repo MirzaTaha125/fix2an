@@ -580,13 +580,13 @@ export default function WorkshopSignupPage() {
 							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
 								{['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(
 									(day) => (
-										<div key={day} className="p-3 sm:p-4 rounded-xl border border-gray-100 bg-gray-50/30">
+										<div key={day} className="p-2 sm:p-4 rounded-xl border border-gray-100 bg-gray-50/30">
 											<Label className="text-xs sm:text-sm font-bold text-[#05324f] mb-2 sm:mb-3 block capitalize">
 												{t(`workshop.signup.opening_hours.days.${day}`)}
 											</Label>
-											<div className="grid grid-cols-2 gap-2 sm:gap-4">
+											<div className="grid grid-cols-2 gap-2 md:gap-4 max-md:max-w-[240px]">
 												<div className="space-y-1">
-													<Label className="text-[10px] sm:text-xs text-gray-500 block uppercase tracking-wider font-medium">
+													<Label className="text-[10px] md:text-xs text-gray-500 block uppercase tracking-wider font-medium">
 														{t('workshop.signup.opening_hours.open') || 'Open'}
 													</Label>
 													<Input
@@ -595,11 +595,11 @@ export default function WorkshopSignupPage() {
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Open`]: e.target.value }))
 														}
-														className="h-9 sm:h-12 w-full px-3 text-xs sm:text-sm bg-white"
+														className="h-9 md:h-12 w-full px-2 md:px-3 text-xs md:text-sm bg-white"
 													/>
 												</div>
 												<div className="space-y-1">
-													<Label className="text-[10px] sm:text-xs text-gray-500 block uppercase tracking-wider font-medium">
+													<Label className="text-[10px] md:text-xs text-gray-500 block uppercase tracking-wider font-medium">
 														{t('workshop.signup.opening_hours.close') || 'Close'}
 													</Label>
 													<Input
@@ -608,7 +608,7 @@ export default function WorkshopSignupPage() {
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Close`]: e.target.value }))
 														}
-														className="h-9 sm:h-12 w-full px-3 text-xs sm:text-sm bg-white"
+														className="h-9 md:h-12 w-full px-2 md:px-3 text-xs md:text-sm bg-white"
 													/>
 												</div>
 											</div>

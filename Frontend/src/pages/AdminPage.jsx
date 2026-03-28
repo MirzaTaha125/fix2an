@@ -896,15 +896,19 @@ export default function AdminPage() {
 		<div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#FFFFFF' }}>
 			{/* Header */}
 			<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-100 max-md:border-gray-200">
-				<div className="flex items-center justify-between gap-4">
-					{/* Left: Menu Button (Mobile) + Logo */}
-					<div className="flex items-center gap-3">
+				<div className="flex items-center justify-between gap-4 relative">
+					{/* Left: Menu Button (Mobile) */}
+					<div className="flex items-center lg:hidden">
 						<button
 							onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-							className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+							className="p-2 hover:bg-gray-100 rounded-lg"
 						>
 							<Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
 						</button>
+					</div>
+
+					{/* Center: Logo (Mobile) / Left: Logo (Desktop) */}
+					<div className="flex items-center lg:static absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:translate-x-0 lg:translate-y-0 lg:left-0 lg:top-0">
 						<Logo />
 					</div>
 
