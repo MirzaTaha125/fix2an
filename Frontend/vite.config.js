@@ -21,6 +21,11 @@ export default defineConfig({
 				changeOrigin: true,
 				secure: true,
 			},
+			'/uploads': {
+				target: 'https://fix2an-production.up.railway.app/',
+				changeOrigin: true,
+				secure: true,
+			},
 		},
 	},
 })
