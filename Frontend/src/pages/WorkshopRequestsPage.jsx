@@ -59,12 +59,13 @@ export default function WorkshopRequestsPage() {
 	// Redirect if not authenticated or not workshop
 	useEffect(() => {
 		if (!authLoading) {
+			const userRole = user?.role?.toUpperCase()
 			if (!user) {
 				navigate('/auth/signin', { replace: true })
 				return
 			}
-			if (user.role !== 'WORKSHOP') {
-				if (user.role === 'ADMIN') {
+			if (userRole !== 'WORKSHOP') {
+				if (userRole === 'ADMIN') {
 					navigate('/admin', { replace: true })
 				} else {
 					navigate('/my-cases', { replace: true })
@@ -74,7 +75,7 @@ export default function WorkshopRequestsPage() {
 	}, [user, authLoading, navigate])
 
 	const fetchRequests = async () => {
-		if (!user || user.role !== 'WORKSHOP') return
+		if (!user || user.role?.toUpperCase() !== 'WORKSHOP') return
 
 		try {
 			// Fetch all available requests (no distance filtering)
@@ -93,7 +94,7 @@ export default function WorkshopRequestsPage() {
 	}
 
 	useEffect(() => {
-		if (user && user.role === 'WORKSHOP') {
+		if (user && user.role?.toUpperCase() === 'WORKSHOP') {
 			fetchRequests()
 			fetchWorkshopProfile()
 		}
@@ -415,7 +416,8 @@ export default function WorkshopRequestsPage() {
 												{/* "8 km away · Latest 2 May" - reference line with middle dot */}
 												<p className="text-xs text-gray-500 max-md:block">
 													{distance != null ? `${Math.round(distance)} ${t('workshop.requests.km_away')}` : (request.city || t('common.no_data'))}
-													{distance != null && latestDate && ' · '}
+													{latestDate && <br className="md:hidden" />}
+													{distance != null && latestDate && <span className="hidden md:inline"> · </span>}
 													{latestDate && `${t('workshop.requests.latest')} ${latestDate}`}
 												</p>
 												{/* Desktop only: Username + Date, Distance */}

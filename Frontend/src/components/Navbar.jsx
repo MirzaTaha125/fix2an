@@ -7,6 +7,7 @@ import { LanguageSwitcher } from './LanguageSwitcher'
 import { User, LogOut, Menu, X, Building2, Users, ChevronDown, ArrowLeft } from 'lucide-react'
 import { Dialog } from './ui/Dialog'
 import RegisterTypeModal from './RegisterTypeModal'
+import Logo from './Logo'
 
 function Navbar() {
 	const { user, loading, logout } = useAuth()
@@ -81,15 +82,7 @@ function Navbar() {
 						)}
 					</div>
 					<div className="flex items-center justify-center md:justify-start gap-3 w-full">
-						<Link 
-							to="/" 
-							className="flex items-center transition-all duration-300 hover:scale-105"
-						>
-							<span className="text-5xl sm:text-5xl md:text-5xl font-extrabold tracking-tight">
-								<span className="text-[#05324f]">Fix</span>
-								<span className="text-green-500">2an</span>
-							</span>
-						</Link>
+						<Logo />
 						{user?.role === 'ADMIN' && (
 							<span className={`text-sm font-medium hidden sm:block transition-colors duration-300 ${
 								shouldUseWhiteNavbar ? 'text-gray-600' : 'text-white/80 drop-shadow-md'
@@ -291,7 +284,7 @@ function Navbar() {
 							<>
 								<Link 
 									to="/auth/signin" 
-									className={`relative transition-all duration-300 px-4 py-2.5 rounded-lg ${
+									className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${
 										isActive('/auth/signin') 
 											? shouldUseWhiteNavbar 
 												? 'text-[#05324f] font-semibold' 
@@ -305,7 +298,7 @@ function Navbar() {
 								</Link>
 								<button
 									onClick={() => setRegisterModalOpen(true)}
-									className={`relative transition-all duration-300 px-4 py-2.5 rounded-lg font-medium ${
+									className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg font-medium ${
 										shouldUseWhiteNavbar 
 											? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-50' 
 											: 'text-white/80 hover:text-white hover:bg-white/10'

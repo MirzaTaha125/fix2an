@@ -9,7 +9,10 @@ export function AuthProvider({ children }) {
 	const [user, setUser] = useState(() => {
 		try {
 			const storedUser = localStorage.getItem('user')
-			return storedUser ? JSON.parse(storedUser) : null
+			if (!storedUser) return null
+			const userData = JSON.parse(storedUser)
+			if (userData?.role) userData.role = userData.role.toUpperCase()
+			return userData
 		} catch {
 			return null
 		}
@@ -31,6 +34,10 @@ export function AuthProvider({ children }) {
 		try {
 			const response = await authAPI.getMe()
 			const userData = response.data
+			// Normalize role to uppercase
+			if (userData?.role) {
+				userData.role = userData.role.toUpperCase()
+			}
 			// Convert relative image URL to absolute if needed
 			if (userData?.image) {
 				userData.image = getFullUrl(userData.image)
@@ -65,6 +72,11 @@ export function AuthProvider({ children }) {
 
 			if (!newToken || !userData) {
 				throw new Error('Invalid response from server')
+			}
+
+			// Normalize role
+			if (userData?.role) {
+				userData.role = userData.role.toUpperCase()
 			}
 
 			localStorage.setItem('token', newToken)
@@ -114,6 +126,12 @@ export function AuthProvider({ children }) {
 			if (!newToken || !userData) {
 				throw new Error('Invalid response from server')
 			}
+
+			// Normalize role
+			if (userData?.role) {
+				userData.role = userData.role.toUpperCase()
+			}
+
 			localStorage.setItem('token', newToken)
 			localStorage.setItem('user', JSON.stringify(userData))
 			setToken(newToken)

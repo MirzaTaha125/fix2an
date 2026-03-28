@@ -5,7 +5,7 @@ import { Card, CardContent } from '../components/ui/Card'
 import { StatCard } from '../components/ui/StatCard'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
-import { formatPrice } from '../utils/cn'
+import { formatPrice, calculateDistance } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
 import {
 	Car,
@@ -43,19 +43,20 @@ export default function WorkshopDashboardPage() {
 
 	useEffect(() => {
 		if (!authLoading) {
+			const userRole = user?.role?.toUpperCase()
 			if (!user) {
 				navigate('/auth/signin', { replace: true })
 				return
 			}
-			if (user.role !== 'WORKSHOP') {
-				if (user.role === 'ADMIN') navigate('/admin', { replace: true })
+			if (userRole !== 'WORKSHOP') {
+				if (userRole === 'ADMIN') navigate('/admin', { replace: true })
 				else navigate('/my-cases', { replace: true })
 			}
 		}
 	}, [user, authLoading, navigate])
 
 	const fetchData = async () => {
-		if (!user || user.role !== 'WORKSHOP') return
+		if (!user || user.role?.toUpperCase() !== 'WORKSHOP') return
 		try {
 			const workshopId = user.id || user._id
 			const requestsResponse = await requestsAPI.getAvailable({
@@ -88,7 +89,7 @@ export default function WorkshopDashboardPage() {
 	}
 
 	useEffect(() => {
-		if (user && user.role === 'WORKSHOP') fetchData()
+		if (user && user.role?.toUpperCase() === 'WORKSHOP') fetchData()
 	}, [user])
 
 	if (authLoading || loading) {
@@ -240,9 +241,22 @@ export default function WorkshopDashboardPage() {
 															{request.description}
 														</p>
 													)}
-													{/* Mobile: distance / date placeholder - could use request.createdAt */}
+													{/* Location / Date info */}
 													<p className="text-xs text-gray-400 mt-0.5 max-md:block hidden">
-														{t('workshop.dashboard.latest') || 'Latest'} {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : ''}
+														{(() => {
+															const dist = request.latitude && request.longitude && user?.latitude && user?.longitude
+																? calculateDistance(user.latitude, user.longitude, request.latitude, request.longitude)
+																: null
+															const latestDate = request.createdAt ? new Date(request.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : ''
+															
+															return (
+																<>
+																	{dist != null ? `${Math.round(dist)} ${t('workshop.requests.km_away')}` : (request.city || '')}
+																	{latestDate && <br />}
+																	{latestDate && `${t('workshop.dashboard.latest') || 'Latest'} ${latestDate}`}
+																</>
+															)
+														})()}
 													</p>
 												</div>
 												<div className="shrink-0">

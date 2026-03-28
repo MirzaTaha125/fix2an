@@ -79,7 +79,7 @@ export default {
         },
       },
       animation: {
-        shimmer: 'shimmer 2s infinite linear',
+        shimmer: 'shimmer 1.5s infinite linear',
         'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
       },
     },

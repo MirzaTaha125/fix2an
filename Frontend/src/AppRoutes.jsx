@@ -52,24 +52,28 @@ function PrivateRoute({ children, allowedRoles = [] }) {
 		)
 	}
 
+	// Normalize role to uppercase for safe comparison
+	const userRole = user?.role?.toUpperCase()
+
 	if (!user) {
 		return <Navigate to="/auth/signin" replace />
 	}
 
-	if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-		if (user.role === 'ADMIN') {
+	if (allowedRoles.length > 0 && !allowedRoles.map(r => r.toUpperCase()).includes(userRole)) {
+		if (userRole === 'ADMIN' && location.pathname !== '/admin') {
 			return <Navigate to="/admin" replace />
-		} else if (user.role === 'WORKSHOP') {
+		} else if (userRole === 'WORKSHOP' && location.pathname !== '/workshop/requests') {
 			return <Navigate to="/workshop/requests" replace />
-		} else {
+		} else if (userRole !== 'ADMIN' && userRole !== 'WORKSHOP' && location.pathname !== '/my-cases') {
 			return <Navigate to="/my-cases" replace />
 		}
 	}
     
     
     // Workshop verification check
-    if (user.role === 'WORKSHOP') {
-        const verificationStatus = user.workshop?.verificationStatus || (user.isVerified ? 'APPROVED' : 'PENDING');
+    if (userRole === 'WORKSHOP') {
+        const rawStatus = user.workshop?.verificationStatus?.toUpperCase();
+        const verificationStatus = user.isVerified ? 'APPROVED' : (rawStatus || 'PENDING');
         
         if (verificationStatus === 'REJECTED' && location.pathname !== '/workshop/rejected') {
             return <Navigate to="/workshop/rejected" replace />
@@ -77,7 +81,7 @@ function PrivateRoute({ children, allowedRoles = [] }) {
         if (verificationStatus === 'PENDING' && location.pathname !== '/workshop/pending') {
             return <Navigate to="/workshop/pending" replace />
         }
-        if ((verificationStatus === 'APPROVED' || user.isVerified) && (location.pathname === '/workshop/pending' || location.pathname === '/workshop/rejected')) {
+        if (verificationStatus === 'APPROVED' && (location.pathname === '/workshop/pending' || location.pathname === '/workshop/rejected')) {
             return <Navigate to="/workshop/requests" replace />
         }
     }

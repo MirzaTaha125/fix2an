@@ -66,15 +66,16 @@ export default function MyCasesPage() {
 	// Redirect if not authenticated or wrong role
 	useEffect(() => {
 		if (!authLoading) {
+			const userRole = user?.role?.toUpperCase()
 			if (!user) {
 				navigate('/auth/signin', { replace: true })
 				return
 			}
-			if (user.role === 'WORKSHOP') {
+			if (userRole === 'WORKSHOP') {
 				navigate('/workshop/requests', { replace: true })
 				return
 			}
-			if (user.role === 'ADMIN') {
+			if (userRole === 'ADMIN') {
 				navigate('/admin', { replace: true })
 				return
 			}
@@ -82,7 +83,7 @@ export default function MyCasesPage() {
 	}, [user, authLoading, navigate])
 
 	const fetchRequests = async () => {
-		if (!user || user.role !== 'CUSTOMER') return
+		if (!user || user.role?.toUpperCase() !== 'CUSTOMER') return
 
 		try {
 			const response = await requestsAPI.getByCustomer(user.id || user._id)
@@ -98,7 +99,7 @@ export default function MyCasesPage() {
 	}
 
 	useEffect(() => {
-		if (user && user.role === 'CUSTOMER') {
+		if (user && user.role?.toUpperCase() === 'CUSTOMER') {
 			fetchRequests()
 		}
 	}, [user])
@@ -260,7 +261,7 @@ export default function MyCasesPage() {
 	}
 
 	// If not authenticated or wrong role, redirect will happen
-	if (!user || user.role !== 'CUSTOMER') {
+	if (!user || user.role?.toUpperCase() !== 'CUSTOMER') {
 		return null
 	}
 

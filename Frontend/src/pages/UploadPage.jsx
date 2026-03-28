@@ -120,7 +120,8 @@ export default function UploadPage() {
 	}
 
 	// Redirect if not authenticated
-	if (!user || user.role !== 'CUSTOMER') {
+	const userRole = user?.role?.toUpperCase()
+	if (!user || userRole !== 'CUSTOMER') {
 		navigate('/auth/signin', { replace: true })
 		return null
 	}

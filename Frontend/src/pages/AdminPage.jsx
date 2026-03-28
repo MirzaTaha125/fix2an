@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { adminAPI, authAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
+import Logo from '../components/Logo'
 import {
 	Users,
 	Building2,
@@ -94,12 +95,13 @@ export default function AdminPage() {
 	// Redirect if not authenticated or not admin
 	useEffect(() => {
 		if (!authLoading) {
+			const userRole = user?.role?.toUpperCase()
 			if (!user) {
 				navigate('/auth/signin', { replace: true })
 				return
 			}
-			if (user.role !== 'ADMIN') {
-				if (user.role === 'WORKSHOP') {
+			if (userRole !== 'ADMIN') {
+				if (userRole === 'WORKSHOP') {
 					navigate('/workshop/requests', { replace: true })
 				} else {
 					navigate('/my-cases', { replace: true })
@@ -126,7 +128,7 @@ export default function AdminPage() {
 	}, [mobileMenuOpen])
 
 	useEffect(() => {
-		if (user && user.role === 'ADMIN') {
+		if (user && user.role?.toUpperCase() === 'ADMIN') {
 			fetchStats()
 			if (activeTab === 'dashboard') {
 				fetchPendingWorkshops()
@@ -140,7 +142,7 @@ export default function AdminPage() {
 
 	// Update data when filters change
 	useEffect(() => {
-		if (user && user.role === 'ADMIN') {
+		if (user && user.role?.toUpperCase() === 'ADMIN') {
 			// For customers tab, add a small debounce to avoid too many API calls while typing
 			if (activeTab === 'settings') return
 			if (activeTab === 'customers') {
@@ -449,8 +451,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
-						<User className="w-5 h-5 text-[#05324f]" />
+					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
+						<User className="w-5 h-5 text-[#34C759]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{customer.name || 'User'}</h4>
@@ -496,8 +498,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
-						<Building2 className="w-5 h-5 text-[#05324f]" />
+					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
+						<Building2 className="w-5 h-5 text-[#34C759]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
@@ -544,21 +546,18 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
-						<Building2 className="w-5 h-5 text-[#05324f]" />
+					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
+						<Building2 className="w-5 h-5 text-[#34C759]" />
 					</div>
 					<div className="min-w-0">
-						<h4 className="font-semibold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
+						<div className="flex items-center gap-1.5">
+							<h4 className="font-semibold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
+							{workshop.isVerified && <CheckCircle className="w-3.5 h-3.5 text-[#34C759] flex-shrink-0" />}
+						</div>
 						<p className="text-[10px] text-gray-400 font-medium tracking-tight uppercase">Org: {workshop.organizationNumber}</p>
 					</div>
 				</div>
 				<div className="flex flex-col items-end gap-1">
-					<Badge 
-						className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider"
-						style={workshop.isVerified ? { backgroundColor: '#34C759', color: '#FFFFFF' } : { backgroundColor: '#E5E7EB', color: '#6B7280' }}
-					>
-						{workshop.isVerified ? t('admin.workshops.verified') : t('admin.workshops.not_verified')}
-					</Badge>
 					<Badge 
 						className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider"
 						style={workshop.isActive ? { backgroundColor: '#34C759', color: '#FFFFFF' } : { backgroundColor: '#EF4444', color: '#FFFFFF' }}
@@ -606,8 +605,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
-						<FileText className="w-5 h-5 text-[#05324f]" />
+					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
+						<FileText className="w-5 h-5 text-[#34C759]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">
@@ -647,8 +646,8 @@ export default function AdminPage() {
 
 			<div className="flex items-center justify-between pt-3 border-t border-gray-50">
 				<div className="flex items-center gap-1.5">
-					<div className="w-2 h-2 rounded-full bg-blue-400"></div>
-					<span className="text-[10px] font-semibold text-blue-600 uppercase tracking-widest">{request._count?.offers || 0} {t('admin.requests.offers')}</span>
+					<div className="w-2 h-2 rounded-full bg-[#34C759]"></div>
+					<span className="text-[10px] font-semibold text-[#34C759] uppercase tracking-widest">{request._count?.offers || 0} {t('admin.requests.offers')}</span>
 				</div>
 				<p className="text-[9px] text-gray-300 font-medium uppercase tracking-tighter">ID: {request.id.substring(0, 8)}</p>
 			</div>
@@ -659,8 +658,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
-						<Package className="w-5 h-5 text-[#05324f]" />
+					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
+						<Package className="w-5 h-5 text-[#34C759]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{offer.workshop?.companyName}</h4>
@@ -682,7 +681,7 @@ export default function AdminPage() {
 			</div>
 
 			<div className="flex items-center justify-between mb-3">
-				<div className="text-lg font-bold text-[#34C759] tracking-tighter">
+				<div className="text-lg font-medium text-[#34C759] tracking-tighter">
 					{formatPrice(offer.price)}
 				</div>
 				<div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-medium uppercase tracking-tight">
@@ -701,8 +700,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-[#05324f]/10 flex items-center justify-center">
-						<Calendar className="w-5 h-5 text-[#05324f]" />
+					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
+						<Calendar className="w-5 h-5 text-[#34C759]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{booking.workshop?.companyName}</h4>
@@ -729,13 +728,13 @@ export default function AdminPage() {
 			<div className="grid grid-cols-2 gap-4 mb-3">
 				<div>
 					<p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Scheduled At</p>
-					<div className="text-xs font-semibold text-gray-700 leading-tight">
+					<div className="text-xs font-medium text-gray-700 leading-tight">
 						{formatDateTime(new Date(booking.scheduledAt))}
 					</div>
 				</div>
 				<div className="text-right">
 					<p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Total Amount</p>
-					<div className="text-sm font-bold text-gray-900 tracking-tighter">
+					<div className="text-sm font-medium text-gray-900 tracking-tighter">
 						{formatPrice(booking.totalAmount)}
 					</div>
 				</div>
@@ -748,22 +747,14 @@ export default function AdminPage() {
 	)
 
 	const LoadingCard = () => (
-		<div className="bg-white p-4 rounded-xl border border-gray-100">
-			<div className="flex justify-between mb-3">
-				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-gray-50"></div>
-					<div className="space-y-2">
-						<div className="h-3 w-20 bg-gray-100 rounded"></div>
-						<div className="h-2 w-12 bg-gray-100 rounded"></div>
-					</div>
+		<div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm max-md:border-gray-200 max-md:shadow-none max-md:border max-md:p-4">
+			<div className="flex items-center justify-between gap-4">
+				<div className="flex-1 w-full space-y-2">
+					<Skeleton className="h-5 w-3/4 max-w-[250px]" />
+					<Skeleton className="h-4 w-1/2 max-w-[150px]" />
 				</div>
-				<div className="h-5 w-14 bg-gray-100 rounded-full"></div>
+				<Skeleton className="h-8 w-20 rounded-lg" />
 			</div>
-			<div className="space-y-2 mb-4">
-				<div className="h-3 w-full bg-gray-100 rounded"></div>
-				<div className="h-3 w-2/3 bg-gray-100 rounded"></div>
-			</div>
-			<div className="h-8 w-full bg-gray-100 rounded-lg"></div>
 		</div>
 	)
 
@@ -829,7 +820,7 @@ export default function AdminPage() {
 				<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 max-md:border-gray-200">
 					<div className="flex items-center gap-2 sm:gap-3">
 						<Skeleton className="lg:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-lg" />
-						<Skeleton className="w-24 h-8 sm:h-10" />
+						<Skeleton className="w-32 h-10" />
 						<Skeleton className="hidden max-md:block w-16 h-6 ml-1" />
 					</div>
 					<div className="flex items-center gap-2 sm:gap-3">
@@ -840,13 +831,9 @@ export default function AdminPage() {
 				
 				{/* KPI Cards Skeleton */}
 				<div className="bg-gray-50 px-3 sm:px-6 py-4 sm:py-5 max-md:bg-white max-md:py-4">
-					<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-md:gap-2">
-						{[...Array(4)].map((_, i) => (
-							<div key={`skel-kpi-${i}`} className="rounded-card border border-gray-100 bg-white shadow-card p-4 sm:p-5 max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:p-4 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-								<Skeleton className="w-4 h-4 mb-2 max-md:mb-2 max-md:w-8 max-md:h-8 rounded-full" />
-								<Skeleton className="h-8 sm:h-10 w-24 mb-1 max-md:h-8 max-md:w-16" />
-								<Skeleton className="h-4 w-20 max-md:h-3 max-md:w-16" />
-							</div>
+					<div className="flex flex-nowrap overflow-x-auto gap-2 sm:gap-4 max-md:gap-1.5 mb-8 pb-2 no-scrollbar px-1">
+						{[...Array(3)].map((_, i) => (
+							<Skeleton key={`skel-kpi-${i}`} className="flex-shrink-0 w-[110px] sm:w-[160px] h-20 sm:h-32 rounded-card max-md:rounded-lg" />
 						))}
 					</div>
 				</div>
@@ -922,10 +909,7 @@ export default function AdminPage() {
 
 					{/* Center Column: Logo */}
 					<div className="flex justify-center">
-						<span className="text-3xl sm:text-3xl lg:text-4xl font-bold flex items-center">
-							<span className="text-[#05324f]">Fixa</span>
-							<span style={{ color: '#34C759' }}>2an</span>
-						</span>
+						<Logo />
 					</div>
 
 					{/* Right Column: Language Switcher */}
@@ -953,7 +937,7 @@ export default function AdminPage() {
 											setStatusFilter('all')
 											setPagination({ ...pagination, page: 1 })
 								}}
-								className={`w-full text-left px-4 py-3 transition-all rounded-lg ${
+								className={`w-full text-left px-4 py-3 transition-all rounded-lg text-sm font-medium ${
 											activeTab === tab
 										? 'bg-white text-gray-900 font-semibold'
 										: 'text-white/80 hover:text-white hover:bg-white/10'
@@ -983,13 +967,14 @@ export default function AdminPage() {
 				)}
 				<div 
 					ref={mobileMenuRef}
-					className={`fixed left-0 top-0 bottom-0 w-40 z-50 transform transition-transform duration-300 lg:hidden ${
+					className={`fixed left-0 top-0 bottom-0 w-40 z-50 flex flex-col transform transition-transform duration-300 lg:hidden ${
 						mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
 					}`}
 					style={{ backgroundColor: sidebarBgColor }}
 				>
-					<div className="p-3 border-b flex items-center justify-end" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-						<button onClick={() => setMobileMenuOpen(false)} className="text-white">
+					<div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+						<h2 className="text-white font-bold text-sm tracking-tight">{t('admin.title') || 'Admin Panel'}</h2>
+						<button onClick={() => setMobileMenuOpen(false)} className="p-1 hover:bg-white/10 rounded-lg transition-colors text-white">
 							<X className="w-5 h-5" />
 						</button>
 					</div>
@@ -1004,7 +989,7 @@ export default function AdminPage() {
 										setPagination({ ...pagination, page: 1 })
 									setMobileMenuOpen(false)
 									}}
-								className={`w-full text-left px-3 py-2.5 transition-all rounded-lg text-[13px] ${
+								className={`w-full text-left px-3 py-2.5 transition-all rounded-lg text-[15px] font-medium ${
 										activeTab === tab
 										? 'bg-white text-gray-900 font-bold shadow-sm'
 										: 'text-white/80 hover:text-white hover:bg-white/10'
@@ -1017,7 +1002,7 @@ export default function AdminPage() {
 					<div className="p-3 mt-auto space-y-3">
 						<button
 							onClick={handleLogout}
-							className="flex items-center gap-2.5 w-full text-left px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all text-[13px] font-medium"
+							className="flex items-center gap-2.5 w-full text-left px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all text-[15px] font-medium"
 						>
 							<LogOut className="w-4 h-4" />
 							<span>{t('common.logout')}</span>
@@ -1034,22 +1019,22 @@ export default function AdminPage() {
 							{/* KPI Cards - only on dashboard */}
 							<div className="flex flex-nowrap overflow-x-auto gap-2 sm:gap-4 max-md:gap-1.5 mb-8 pb-2 custom-scrollbar no-scrollbar scroll-smooth px-1">
 								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-2 sm:p-5 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-2.5 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="flex items-center gap-2 mb-1 max-md:mb-1 text-[#05324f]">
-										<Users className="w-3 h-3 max-md:w-5 max-md:h-5" />
+									<div className="w-6 h-6 sm:w-10 sm:h-10 rounded-full bg-[#EDFBF1] flex items-center justify-center mb-2 sm:mb-3">
+										<Users className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#34C759]" />
 									</div>
 									<div className="text-lg sm:text-4xl font-semibold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalCustomers}</div>
 									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.customers')}</div>
 								</div>
 								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-2 sm:p-5 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-2.5 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="flex items-center gap-2 mb-1 max-md:mb-1 text-[#05324f]">
-										<Building2 className="w-3 h-3 max-md:w-5 max-md:h-5" />
+									<div className="w-6 h-6 sm:w-10 sm:h-10 rounded-full bg-[#EDFBF1] flex items-center justify-center mb-2 sm:mb-3">
+										<Building2 className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#34C759]" />
 									</div>
 									<div className="text-lg sm:text-4xl font-semibold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalWorkshops}</div>
 									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.workshops')}</div>
 								</div>
 								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-2 sm:p-5 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-2.5 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="flex items-center gap-2 mb-1 max-md:mb-1 text-[#05324f]">
-										<FileText className="w-3 h-3 max-md:w-5 max-md:h-5" />
+									<div className="w-6 h-6 sm:w-10 sm:h-10 rounded-full bg-[#EDFBF1] flex items-center justify-center mb-2 sm:mb-3">
+										<FileText className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#34C759]" />
 									</div>
 									<div className="text-lg sm:text-4xl font-semibold text-[#05324f] leading-none mb-0.5 max-md:text-base">{stats.totalRequests}</div>
 									<div className="text-[8px] sm:text-small text-gray-500 font-medium max-md:text-[8px] uppercase tracking-tighter">{t('admin.stats.requests')}</div>
@@ -1445,19 +1430,16 @@ export default function AdminPage() {
 														{workshops.map((workshop) => (
 															<tr key={workshop.id} className="hover:bg-gray-50/50 transition-colors">
 																<td className="p-4">
-																	<div className="font-black text-gray-900 leading-tight">{workshop.companyName}</div>
+																	<div className="flex items-center gap-2">
+																		<div className="font-bold text-gray-900 leading-tight">{workshop.companyName}</div>
+																		{workshop.isVerified && <CheckCircle className="w-4 h-4 text-[#34C759] flex-shrink-0" />}
+																	</div>
 																	<div className="text-[10px] text-gray-400 font-medium uppercase tracking-tight mt-0.5">ID: {workshop.id.substring(0, 8)}</div>
 																</td>
 																<td className="p-4 text-sm text-gray-600">{workshop.email}</td>
 																<td className="p-4 text-xs text-gray-500 font-medium tracking-tighter uppercase">{workshop.organizationNumber}</td>
 																<td className="p-4">
 																	<div className="flex flex-wrap gap-1.5">
-																		<Badge 
-																			className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm"
-																			style={workshop.isVerified ? { backgroundColor: '#34C759', color: '#FFFFFF' } : { backgroundColor: '#E5E7EB', color: '#6B7280' }}
-																		>
-																			{workshop.isVerified ? t('admin.workshops.verified') : t('admin.workshops.not_verified')}
-																		</Badge>
 																		<Badge 
 																			className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm"
 																			style={workshop.isActive ? { backgroundColor: '#34C759', color: '#FFFFFF' } : { backgroundColor: '#EF4444', color: '#FFFFFF' }}
@@ -1642,7 +1624,7 @@ export default function AdminPage() {
 																<td className="p-4 text-xs text-gray-500 font-medium">{request.city}, {request.address}</td>
 																<td className="p-4 text-xs text-gray-400 font-medium">{formatDate(new Date(request.createdAt))}</td>
 																<td className="p-4">
-																	<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-600">
+																	<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-[#EDFBF1] text-[#34C759]">
 																		{request._count?.offers || 0}
 																	</span>
 																</td>
@@ -1783,7 +1765,7 @@ export default function AdminPage() {
 																<td className="p-4 text-sm font-bold text-gray-600">
 																	{offer.request?.vehicle?.make} {offer.request?.vehicle?.model}
 																</td>
-																<td className="p-4 font-black text-[#34C759] tracking-tighter">
+																<td className="p-4 font-medium text-[#34C759] tracking-tighter">
 																	{formatPrice(offer.price)}
 																</td>
 																<td className="p-4 text-xs text-gray-400 font-medium">
@@ -1926,7 +1908,7 @@ export default function AdminPage() {
 																<td className="p-4 text-xs text-gray-500 font-medium">
 																	{formatDateTime(new Date(booking.scheduledAt))}
 																</td>
-																<td className="p-4 font-black text-gray-900 tracking-tighter">
+																<td className="p-4 font-medium text-gray-900 tracking-tighter">
 																	{formatPrice(booking.totalAmount)}
 																</td>
 																<td className="p-4 text-right">
