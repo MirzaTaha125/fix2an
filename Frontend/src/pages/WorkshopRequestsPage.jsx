@@ -483,27 +483,29 @@ export default function WorkshopRequestsPage() {
 			)}
 
 			{/* Inspection Report Dialog */}
-			<Dialog open={showReportDialog} onOpenChange={setShowReportDialog} className="max-w-4xl">
-				<div style={{ maxHeight: '90vh', overflowY: 'auto' }}>
-					<div className="flex items-center justify-between mb-4">
-						<DialogTitle style={{ color: '#05324f' }}>
+			<Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+				<div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto max-w-4xl w-full mx-auto">
+					<div className="flex items-center justify-between mb-6">
+						<DialogTitle className="text-2xl font-black text-[#05324f] uppercase tracking-tight">
 							{t('workshop.requests.inspection_report')}
 						</DialogTitle>
-						<button
+						<Button
+							variant="ghost"
+							size="icon"
 							onClick={() => setShowReportDialog(false)}
-							className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+							className="rounded-full hover:bg-gray-100"
 						>
-							<X className="w-5 h-5 text-gray-600" />
-						</button>
+							<X className="w-5 h-5 text-gray-500" />
+						</Button>
 					</div>
 					{selectedReport && (
-						<div className="space-y-4">
+						<div className="space-y-6">
 							{selectedReport.mimeType && selectedReport.mimeType.startsWith('image/') ? (
-								<div className="flex justify-center">
+								<div className="flex justify-center bg-gray-50 rounded-xl p-4 border border-gray-100 shadow-inner">
 									<img
 										src={getFullUrl(selectedReport.fileUrl)}
 										alt={selectedReport.fileName || 'Inspection Report'}
-										className="max-w-full h-auto rounded-lg border border-gray-200 shadow-sm"
+										className="max-w-full h-auto rounded-lg border border-white shadow-sm"
 										onError={(e) => {
 											e.target.style.display = 'none'
 											const errorDiv = e.target.nextSibling
@@ -512,25 +514,33 @@ export default function WorkshopRequestsPage() {
 											}
 										}}
 									/>
-									<div style={{ display: 'none' }} className="text-center p-8 text-red-600">
-										<AlertCircle className="w-12 h-12 mx-auto mb-2" />
-										<p>{t('workshop.requests.failed_to_load_image')}</p>
+									<div style={{ display: 'none' }} className="text-center p-12 text-red-600 bg-white rounded-xl border border-red-100">
+										<AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
+										<p className="font-bold text-sm uppercase tracking-widest">{t('workshop.requests.failed_to_load_image')}</p>
 									</div>
 								</div>
 							) : (
-								<div className="flex flex-col items-center space-y-4">
-									<div className="flex items-center justify-center p-8 bg-gray-50 rounded-lg border border-gray-200">
-										<FileText className="w-16 h-16 text-gray-400" />
+								<div className="flex flex-col items-center space-y-6 p-10 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner">
+									<div className="w-20 h-20 bg-white rounded-[2rem] flex items-center justify-center shadow-lg border border-gray-50">
+										<FileText className="w-10 h-10 text-[#05324f]" />
 									</div>
-									<a
-										href={getFullUrl(selectedReport.fileUrl)}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+									<div className="text-center space-y-2">
+										<p className="text-xs font-black text-gray-400 uppercase tracking-widest">Protocol Metadata Analysis</p>
+										<p className="text-sm font-bold text-gray-700">Audit Protocol File Type: {selectedReport.mimeType || 'PDF_STANDARD'}</p>
+									</div>
+									<Button
+										asChild
+										className="bg-[#34C759] hover:bg-[#2EB04F] text-white px-8 py-6 rounded-2xl shadow-xl shadow-[#34C759]/20 font-black uppercase tracking-widest text-xs transition-all active:scale-95"
 									>
-										<Eye className="w-4 h-4" />
-										{t('workshop.requests.open_pdf_new_tab')}
-									</a>
+										<a
+											href={getFullUrl(selectedReport.fileUrl)}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											<Eye className="w-4 h-4 mr-2" />
+											{t('workshop.requests.open_pdf_new_tab')}
+										</a>
+									</Button>
 								</div>
 							)}
 						</div>

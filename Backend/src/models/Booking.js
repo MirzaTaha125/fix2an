@@ -14,6 +14,12 @@ const bookingSchema = new mongoose.Schema({
 	totalAmount: { type: Number, required: true },
 	isAgreedToTerms: { type: Boolean, required: true },
 	notes: { type: String },
+	cancellationReason: { type: String },
+	cancelledBy: { 
+		type: String, 
+		enum: ['CUSTOMER', 'WORKSHOP', 'ADMIN'] 
+	},
+	cancelledAt: { type: Date },
 	reminder24hSentAt: { type: Date },
 }, {
 	timestamps: true,

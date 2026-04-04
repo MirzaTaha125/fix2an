@@ -111,7 +111,7 @@ export const bookingsAPI = {
 	getByWorkshop: (workshopId) => workshopId ? api.get(`/api/bookings/workshop/${workshopId}`) : api.get('/api/bookings/workshop/me'),
 	getByWorkshopMe: () => api.get('/api/bookings/workshop/me'),
 	update: (bookingId, data) => api.patch(`/api/bookings/${bookingId}`, data),
-	cancel: (bookingId) => api.patch(`/api/bookings/${bookingId}`, { status: 'CANCELLED' }),
+	cancel: (bookingId, cancellationReason) => api.patch(`/api/bookings/${bookingId}`, { status: 'CANCELLED', cancellationReason }),
 	reschedule: (bookingId, scheduledAt) => api.patch(`/api/bookings/${bookingId}`, { scheduledAt, status: 'RESCHEDULED' }),
 	complete: (bookingId) => api.patch(`/api/bookings/${bookingId}`, { status: 'DONE' }),
 }

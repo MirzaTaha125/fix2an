@@ -7,19 +7,15 @@ export function Dialog({ open, onOpenChange, children, className = '' }) {
 	if (!open) return null
 
 	const dialogContent = (
-		<div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
+		<div className="fixed inset-0 z-[9999] flex items-center justify-center">
 			{/* Backdrop */}
 			<div 
 				className="fixed inset-0 bg-black/50"
 				onClick={() => onOpenChange(false)}
 			/>
 			{/* Dialog Content */}
-			<div className={`relative z-[10000] w-full mx-auto ${className || 'max-w-md'}`}>
-				<Card className="shadow-none border border-gray-200">
-					<CardContent className="p-4 sm:p-6">
-						{children}
-					</CardContent>
-				</Card>
+			<div className={`relative z-[10000] ${className}`}>
+				{children}
 			</div>
 		</div>
 	)

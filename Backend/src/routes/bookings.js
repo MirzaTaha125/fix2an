@@ -114,7 +114,7 @@ router.get('/workshop/me', authenticate, requireRole('WORKSHOP'), async (req, re
 
 		const acceptedOffers = await Offer.find({
 			workshopId: workshop._id,
-			status: 'ACCEPTED',
+			status: { $in: ['ACCEPTED', 'DONE', 'CANCELLED'] },
 		}).select('_id')
 
 		const acceptedOfferIds = acceptedOffers.map((offer) => offer._id)
@@ -188,10 +188,28 @@ router.patch('/:id', authenticate, async (req, res) => {
 		if (status && !ALLOWED_STATUSES.includes(status)) {
 			return res.status(400).json({ message: `Invalid status. Allowed values: ${ALLOWED_STATUSES.join(', ')}` })
 		}
+		
+		const { cancellationReason } = req.body
 
 		const updateData = {}
 		if (status) {
 			updateData.status = status
+			
+			// Handle cancellation metadata
+			if (status === 'CANCELLED') {
+				updateData.cancelledAt = new Date()
+				updateData.cancellationReason = cancellationReason || 'No reason provided'
+				
+				// Identify who cancelled based on role
+				const userRole = req.user.role?.toUpperCase()
+				if (userRole === 'ADMIN') {
+					updateData.cancelledBy = 'ADMIN'
+				} else if (userRole === 'WORKSHOP') {
+					updateData.cancelledBy = 'WORKSHOP'
+				} else {
+					updateData.cancelledBy = 'CUSTOMER'
+				}
+			}
 		} else if (scheduledAt) {
 			updateData.status = 'RESCHEDULED'
 		}
@@ -200,18 +218,29 @@ router.patch('/:id', authenticate, async (req, res) => {
 			updateData.reminder24hSentAt = null
 		}
 		if (notes !== undefined) updateData.notes = notes
+		
+		if (updateData.status === 'CANCELLED') {
+			if (booking.offerId) {
+				const Offer = (await import('../models/Offer.js')).default
+				await Offer.findByIdAndUpdate(booking.offerId, {
+					status: 'CANCELLED',
+					cancellationReason: updateData.cancellationReason,
+					cancelledBy: updateData.cancelledBy,
+					cancelledAt: updateData.cancelledAt
+				})
+			}
+		}
 
 		const updatedBooking = await Booking.findByIdAndUpdate(id, updateData, { new: true })
-			.populate('requestId')
+			.populate('customerId', 'name email phone')
+			.populate('workshopId', 'companyName email phone')
 			.populate('offerId')
-			.populate('customerId', 'name email')
-			.populate('workshopId', 'companyName')
+			.populate('requestId')
 
 		if (updateData.status === 'CANCELLED' && booking.requestId) {
 			// Revert request to IN_BIDDING
 			await Request.findByIdAndUpdate(booking.requestId, { status: 'IN_BIDDING' })
 			
-			// Mark the offer for THIS booking as SENT again so it can be re-booked if desired
 			// Actually, if it was cancelled by the workshop, it should stay DECLINED/CANCELLED.
 			// But if we want it to be bookable again, we set it to SENT.
 			// Given the user's request, let's keep the cancelling workshop's offer as DECLINED

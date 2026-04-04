@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link, useParams } from 'react-router-dom'
+import { useNavigate, Link, useParams, useSearchParams } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
@@ -8,7 +8,7 @@ import { Textarea } from '../components/ui/Textarea'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice, formatDate } from '../utils/cn'
-import { Car, Send, Clock, DollarSign, FileText, Shield, Calendar, User, MessageSquare } from 'lucide-react'
+import { Car, Send, Clock, DollarSign, FileText, Shield, Calendar, User, MessageSquare, CheckCircle, ArrowLeft, Eye, AlertTriangle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -19,6 +19,8 @@ import { requestsAPI, offersAPI } from '../services/api'
 export default function CreateOfferPage() {
 	const navigate = useNavigate()
 	const { id: requestId } = useParams()
+	const [searchParams] = useSearchParams()
+	const viewMode = searchParams.get('view') === 'true'
 	const { user, loading: authLoading } = useAuth()
 	const { t } = useTranslation()
 	const [request, setRequest] = useState(null)
@@ -28,8 +30,12 @@ export default function CreateOfferPage() {
 
 	const [formData, setFormData] = useState({
 		price: '',
+		laborCost: '',
+		partsCost: '',
 		estimatedDuration: '',
 		warranty: '',
+		validityDays: '14',
+		inclusions: '',
 		note: '',
 		availableDates: [''],
 	})
@@ -90,8 +96,12 @@ export default function CreateOfferPage() {
 
 							setFormData({
 								price: workshopOffer.price?.toString() || '',
+								laborCost: workshopOffer.laborCost?.toString() || '',
+								partsCost: workshopOffer.partsCost?.toString() || '',
 								estimatedDuration: workshopOffer.estimatedDuration?.toString() || '',
 								warranty: workshopOffer.warranty || '',
+								validityDays: workshopOffer.validityDays?.toString() || '14',
+								inclusions: workshopOffer.inclusions || '',
 								note: workshopOffer.note || '',
 								availableDates: parsedDates,
 							})
@@ -134,8 +144,12 @@ export default function CreateOfferPage() {
 				const offerId = existingOffer._id || existingOffer.id
 				response = await offersAPI.update(offerId, {
 					price: parseFloat(formData.price),
+					laborCost: parseFloat(formData.laborCost),
+					partsCost: parseFloat(formData.partsCost),
 					estimatedDuration: parseInt(formData.estimatedDuration),
 					warranty: formData.warranty || '',
+					validityDays: parseInt(formData.validityDays),
+					inclusions: formData.inclusions || '',
 					note: formData.note || '',
 					availableDates: validDates,
 				})
@@ -144,8 +158,12 @@ export default function CreateOfferPage() {
 				response = await offersAPI.create({
 					requestId,
 					price: parseFloat(formData.price),
+					laborCost: parseFloat(formData.laborCost),
+					partsCost: parseFloat(formData.partsCost),
 					estimatedDuration: parseInt(formData.estimatedDuration),
 					warranty: formData.warranty || '',
+					validityDays: parseInt(formData.validityDays),
+					inclusions: formData.inclusions || '',
 					note: formData.note || '',
 					availableDates: validDates,
 				})
@@ -225,34 +243,44 @@ export default function CreateOfferPage() {
 		return null
 	}
 
-	// Block editing if offer was already accepted or expired
-	if (existingOffer && (existingOffer.status === 'ACCEPTED' || existingOffer.status === 'EXPIRED')) {
+	// Block editing if offer was already SENT, ACCEPTED, EXPIRED or CANCELLED (unless in viewMode)
+	if (!viewMode && existingOffer && (['SENT', 'ACCEPTED', 'EXPIRED', 'CANCELLED'].includes(existingOffer.status))) {
 		return (
 			<div className="min-h-screen bg-white">
 				<Navbar />
 				<div className="max-w-5xl mx-auto px-4 py-24 text-center">
 					<div className="mb-6 flex justify-center">
 						<div className="p-4 bg-gray-50 rounded-full">
-							<Clock className="w-12 h-12 text-gray-400" />
+							<Shield className="w-12 h-12 text-[#34C759]" />
 						</div>
 					</div>
 					<h2 className="text-2xl font-bold text-[#05324f] mb-4">
-						{existingOffer.status === 'ACCEPTED' 
+						{existingOffer.status === 'SENT' 
+							? (t('workshop.offer.locked_title') || 'Offer Sent & Locked')
+							: existingOffer.status === 'ACCEPTED' 
 							? (t('workshop.offer.already_accepted_title') || 'Offer Accepted')
+							: existingOffer.status === 'CANCELLED'
+							? (t('workshop.offer.cancelled_title') || 'Offer Cancelled')
 							: (t('workshop.offer.expired_title') || 'Offer Expired')
 						}
 					</h2>
 					<p className="text-gray-600 mb-8 max-w-md mx-auto">
-						{existingOffer.status === 'ACCEPTED'
+						{existingOffer.status === 'SENT'
+							? (t('workshop.offer.locked_desc') || 'Sent offers are locked to ensure pricing trust with the customer. To make changes, please create a new version.')
+							: existingOffer.status === 'ACCEPTED'
 							? (t('workshop.offer.already_accepted') || 'This offer has been accepted and cannot be edited.')
+							: existingOffer.status === 'CANCELLED'
+							? (t('workshop.offer.cancelled_desc') || 'This booking was cancelled. See details for the reason.')
 							: (t('workshop.offer.expired_description') || 'This offer has expired because the customer chose another workshop for this request.')
 						}
 					</p>
-					<Link to="/workshop/requests">
-						<Button className="bg-[#34C759] hover:bg-[#2eb34f]">
-							{t('common.back_to_requests') || 'Back to Requests'}
-						</Button>
-					</Link>
+					<div className="flex justify-center gap-4">
+						<Link to="/workshop/requests">
+							<Button variant="outline">
+								{t('common.back_to_requests') || 'Back to Requests'}
+							</Button>
+						</Link>
+					</div>
 				</div>
 			</div>
 		)
@@ -282,6 +310,49 @@ export default function CreateOfferPage() {
 						</p>
 					</div>
 				</div>
+
+				{/* Simplified Cancellation Notice */}
+				{existingOffer && existingOffer.status === 'CANCELLED' && (
+					<div className="mb-8 p-5 bg-red-50/50 border-l-4 border-red-500 rounded-r-2xl shadow-sm animate-in fade-in slide-in-from-left-4 duration-500">
+						<div className="flex items-center gap-4">
+							<div className="bg-red-100 p-2.5 rounded-xl shrink-0">
+								<AlertTriangle className="w-6 h-6 text-red-600" />
+							</div>
+							<div className="flex-1">
+								<p className="text-xs font-black text-red-700 uppercase tracking-widest mb-1">
+									{existingOffer.cancelledBy === 'WORKSHOP' ? 'Cancelled by You' : 'Cancelled by Customer'}
+								</p>
+								<p className="text-base text-red-800 font-medium italic italic leading-relaxed">
+									"{existingOffer.cancellationReason || 'No reason provided'}"
+								</p>
+								{existingOffer.cancelledAt && (
+									<p className="text-[10px] text-red-400 mt-2 font-bold uppercase tracking-widest">
+										{formatDate(new Date(existingOffer.cancelledAt))}
+									</p>
+								)}
+							</div>
+						</div>
+					</div>
+				)}
+
+				{/* Info Notice for other states */}
+				{existingOffer && existingOffer.status === 'EXPIRED' && (
+					<div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-2xl flex items-center gap-3">
+						<Clock className="w-5 h-5 text-gray-400" />
+						<p className="text-sm text-gray-600">
+							{t('workshop.offer.expired_description') || 'This offer has expired because the customer chose another workshop.'}
+						</p>
+					</div>
+				)}
+
+				{existingOffer && existingOffer.status === 'ACCEPTED' && (
+					<div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-2xl flex items-center gap-3">
+						<CheckCircle className="w-5 h-5 text-green-600" />
+						<p className="text-sm text-green-700">
+							{t('workshop.offer.already_accepted') || 'Great news! Your offer was accepted.'}
+						</p>
+					</div>
+				)}
 
 				{/* Request Info */}
 				<Card className="mb-8 sm:mb-10 md:mb-12 shadow-lg border border-gray-200 bg-white">
@@ -361,58 +432,110 @@ export default function CreateOfferPage() {
 						<form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
 							{/* Price and Duration Grid */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
-								{/* Price */}
-								<div className="space-y-2 sm:space-y-3">
-									<Label htmlFor="price" className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700">
-										<div className="p-1 sm:p-1.5 bg-green-50 rounded-md flex-shrink-0">
-											<DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: '#34C759' }} />
-										</div>
-										<span>
-											{t('workshop.offer.price') || 'Price (SEK)'} <span className="text-red-500">*</span>
-										</span>
-									</Label>
-									<div className="relative">
-										<Input
-											id="price"
-											type="number"
-											min="0"
-											step="0.01"
-											value={formData.price}
+								{/* Price Breakdown */}
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+									{/* Total Price */}
+									<div className="space-y-2 col-span-1 sm:col-span-2 bg-[#05324f]/5 p-4 rounded-xl border border-[#05324f]/10">
+										<Label htmlFor="price" className="flex items-center gap-2 text-sm font-bold text-[#05324f]">
+											<DollarSign className="w-5 h-5 text-[#34C759]" />
+											<span>
+												Total Price (VAT Included) <span className="text-red-500">*</span>
+											</span>
+										</Label>
+										<div className="relative mt-2">
+											<Input
+												id="price"
+												type="number"
+												min="0"
+												step="0.01"
+												value={formData.price}
+												disabled={viewMode}
 											onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-											placeholder="0.00"
-											required
-											className="pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base font-semibold"
-										/>
-										<div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">kr</div>
+												placeholder="0.00"
+												required
+												className="pl-12 h-14 text-xl font-bold text-[#05324f] border-[#05324f]/20 focus:border-[#34C759]"
+											/>
+											<div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#05324f] font-bold text-lg">kr</div>
+										</div>
 									</div>
-									<p className="text-xs text-gray-500 ml-6 sm:ml-7">
-										{t('workshop.offer.including_vat') || 'Including VAT'}
-									</p>
+
+									{/* Labor Cost */}
+									<div className="space-y-2">
+										<Label htmlFor="laborCost" className="text-xs font-semibold text-gray-600">
+											Labor Cost (SEK)
+										</Label>
+										<Input
+											id="laborCost"
+											type="number"
+											disabled={viewMode}
+											value={formData.laborCost}
+											onChange={(e) => setFormData({ ...formData, laborCost: e.target.value })}
+											placeholder="0.00"
+											className="h-10 text-sm"
+										/>
+									</div>
+
+									{/* Parts Cost */}
+									<div className="space-y-2">
+										<Label htmlFor="partsCost" className="text-xs font-semibold text-gray-600">
+											Materials & Parts (SEK)
+										</Label>
+										<Input
+											id="partsCost"
+											type="number"
+											disabled={viewMode}
+											value={formData.partsCost}
+											onChange={(e) => setFormData({ ...formData, partsCost: e.target.value })}
+											placeholder="0.00"
+											className="h-10 text-sm"
+										/>
+									</div>
 								</div>
 
-								{/* Estimated Duration */}
-								<div className="space-y-2 sm:space-y-3">
-									<Label htmlFor="estimatedDuration" className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700">
-										<div className="p-1 sm:p-1.5 bg-green-50 rounded-md flex-shrink-0">
-											<Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: '#34C759' }} />
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+									{/* Offer Validity */}
+									<div className="space-y-3">
+										<Label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+											<Clock className="w-4 h-4 text-[#34C759]" />
+											<span>Offer Valid For</span>
+										</Label>
+										<div className="flex gap-2">
+											{['7', '14', '30'].map((days) => (
+												<button
+													key={days}
+													type="button"
+													disabled={viewMode}
+													onClick={() => setFormData({ ...formData, validityDays: days })}
+													className={`flex-1 py-2 px-3 rounded-lg border-2 font-bold text-sm transition-all ${
+														formData.validityDays === days
+															? 'bg-[#05324f] border-[#05324f] text-white'
+															: 'border-gray-200 text-gray-500 hover:border-gray-300'
+													} ${viewMode ? 'cursor-default opacity-90' : ''}`}
+												>
+													{days} Days
+												</button>
+											))}
 										</div>
-										<span className="break-words">
-											{t('workshop.offer.estimated_duration') || 'Estimated Duration (minutes)'} <span className="text-red-500">*</span>
-										</span>
-									</Label>
-									<Input
-										id="estimatedDuration"
-										type="number"
-										min="1"
-										value={formData.estimatedDuration}
-										onChange={(e) => setFormData({ ...formData, estimatedDuration: e.target.value })}
-										placeholder="60"
-										required
-										className="h-10 sm:h-12 text-sm sm:text-base font-semibold"
-									/>
-									<p className="text-xs text-gray-500 ml-6 sm:ml-7">
-										{t('workshop.offer.duration_minutes') || 'Duration in minutes'}
-									</p>
+									</div>
+
+									{/* Estimated Duration */}
+									<div className="space-y-3 focus-within:ring-0">
+										<Label htmlFor="estimatedDuration" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+											<Clock className="w-4 h-4 text-[#34C759]" />
+											<span>Estimated Duration (mins)</span>
+										</Label>
+										<Input
+											id="estimatedDuration"
+											type="number"
+											min="1"
+											value={formData.estimatedDuration}
+											disabled={viewMode}
+											onChange={(e) => setFormData({ ...formData, estimatedDuration: e.target.value })}
+											placeholder="60"
+											required
+											className="h-10 text-sm font-semibold"
+										/>
+									</div>
 								</div>
 							</div>
 
@@ -428,6 +551,7 @@ export default function CreateOfferPage() {
 									id="warranty"
 									type="text"
 									value={formData.warranty}
+									disabled={viewMode}
 									onChange={(e) => setFormData({ ...formData, warranty: e.target.value })}
 									placeholder={t('workshop.offer.warranty_placeholder') || 'e.g., 1 year, 12 months, 2 years'}
 									className="h-10 sm:h-12 text-sm sm:text-base"
@@ -471,6 +595,7 @@ export default function CreateOfferPage() {
 												<Input
 													type="datetime-local"
 													value={getLocalDateTime(date)}
+													disabled={viewMode}
 													onChange={(e) => {
 														const newDates = [...formData.availableDates]
 														// Convert datetime-local value to ISO string
@@ -480,90 +605,108 @@ export default function CreateOfferPage() {
 													className="h-10 sm:h-12 text-xs sm:text-sm flex-1"
 													required
 												/>
-												<Button
-													type="button"
-													variant="outline"
-													size="sm"
-													onClick={() => {
-														const newDates = formData.availableDates.filter((_, i) => i !== index)
-														setFormData({ ...formData, availableDates: newDates })
-													}}
-													className="px-3 sm:px-4 text-xs sm:text-sm flex-shrink-0"
-												>
-													{t('common.delete') || 'Remove'}
-												</Button>
+												{!viewMode && (
+													<Button
+														type="button"
+														variant="outline"
+														size="sm"
+														onClick={() => {
+															const newDates = formData.availableDates.filter((_, i) => i !== index)
+															setFormData({ ...formData, availableDates: newDates })
+														}}
+														className="px-3 sm:px-4 text-xs sm:text-sm flex-shrink-0"
+													>
+														{t('common.delete') || 'Remove'}
+													</Button>
+												)}
 											</div>
 										)
 									})}
-									<Button
-										type="button"
-										variant="outline"
-										size="sm"
-										onClick={() => {
-											setFormData({ ...formData, availableDates: [...formData.availableDates, ''] })
-										}}
-										className="w-full text-xs sm:text-sm"
-									>
-										+ {t('workshop.offer.add_available_time') || 'Add Available Time'}
-									</Button>
+									{!viewMode && (
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											onClick={() => {
+												setFormData({ ...formData, availableDates: [...formData.availableDates, ''] })
+											}}
+											className="w-full text-xs sm:text-sm"
+										>
+											+ {t('workshop.offer.add_available_time') || 'Add Available Time'}
+										</Button>
+									)}
 								</div>
 								<p className="text-xs text-gray-500 ml-6 sm:ml-7">
 									{t('workshop.offer.add_at_least_one') || 'Add at least one available time slot for the customer to choose from'}
 								</p>
 							</div>
 
+							{/* Inclusions & Highlights */}
+							<div className="space-y-3">
+								<Label htmlFor="inclusions" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+									<CheckCircle className="w-4 h-4 text-[#34C759]" />
+									<span>Included Services (e.g., Free wash, loaner car)</span>
+								</Label>
+								<Input
+									id="inclusions"
+									value={formData.inclusions}
+									disabled={viewMode}
+									onChange={(e) => setFormData({ ...formData, inclusions: e.target.value })}
+									placeholder="Wash included, 2 years warranty on parts..."
+									className="h-10 text-sm"
+								/>
+							</div>
+
 							{/* Note */}
-							<div className="space-y-2 sm:space-y-3">
-								<Label htmlFor="note" className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700">
-									<div className="p-1 sm:p-1.5 bg-green-50 rounded-md flex-shrink-0">
-										<FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: '#34C759' }} />
-									</div>
-									<span>{t('workshop.offer.additional_notes') || 'Additional Notes'}</span>
+							<div className="space-y-3">
+								<Label htmlFor="note" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+									<FileText className="w-4 h-4 text-[#34C759]" />
+									<span>Message to Customer</span>
 								</Label>
 								<Textarea
 									id="note"
 									value={formData.note}
+									disabled={viewMode}
 									onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-									placeholder={t('workshop.offer.note_placeholder') || 'Add any additional information that might help your offer stand out. For example: \'We specialize in this type of repair\' or \'Free pickup and delivery available\'...'}
+									placeholder="Describe your approach or additional details about the repair..."
 									rows={4}
-									className="resize-none text-sm sm:text-base"
+									className="resize-none text-sm leading-relaxed"
 								/>
-								<p className="text-xs text-gray-500 ml-6 sm:ml-7">
-									{t('workshop.offer.note_optional') || 'Optional: Share additional details about your services or approach'}
-								</p>
 							</div>
 
 							{/* Submit Buttons */}
 							<div className="flex flex-col sm:flex-row justify-end gap-4 sm:gap-5 pt-6 sm:pt-8 border-t border-gray-100">
 								<Link to="/workshop/requests" className="w-full sm:w-auto">
 									<Button type="button" variant="outline" size="default" className="w-full sm:w-auto px-6 sm:px-8 text-sm sm:text-base">
-										{t('common.cancel') || 'Cancel'}
+										{viewMode ? (t('common.close') || 'Close') : (t('common.cancel') || 'Cancel')}
 									</Button>
 								</Link>
-								<Button
-									type="submit"
-									disabled={submitting}
-									size="default"
-									className="w-full sm:w-auto px-6 sm:px-8 shadow-md hover:shadow-lg transition-all text-sm sm:text-base font-normal"
-									style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
-								>
-									{submitting ? (
-										<>
-											<div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-											{existingOffer 
-												? (t('workshop.offer.updating') || 'Updating...')
-												: (t('workshop.offer.submitting') || 'Submitting...')
-											}
-										</>
-									) : (
-										<>
-											{existingOffer
-												? (t('workshop.offer.update_offer') || 'Update Offer')
-												: (t('workshop.offer.submit_offer') || 'Submit Offer')
-											}
-										</>
-									)}
-								</Button>
+								{!viewMode && (
+									<Button
+										type="submit"
+										disabled={submitting}
+										size="default"
+										className="w-full sm:w-auto px-6 sm:px-8 shadow-md hover:shadow-lg transition-all text-sm sm:text-base font-normal"
+										style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
+									>
+										{submitting ? (
+											<>
+												<div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+												{existingOffer 
+													? (t('workshop.offer.updating') || 'Updating...')
+													: (t('workshop.offer.submitting') || 'Submitting...')
+												}
+											</>
+										) : (
+											<>
+												{existingOffer
+													? (t('workshop.offer.update_offer') || 'Update Offer')
+													: (t('workshop.offer.submit_offer') || 'Submit Offer')
+												}
+											</>
+										)}
+									</Button>
+								)}
 							</div>
 						</form>
 					</CardContent>

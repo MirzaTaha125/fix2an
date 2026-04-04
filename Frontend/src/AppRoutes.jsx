@@ -13,6 +13,7 @@ import MyCasesPage from './pages/MyCasesPage'
 import UploadPage from './pages/UploadPage'
 import CustomerProfilePage from './pages/CustomerProfilePage'
 import WorkshopDashboardPage from './pages/WorkshopDashboardPage'
+import WorkshopLandingPage from './pages/WorkshopLandingPage'
 import WorkshopRequestsPage from './pages/WorkshopRequestsPage'
 import WorkshopProfilePage from './pages/WorkshopProfilePage'
 import WorkshopReviewsPage from './pages/WorkshopReviewsPage'
@@ -96,6 +97,7 @@ function AppRoutes() {
 				<Route path="/" element={<HomePage />} />
 				<Route path="/en" element={<HomePage />} />
 				<Route path="/sv" element={<HomePage />} />
+				<Route path="/workshop" element={<WorkshopLandingPage />} />
 				<Route path="/how-it-works" element={<HowItWorksPage />} />
 				<Route path="/workshop/signup" element={<WorkshopSignupPage />} />
 				<Route path="/auth/signin" element={<SignInPage />} />

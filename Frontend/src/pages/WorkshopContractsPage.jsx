@@ -20,6 +20,7 @@ import {
 	X,
 	AlertTriangle,
 	Clock,
+	Shield,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -39,6 +40,13 @@ export default function WorkshopContractsPage() {
 	const [showCancelDialog, setShowCancelDialog] = useState(false)
 	const [contractToCancel, setContractToCancel] = useState(null)
 	const [activeTab, setActiveTab] = useState('current')
+	const [showDoneDialog, setShowDoneDialog] = useState(false)
+	const [contractToDone, setContractToDone] = useState(null)
+	const [isCompleting, setIsCompleting] = useState(false)
+	const [finalPrice, setFinalPrice] = useState('')
+	const [cancellationReason, setCancellationReason] = useState('')
+	const [selectedContractForDetails, setSelectedContractForDetails] = useState(null)
+	const [detailsModalOpen, setDetailsModalOpen] = useState(false)
 
 	// Redirect if not authenticated or wrong role
 	useEffect(() => {
@@ -169,35 +177,82 @@ export default function WorkshopContractsPage() {
 
 	const filteredContracts = getFilteredContracts()
 
-	const handleCancelClick = (offerId) => {
-		setContractToCancel(offerId)
-		setShowCancelDialog(true)
+	const handleDoneClick = (offer) => {
+		setContractToDone(offer)
+		setFinalPrice(offer.price?.toString() || '')
+		setShowDoneDialog(true)
 	}
 
-	const handleCancelConfirm = async () => {
-		if (!contractToCancel) return
-
-		setCancellingId(contractToCancel)
-		setShowCancelDialog(false)
+	const handleDoneConfirm = async () => {
+		if (!contractToDone) return
 		
+		setIsCompleting(true)
 		try {
-			// Update offer status to DECLINED (cancelled by workshop)
-			await offersAPI.update(contractToCancel, { status: 'DECLINED' })
-			toast.success(t('workshop.contracts.cancelled') || 'Contract cancelled successfully')
-			// Refresh contracts list
-			fetchContracts()
+			// Find the booking ID associated with this offer
+			const offerId = contractToDone._id || contractToDone.id
+			const booking = bookings.find(b => {
+				let bOfferId = b.offerId?._id || b.offerId?.id || b.offerId
+				return String(bOfferId) === String(offerId)
+			})
+			
+			if (booking) {
+				await bookingsAPI.complete(booking._id || booking.id)
+				toast.success(t('workshop.contracts.job_completed') || 'Job marked as completed!')
+				setShowDoneDialog(false)
+				fetchContracts()
+			} else {
+				toast.error(t('workshop.contracts.booking_not_found') || 'No booking found for this contract.')
+			}
 		} catch (error) {
-			console.error('Failed to cancel contract:', error)
-			toast.error(error.response?.data?.message || t('workshop.contracts.cancel_error') || 'Failed to cancel contract')
+			console.error('Failed to complete job:', error)
+			toast.error(t('workshop.contracts.complete_error') || 'Failed to complete job')
 		} finally {
-			setCancellingId(null)
-			setContractToCancel(null)
+			setIsCompleting(false)
+			setContractToDone(null)
 		}
 	}
 
 	const handleCancelDialogClose = () => {
 		setShowCancelDialog(false)
 		setContractToCancel(null)
+		setCancellationReason('')
+	}
+
+	const handleCancelClick = (offerId) => {
+		setContractToCancel(offerId)
+		setCancellationReason('')
+		setShowCancelDialog(true)
+	}
+
+	const handleCancelConfirm = async () => {
+		if (!contractToCancel) return
+		if (!cancellationReason.trim()) {
+			toast.error(t('workshop.contracts.cancel_reason_required') || 'Please provide a reason for cancellation')
+			return
+		}
+		
+		setIsCompleting(true) // Reusing isCompleting state for the loading spinner
+		try {
+			// Find the booking ID associated with this offer
+			const booking = bookings.find(b => {
+				let bOfferId = b.offerId?._id || b.offerId?.id || b.offerId
+				return String(bOfferId) === String(contractToCancel)
+			})
+			
+			if (booking) {
+				await bookingsAPI.cancel(booking._id || booking.id, cancellationReason)
+				toast.success(t('workshop.contracts.cancelled') || 'Contract cancelled successfully')
+				handleCancelDialogClose()
+				fetchContracts()
+			} else {
+				toast.error(t('workshop.contracts.booking_not_found') || 'No booking found for this contract.')
+			}
+		} catch (error) {
+			console.error('Failed to cancel contract:', error)
+			toast.error(t('workshop.contracts.cancel_error') || 'Failed to cancel contract')
+		} finally {
+			setIsCompleting(false)
+		}
 	}
 
 	useEffect(() => {
@@ -285,31 +340,109 @@ export default function WorkshopContractsPage() {
 		<div className="min-h-screen bg-gray-50 flex flex-col">
 			<Navbar />
 			
+			{/* Job Done Dialog */}
+			<Dialog open={showDoneDialog} onOpenChange={setShowDoneDialog}>
+				<DialogContent onClose={() => setShowDoneDialog(false)} className="max-w-md px-4">
+					<div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100">
+						<div className="bg-green-50 px-8 py-10 flex flex-col items-center text-center">
+							<div className="w-16 h-16 bg-[#34C759]/10 rounded-full flex items-center justify-center mb-6">
+								<CheckCircle className="w-10 h-10 text-[#34C759]" />
+							</div>
+							<DialogTitle className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+								{t('workshop.contracts.job_done_title') || 'Job Completed?'}
+							</DialogTitle>
+							<DialogDescription className="text-gray-600 font-medium whitespace-pre-line">
+								{t('workshop.contracts.job_done_desc') || 'Are you sure the car is ready and the customer has been notified?'}
+							</DialogDescription>
+						</div>
+						
+						<div className="px-8 py-8 bg-white">
+							<div className="space-y-4 mb-8">
+								<div className="flex justify-between items-center text-sm font-black p-4 bg-gray-50 rounded-2xl border border-gray-100">
+									<span className="text-gray-400 uppercase tracking-widest text-[10px]">Service Total Value</span>
+									<span className="text-[#05324f] text-lg tracking-tighter">{formatPrice(contractToDone?.price)}</span>
+								</div>
+							</div>
+							
+							<div className="flex flex-col gap-3">
+								<Button
+									size="lg"
+									onClick={handleDoneConfirm}
+									className="w-full h-14 bg-[#34C759] hover:bg-[#2eb34f] text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-[#34C759]/20 transition-all active:scale-95"
+									disabled={isCompleting}
+								>
+									{isCompleting ? (
+										<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+									) : (
+										t('workshop.contracts.confirm_and_complete') || 'Confirm & Complete'
+									)}
+								</Button>
+								
+								<Button
+									variant="ghost"
+									onClick={() => setShowDoneDialog(false)}
+									className="w-full h-12 text-gray-400 font-bold rounded-2xl hover:bg-gray-50"
+									disabled={isCompleting}
+								>
+									{t('common.not_yet') || 'Not Yet'}
+								</Button>
+							</div>
+						</div>
+					</div>
+				</DialogContent>
+			</Dialog>
+
 			{/* Cancel Confirmation Dialog */}
 			<Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-				<DialogContent onClose={handleCancelDialogClose}>
-					<div className="flex-1">
-						<DialogTitle>{t('workshop.contracts.cancel_contract') || 'Cancel Contract'}</DialogTitle>
-						<DialogDescription>
-							{t('workshop.contracts.cancel_confirm') || 'Are you sure you want to cancel this contract? This action cannot be undone.'}
-						</DialogDescription>
-						<div className="flex justify-start gap-2 mt-6">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={handleCancelDialogClose}
-								className="px-4 py-2 text-xs"
-							>
-								{t('workshop.contracts.no_keep') || 'No, Keep It'}
-							</Button>
-							<Button
-								variant="destructive"
-								size="sm"
-								onClick={handleCancelConfirm}
-								className="px-4 py-2 text-xs"
-							>
-								{t('workshop.contracts.yes_cancel') || 'Yes, Cancel Contract'}
-							</Button>
+				<DialogContent onClose={handleCancelDialogClose} className="max-w-md px-4">
+					<div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100">
+						<div className="bg-red-50 px-8 py-10 flex flex-col items-center text-center">
+							<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
+								<AlertTriangle className="w-10 h-10 text-red-600" />
+							</div>
+							<DialogTitle className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">{t('workshop.contracts.cancel_contract') || 'Cancel Contract'}</DialogTitle>
+							<DialogDescription className="text-red-700 font-black text-[10px] uppercase tracking-widest">
+								{t('workshop.contracts.cancel_confirm') || 'Warning: This action cannot be undone and may affect your ratings.'}
+							</DialogDescription>
+						</div>
+						
+						<div className="px-8 py-8 bg-white">
+							<div className="space-y-4 mb-8">
+								<div className="space-y-2">
+									<p className="text-[10px] font-black text-[#05324f] uppercase tracking-widest flex items-center gap-2 mb-3">
+										<FileText className="w-4 h-4 text-[#34C759]" />
+										{t('workshop.contracts.cancellation_reason_label') || 'Reason for cancellation'} <span className="text-red-500">*</span>
+									</p>
+									<textarea
+										value={cancellationReason}
+										onChange={(e) => setCancellationReason(e.target.value)}
+										placeholder={t('workshop.contracts.cancel_reason_placeholder') || 'Please explain why you need to cancel this contract.'}
+										className="w-full min-h-[120px] p-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-[#34C759] transition-all outline-none resize-none shadow-inner"
+										required
+									></textarea>
+								</div>
+							</div>
+
+							<div className="flex flex-col gap-3">
+								<Button
+									size="lg"
+									onClick={handleCancelDialogClose}
+									className="w-full h-14 bg-[#05324f] text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-[#05324f]/20 active:scale-95 transition-all"
+									disabled={isCompleting}
+								>
+									{t('workshop.contracts.no_keep') || 'No, Keep It'}
+								</Button>
+								<Button
+									variant="ghost"
+									onClick={handleCancelConfirm}
+									disabled={isCompleting || !cancellationReason.trim()}
+									className={`w-full h-12 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all ${!cancellationReason.trim() ? 'text-gray-200' : 'text-gray-400 hover:text-red-600 hover:bg-red-50'}`}
+								>
+									{isCompleting ? (
+										<div className="w-5 h-5 border-2 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto"></div>
+									) : (t('workshop.contracts.yes_cancel') || 'Yes, Cancel Contract')}
+								</Button>
+							</div>
 						</div>
 					</div>
 				</DialogContent>
@@ -323,25 +456,46 @@ export default function WorkshopContractsPage() {
 				</h1>
 			</div>
 
-				{/* Tabs */}
-				<div className="flex flex-wrap gap-2 mb-6">
+				{/* Tabs with Counts */}
+				<div className="flex flex-wrap gap-3 mb-8">
 					<Button
 						variant={activeTab === 'current' ? 'default' : 'outline'}
-						size="sm"
+						size="lg"
 						onClick={() => setActiveTab('current')}
-						className={activeTab === 'current' ? 'bg-[#34C759] text-white' : ''}
+						className={`rounded-2xl px-6 h-12 transition-all ${
+							activeTab === 'current' 
+								? 'bg-[#05324f] text-white shadow-lg scale-[1.02]' 
+								: 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+						}`}
 					>
-						<Clock className="w-4 h-4 mr-2" />
-						{t('workshop.contracts.current') || 'Current'}
+						<Clock className="w-5 h-5 mr-2.5" />
+						<span className="font-bold">{t('workshop.contracts.active_jobs') || 'Active Jobs'}</span>
+						<Badge className="ml-3 bg-white/20 text-white border-0">
+							{contracts.filter(offer => {
+								const booking = bookings.find(b => (b.offerId?._id || b.offerId?.id || b.offerId) === (offer._id || offer.id))
+								return !booking || booking.status !== 'DONE'
+							}).length}
+						</Badge>
 					</Button>
+					
 					<Button
 						variant={activeTab === 'completed' ? 'default' : 'outline'}
-						size="sm"
+						size="lg"
 						onClick={() => setActiveTab('completed')}
-						className={activeTab === 'completed' ? 'bg-[#34C759] text-white' : ''}
+						className={`rounded-2xl px-6 h-12 transition-all ${
+							activeTab === 'completed' 
+								? 'bg-[#34C759] text-white shadow-lg scale-[1.02]' 
+								: 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+						}`}
 					>
-						<CheckCircle className="w-4 h-4 mr-2" />
-						{t('workshop.contracts.completed') || 'Completed'}
+						<CheckCircle className="w-5 h-5 mr-2.5" />
+						<span className="font-bold">{t('workshop.contracts.past_records') || 'Past Records'}</span>
+						<Badge className="ml-3 bg-white/20 text-white border-0">
+							{contracts.filter(offer => {
+								const booking = bookings.find(b => (b.offerId?._id || b.offerId?.id || b.offerId) === (offer._id || offer.id))
+								return booking && booking.status === 'DONE'
+							}).length}
+						</Badge>
 					</Button>
 				</div>
 
@@ -365,132 +519,245 @@ export default function WorkshopContractsPage() {
 							</CardContent>
 						</Card>
 					) : (
-						<div className="space-y-0">
-							{filteredContracts.map((offer, index) => {
+						filteredContracts.map((offer, index) => {
 								const offerId = offer._id || offer.id
 								const request = offer.requestId || offer.request
 								const customer = request?.customerId || request?.customer
 								const vehicle = request?.vehicleId || request?.vehicle
+								
+								// Find the booking for this offer to get the date
+								const booking = bookings.find(b => {
+									const bOfferId = b.offerId?._id || b.offerId?.id || b.offerId
+									return String(bOfferId) === String(offerId)
+								})
+
 								// Skip if essential data is missing
-								if (!offer || !request) {
-									return null
-								}
+								if (!offer || !request) return null
 
 								return (
 									<div
 										key={offerId}
-										className={`py-3 px-4 sm:px-6 ${index !== filteredContracts.length - 1 ? 'border-b border-gray-200' : ''}`}
+										className={`p-0 transition-all hover:bg-gray-50/30 ${index !== filteredContracts.length - 1 ? 'border-b border-gray-100' : ''}`}
 									>
-										<div className="grid grid-cols-1 md:grid-cols-3 items-start gap-3 sm:gap-4">
-											{/* Left: Title, Name, Customer Details */}
-											<div className="min-w-0">
-												{/* Title (Vehicle Name) */}
-												<h3 className="text-base font-bold mb-1" style={{ color: '#05324f' }}>
-													{vehicle?.make && vehicle?.model 
-														? `${vehicle.make} ${vehicle.model}-${vehicle.year || ''}`.trim()
-														: 'Vehicle Information'
-													}
-												</h3>
-												{/* Username with Phone and Price - Mobile view */}
-												{customer?.name && (
-													<div className="flex items-center justify-between gap-1.5 mb-1 flex-wrap">
-														<div className="flex items-center gap-1.5">
-															<User className="w-3 h-3" style={{ color: '#05324f' }} />
-															<p className="text-xs font-semibold" style={{ color: '#05324f' }}>{customer.name}</p>
-															{customer.phone && (
-																<>
-																	<span style={{ color: '#05324f' }}>•</span>
-																	<Phone className="w-3 h-3" style={{ color: '#05324f' }} />
-																	<span className="text-xs" style={{ color: '#05324f' }}>{customer.phone}</span>
-																</>
-															)}
-														</div>
-														{/* Price on right side - Mobile view */}
-														<div className="flex items-center gap-1.5 md:hidden" style={{ color: '#05324f' }}>
-															<DollarSign className="w-3 h-3 flex-shrink-0" />
-															<span className="text-xs">{formatPrice(offer.price)}</span>
-														</div>
-													</div>
-												)}
-												{/* Customer Email and Duration - Mobile view */}
-												{customer?.email && (
-													<div className="flex items-center justify-between gap-1.5 text-xs mb-1 flex-wrap">
-														<div className="flex items-center gap-1.5">
-															<Mail className="w-3 h-3 flex-shrink-0" />
-															<span className="break-all">{customer.email}</span>
-														</div>
-														{/* Duration on right side - Mobile view */}
-														{offer.estimatedDuration && (
-															<div className="flex items-center gap-1.5 md:hidden" style={{ color: '#05324f' }}>
-																<Clock className="w-3 h-3 flex-shrink-0" />
-																<span>{offer.estimatedDuration} min</span>
-															</div>
-														)}
-													</div>
-												)}
-											</div>
-
-											{/* Center: Contract Details (Price, Duration, Note) - Desktop only */}
-											<div className="hidden md:block min-w-0">
-												{/* Price, Duration, and Note - Row on desktop */}
-												<div className="flex flex-row items-center gap-8">
-													<div className="flex items-center gap-2">
-														<span className="text-xs font-medium uppercase tracking-wide" style={{ color: '#05324f' }}>{t('workshop.contracts.price') || 'Price:'}</span>
-														<span className="text-base font-bold" style={{ color: '#05324f' }}>{formatPrice(offer.price)}</span>
-													</div>
-													{offer.estimatedDuration && (
-														<div className="flex items-center gap-2">
-															<span className="text-xs font-medium uppercase tracking-wide" style={{ color: '#05324f' }}>{t('workshop.contracts.duration') || 'Duration:'}</span>
-															<span className="text-sm font-semibold" style={{ color: '#05324f' }}>{offer.estimatedDuration} min</span>
-														</div>
-													)}
-													{(offer.note || offer.offerId?.note) && (
-														<div className="flex items-start gap-2">
-															<span className="text-xs font-medium uppercase tracking-wide flex-shrink-0" style={{ color: '#05324f' }}>{t('workshop.contracts.note') || 'Note:'}</span>
-															<span className="text-sm break-words" style={{ color: '#05324f' }}>{offer.note || offer.offerId?.note}</span>
-														</div>
-													)}
+										<div className="p-4">
+											{/* Top Header Label */}
+											<div className="flex items-center justify-between mb-3">
+												<div className="flex items-center gap-2">
+													<Badge className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tight border-0 ${
+														booking?.status === 'RESCHEDULED' 
+															? 'bg-amber-100 text-amber-700' 
+															: booking?.status === 'CANCELLED'
+																? 'bg-red-100 text-red-700'
+																: activeTab === 'current' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+													}`}>
+														{booking?.status === 'RESCHEDULED' 
+															? 'Rescheduled' 
+															: booking?.status === 'CANCELLED'
+																? 'Cancelled'
+																: activeTab === 'current' ? 'Active' : 'Completed'
+														}
+													</Badge>
+													<span className="text-[8px] text-gray-300 font-bold tracking-widest uppercase truncate max-w-[60px]">ID: {offerId.slice(-6)}</span>
+												</div>
+												<div className="flex items-center gap-1 text-gray-400">
+													<Calendar className="w-3 h-3" />
+													<span className="text-[10px] font-bold">{booking?.scheduledAt ? formatDate(booking.scheduledAt) : 'Pending'}</span>
 												</div>
 											</div>
 
-											{/* Right: Status Badge and Cancel Button */}
-											<div className="flex flex-col justify-start items-end gap-3">
-												{activeTab === 'completed' && (
-													<Badge className="bg-gray-100 text-gray-800 border-gray-200 border font-semibold">
-														{t('workshop.contracts.completed') || 'Completed'}
-													</Badge>
-												)}
-												{activeTab === 'current' && (
-													<Button
-														onClick={() => handleCancelClick(offerId)}
-														disabled={cancellingId === offerId}
-														variant="destructive"
-														size="sm"
-														className="px-3 py-1 text-xs font-semibold rounded-md"
-													>
-														{cancellingId === offerId ? (
+											<div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+												{/* Left: Car & Info */}
+												<div className="lg:col-span-3 border-b lg:border-b-0 lg:border-r border-gray-100 pb-3 lg:pb-0 lg:pr-4">
+													<div className="flex items-center gap-3">
+														<div className="w-10 h-10 bg-[#05324f] rounded-xl flex items-center justify-center shadow-lg shadow-[#05324f]/20 flex-shrink-0">
+															<Car className="w-5 h-5 text-white" />
+														</div>
+														<div className="min-w-0">
+															<h3 className="text-base font-black text-[#05324f] leading-tight truncate">
+																{vehicle?.make} {vehicle?.model}
+															</h3>
+															<p className="text-[9px] text-gray-400 font-medium truncate mt-0.5">
+																{vehicle?.year} • {vehicle?.color || 'Standard Silver'}
+															</p>
+														</div>
+													</div>
+												</div>
+
+												{/* Middle: Customer & Details */}
+												<div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+													{/* Customer Group */}
+													<div className="flex items-center gap-2">
+														<div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
+															<User className="w-3.5 h-3.5 text-[#34C759]" />
+														</div>
+														<div className="min-w-0 flex-1">
+															<p className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Customer</p>
+															<p className="text-xs font-bold text-[#05324f] truncate leading-tight">{customer?.name}</p>
+															<div className="flex items-center gap-1.5 mt-1">
+																<a href={`tel:${customer?.phone}`} className="p-1 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-600 hover:text-white transition-all">
+																	<Phone className="w-2.5 h-2.5" />
+																</a>
+																<a href={`mailto:${customer?.email}`} className="p-1 bg-gray-50 text-gray-400 rounded-md hover:bg-[#05324f] hover:text-white transition-all">
+																	<Mail className="w-2.5 h-2.5" />
+																</a>
+															</div>
+														</div>
+													</div>
+
+													{/* Appointment Brief */}
+													<div className="bg-gray-50/50 px-3 py-2 rounded-xl border border-gray-100/50 self-center">
+														<div className="flex items-center gap-2">
+															<Clock className="w-3 h-3 text-[#34C759]" />
+															<p className="text-sm font-black text-[#05324f]">
+																{booking?.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '09:00'}
+															</p>
+															<span className="text-[9px] text-gray-400 font-medium">• Slot</span>
+														</div>
+													</div>
+												</div>
+
+
+												{/* Right: Actions */}
+												<div className="lg:col-span-3 flex flex-row lg:flex-col items-center lg:items-end gap-4 lg:gap-2 justify-between lg:justify-center border-t lg:border-t-0 lg:border-l border-gray-100 pt-3 lg:pt-0 lg:pl-4">
+													<div className="text-left lg:text-right min-w-[70px]">
+														<div className="flex items-baseline justify-center lg:justify-end gap-0.5">
+															<span className="text-xl font-black text-[#05324f] tracking-tight">{formatPrice(offer.price)}</span>
+														</div>
+														<p className="text-[8px] text-[#34C759] font-bold flex items-center justify-center lg:justify-end gap-0.5">
+															<Shield className="w-2 h-2" />
+															VAT INC
+														</p>
+													</div>
+
+													<div className="flex-1 flex flex-col items-stretch lg:items-end w-full max-w-[140px]">
+														{activeTab === 'current' ? (
 															<>
-																<div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5"></div>
-																{t('workshop.contracts.cancelling') || 'Cancelling...'}
+																<Button
+																	onClick={() => handleDoneClick(offer)}
+																	className="w-full h-9 bg-[#34C759] hover:bg-[#2eb34f] text-white font-bold rounded-lg shadow-sm hover:scale-[1.01] transition-all active:scale-95 text-[10px]"
+																>
+																	<CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+																	{t('workshop.contracts.mark_completed') || 'Done'}
+																</Button>
+																<button
+																	onClick={() => handleCancelClick(offerId)}
+																	className="w-full py-1 text-[8px] text-gray-400 hover:text-red-500 font-bold transition-colors uppercase tracking-widest"
+																>
+																	{t('workshop.contracts.cancel_job') || 'Cancel'}
+																</button>
 															</>
 														) : (
-															<>
-																<X className="w-3 h-3 mr-1.5" />
-																{t('workshop.contracts.cancel_contract') || 'Cancel Contract'}
-															</>
+															<Button
+																variant="outline"
+																size="sm"
+																onClick={() => {
+																	setSelectedContractForDetails({ offer, booking })
+																	setDetailsModalOpen(true)
+																}}
+																className="w-full text-[10px] font-bold border-2 border-[#05324f] text-[#05324f] rounded-lg hover:bg-[#05324f]/5"
+															>
+																View Details
+															</Button>
 														)}
-													</Button>
-												)}
+													</div>
+												</div>
 											</div>
 										</div>
 									</div>
 								)
-							})}
-						</div>
-					)}
+							})
+						)}
+					</div>
 				</div>
-			</div>
 			
+			{/* View Details Modal */}
+			<Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
+				<DialogContent className="max-w-2xl px-4">
+					<div className="bg-white rounded-[2.5rem] shadow-2xl p-8 sm:p-10 max-h-[90vh] overflow-y-auto border border-gray-50">
+						<div className="mb-8">
+							<DialogTitle className="text-2xl font-black text-[#05324f] uppercase tracking-tight mb-2">
+								Contract Oversight
+							</DialogTitle>
+							<DialogDescription className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+								Full technical and financial record archive
+							</DialogDescription>
+						</div>
+						
+						{selectedContractForDetails && (
+							<div className="space-y-8">
+								{/* Simplified Cancellation Notice */}
+								{selectedContractForDetails.booking?.status === 'CANCELLED' && (
+									<div className="bg-red-50/50 border-l-4 border-red-500 rounded-r-2xl p-6 animate-in fade-in slide-in-from-left-4 duration-500">
+										<div className="flex items-center gap-5">
+											<div className="bg-red-100 p-3 rounded-2xl shrink-0">
+												<AlertTriangle className="w-6 h-6 text-red-600" />
+											</div>
+											<div className="flex-1">
+												<p className="text-[10px] font-black text-red-700 uppercase tracking-widest mb-1.5 leading-none">
+													{selectedContractForDetails.booking.cancelledBy === 'WORKSHOP' ? 'Audit: Revoked by Workshop' : 'Audit: Terminated by Customer'}
+												</p>
+												<p className="text-sm text-red-900 font-bold italic leading-relaxed bg-white/40 p-3 rounded-xl border border-red-100">
+													"{selectedContractForDetails.booking.cancellationReason || 'No formal reason provided'}"
+												</p>
+												{selectedContractForDetails.booking.cancelledAt && (
+													<p className="text-[9px] text-red-400 mt-2.5 font-black uppercase tracking-widest">
+														Timestamp: {formatDate(selectedContractForDetails.booking.cancelledAt)}
+													</p>
+												)}
+											</div>
+										</div>
+									</div>
+								)}
+
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+									<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner">
+										<p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-4 flex items-center gap-2">
+											<Car className="w-4 h-4 text-[#05324f]" /> Destination Vehicle
+										</p>
+										<p className="text-base font-black text-[#05324f] uppercase tracking-tight">
+											{selectedContractForDetails.offer.requestId?.vehicleId?.make} {selectedContractForDetails.offer.requestId?.vehicleId?.model}
+										</p>
+										<p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">Build Cycle: {selectedContractForDetails.offer.requestId?.vehicleId?.year}</p>
+									</div>
+									
+									<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner">
+										<p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-4 flex items-center gap-2">
+											<User className="w-4 h-4 text-[#34C759]" /> Service Recipient
+										</p>
+										<p className="text-base font-black text-[#05324f] uppercase tracking-tight">
+											{selectedContractForDetails.offer.requestId?.customerId?.name}
+										</p>
+										<p className="text-xs font-bold text-gray-400 mt-1 truncate">{selectedContractForDetails.offer.requestId?.customerId?.email}</p>
+									</div>
+								</div>
+
+								<div className="p-8 bg-[#05324f] rounded-3xl text-white shadow-2xl shadow-[#05324f]/20">
+									<p className="text-[10px] font-black text-[#34C759] uppercase tracking-widest mb-6 flex items-center gap-2">
+										<Shield className="w-4 h-4" /> Financial Finality
+									</p>
+									<div className="flex justify-between items-end">
+										<div>
+											<p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-1">Contract Total</p>
+											<p className="text-3xl font-black text-white tracking-tighter">
+												{formatPrice(selectedContractForDetails.offer.price)}
+											</p>
+										</div>
+										<Badge className="bg-[#34C759] text-white border-0 font-black text-[9px] px-3 py-1 uppercase tracking-widest mb-2 shadow-lg shadow-[#34C759]/20">VAT INCLUDED</Badge>
+									</div>
+								</div>
+								
+								<Button 
+									onClick={() => setDetailsModalOpen(false)}
+									className="w-full h-14 bg-gray-50 hover:bg-gray-100 text-[#05324f] font-black uppercase tracking-widest text-[10px] rounded-2xl border border-gray-200 transition-all active:scale-95"
+								>
+									Dismiss Record
+								</Button>
+							</div>
+						)}
+					</div>
+				</DialogContent>
+			</Dialog>
+
 			<Footer />
 		</div>
 	)

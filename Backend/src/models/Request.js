@@ -17,6 +17,9 @@ const requestSchema = new mongoose.Schema({
 	postalCode: { type: String, default: '' },
 	country: { type: String, default: 'SE' },
 	expiresAt: { type: Date, required: true },
+	cancellationReason: { type: String },
+	cancelledBy: { type: String, enum: ['CUSTOMER', 'WORKSHOP', 'ADMIN'] },
+	cancelledAt: { type: Date },
 }, {
 	timestamps: true,
 })

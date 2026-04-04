@@ -81,23 +81,23 @@ export default function WorkshopProposalsPage() {
 		const statusMap = {
 			SENT: {
 				label: t('workshop.proposals.status.sent') || 'Sent',
-				className: 'bg-blue-100 text-blue-800 border-blue-200',
+				className: 'bg-blue-50 text-blue-700 border-blue-100',
 			},
 			ACCEPTED: {
 				label: t('workshop.proposals.status.accepted') || 'Accepted',
-				className: 'bg-green-100 text-green-800 border-green-200',
+				className: 'bg-green-50 text-green-700 border-green-100',
 			},
 			DECLINED: {
 				label: t('workshop.proposals.status.declined') || 'Declined',
-				className: 'bg-red-100 text-red-800 border-red-200',
+				className: 'bg-gray-50 text-gray-600 border-gray-100',
 			},
 			EXPIRED: {
 				label: t('workshop.proposals.status.expired') || 'Expired',
-				className: 'bg-gray-100 text-gray-800 border-gray-200',
+				className: 'bg-red-50 text-red-700 border-red-100',
 			},
 			CANCELLED: {
 				label: t('workshop.proposals.status.cancelled') || 'Cancelled',
-				className: 'bg-orange-100 text-orange-800 border-orange-200',
+				className: 'bg-orange-50 text-orange-700 border-orange-100',
 			},
 		}
 
@@ -341,59 +341,63 @@ export default function WorkshopProposalsPage() {
 												)}
 											</div>
 											{/* Description/Note or Price with Edit Button (Mobile) */}
-											<div className="flex items-center justify-between gap-2">
+											<div className="flex flex-col gap-1">
 												<p className="text-sm" style={{ color: '#05324f' }}>
-													{offer.note || formatK(offer.price)}
+													{offer.note}
 												</p>
-												{/* Mobile: Edit button next to price */}
-												{offer.status === 'SENT' && (
-													<div className="flex-shrink-0 md:hidden">
-														<Link to={`/workshop/requests/${request?._id || request?.id}/offer`}>
-															<Button
-																size="sm"
-																className="px-3 py-1 text-xs font-semibold rounded-md"
-																style={{ 
-																	backgroundColor: '#34C759',
-																	color: '#FFFFFF'
-																}}
-															>
-																<Edit className="w-3 h-3 mr-1.5" />
-																{t('workshop.proposals.edit') || 'Edit'}
-															</Button>
-														</Link>
-													</div>
-												)}
+												<div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-gray-500 font-medium">
+													<span>{t('offers_page.labor_cost') || 'Labor'}: {formatPrice(offer.laborCost)}</span>
+													<span>{t('offers_page.material_cost') || 'Materials'}: {formatPrice(offer.partsCost)}</span>
+													{offer.inclusions && <span className="text-[#34C759]">{t('offers_page.included_services') || 'Included'}: {offer.inclusions}</span>}
+												</div>
+											</div>
+											
+											<div className="flex items-center justify-between gap-2 mt-2">
+												<div className="flex flex-col">
+													<p className="text-base font-bold text-[#34C759]">
+														{formatPrice(offer.price)}
+													</p>
+													{offer.expiresAt && (
+														<p className="text-[10px] text-red-500 italic">
+															{t('offers_page.offer_expires') || 'Expires'}: {formatDate(offer.expiresAt)}
+														</p>
+													)}
+												</div>
+
+												{/* Mobile: View button for all, Edit only if draft (if we had drafts) */}
+												<div className="flex-shrink-0 md:hidden flex gap-2">
+													<Link to={`/workshop/requests/${request?._id || request?.id || request}/offer?view=true`}>
+														<Button
+															size="sm"
+															variant="outline"
+															className="px-3 py-1 text-xs font-bold rounded-lg border-[#05324f] text-[#05324f]"
+														>
+															<Eye className="w-3 h-3 mr-1.5" />
+															{t('common.view') || 'View'}
+														</Button>
+													</Link>
+												</div>
 											</div>
 										</div>
 
-										{/* Right: Status Badge and Edit Button (Desktop) */}
+										{/* Right: Status Badge and Action Buttons (Desktop) */}
 										<div className="hidden md:flex flex-col justify-between items-end gap-3 min-h-[60px]">
 											<div className="flex-shrink-0">
 												{getStatusBadge(offer.status)}
 											</div>
-											{offer.status === 'SENT' && (
-												<div className="flex-shrink-0">
-													{(request?._id || request?.id) ? (
-														<Link to={`/workshop/requests/${request?._id || request?.id}/offer`}>
-															<Button
-																size="sm"
-																className="px-3 py-1 text-xs font-semibold rounded-md"
-																style={{ 
-																	backgroundColor: '#34C759',
-																	color: '#FFFFFF'
-																}}
-															>
-																<Edit className="w-3 h-3 mr-1.5" />
-																{t('workshop.proposals.edit') || 'Edit'}
-															</Button>
-														</Link>
-													) : (
-														<span className="text-xs text-gray-400 italic">
-															{t('workshop.proposals.request_unavailable') || 'Request unavailable'}
-														</span>
-													)}
-												</div>
-											)}
+											<div className="flex-shrink-0 flex gap-2">
+												<Link to={`/workshop/requests/${request?._id || request?.id || request}/offer?view=true`}>
+													<Button
+														size="sm"
+														variant="outline"
+														className="px-4 py-1.5 text-xs font-bold rounded-lg border-2 border-[#05324f] text-[#05324f] hover:bg-[#05324f]/5"
+													>
+														<Eye className="w-3.5 h-3.5 mr-1.5" />
+														{t('common.view') || 'View'}
+													</Button>
+												</Link>
+												{/* We can add an 'Duplicate' or 'New Version' button here later if needed */}
+											</div>
 										</div>
 									</div>
 								)

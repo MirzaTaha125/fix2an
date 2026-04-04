@@ -245,110 +245,17 @@ export default function HomePage() {
 				</div>
 			</section>
 
-		{/* Workshop Registration Section */}
-		<section className="py-20 bg-white">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-center">
-						{/* Left: Content */}
-						<div className="order-2 lg:order-1 text-center lg:text-left">
-					<h2 className="text-h2 font-bold mb-4" style={{ color: '#05324f' }}>
-							{t('homepage.workshop.title')}
-						</h2>
-						<p className="text-base md:text-lg mb-8" style={{ color: '#05324f' }}>
-								{t('homepage.workshop.subtitle')}
-							</p>
 
-							{/* Button */}
-							<div className="flex justify-center lg:justify-start">
-								<Link to="/workshop/signup">
-									<Button 
-										size="lg" 
-										className="w-auto text-sm sm:text-base md:text-lg px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 h-auto font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300" 
-										style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
-									>
-										{t('homepage.workshop.cta')}
-									</Button>
-								</Link>
-							</div>
-						</div>
 
-						{/* Right: Image */}
-						<div className="order-1 lg:order-2 flex justify-center lg:justify-end">
-							<img 
-								src={FrameImage} 
-								alt="Workshop illustration showing mechanics working on a car" 
-								className="w-full max-w-xs sm:max-w-sm md:max-w-md h-auto rounded-lg object-cover"
-							/>
-						</div>
-					</div>
-				</div>
-			</section>
 
-		{/* Workshop Benefits Section */}
-		<section className="py-20 bg-white">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-12">
-						<div className="flex flex-col items-center text-center p-4 sm:p-6 rounded-lg hover:bg-gray-50 transition-colors duration-300">
-							<div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-md" style={{ backgroundColor: '#05324f' }}>
-								<Building2 className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-							</div>
-							<h3 className="text-base sm:text-lg md:text-xl font-semibold leading-tight px-2" style={{ color: '#05324f' }}>
-								{t('homepage.workshop.benefit1')}
-							</h3>
-						</div>
 
-						<div className="flex flex-col items-center text-center p-4 sm:p-6 rounded-lg hover:bg-gray-50 transition-colors duration-300">
-							<div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-md" style={{ backgroundColor: '#05324f' }}>
-								<CheckCircle className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-							</div>
-							<h3 className="text-base sm:text-lg md:text-xl font-semibold leading-tight px-2" style={{ color: '#05324f' }}>
-								{t('homepage.workshop.benefit2')}
-							</h3>
-						</div>
 
-						<div className="flex flex-col items-center text-center p-4 sm:p-6 rounded-lg hover:bg-gray-50 transition-colors duration-300 sm:col-span-2 md:col-span-1">
-							<div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-md" style={{ backgroundColor: '#05324f' }}>
-								<DollarSign className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-							</div>
-							<h3 className="text-base sm:text-lg md:text-xl font-semibold leading-tight px-2" style={{ color: '#05324f' }}>
-								{t('homepage.workshop.benefit3')}
-							</h3>
-						</div>
-					</div>
-				</div>
-			</section>
 
-		{/* Certified Section */}
-		<section className="py-20 bg-gray-50">
-			<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-8 md:gap-10 lg:gap-16">
-						<div className="flex-shrink-0">
-							<div 
-								className="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 drop-shadow-lg mx-auto"
-								style={{ 
-									backgroundColor: '#34C759',
-									maskImage: `url(${CertifiedImage})`,
-									WebkitMaskImage: `url(${CertifiedImage})`,
-									maskSize: 'contain',
-									WebkitMaskSize: 'contain',
-									maskRepeat: 'no-repeat',
-									WebkitMaskRepeat: 'no-repeat',
-									maskPosition: 'center',
-									WebkitMaskPosition: 'center'
-								}}
-							></div>
-						</div>
-						<div className="text-center md:text-left flex-1 max-w-2xl">
-					<h2 className="text-h2 font-bold mb-4" style={{ color: '#05324f' }}>
-							{t('homepage.workshop.certified')}
-						</h2>
-						<p className="text-base md:text-lg text-gray-600 leading-relaxed">
-								{t('homepage.workshop.certified_desc')}
-							</p>
-						</div>
-					</div>
-				</div>
-			</section>
+
+
+
+
+
 
 			<Footer />
 

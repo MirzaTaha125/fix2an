@@ -251,9 +251,8 @@ export default function BookAppointmentPage() {
 	const workshop = offer.workshopId || offer.workshop
 	const workshopName = workshop?.companyName || 'Workshop'
 	const totalPrice = offer.price || 0
-	// Display split for price breakdown (reference: labor + material)
-	const laborAmount = Math.round(totalPrice * 0.75)
-	const materialAmount = totalPrice - laborAmount
+	const laborAmount = offer.laborCost || 0
+	const materialAmount = offer.partsCost || 0
 	const address = workshop?.address || ''
 	const city = workshop?.city || ''
 	const postalCode = workshop?.postalCode || ''
@@ -437,16 +436,32 @@ export default function BookAppointmentPage() {
 
 				{/* Mobile Layout */}
 				<div className="max-md:block hidden space-y-5 pb-10">
-					<p className="text-3xl font-bold text-[#05324f] text-center">{formatPrice(totalPrice)}</p>
+					<div className="text-center">
+						<p className="text-3xl font-bold text-[#05324f]">{formatPrice(totalPrice)}</p>
+						<span className="text-[10px] text-green-600 font-bold uppercase tracking-wider">{t('offers_page.incl_vat') || 'Incl. VAT'}</span>
+					</div>
 
 					<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
 						<h2 className="text-base font-bold text-gray-900 mb-4">{t('offers_page.price_breakdown')}</h2>
-						<div className="flex justify-between text-sm text-gray-700">
-							<span>{t('offers_page.total')}</span>
-							<span className="font-medium">{formatPrice(totalPrice)}</span>
+						<div className="space-y-2">
+							<div className="flex justify-between text-sm text-gray-600">
+								<span>{t('offers_page.labor_cost') || 'Labor'}</span>
+								<span>{formatPrice(laborAmount)}</span>
+							</div>
+							<div className="flex justify-between text-sm text-gray-600">
+								<span>{t('offers_page.material_cost') || 'Materials'}</span>
+								<span>{formatPrice(materialAmount)}</span>
+							</div>
+							<div className="flex justify-between items-center text-sm text-gray-900 font-bold pt-2 border-t border-gray-100">
+								<div className="flex flex-col">
+									<span>{t('offers_page.total')}</span>
+									<span className="text-[10px] text-green-600 font-bold uppercase tracking-wider">{t('offers_page.incl_vat')}</span>
+								</div>
+								<span className="text-lg">{formatPrice(totalPrice)}</span>
+							</div>
 						</div>
 						{offer.note && (
-							<p className="text-sm text-gray-600 mt-3 pt-3 border-t border-gray-200">{offer.note}</p>
+							<p className="text-sm text-gray-600 mt-4 pt-4 border-t border-gray-200">{offer.note}</p>
 						)}
 					</div>
 
@@ -563,9 +578,22 @@ export default function BookAppointmentPage() {
 								<div>
 									<h2 className="text-lg font-bold text-gray-900 mb-4">Offer Price</h2>
 									<div className="p-5 bg-gray-50 rounded-xl border border-gray-200">
-										<div className="flex justify-between items-center">
-											<span className="font-semibold text-gray-600">Total Price</span>
-											<span className="font-bold text-3xl text-[#05324f]">{formatPrice(totalPrice)}</span>
+										<div className="space-y-2 mb-4">
+											<div className="flex justify-between text-sm text-gray-600">
+												<span>{t('offers_page.labor_cost') || 'Labor'}</span>
+												<span className="font-semibold">{formatPrice(laborAmount)}</span>
+											</div>
+											<div className="flex justify-between text-sm text-gray-600">
+												<span>{t('offers_page.material_cost') || 'Materials'}</span>
+												<span className="font-semibold">{formatPrice(materialAmount)}</span>
+											</div>
+										</div>
+										<div className="flex justify-between items-center pt-4 border-t border-gray-200">
+											<div className="flex flex-col">
+												<span className="font-semibold text-gray-600">Total Price</span>
+												<span className="text-[10px] text-green-700 font-bold uppercase">{t('offers_page.incl_vat') || 'Incl. VAT'}</span>
+											</div>
+											<span className="font-bold text-3xl text-[#34C759]">{formatPrice(totalPrice)}</span>
 										</div>
 										{offer.note && <p className="text-sm text-gray-500 mt-4 pt-4 border-t border-gray-200 italic">{offer.note}</p>}
 									</div>

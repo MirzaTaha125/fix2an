@@ -283,6 +283,20 @@ function Navbar() {
 						) : (
 							<>
 								<Link 
+									to="/workshop" 
+									className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${
+										isActive('/workshop') 
+											? shouldUseWhiteNavbar 
+												? 'text-[#05324f] font-semibold' 
+												: 'text-white font-semibold bg-white/25 shadow-md backdrop-blur-sm'
+											: shouldUseWhiteNavbar 
+												? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-100' 
+												: 'text-white/80 hover:text-white hover:bg-white/10'
+									}`}
+								>
+									{t('navigation.for_workshops') || 'For Workshops'}
+								</Link>
+								<Link 
 									to="/auth/signin" 
 									className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${
 										isActive('/auth/signin') 
@@ -479,6 +493,18 @@ function Navbar() {
 								</>
 							) : (
 								<>
+									<Link
+										to="/workshop"
+										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+											isActive('/workshop') 
+												? 'text-[#05324f] font-semibold'
+												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
+										}`}
+										onClick={() => setMobileMenuOpen(false)}
+									>
+										<div className={`w-2 h-2 rounded-full ${isActive('/workshop') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
+										<span>{t('navigation.for_workshops') || 'For Workshops'}</span>
+									</Link>
 									<Link
 										to="/auth/signin"
 										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${

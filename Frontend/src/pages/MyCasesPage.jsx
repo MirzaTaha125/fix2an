@@ -26,6 +26,27 @@ import {
 	Camera,
 	Mail,
 	Phone as PhoneIcon,
+	FileText,
+	User,
+	UserCircle,
+	CreditCard,
+	ShieldOff,
+	TrendingUp,
+	ExternalLink,
+	Package,
+	FileX,
+	Smartphone,
+	Mail as MailIcon,
+	MapPin,
+	Wrench,
+	Menu,
+	Search,
+	Settings,
+	LogOut,
+	User as UserIcon,
+	History,
+	Heart,
+	AlertTriangle,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
@@ -58,6 +79,7 @@ export default function MyCasesPage() {
 	const [bookingToCancel, setBookingToCancel] = useState(null)
 	const [bookingToComplete, setBookingToComplete] = useState(null)
 	const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
+	const [cancellationReason, setCancellationReason] = useState('')
 	const [completeConfirmOpen, setCompleteConfirmOpen] = useState(false)
 	const [completeRating, setCompleteRating] = useState(0)
 	const [completeReviewText, setCompleteReviewText] = useState('')
@@ -113,6 +135,34 @@ export default function MyCasesPage() {
 		}
 	}, [searchParams])
 
+	// Define all possible tabs (moved here to avoid Rules of Hooks violation)
+	const allTabs = [
+		{ key: 'my_cases', label: t('my_cases.my_cases_tab') || 'My Cases' },
+		{ key: 'booked_cases', label: t('my_cases.booked_cases_tab') || 'Booked' },
+		{ key: 'completed_cases', label: t('my_cases.completed_cases_tab') || 'Completed' },
+		{ key: 'cancelled_cases', label: t('my_cases.cancelled_cases_tab') || 'Cancelled' },
+		{ key: 'rescheduled_cases', label: t('my_cases.rescheduled_cases_tab') || 'Rescheduled' },
+	]
+
+	// Calculate counts for each category (moved here to avoid Rules of Hooks violation)
+	const categoryCounts = {
+		my_cases: requests.filter(r => ['NEW', 'IN_BIDDING', 'BIDDING_CLOSED'].includes(r.status)).length,
+		booked_cases: requests.filter(r => r.status === 'BOOKED' && !(r.bookings || []).some(b => b.status === 'RESCHEDULED' || b.status === 'CANCELLED')).length,
+		completed_cases: requests.filter(r => r.status === 'COMPLETED' && (r.bookings || []).some(b => b.status === 'DONE')).length,
+		cancelled_cases: requests.filter(r => r.status === 'CANCELLED' || (r.bookings || []).some(b => b.status === 'CANCELLED')).length,
+		rescheduled_cases: requests.filter(r => (r.bookings || []).some(b => b.status === 'RESCHEDULED')).length,
+	}
+
+	// Filter tabs where count > 0
+	const visibleTabs = allTabs.filter(tab => categoryCounts[tab.key] > 0)
+
+	// Effect to switch active tab if current one becomes hidden
+	useEffect(() => {
+		if (visibleTabs.length > 0 && !visibleTabs.find(t => t.key === activeTab)) {
+			setActiveTab(visibleTabs[0].key)
+		}
+	}, [visibleTabs, activeTab])
+
 	const handleSubmitReview = async () => {
 		if (!rating || !reviewText.trim() || !selectedRequestForReview) {
 			toast.error(t('my_cases.review_required') || 'Please provide both rating and review text')
@@ -148,14 +198,19 @@ export default function MyCasesPage() {
 
 	const handleCancelJob = async () => {
 		if (!bookingToCancel) return
+		if (!cancellationReason.trim()) {
+			toast.error(t('my_cases.cancel_reason_required') || 'Please provide a reason for cancellation')
+			return
+		}
 
 		setIsCancelling(true)
 		try {
 			const bookingId = bookingToCancel._id || bookingToCancel.id
-			await bookingsAPI.cancel(bookingId)
+			await bookingsAPI.cancel(bookingId, cancellationReason)
 			toast.success(t('my_cases.job_cancelled_success') || 'Job cancelled successfully')
 			setCancelConfirmOpen(false)
 			setBookingToCancel(null)
+			setCancellationReason('')
 			fetchRequests() // Refresh the requests
 		} catch (error) {
 			console.error('Failed to cancel job:', error)
@@ -203,6 +258,7 @@ export default function MyCasesPage() {
 
 	const openCancelConfirm = (booking) => {
 		setBookingToCancel(booking)
+		setCancellationReason('')
 		setCancelConfirmOpen(true)
 	}
 
@@ -371,22 +427,17 @@ export default function MyCasesPage() {
 		const bookings = request.bookings || []
 		
 		if (activeTab === 'my_cases') {
-			// Show active requests (NEW, IN_BIDDING, BIDDING_CLOSED) - exclude CANCELLED
 			return ['NEW', 'IN_BIDDING', 'BIDDING_CLOSED'].includes(request.status)
 		} else if (activeTab === 'booked_cases') {
-			// Show only booked requests (not rescheduled or cancelled)
 			return request.status === 'BOOKED' && 
 				!bookings.some(b => b.status === 'RESCHEDULED' || b.status === 'CANCELLED')
 		} else if (activeTab === 'completed_cases') {
-			// Show only completed requests where booking status is DONE (job actually completed from booked cases)
 			return request.status === 'COMPLETED' && 
 				bookings.some(b => b.status === 'DONE')
 		} else if (activeTab === 'cancelled_cases') {
-			// Show cancelled requests or requests with cancelled bookings
 			return request.status === 'CANCELLED' || 
 				bookings.some(b => b.status === 'CANCELLED')
 		} else if (activeTab === 'rescheduled_cases') {
-			// Show requests with rescheduled bookings
 			return bookings.some(b => b.status === 'RESCHEDULED')
 		}
 		return false
@@ -407,82 +458,99 @@ export default function MyCasesPage() {
 							{t('my_cases.subtitle')}
 						</p>
 					</div>
-					<Link to="/upload" className="self-start sm:self-auto shrink-0">
-						<Button size="sm">
-							<span className="md:hidden">{t('my_cases.upload_case')}</span>
-							<span className="hidden md:inline">{t('my_cases.upload_new_protocol')}</span>
-						</Button>
-					</Link>
+					{requests.length > 0 && (
+						<Link to="/upload" className="self-start sm:self-auto shrink-0">
+							<Button size="sm">
+								<span className="md:hidden">{t('my_cases.upload_case')}</span>
+								<span className="hidden md:inline">{t('my_cases.upload_new_protocol')}</span>
+							</Button>
+						</Link>
+					)}
 				</div>
 			</div>
 
-			{/* Navigation Tabs */}
-			<div className="flex flex-col mb-6">
-				<div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-					{[
-						{ key: 'my_cases', label: t('my_cases.my_cases_tab') || 'My Cases' },
-						{ key: 'booked_cases', label: t('my_cases.booked_cases_tab') || 'Booked' },
-						{ key: 'completed_cases', label: t('my_cases.completed_cases_tab') || 'Completed' },
-						{ key: 'cancelled_cases', label: t('my_cases.cancelled_cases_tab') || 'Cancelled' },
-						{ key: 'rescheduled_cases', label: t('my_cases.rescheduled_cases_tab') || 'Rescheduled' },
-					].map(({ key, label }) => (
-						<button
-							key={key}
-							onClick={() => setActiveTab(key)}
-							className={`px-2 py-2 md:py-3.5 rounded-btn text-xs sm:text-sm font-semibold transition-all duration-200 text-center ${
-								activeTab === key
-									? 'bg-[#34C759] text-white shadow-sm'
-									: 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-[#05324f]'
-							}`}
-						>
-							{label}
-						</button>
-					))}
+			{/* Navigation Tabs - Hidden if no requests */}
+			{requests.length > 0 && (
+				<div className="flex flex-col mb-6 animate-fade-in-up">
+					<div className={`grid gap-2 ${visibleTabs.length === 5 ? 'grid-cols-3 md:grid-cols-5' : visibleTabs.length === 4 ? 'grid-cols-2 md:grid-cols-4' : visibleTabs.length === 3 ? 'grid-cols-3' : 'grid-cols-2 max-w-sm'}`}>
+						{visibleTabs.map(({ key, label }) => (
+							<button
+								key={key}
+								onClick={() => setActiveTab(key)}
+								className={`px-2 py-2 md:py-3.5 rounded-btn text-xs sm:text-sm font-semibold transition-all duration-200 text-center ${
+									activeTab === key
+										? 'bg-[#34C759] text-white shadow-sm scale-[1.02]'
+										: 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-[#05324f]'
+								}`}
+							>
+								{label}
+							</button>
+						))}
+					</div>
 				</div>
-			</div>
+			)}
 
 				{filteredRequests.length === 0 ? (
-					<Card className="border-0 shadow-xl overflow-hidden">
-						<CardContent className="text-center py-12 sm:py-16 px-4 bg-white">
-							<div className="relative inline-block mb-2">
-								{/* Removed the animated glowing background and large icon */}
+					<Card className="border-0 shadow-xl overflow-hidden rounded-3xl animate-fade-in-up">
+						<CardContent className="text-center py-16 sm:py-24 px-6 bg-white relative">
+							{/* Background Decoration */}
+							<div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-green-50 rounded-full blur-3xl opacity-50 -z-0"></div>
+							
+							<div className="relative z-10 flex flex-col items-center">
+								<div className="w-24 h-24 bg-[#34C759]/10 rounded-3xl flex items-center justify-center mb-8 rotate-3 transition-transform hover:rotate-0">
+									<Camera className="w-12 h-12 text-[#34C759]" />
+								</div>
+								
+								<h3 className="text-2xl sm:text-3xl font-bold text-[#05324f] mb-4">
+									{activeTab === 'my_cases' 
+										? (t('my_cases.no_cases.title') || 'Start your first repair journey')
+										: (t(`my_cases.no_${activeTab}.title`) || `No ${activeTab.split('_')[0]} cases yet`)
+									}
+								</h3>
+								
+								<p className="text-gray-600 mb-10 max-w-lg mx-auto leading-relaxed">
+									{activeTab === 'my_cases'
+										? "Upload your repair protocol or vehicle photos to receive competitive offers from our network of verified workshops."
+										: (t(`my_cases.no_${activeTab}.description`) || `You don't have any items in this category currently.`)
+									}
+								</p>
+
+								{activeTab === 'my_cases' && (
+									<div className="flex flex-col items-center gap-6">
+										<Link to="/upload">
+											<Button 
+												className="px-8 py-7 h-auto text-xl font-bold rounded-2xl shadow-xl hover:scale-105 transition-all bg-[#34C759] text-white"
+											>
+												<Camera className="w-6 h-6 mr-3" />
+												{t('my_cases.no_cases.button') || 'Upload Repair Request'}
+											</Button>
+										</Link>
+										
+										<div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">
+											<Shield className="w-4 h-4 text-[#34C759]" />
+											<span>Only verified workshops can view your request details</span>
+										</div>
+									</div>
+								)}
+
+								{/* Step Progress visualization */}
+								{activeTab === 'my_cases' && (
+									<div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8 w-full max-w-3xl border-t border-gray-100 pt-12">
+										<div className="flex flex-col items-center">
+											<div className="w-10 h-10 rounded-full bg-[#05324f] text-white flex items-center justify-center font-bold mb-3">1</div>
+											<p className="text-sm font-bold text-[#05324f]">Upload Details</p>
+										</div>
+										<div className="flex flex-col items-center">
+											<div className="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold mb-3">2</div>
+											<p className="text-sm font-bold text-gray-400">Receive Bids</p>
+										</div>
+										<div className="flex flex-col items-center">
+											<div className="w-10 h-10 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold mb-3">3</div>
+											<p className="text-sm font-bold text-gray-400">Book Workshop</p>
+										</div>
+									</div>
+								)}
 							</div>
-							<h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
-									{activeTab === 'completed_cases' 
-									? (t('my_cases.no_completed_cases.title') || 'No Completed Cases')
-									: activeTab === 'booked_cases'
-									? (t('my_cases.no_booked_cases.title') || 'No Booked Cases')
-									: activeTab === 'cancelled_cases'
-									? (t('my_cases.no_cancelled_cases.title') || 'No Cancelled Cases')
-									: activeTab === 'rescheduled_cases'
-									? (t('my_cases.no_rescheduled_cases.title') || 'No Rescheduled Cases')
-									: t('my_cases.no_cases.title')
-								}
-							</h3>
-							<p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto">
-								{activeTab === 'completed_cases'
-									? (t('my_cases.no_completed_cases.description') || 'You haven\'t completed any jobs yet.')
-									: activeTab === 'booked_cases'
-									? (t('my_cases.no_booked_cases.description') || 'You don\'t have any booked appointments yet.')
-									: activeTab === 'cancelled_cases'
-									? (t('my_cases.no_cancelled_cases.description') || 'You don\'t have any cancelled cases.')
-									: activeTab === 'rescheduled_cases'
-									? (t('my_cases.no_rescheduled_cases.description') || 'You don\'t have any rescheduled appointments.')
-									: t('my_cases.no_cases.description')
-								}
-							</p>
-							{activeTab === 'my_cases' && (
-								<Link to="/upload" className="inline-block">
-									<Button 
-										size="sm" 
-										className="shadow-md hover:shadow-lg transition-all text-xs sm:text-sm font-semibold"
-										style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
-									>
-										<Car className="w-4 h-4 mr-2" />
-										{t('my_cases.no_cases.button')}
-									</Button>
-								</Link>
-							)}
 						</CardContent>
 					</Card>
 				) : (
@@ -723,15 +791,20 @@ export default function MyCasesPage() {
 
 									{/* Cancelled Cases - Show View Details button */}
 									{activeTab === 'cancelled_cases' && (
-											<Link to={`/offers?requestId=${requestId}`} className="w-full md:w-auto">
+											<div className="w-full md:w-auto">
 												<Button 
+													onClick={() => {
+														const cancelledBooking = bookings.find(b => b.status === 'CANCELLED') || bookings[0];
+														setSelectedBookingForDetails(cancelledBooking)
+														setDetailsModalOpen(true)
+													}}
 													size="sm" 
 													variant="outline"
 													className="w-full md:w-auto px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap border-2 border-[#05324f] text-[#05324f] hover:bg-[#05324f]/5 transition-all"
 												>
 													{t('my_cases.view_details') || 'View Details'}
 												</Button>
-											</Link>
+											</div>
 										)}
 									</div>
 								</div>
@@ -743,400 +816,500 @@ export default function MyCasesPage() {
 
 			{/* Complete Job Confirmation Modal with Rating and Review */}
 				<Dialog open={completeConfirmOpen} onOpenChange={setCompleteConfirmOpen}>
-					<DialogContent onClose={() => setCompleteConfirmOpen(false)}>
-						<DialogTitle>{t('my_cases.complete_job_confirm_title') || 'Complete Job'}</DialogTitle>
-						<DialogDescription>
-							{t('my_cases.complete_job_confirm_description') || 'Please rate and review the service before completing the job.'}
-						</DialogDescription>
-						
-						{/* Workshop Name */}
-						{bookingToComplete && (() => {
-							const bookingId = bookingToComplete._id || bookingToComplete.id
-							const request = requests.find(r => r.bookings?.some(b => (b._id || b.id) === bookingId))
-							const booking = request?.bookings?.find(b => (b._id || b.id) === bookingId) || bookingToComplete
-							const workshopName = booking?.workshopId?.companyName || bookingToComplete?.workshopId?.companyName || 'Workshop'
+					<DialogContent onClose={() => setCompleteConfirmOpen(false)} className="max-w-md px-4 w-[90vw]">
+						<div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100">
+							<div className="bg-green-50 px-8 py-10 flex flex-col items-center text-center">
+								<div className="w-16 h-16 bg-[#34C759]/10 rounded-full flex items-center justify-center mb-6">
+									<CheckCircle className="w-10 h-10 text-[#34C759]" />
+								</div>
+								<DialogTitle className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+									{t('my_cases.complete_job_confirm_title') || 'Complete Job'}
+								</DialogTitle>
+								<DialogDescription className="text-gray-600 font-medium whitespace-pre-line">
+									{t('my_cases.complete_job_confirm_description') || 'Please rate and review the service before completing the job.'}
+								</DialogDescription>
+							</div>
 							
-							return workshopName !== 'Workshop' || booking?.workshopId || bookingToComplete?.workshopId ? (
-								<div className="mt-4 p-3 bg-white rounded-lg border border-green-200">
-									<div className="flex items-center gap-2">
-										<Building2 className="w-5 h-5 text-[#05324f]" />
-										<div>
-											<p className="text-xs text-gray-600 mb-0.5">{t('my_cases.contract_with')}</p>
-											<p className="font-bold text-sm text-gray-900">
-												{workshopName}
-											</p>
+							<div className="px-8 py-8 bg-white">
+								{/* Workshop Name */}
+								{bookingToComplete && (() => {
+									const bookingId = bookingToComplete._id || bookingToComplete.id
+									const request = requests.find(r => r.bookings?.some(b => (b._id || b.id) === bookingId))
+									const booking = request?.bookings?.find(b => (b._id || b.id) === bookingId) || bookingToComplete
+									const workshopName = booking?.workshopId?.companyName || bookingToComplete?.workshopId?.companyName || 'Workshop'
+									
+									return workshopName !== 'Workshop' || booking?.workshopId || bookingToComplete?.workshopId ? (
+										<div className="mb-6 p-4 bg-gray-50 rounded-2xl border border-green-200/50 flex items-center gap-3">
+											<div className="w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-50 flex items-center justify-center">
+												<Building2 className="w-5 h-5 text-[#05324f]" />
+											</div>
+											<div className="min-w-0">
+												<p className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">{t('my_cases.contract_with')}</p>
+												<p className="text-sm font-black text-[#05324f] truncate">
+													{workshopName}
+												</p>
+											</div>
+										</div>
+									) : null
+								})()}
+								
+								<div className="space-y-6">
+									{/* Rating Section */}
+									<div>
+										<Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">
+											{t('my_cases.rating') || 'Service Rating'} *
+										</Label>
+										<div className="flex items-center gap-2 bg-gray-50 p-4 rounded-2xl shadow-inner">
+											{[1, 2, 3, 4, 5].map((star) => (
+												<button
+													key={star}
+													type="button"
+													onClick={() => setCompleteRating(star)}
+													className="focus:outline-none transition-transform hover:scale-125"
+													disabled={isCompleting}
+												>
+													<Star
+														className={`w-9 h-9 ${
+															star <= completeRating
+																? 'fill-[#34C759] text-[#34C759]'
+																: 'text-gray-200'
+														}`}
+													/>
+												</button>
+											))}
 										</div>
 									</div>
-								</div>
-							) : null
-						})()}
-						
-						<div className="space-y-4 pt-4">
-							{/* Rating Section */}
-							<div>
-								<Label className="text-sm font-semibold mb-2 block">
-									{t('my_cases.rating') || 'Rating'} *
-								</Label>
-								<div className="flex items-center gap-2">
-									{[1, 2, 3, 4, 5].map((star) => (
-										<button
-											key={star}
-											type="button"
-											onClick={() => setCompleteRating(star)}
-											className="focus:outline-none transition-transform hover:scale-110"
+
+									{/* Review Text Section */}
+									<div>
+										<Label htmlFor="completeReviewText" className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">
+											{t('my_cases.review') || 'Detailed Experience'} *
+										</Label>
+										<Textarea
+											id="completeReviewText"
+											value={completeReviewText}
+											onChange={(e) => setCompleteReviewText(e.target.value)}
+											placeholder={t('my_cases.review_placeholder') || 'Share your experience with this service...'}
+											className="min-h-[120px] bg-gray-50 border-gray-100 rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-[#34C759] outline-none shadow-inner"
+											disabled={isCompleting}
+										/>
+									</div>
+
+									<div className="flex flex-col gap-3 pt-2">
+										<Button
+											onClick={handleCompleteJob}
+											size="lg"
+											disabled={isCompleting || !completeRating || !completeReviewText.trim()}
+											className="w-full h-14 bg-[#34C759] hover:bg-[#2eb34f] text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-[#34C759]/20 transition-all active:scale-95"
+										>
+											{isCompleting ? (
+												<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+											) : (
+												<>
+													<CheckCircle className="w-4 h-4 mr-2" />
+													{t('my_cases.confirm_complete') || 'Confirm Finality'}
+												</>
+											)}
+										</Button>
+
+										<Button
+											variant="ghost"
+											onClick={() => {
+												setCompleteConfirmOpen(false)
+												setBookingToComplete(null)
+												setCompleteRating(0)
+												setCompleteReviewText('')
+											}}
+											className="w-full h-12 text-gray-400 font-bold rounded-2xl hover:bg-gray-50"
 											disabled={isCompleting}
 										>
-											<Star
-												className={`w-8 h-8 ${
-													star <= completeRating
-														? 'fill-green-400 text-green-400'
-														: 'text-gray-300'
-												}`}
-											/>
-										</button>
-									))}
-									{completeRating > 0 && (
-										<span className="text-sm text-gray-600 ml-2">
-											{completeRating} {completeRating === 1 ? t('my_cases.star') : t('my_cases.stars')}
-										</span>
-									)}
+											{t('common.cancel') || 'Cancel'}
+										</Button>
+									</div>
 								</div>
-							</div>
-
-							{/* Review Text Section */}
-							<div>
-								<Label htmlFor="completeReviewText" className="text-sm font-semibold mb-2 block">
-									{t('my_cases.review') || 'Review'} *
-								</Label>
-								<Textarea
-									id="completeReviewText"
-									value={completeReviewText}
-									onChange={(e) => setCompleteReviewText(e.target.value)}
-									placeholder={t('my_cases.review_placeholder') || 'Share your experience with this service...'}
-									className="min-h-[100px]"
-									disabled={isCompleting}
-								/>
-							</div>
-
-							<div className="flex justify-start gap-2 mt-6">
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => {
-										setCompleteConfirmOpen(false)
-										setBookingToComplete(null)
-										setCompleteRating(0)
-										setCompleteReviewText('')
-									}}
-									className="px-4 py-2 text-xs"
-									disabled={isCompleting}
-								>
-									{t('common.cancel') || 'Cancel'}
-								</Button>
-								<Button
-									onClick={handleCompleteJob}
-									size="sm"
-									disabled={isCompleting}
-									className="px-4 py-2 text-xs font-bold rounded-xl shadow-md hover:shadow-lg transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
-								>
-									{isCompleting ? (
-										<>
-											<div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block"></div>
-											{t('my_cases.completing') || 'Completing...'}
-										</>
-									) : (
-										<>
-											<CheckCircle className="w-4 h-4 mr-2" />
-											{t('my_cases.confirm_complete') || 'Confirm Complete'}
-										</>
-									)}
-								</Button>
 							</div>
 						</div>
 					</DialogContent>
 				</Dialog>
 
-				{/* Cancel Confirmation Modal */}
+				{/* Cancel Booking Confirmation Modal */}
 				<Dialog open={cancelConfirmOpen} onOpenChange={setCancelConfirmOpen}>
-					<DialogContent onClose={() => setCancelConfirmOpen(false)}>
-						<DialogTitle>{t('my_cases.cancel_job_confirm_title') || 'Cancel Job'}</DialogTitle>
-						<DialogDescription>
-							{t('my_cases.cancel_job_confirm_description') || 'Are you sure you want to cancel this job? This action cannot be undone.'}
-						</DialogDescription>
-						<div className="flex justify-start gap-2 mt-6">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => {
-									setCancelConfirmOpen(false)
-									setBookingToCancel(null)
-								}}
-								className="px-4 py-2 text-xs"
-								disabled={isCancelling}
-							>
-								{t('common.no') || 'No'}
-							</Button>
-							<Button
-								variant="destructive"
-								size="sm"
-								onClick={handleCancelJob}
-								disabled={isCancelling}
-								className="px-4 py-2 text-xs font-bold rounded-xl shadow-md hover:shadow-lg transition-all"
-							>
-								{isCancelling ? t('my_cases.cancelling') : (t('my_cases.confirm_cancel') || 'Confirm Cancel')}
-							</Button>
+					<DialogContent onClose={() => setCancelConfirmOpen(false)} className="max-w-md px-4 w-[90vw]">
+						<div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100">
+							<div className="bg-red-50 px-8 py-10 flex flex-col items-center text-center">
+								<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
+									<XCircle className="w-10 h-10 text-red-600" />
+								</div>
+								<DialogTitle className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+									{t('my_cases.cancel_booking_title') || 'Cancel Booking?'}
+								</DialogTitle>
+								<DialogDescription className="text-red-700 font-black text-[10px] uppercase tracking-widest opacity-80">
+									{t('my_cases.cancel_warning') || 'This action is final and cannot be undone.'}
+								</DialogDescription>
+							</div>
+							
+							<div className="px-8 py-8 bg-white">
+								<p className="text-sm text-gray-500 mb-8 text-center leading-relaxed font-semibold">
+									{t('my_cases.cancel_explanation') || 'Are you sure you want to cancel your appointment? Repeated cancellations may affect your platform trust score.'}
+									<Link to="/policy/cancellation" className="text-[#05324f] font-black underline ml-1.5 inline-block text-[10px] uppercase tracking-tight">
+										{t('common.read_cancellation_policy') || 'Read Policy'}
+									</Link>
+								</p>
+
+								<div className="space-y-4 mb-8">
+									<Label htmlFor="cancelReason" className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-3">
+										<FileText className="w-4 h-4 text-red-500 opacity-50" />
+										{t('my_cases.cancellation_reason_label') || 'Reason for cancellation'} <span className="text-red-500">*</span>
+									</Label>
+									<Textarea
+										id="cancelReason"
+										value={cancellationReason}
+										onChange={(e) => setCancellationReason(e.target.value)}
+										placeholder={t('my_cases.cancel_reason_placeholder') || 'Please explain why you need to cancel this booking...'}
+										className="min-h-[100px] text-sm font-semibold bg-gray-50 border border-gray-100 rounded-2xl p-4 outline-none resize-none shadow-inner"
+										required
+									/>
+								</div>
+								
+								<div className="flex flex-col gap-3">
+									<Button
+										size="lg"
+										onClick={() => {
+											setCancelConfirmOpen(false)
+											setBookingToCancel(null)
+											setCancellationReason('')
+										}}
+										className="w-full h-14 bg-[#05324f] text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-[#05324f]/20 active:scale-95 transition-all"
+										disabled={isCancelling}
+									>
+										{t('my_cases.keep_booking') || 'No, Keep My Booking'}
+									</Button>
+									
+									<Button
+										variant="ghost"
+										size="lg"
+										onClick={handleCancelJob}
+										disabled={isCancelling || !cancellationReason.trim()}
+										className={`w-full h-12 font-black uppercase tracking-widest text-xs transition-all ${!cancellationReason.trim() ? 'text-gray-200' : 'text-gray-400 hover:text-red-600 hover:bg-red-50'}`}
+									>
+										{isCancelling ? (
+											<div className="w-5 h-5 border-2 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto"></div>
+										) : (t('my_cases.confirm_cancel') || 'Confirm Cancellation')}
+									</Button>
+								</div>
+							</div>
 						</div>
 					</DialogContent>
 				</Dialog>
 
 				{/* Reschedule Modal */}
 				<Dialog open={rescheduleModalOpen} onOpenChange={setRescheduleModalOpen}>
-					<DialogContent onClose={() => setRescheduleModalOpen(false)}>
-						<DialogTitle>{t('my_cases.reschedule_job_title') || 'Reschedule Job'}</DialogTitle>
-						<DialogDescription>
-							{t('my_cases.reschedule_job_description') || 'Select a new date and time for your appointment'}
-						</DialogDescription>
-						{selectedBookingForReschedule && (
-							<div className="space-y-4">
-								{/* Current Booking Info */}
-								<div className="p-3 bg-gray-50 rounded-lg">
-									<p className="text-xs font-semibold text-gray-600 mb-1">
-										{t('my_cases.current_appointment') || 'Current Appointment'}
-									</p>
-									<p className="text-sm font-semibold text-gray-900">
-										{formatDateTime(new Date(selectedBookingForReschedule.scheduledAt))}
-									</p>
-								</div>
-
-								{/* New Date */}
-								<div>
-									<Label htmlFor="newDate" className="text-sm font-semibold mb-2 block">
-										{t('my_cases.new_date') || 'New Date'} *
-									</Label>
-									<Input
-										id="newDate"
-										type="date"
-										value={newScheduledDate}
-										onChange={(e) => setNewScheduledDate(e.target.value)}
-										min={new Date().toISOString().split('T')[0]}
-										className="w-full"
-									/>
-								</div>
-
-								{/* New Time */}
-								<div>
-									<Label htmlFor="newTime" className="text-sm font-semibold mb-2 block">
-										{t('my_cases.new_time') || 'New Time'} *
-									</Label>
-									<Input
-										id="newTime"
-										type="time"
-										value={newScheduledTime}
-										onChange={(e) => setNewScheduledTime(e.target.value)}
-										className="w-full"
-									/>
-								</div>
-
-								{/* Buttons */}
-								<div className="flex justify-start gap-2 mt-6">
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => {
-											setRescheduleModalOpen(false)
-											setSelectedBookingForReschedule(null)
-											setNewScheduledDate('')
-											setNewScheduledTime('')
-										}}
-										className="px-4 py-2 text-xs"
-										disabled={isRescheduling}
-									>
-										{t('common.cancel') || 'Cancel'}
-									</Button>
-									<Button
-										onClick={handleRescheduleJob}
-										size="sm"
-										disabled={!newScheduledDate || !newScheduledTime || isRescheduling}
-										className="px-4 py-2 text-xs font-semibold"
-										style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
-									>
-										{isRescheduling ? (
-											<>
-												<div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block"></div>
-												{t('my_cases.rescheduling') || 'Rescheduling...'}
-											</>
-										) : (
-											<>
-												<RotateCcw className="w-4 h-4 mr-2" />
-												{t('my_cases.confirm_reschedule') || 'Confirm Reschedule'}
-											</>
-										)}
-									</Button>
-								</div>
+					<DialogContent onClose={() => setRescheduleModalOpen(false)} className="max-w-md px-4 w-[90vw]">
+						<div className="bg-white rounded-[2.5rem] shadow-2xl p-8 border border-gray-100">
+							<div className="mb-8">
+								<DialogTitle className="text-2xl font-black text-[#05324f] uppercase tracking-tight mb-2">
+									{t('my_cases.reschedule_job_title') || 'Reschedule Job'}
+								</DialogTitle>
+								<DialogDescription className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+									{t('my_cases.reschedule_job_description') || 'Select a new date and time for your appointment'}
+								</DialogDescription>
 							</div>
-						)}
+
+							{selectedBookingForReschedule && (
+								<div className="space-y-6">
+									{/* Current Booking Info */}
+									<div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner">
+										<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+											<Clock className="w-4 h-4 text-[#34C759]" />
+											{t('my_cases.current_appointment') || 'Current Slot'}
+										</p>
+										<p className="text-sm font-black text-[#05324f]">
+											{formatDateTime(new Date(selectedBookingForReschedule.scheduledAt))}
+										</p>
+									</div>
+
+									{/* New Date */}
+									<div className="space-y-4">
+										<div>
+											<Label htmlFor="newDate" className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">
+												{t('my_cases.new_date') || 'Proposed Date'} *
+											</Label>
+											<Input
+												id="newDate"
+												type="date"
+												value={newScheduledDate}
+												onChange={(e) => setNewScheduledDate(e.target.value)}
+												min={new Date().toISOString().split('T')[0]}
+												className="w-full h-12 bg-gray-50 border-gray-100 rounded-xl font-bold text-[#05324f] px-4 focus:ring-2 focus:ring-[#34C759] outline-none"
+											/>
+										</div>
+
+										{/* New Time */}
+										<div>
+											<Label htmlFor="newTime" className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">
+												{t('my_cases.new_time') || 'Proposed Time'} *
+											</Label>
+											<Input
+												id="newTime"
+												type="time"
+												value={newScheduledTime}
+												onChange={(e) => setNewScheduledTime(e.target.value)}
+												className="w-full h-12 bg-gray-50 border-gray-100 rounded-xl font-bold text-[#05324f] px-4 focus:ring-2 focus:ring-[#34C759] outline-none"
+											/>
+										</div>
+									</div>
+
+									{/* Buttons */}
+									<div className="flex flex-col gap-3 pt-4">
+										<Button
+											onClick={handleRescheduleJob}
+											disabled={!newScheduledDate || !newScheduledTime || isRescheduling}
+											className="w-full h-14 bg-[#34C759] text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-[#34C759]/20 transition-all active:scale-95"
+										>
+											{isRescheduling ? (
+												<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+											) : (
+												<>
+													<RotateCcw className="w-4 h-4 mr-2" />
+													{t('my_cases.confirm_reschedule') || 'Confirm New Slot'}
+												</>
+											)}
+										</Button>
+
+										<Button
+											variant="ghost"
+											onClick={() => {
+												setRescheduleModalOpen(false)
+												setSelectedBookingForReschedule(null)
+												setNewScheduledDate('')
+												setNewScheduledTime('')
+											}}
+											className="w-full h-12 text-gray-400 font-bold rounded-2xl hover:bg-gray-50"
+											disabled={isRescheduling}
+										>
+											{t('common.cancel') || 'Cancel'}
+										</Button>
+									</div>
+								</div>
+							)}
+						</div>
 					</DialogContent>
 				</Dialog>
 
 				{/* Review Modal */}
 				<Dialog open={reviewModalOpen} onOpenChange={setReviewModalOpen}>
-					<DialogContent onClose={() => setReviewModalOpen(false)}>
-						<DialogTitle>{t('my_cases.review_title') || 'Rate Your Experience'}</DialogTitle>
-						<DialogDescription>
-							{t('my_cases.review_description') || 'Please share your experience with this workshop'}
-						</DialogDescription>
-						{selectedRequestForReview && (
-							<div className="space-y-4">
-								{/* Workshop Info */}
-								<div className="p-3 bg-gray-50 rounded-lg">
-									<p className="text-sm font-semibold text-gray-900">
-										{selectedRequestForReview.bookings?.[0]?.workshopId?.companyName || 
-										 selectedRequestForReview.bookings?.[0]?.workshop?.companyName || 
-										 'Workshop'}
-									</p>
-								</div>
-
-								{/* Star Rating */}
-								<div>
-									<Label className="text-sm font-semibold mb-2 block">
-										{t('my_cases.rating') || 'Rating'} *
-									</Label>
-									<div className="flex gap-2">
-										{[1, 2, 3, 4, 5].map((star) => (
-											<button
-												key={star}
-												type="button"
-												onClick={() => setRating(star)}
-												className="focus:outline-none transition-transform hover:scale-110"
-											>
-												<Star
-													className={`w-8 h-8 ${
-														star <= rating
-															? 'fill-green-400 text-green-400'
-															: 'fill-gray-300 text-gray-300'
-													}`}
-												/>
-											</button>
-										))}
-									</div>
-									{rating > 0 && (
-										<p className="text-xs text-gray-600 mt-1">
-											{rating === 1 && (t('my_cases.rating_1') || 'Poor')}
-											{rating === 2 && (t('my_cases.rating_2') || 'Fair')}
-											{rating === 3 && (t('my_cases.rating_3') || 'Good')}
-											{rating === 4 && (t('my_cases.rating_4') || 'Very Good')}
-											{rating === 5 && (t('my_cases.rating_5') || 'Excellent')}
-										</p>
-									)}
-								</div>
-
-								{/* Review Text */}
-								<div>
-									<Label htmlFor="reviewText" className="text-sm font-semibold mb-2 block">
-										{t('my_cases.review_text') || 'Your Review'} *
-									</Label>
-									<Textarea
-										id="reviewText"
-										value={reviewText}
-										onChange={(e) => setReviewText(e.target.value)}
-										placeholder={t('my_cases.review_placeholder') || 'Share your experience...'}
-										rows={4}
-										className="w-full"
-									/>
-								</div>
-
-								{/* Buttons */}
-								<div className="flex gap-3 pt-2">
-									<Button
-										variant="outline"
-										onClick={() => {
-											setReviewModalOpen(false)
-											setSelectedRequestForReview(null)
-											setRating(0)
-											setReviewText('')
-										}}
-										className="flex-1"
-									>
-										{t('common.cancel') || 'Cancel'}
-									</Button>
-									<Button
-										onClick={handleSubmitReview}
-										disabled={!rating || !reviewText.trim() || isSubmittingReview}
-										className="flex-1 font-semibold"
-										style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
-									>
-										{isSubmittingReview ? (
-											<>
-												<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block"></div>
-												{t('my_cases.submitting') || 'Submitting...'}
-											</>
-										) : (
-											<>
-												<CheckCircle className="w-4 h-4 mr-2" />
-												{t('my_cases.confirm_review') || 'Confirm'}
-											</>
-										)}
-									</Button>
-								</div>
+					<DialogContent onClose={() => setReviewModalOpen(false)} className="max-w-md px-4 w-[90vw]">
+						<div className="bg-white rounded-[2.5rem] shadow-2xl p-8 border border-gray-100">
+							<div className="mb-8">
+								<DialogTitle className="text-2xl font-black text-[#05324f] uppercase tracking-tight mb-2">
+									{t('my_cases.review_title') || 'Rate Your Experience'}
+								</DialogTitle>
+								<DialogDescription className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+									{t('my_cases.review_description') || 'Please share your experience with this workshop'}
+								</DialogDescription>
 							</div>
-						)}
+
+							{selectedRequestForReview && (
+								<div className="space-y-6">
+									{/* Workshop Info */}
+									<div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center gap-3">
+										<div className="w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-50 flex items-center justify-center">
+											<Building2 className="w-5 h-5 text-[#05324f]" />
+										</div>
+										<div className="min-w-0">
+											<p className="text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">Service Entity</p>
+											<p className="text-sm font-black text-[#05324f] truncate">
+												{selectedRequestForReview.bookings?.[0]?.workshopId?.companyName || 
+												 selectedRequestForReview.bookings?.[0]?.workshop?.companyName || 
+												 'Workshop'}
+											</p>
+										</div>
+									</div>
+
+									{/* Star Rating */}
+									<div>
+										<Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">
+											{t('my_cases.rating') || 'Performance Rating'} *
+										</Label>
+										<div className="flex items-center gap-2 bg-gray-50 p-4 rounded-2xl shadow-inner">
+											{[1, 2, 3, 4, 5].map((star) => (
+												<button
+													key={star}
+													type="button"
+													onClick={() => setRating(star)}
+													className="focus:outline-none transition-transform hover:scale-125"
+												>
+													<Star
+														className={`w-9 h-9 ${
+															star <= rating
+																? 'fill-[#34C759] text-[#34C759]'
+																: 'text-gray-200'
+														}`}
+													/>
+												</button>
+											))}
+										</div>
+										{rating > 0 && (
+											<p className="text-[10px] text-[#34C759] mt-2 font-black uppercase tracking-widest text-center">
+												{rating === 1 && (t('my_cases.rating_1') || 'Poor Performance')}
+												{rating === 2 && (t('my_cases.rating_2') || 'Fair Performance')}
+												{rating === 3 && (t('my_cases.rating_3') || 'Good Performance')}
+												{rating === 4 && (t('my_cases.rating_4') || 'High Standard')}
+												{rating === 5 && (t('my_cases.rating_5') || 'Elite Standard')}
+											</p>
+										)}
+									</div>
+
+									{/* Review Text */}
+									<div>
+										<Label htmlFor="reviewText" className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">
+											{t('my_cases.review_text') || 'Review Narrative'} *
+										</Label>
+										<Textarea
+											id="reviewText"
+											value={reviewText}
+											onChange={(e) => setReviewText(e.target.value)}
+											placeholder={t('my_cases.review_placeholder') || 'Share your experience...'}
+											className="min-h-[120px] bg-gray-50 border-gray-100 rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-[#34C759] outline-none shadow-inner"
+											rows={4}
+										/>
+									</div>
+
+									{/* Buttons */}
+									<div className="flex flex-col gap-3 pt-4">
+										<Button
+											onClick={handleSubmitReview}
+											disabled={!rating || !reviewText.trim() || isSubmittingReview}
+											className="w-full h-14 bg-[#34C759] text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-[#34C759]/20 transition-all active:scale-95"
+										>
+											{isSubmittingReview ? (
+												<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+											) : (
+												<>
+													<CheckCircle className="w-4 h-4 mr-2" />
+													{t('my_cases.confirm_review') || 'Submit Record'}
+												</>
+											)}
+										</Button>
+
+										<Button
+											variant="ghost"
+											onClick={() => {
+												setReviewModalOpen(false)
+												setSelectedRequestForReview(null)
+												setRating(0)
+												setReviewText('')
+											}}
+											className="w-full h-12 text-gray-400 font-bold rounded-2xl hover:bg-gray-50"
+										>
+											{t('common.cancel') || 'Cancel'}
+										</Button>
+									</div>
+								</div>
+							)}
+						</div>
 					</DialogContent>
 				</Dialog>
 
 				{/* View Details Modal */}
 				<Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-					<DialogContent onClose={() => setDetailsModalOpen(false)}>
-						<div className="flex flex-col h-full">
-							<DialogTitle className="text-xl font-bold text-[#05324f]">
-								{t('my_cases.workshop_details') || 'Workshop Details'}
-							</DialogTitle>
-							<DialogDescription className="text-sm text-gray-500 mt-1">
-								{t('my_cases.workshop_details_desc') || 'Contact information for your booked workshop.'}
-							</DialogDescription>
+					<DialogContent onClose={() => setDetailsModalOpen(false)} className="max-w-[50rem] px-4 w-[90vw]">
+						<div className="bg-white rounded-[2.5rem] shadow-2xl p-8 sm:p-10 border border-gray-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+							<div className="mb-8">
+								<DialogTitle className="text-3xl font-black text-[#05324f] uppercase tracking-tight mb-2">
+									{t('my_cases.workshop_details') || 'Service Identity'}
+								</DialogTitle>
+								<DialogDescription className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+									{t('my_cases.workshop_details_desc') || 'Full administrative and contact data package'}
+								</DialogDescription>
+							</div>
 							
 							{selectedBookingForDetails && (
-								<div className="space-y-6 pt-6">
-									<div className="space-y-4">
-										{/* Workshop Name */}
-										<div className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 transition-all hover:bg-white hover:shadow-sm">
-											<div className="p-2.5 bg-white rounded-xl shadow-sm border border-gray-50">
-												<Building2 className="w-5 h-5 text-[#05324f]" />
+								<div className="space-y-8 pr-1">
+									{/* Cancellation Status Banner */}
+									{selectedBookingForDetails.status === 'CANCELLED' && (
+										<div className="p-6 bg-red-50/50 rounded-[2rem] border-l-4 border-red-500 animate-in fade-in slide-in-from-left-4 duration-500">
+											<div className="flex items-center gap-5">
+												<div className="p-3 bg-red-100 rounded-2xl shadow-sm shrink-0">
+													<XCircle className="w-6 h-6 text-red-600" />
+												</div>
+												<div className="flex-1 min-w-0">
+													<p className="text-[10px] font-black text-red-700 uppercase tracking-widest mb-1.5 leading-none">
+														{selectedBookingForDetails.cancelledBy === 'CUSTOMER' 
+															? 'Audit: Revoked by You' 
+															: selectedBookingForDetails.cancelledBy === 'WORKSHOP' 
+																? 'Audit: Revoked by Workshop' 
+																: 'Record Terminated'}
+													</p>
+													<p className="text-sm text-red-900 font-bold italic leading-relaxed bg-white/40 p-3 rounded-xl border border-red-100">
+														"{selectedBookingForDetails.cancellationReason || 'No formal reason provided'}"
+													</p>
+													{selectedBookingForDetails.cancelledAt && (
+														<p className="text-[9px] text-red-400 mt-2.5 font-black uppercase tracking-widest">
+															Timestamp: {formatDate(new Date(selectedBookingForDetails.cancelledAt))}
+														</p>
+													)}
+												</div>
 											</div>
-											<div className="flex-1 min-w-0">
-												<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">
-													{t('my_cases.company_name') || 'Company Name'}
+										</div>
+									)}
+
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+										{/* Workshop Name */}
+										<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
+											<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
+												<Building2 className="w-6 h-6 text-[#34C759]" />
+											</div>
+											<div className="min-w-0">
+												<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
+													Legal Entity
 												</p>
-												<p className="text-sm font-bold text-[#05324f] break-words">
+												<p className="text-base font-black text-[#05324f] truncate">
 													{selectedBookingForDetails.workshopId?.companyName || 'N/A'}
 												</p>
 											</div>
 										</div>
 
-										{/* Email */}
-										<div className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 transition-all hover:bg-white hover:shadow-sm">
-											<div className="p-2.5 bg-white rounded-xl shadow-sm border border-gray-50">
-												<Mail className="w-5 h-5 text-[#05324f]" />
+										{/* Account Manager */}
+										<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
+											<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
+												<User className="w-6 h-6 text-[#007AFF]" />
 											</div>
-											<div className="flex-1 min-w-0">
-												<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">
-													{t('my_cases.email') || 'Email'}
+											<div className="min-w-0">
+												<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
+													Account Holder
 												</p>
-												<p className="text-sm font-semibold text-[#05324f] break-words">
+												<p className="text-base font-black text-[#05324f] truncate">
+													{selectedBookingForDetails.workshopId?.name || 'N/A'}
+												</p>
+											</div>
+										</div>
+
+										{/* Email */}
+										<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
+											<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
+												<Mail className="w-6 h-6 text-[#05324f] opacity-50" />
+											</div>
+											<div className="min-w-0">
+												<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
+													Electronic Mail
+												</p>
+												<p className="text-sm font-bold text-[#05324f] truncate">
 													{selectedBookingForDetails.workshopId?.email || 'N/A'}
 												</p>
 											</div>
 										</div>
 
 										{/* Phone */}
-										<div className="flex items-start gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 transition-all hover:bg-white hover:shadow-sm">
-											<div className="p-2.5 bg-white rounded-xl shadow-sm border border-gray-50">
-												<PhoneIcon className="w-5 h-5 text-[#05324f]" />
+										<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
+											<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
+												<PhoneIcon className="w-6 h-6 text-[#05324f] opacity-50" />
 											</div>
-											<div className="flex-1 min-w-0">
-												<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">
-													{t('my_cases.phone') || 'Phone'}
+											<div className="min-w-0">
+												<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
+													Direct Voice
 												</p>
-												<p className="text-sm font-semibold text-[#05324f] break-words">
+												<p className="text-sm font-bold text-[#05324f] truncate">
 													{selectedBookingForDetails.workshopId?.phone || 'N/A'}
 												</p>
 											</div>
@@ -1144,17 +1317,17 @@ export default function MyCasesPage() {
 									</div>
 
 									{/* Action Buttons */}
-									<div className="flex flex-col gap-3 pt-2">
+									<div className="flex flex-col gap-3 pt-4 border-t border-gray-50">
 										{selectedBookingForDetails.status === 'BOOKED' && (
 											<Button 
 												onClick={() => {
 													setDetailsModalOpen(false)
 													openCompleteConfirm(selectedBookingForDetails)
 												}}
-												className="w-full h-11 bg-[#34C759] hover:bg-[#2eb34f] text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all"
+												className="w-full h-14 bg-[#34C759] hover:bg-[#2eb34f] text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-[#34C759]/20 transition-all active:scale-95"
 											>
 												<CheckCircle className="w-4 h-4 mr-2" />
-												{t('my_cases.complete_job') || 'Complete Job'}
+												{t('my_cases.complete_job') || 'Confirm Final Completion'}
 											</Button>
 										)}
 										
@@ -1165,12 +1338,12 @@ export default function MyCasesPage() {
 													openRescheduleModal(selectedBookingForDetails)
 												}}
 												variant="outline"
-												className="w-full h-11 border-2 border-[#05324f] text-[#05324f] font-bold rounded-xl hover:bg-[#05324f]/5 transition-all"
+												className="w-full h-14 border-[1.5px] border-[#05324f] text-[#05324f] font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-[#05324f]/5 transition-all"
 											>
 												<RotateCcw className="w-4 h-4 mr-2" />
 												{selectedBookingForDetails.status === 'RESCHEDULED' 
-													? (t('my_cases.reschedule_again') || 'Reschedule Again')
-													: (t('my_cases.reschedule_job') || 'Reschedule Job')
+													? (t('my_cases.reschedule_again') || 'Modify Existing Slot')
+													: (t('my_cases.reschedule_job') || 'Request Rescheduling')
 												}
 											</Button>
 										)}
@@ -1181,13 +1354,20 @@ export default function MyCasesPage() {
 													setDetailsModalOpen(false)
 													openCancelConfirm(selectedBookingForDetails)
 												}}
-												variant="destructive"
-												className="w-full h-11 font-bold rounded-xl shadow-sm hover:shadow-md transition-all"
+												variant="ghost"
+												className="w-full h-12 text-gray-400 hover:text-red-600 hover:bg-red-50 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all"
 											>
 												<XCircle className="w-4 h-4 mr-2" />
-												{t('my_cases.cancel_job') || 'Cancel Job'}
+												{t('my_cases.cancel_job') || 'Revoke Service Request'}
 											</Button>
 										)}
+										
+										<Button 
+											onClick={() => setDetailsModalOpen(false)}
+											className="w-full h-12 bg-white text-gray-400 font-bold rounded-2xl border border-gray-100"
+										>
+											Dismiss Record
+										</Button>
 									</div>
 								</div>
 							)}

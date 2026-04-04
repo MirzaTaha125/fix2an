@@ -63,6 +63,7 @@ router.get('/users', async (req, res) => {
 		const skip = (parseInt(page) - 1) * parseInt(limit)
 		const users = await User.find(query)
 			.select('-password')
+			.sort({ createdAt: -1 })
 			.skip(skip)
 			.limit(parseInt(limit))
 			.lean()
@@ -126,6 +127,7 @@ router.get('/pending-workshops', async (req, res) => {
 		// Only show workshops with PENDING status
 		const workshops = await Workshop.find({ isVerified: false, verificationStatus: 'PENDING' })
 			.populate('userId', 'name email')
+			.sort({ createdAt: -1 })
 			.lean()
 
 		const workshopsWithIds = workshops.map((w) => ({
@@ -165,6 +167,7 @@ router.get('/workshops', async (req, res) => {
 		const skip = (parseInt(page) - 1) * parseInt(limit)
 		const workshops = await Workshop.find(query)
 			.populate('userId', 'name email')
+			.sort({ createdAt: -1 })
 			.skip(skip)
 			.limit(parseInt(limit))
 			.lean()
@@ -282,8 +285,9 @@ router.get('/requests', async (req, res) => {
 
 		const skip = (parseInt(page) - 1) * parseInt(limit)
 		const requests = await Request.find(query)
-			.populate('customerId', 'name email')
-			.populate('vehicleId', 'make model year')
+			.populate('customerId', 'name email phone')
+			.populate('vehicleId')
+			.sort({ createdAt: -1 })
 			.skip(skip)
 			.limit(parseInt(limit))
 			.lean()
@@ -330,12 +334,12 @@ router.get('/offers', async (req, res) => {
 
 		const skip = (parseInt(page) - 1) * parseInt(limit)
 		const offers = await Offer.find(query)
-			.populate('workshopId', 'companyName')
-			.populate('requestId', 'vehicleId')
+			.populate('workshopId', 'companyName email phone')
 			.populate({
 				path: 'requestId',
-				populate: { path: 'vehicleId', select: 'make model year' }
+				populate: { path: 'vehicleId' }
 			})
+			.sort({ createdAt: -1 })
 			.skip(skip)
 			.limit(parseInt(limit))
 			.lean()
@@ -373,8 +377,14 @@ router.get('/bookings', async (req, res) => {
 
 		const skip = (parseInt(page) - 1) * parseInt(limit)
 		const bookings = await Booking.find(query)
-			.populate('customerId', 'name email')
-			.populate('workshopId', 'companyName')
+			.populate('customerId', 'name email phone')
+			.populate('workshopId', 'companyName email phone')
+			.populate({
+				path: 'requestId',
+				populate: { path: 'vehicleId' }
+			})
+			.populate('offerId')
+			.sort({ createdAt: -1 })
 			.skip(skip)
 			.limit(parseInt(limit))
 			.lean()

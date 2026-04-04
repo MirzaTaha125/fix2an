@@ -4,7 +4,7 @@ import { Button } from '../components/ui/Button'
 import { Skeleton } from '../components/ui/Skeleton'
 import { VerifiedBadge, RatingBadge, WarrantyBadge } from '../components/ui/Badge'
 import toast from 'react-hot-toast'
-import { formatPrice } from '../utils/cn'
+import { formatPrice, formatDate } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -160,7 +160,9 @@ export default function OffersPage() {
 
 	if (!user || user.role !== 'CUSTOMER') return null
 
-	const sortedOffers = [...offers].sort((a, b) => {
+	const filteredAvailableOffers = offers.filter(offer => offer.status !== 'CANCELLED')
+
+	const sortedOffers = [...filteredAvailableOffers].sort((a, b) => {
 		switch (sortBy) {
 			case 'price': return a.price - b.price
 			case 'rating': return (b.workshopId?.rating || 0) - (a.workshopId?.rating || 0)
@@ -251,6 +253,10 @@ export default function OffersPage() {
 								const distance = offer.distance != null ? offer.distance : null
 								const estimatedDuration = offer.estimatedDuration || null
 								const warranty = offer.warranty || null
+								const laborCost = offer.laborCost || 0
+								const partsCost = offer.partsCost || 0
+								const inclusions = offer.inclusions || null
+								const expiresAt = offer.expiresAt ? new Date(offer.expiresAt) : null
 								const initials = (workshop?.companyName || 'W')
 									.split(/\s+/)
 									.map((w) => w[0])
@@ -294,9 +300,14 @@ export default function OffersPage() {
 															{formatPrice(offer.price)}
 														</p>
 														{distance != null && (
-															<p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
+															<p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
 																<MapPin size={12} />
-																{distance.toFixed(1)} km {t('offers_page.from_you') || 'from you'}
+																{distance.toFixed(1)} km {t('offers_page.from_you')}
+															</p>
+														)}
+														{expiresAt && (
+															<p className="text-[10px] text-red-500 mt-1 font-medium italic">
+																{t('offers_page.offer_expires') || 'Expires'}: {formatDate(expiresAt)}
 															</p>
 														)}
 													</div>
@@ -347,15 +358,26 @@ export default function OffersPage() {
 													{warranty && <WarrantyBadge text={warranty} />}
 												</div>
 												{offer.note && (
-													<p className="text-small text-gray-500 italic mb-5 leading-relaxed border-l-2 border-gray-100 pl-3">{offer.note}</p>
+													<p className="text-small text-gray-500 italic mb-4 leading-relaxed border-l-2 border-gray-100 pl-3">{offer.note}</p>
 												)}
+
 												<div className="flex items-center justify-between gap-4 pt-4 border-t border-gray-100">
-													<div>
-														<p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">{t('offers_page.price') || 'Price'}</p>
+													<div className="flex flex-col">
+														<div className="flex items-center gap-1.5 mb-0.5">
+															<p className="text-xs text-gray-400 font-medium uppercase tracking-wide">{t('offers_page.total_price') || t('offers_page.price')}</p>
+															<span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold uppercase">
+																{t('offers_page.incl_vat') || 'Incl. VAT'}
+															</span>
+														</div>
 														<p className="text-3xl font-bold text-[#34C759] leading-none">{formatPrice(offer.price)}</p>
+														{expiresAt && (
+															<p className="text-[10px] text-red-500 mt-2 font-medium italic">
+																{t('offers_page.offer_expires') || 'Offer Valid Until'}: {formatDate(expiresAt)}
+															</p>
+														)}
 													</div>
 													{offer.status !== 'ACCEPTED' ? (
-														<Button onClick={() => handleAcceptOffer(offer)} className="flex items-center gap-2 shrink-0">
+														<Button onClick={() => handleAcceptOffer(offer)} className="flex items-center gap-2 shrink-0 h-12 px-8">
 															{t('offers_page.choose')}
 															<ArrowRight size={16} />
 														</Button>

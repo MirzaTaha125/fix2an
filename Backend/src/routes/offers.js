@@ -10,7 +10,12 @@ const router = express.Router()
 // Create an offer
 router.post('/', authenticate, requireRole('WORKSHOP'), async (req, res) => {
 	try {
-		const { requestId, price, note, availableDates, estimatedDuration, warranty } = req.body
+		const { requestId, price, laborCost, partsCost, validityDays, inclusions, note, availableDates, estimatedDuration, warranty } = req.body
+
+		// Calculate expiration date
+		const vDays = parseInt(validityDays) || 14
+		const expiresAt = new Date()
+		expiresAt.setDate(expiresAt.getDate() + vDays)
 
 		if (!requestId || !price) {
 			return res.status(400).json({ message: 'Request ID and price are required' })
@@ -47,6 +52,11 @@ router.post('/', authenticate, requireRole('WORKSHOP'), async (req, res) => {
 			requestId,
 			workshopId: workshop._id,
 			price: parseFloat(price),
+			laborCost: parseFloat(laborCost) || 0,
+			partsCost: parseFloat(partsCost) || 0,
+			validityDays: vDays,
+			expiresAt,
+			inclusions,
 			note,
 			availableDates: availableDates ? JSON.stringify(availableDates) : null,
 			estimatedDuration,
@@ -121,7 +131,7 @@ router.get('/request/:requestId', authenticate, async (req, res) => {
 router.patch('/:id', authenticate, requireRole('WORKSHOP'), async (req, res) => {
 	try {
 		const { id } = req.params
-		const { price, note, availableDates, estimatedDuration, warranty, status } = req.body
+		const { price, laborCost, partsCost, validityDays, inclusions, note, availableDates, estimatedDuration, warranty, status } = req.body
 
 		// Find workshop for this user
 		const workshop = await Workshop.findOne({ userId: req.user._id })
@@ -140,6 +150,18 @@ router.patch('/:id', authenticate, requireRole('WORKSHOP'), async (req, res) => 
 		// Build update object
 		const updateData = {}
 		if (price !== undefined) updateData.price = parseFloat(price)
+		if (laborCost !== undefined) updateData.laborCost = parseFloat(laborCost)
+		if (partsCost !== undefined) updateData.partsCost = parseFloat(partsCost)
+		if (validityDays !== undefined) {
+			const vDays = parseInt(validityDays)
+			updateData.validityDays = vDays
+			// Only update expiresAt if it was changed or if we want to reset it
+			// Usually, updating an offer might want to extend the expiry
+			const expiresAt = new Date()
+			expiresAt.setDate(expiresAt.getDate() + vDays)
+			updateData.expiresAt = expiresAt
+		}
+		if (inclusions !== undefined) updateData.inclusions = inclusions
 		if (note !== undefined) updateData.note = note
 		if (availableDates !== undefined) updateData.availableDates = availableDates ? JSON.stringify(availableDates) : null
 		if (estimatedDuration !== undefined) updateData.estimatedDuration = estimatedDuration

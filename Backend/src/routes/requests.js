@@ -5,6 +5,7 @@ import Offer from '../models/Offer.js'
 import Booking from '../models/Booking.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import { expireRequests } from '../utils/expireRequests.js'
+import { expireOffers } from '../utils/expireOffers.js'
 import { notifyUploadReceived, notifyWorkshopsNewRequest } from '../services/notificationService.js'
 
 const router = express.Router()
@@ -64,10 +65,9 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 	try {
 		const { customerId } = req.params
 
-		// Check if user is accessing their own requests or is admin
-		if (req.user._id.toString() !== customerId && req.user.role !== 'ADMIN') {
-			return res.status(403).json({ message: 'Forbidden' })
-		}
+		// Ensure expired requests and offers are marked before returning results
+		await expireRequests()
+		await expireOffers()
 
 		const requests = await Request.find({ customerId })
 			.populate('vehicleId')
@@ -93,6 +93,10 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 						id: offer._id,
 						_id: offer._id,
 						price: offer.price,
+						laborCost: offer.laborCost,
+						partsCost: offer.partsCost,
+						inclusions: offer.inclusions,
+						expiresAt: offer.expiresAt,
 						note: offer.note,
 						status: offer.status,
 						workshop: {
@@ -212,13 +216,25 @@ router.get('/:id', authenticate, async (req, res) => {
 			return res.json(request)
 		}
 		
-		// Workshop: allowed only for NEW/IN_BIDDING requests that are not expired
+		// Workshop: allowed only for NEW/IN_BIDDING requests that are not expired, 
+		// OR if they have already submitted an offer for this request.
 		if (req.user.role === 'WORKSHOP') {
+			const workshop = await Workshop.findOne({ userId: req.user._id })
+			if (!workshop) return res.status(403).json({ message: 'Workshop profile not found' })
+
 			const now = new Date()
-			const isAvailable = ['NEW', 'IN_BIDDING'].includes(request.status) && request.expiresAt > now
+			const isAvailable = (['NEW', 'IN_BIDDING'].includes(request.status) && request.expiresAt > now)
+			
+			// If not available, check if this workshop has an existing offer or booking for this request
 			if (!isAvailable) {
-				return res.status(403).json({ message: 'Request is not available for viewing' })
+				const hasOffer = await Offer.findOne({ requestId: id, workshopId: workshop._id })
+				const hasBooking = await Booking.findOne({ requestId: id, workshopId: workshop._id })
+				
+				if (!hasOffer && !hasBooking) {
+					return res.status(403).json({ message: 'Request is no longer available for bidding' })
+				}
 			}
+			
 			return res.json(request)
 		}
 		

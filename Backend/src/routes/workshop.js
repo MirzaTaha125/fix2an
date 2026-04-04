@@ -223,11 +223,15 @@ router.get('/stats', authenticate, requireRole('WORKSHOP'), async (req, res) => 
 				workshopId: workshop._id,
 				status: 'DONE'
 			}),
-			// Total available requests (NEW or IN_BIDDING, not yet expired)
-			Request.countDocuments({ 
-				status: { $in: ['NEW', 'IN_BIDDING'] },
-				expiresAt: { $gt: now },
-			}),
+			// Total available requests (NEW or IN_BIDDING, not yet expired, and NO offer from this workshop yet)
+			(async () => {
+				const submittedOfferRequestIds = await Offer.find({ workshopId: workshop._id }).distinct('requestId');
+				return Request.countDocuments({ 
+					_id: { $nin: submittedOfferRequestIds },
+					status: { $in: ['NEW', 'IN_BIDDING'] },
+					expiresAt: { $gt: now },
+				});
+			})(),
 			// Total revenue from completed/confirmed bookings
 			Booking.aggregate([
 				{ $match: { workshopId: workshop._id, status: { $in: ['DONE', 'CONFIRMED', 'RESCHEDULED'] } } },
