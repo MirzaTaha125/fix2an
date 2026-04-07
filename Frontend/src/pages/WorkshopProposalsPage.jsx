@@ -211,84 +211,66 @@ export default function WorkshopProposalsPage() {
 		return null
 	}
 
+	const tabs = [
+		{ key: 'all', label: t('workshop.proposals.tabs.all') || 'All' },
+		{ key: 'sent', label: t('workshop.proposals.tabs.sent') || 'Sent' },
+		{ key: 'accepted', label: t('workshop.proposals.tabs.accepted') || 'Accepted' },
+		{ key: 'declined', label: t('workshop.proposals.tabs.declined') || 'Declined' },
+		{ key: 'expired', label: t('workshop.proposals.tabs.expired') || 'Expired' },
+		{ key: 'cancelled', label: t('workshop.proposals.tabs.cancelled') || 'Cancelled' },
+	]
+
 	return (
 	<div className="min-h-screen bg-gray-50 flex flex-col">
 		<Navbar />
 		<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
 			{/* Header */}
 			<div className="mb-8">
-				<h1 className="text-xl md:text-xl font-bold text-[#05324f]">
+				<h1 className="text-xl md:text-xl font-bold text-[#05324f] mb-1">
 					{t('workshop.proposals.title') || 'Proposals'}
 				</h1>
+				<p className="text-sm text-gray-500">
+					{t('workshop.proposals.subtitle') || 'Track and manage your submitted offers'}
+				</p>
 			</div>
 
-				{/* Tabs */}
-				<div className="flex flex-wrap gap-2 mb-6">
-					<Button
-						variant={activeTab === 'all' ? 'default' : 'outline'}
-						size="sm"
-						onClick={() => setActiveTab('all')}
-						className={activeTab === 'all' ? 'bg-[#34C759] text-white' : ''}
-					>
-						{t('workshop.proposals.tabs.all') || 'All'}
-					</Button>
-					<Button
-						variant={activeTab === 'sent' ? 'default' : 'outline'}
-						size="sm"
-						onClick={() => setActiveTab('sent')}
-						className={activeTab === 'sent' ? 'bg-[#34C759] text-white' : ''}
-					>
-						{t('workshop.proposals.tabs.sent') || 'Sent'}
-					</Button>
-					<Button
-						variant={activeTab === 'accepted' ? 'default' : 'outline'}
-						size="sm"
-						onClick={() => setActiveTab('accepted')}
-						className={activeTab === 'accepted' ? 'bg-[#34C759] text-white' : ''}
-					>
-						{t('workshop.proposals.tabs.accepted') || 'Accepted'}
-					</Button>
-					<Button
-						variant={activeTab === 'declined' ? 'default' : 'outline'}
-						size="sm"
-						onClick={() => setActiveTab('declined')}
-						className={activeTab === 'declined' ? 'bg-[#34C759] text-white' : ''}
-					>
-						{t('workshop.proposals.tabs.declined') || 'Declined'}
-					</Button>
-					<Button
-						variant={activeTab === 'expired' ? 'default' : 'outline'}
-						size="sm"
-						onClick={() => setActiveTab('expired')}
-						className={activeTab === 'expired' ? 'bg-[#34C759] text-white' : ''}
-					>
-						{t('workshop.proposals.tabs.expired') || 'Expired'}
-					</Button>
-					<Button
-						variant={activeTab === 'cancelled' ? 'default' : 'outline'}
-						size="sm"
-						onClick={() => setActiveTab('cancelled')}
-						className={activeTab === 'cancelled' ? 'bg-[#34C759] text-white' : ''}
-					>
-						{t('workshop.proposals.tabs.cancelled') || 'Cancelled'}
-					</Button>
+			{/* Navigation Tabs - Redesigned Segmented Control */}
+			<div className="flex justify-center mb-8 animate-fade-in-up">
+				<div className="inline-flex p-1 bg-white border border-gray-100 rounded-full shadow-sm max-md:rounded-2xl max-w-full gap-1 max-md:bg-transparent max-md:border-0 max-md:shadow-none max-md:p-0 max-md:gap-2 max-md:w-full max-md:grid max-md:grid-cols-3">
+					{tabs.map(({ key, label }) => (
+						<button
+							key={key}
+							onClick={() => setActiveTab(key)}
+							className={`px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[100px] max-md:flex-1 max-md:py-3.5 max-md:rounded-xl shadow-sm border border-transparent ${
+								activeTab === key
+									? 'bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759]'
+									: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:border-gray-200'
+							}`}
+						>
+							{label}
+						</button>
+					))}
 				</div>
+			</div>
 
 				{/* Proposals List */}
 				<div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
 					{filteredOffers.length === 0 ? (
-						<Card className="border-0 shadow-2xl overflow-hidden">
+						<Card className="border-0 shadow-xl overflow-hidden rounded-3xl animate-fade-in-up">
 							<CardContent className="text-center py-20 sm:py-24 px-6 bg-white">
 								<div className="relative inline-block mb-8">
-									<div className="relative p-10 sm:p-12 rounded-3xl border-2 border-gray-200">
-										<FileText className="w-24 h-24 sm:w-28 sm:h-28 mx-auto" style={{ color: '#34C759' }} />
+									<div className="w-24 h-24 bg-[#34C759]/10 rounded-3xl flex items-center justify-center mb-0 rotate-3 transition-transform hover:rotate-0">
+										<FileText className="w-12 h-12 text-[#34C759]" />
 									</div>
 								</div>
-								<h3 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: '#05324f' }}>
-									{t('workshop.proposals.no_proposals.title') || 'No Proposals'}
+								<h3 className="text-2xl sm:text-3xl font-bold mb-4" style={{ color: '#05324f' }}>
+									{t('workshop.proposals.no_proposals.title') || 'No Proposals Found'}
 								</h3>
-								<p className="text-lg sm:text-xl max-w-xl mx-auto leading-relaxed" style={{ color: '#05324f' }}>
-									{t('workshop.proposals.no_proposals.description') || 'You haven\'t submitted any proposals yet.'}
+								<p className="text-lg text-gray-600 max-w-xl mx-auto leading-relaxed" style={{ color: 'inherit' }}>
+									{activeTab === 'all' 
+										? (t('workshop.proposals.no_proposals.description') || 'You haven\'t submitted any proposals yet. Check the jobs tab to find new opportunities.')
+										: (t(`workshop.proposals.no_proposals.${activeTab}_description`) || `You don't have any ${activeTab} proposals at the moment.`)
+									}
 								</p>
 							</CardContent>
 						</Card>

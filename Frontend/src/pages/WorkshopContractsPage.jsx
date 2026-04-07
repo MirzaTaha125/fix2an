@@ -456,47 +456,45 @@ export default function WorkshopContractsPage() {
 				</h1>
 			</div>
 
-				{/* Tabs with Counts */}
-				<div className="flex flex-wrap gap-3 mb-8">
-					<Button
-						variant={activeTab === 'current' ? 'default' : 'outline'}
-						size="lg"
-						onClick={() => setActiveTab('current')}
-						className={`rounded-2xl px-6 h-12 transition-all ${
-							activeTab === 'current' 
-								? 'bg-[#05324f] text-white shadow-lg scale-[1.02]' 
-								: 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
-						}`}
-					>
-						<Clock className="w-5 h-5 mr-2.5" />
-						<span className="font-bold">{t('workshop.contracts.active_jobs') || 'Active Jobs'}</span>
-						<Badge className="ml-3 bg-white/20 text-white border-0">
-							{contracts.filter(offer => {
-								const booking = bookings.find(b => (b.offerId?._id || b.offerId?.id || b.offerId) === (offer._id || offer.id))
-								return !booking || booking.status !== 'DONE'
-							}).length}
-						</Badge>
-					</Button>
-					
-					<Button
-						variant={activeTab === 'completed' ? 'default' : 'outline'}
-						size="lg"
-						onClick={() => setActiveTab('completed')}
-						className={`rounded-2xl px-6 h-12 transition-all ${
-							activeTab === 'completed' 
-								? 'bg-[#34C759] text-white shadow-lg scale-[1.02]' 
-								: 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
-						}`}
-					>
-						<CheckCircle className="w-5 h-5 mr-2.5" />
-						<span className="font-bold">{t('workshop.contracts.past_records') || 'Past Records'}</span>
-						<Badge className="ml-3 bg-white/20 text-white border-0">
-							{contracts.filter(offer => {
-								const booking = bookings.find(b => (b.offerId?._id || b.offerId?.id || b.offerId) === (offer._id || offer.id))
-								return booking && booking.status === 'DONE'
-							}).length}
-						</Badge>
-					</Button>
+				{/* Navigation Tabs - Redesigned Segmented Control */}
+				<div className="flex justify-center mb-10 animate-fade-in-up">
+					<div className="inline-flex p-1 bg-white border border-gray-100 rounded-full shadow-sm max-md:rounded-2xl max-w-full gap-1 max-md:bg-transparent max-md:border-0 max-md:shadow-none max-md:p-0 max-md:gap-2 max-md:w-full max-md:grid max-md:grid-cols-2">
+						<button
+							onClick={() => setActiveTab('current')}
+							className={`px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[120px] max-md:flex-1 max-md:py-3.5 max-md:rounded-xl shadow-sm border border-transparent flex items-center justify-center gap-2 ${
+								activeTab === 'current'
+									? 'bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759]'
+									: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:border-gray-200'
+							}`}
+						>
+							<Clock className="w-4 h-4" />
+							{t('workshop.contracts.active_jobs') || 'Active Jobs'}
+							<Badge className={`ml-1 border-0 h-5 min-w-[20px] flex items-center justify-center text-[10px] ${activeTab === 'current' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'}`}>
+								{contracts.filter(offer => {
+									const booking = bookings.find(b => (b.offerId?._id || b.offerId?.id || b.offerId) === (offer._id || offer.id))
+									return !booking || booking.status !== 'DONE'
+								}).length}
+							</Badge>
+						</button>
+
+						<button
+							onClick={() => setActiveTab('completed')}
+							className={`px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[120px] max-md:flex-1 max-md:py-3.5 max-md:rounded-xl shadow-sm border border-transparent flex items-center justify-center gap-2 ${
+								activeTab === 'completed'
+									? 'bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759]'
+									: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:border-gray-200'
+							}`}
+						>
+							<CheckCircle className="w-4 h-4" />
+							{t('workshop.contracts.past_records') || 'Past Records'}
+							<Badge className={`ml-1 border-0 h-5 min-w-[20px] flex items-center justify-center text-[10px] ${activeTab === 'completed' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'}`}>
+								{contracts.filter(offer => {
+									const booking = bookings.find(b => (b.offerId?._id || b.offerId?.id || b.offerId) === (offer._id || offer.id))
+									return booking && booking.status === 'DONE'
+								}).length}
+							</Badge>
+						</button>
+					</div>
 				</div>
 
 				{/* Contracts List */}
@@ -568,18 +566,13 @@ export default function WorkshopContractsPage() {
 											<div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
 												{/* Left: Car & Info */}
 												<div className="lg:col-span-3 border-b lg:border-b-0 lg:border-r border-gray-100 pb-3 lg:pb-0 lg:pr-4">
-													<div className="flex items-center gap-3">
-														<div className="w-10 h-10 bg-[#05324f] rounded-xl flex items-center justify-center shadow-lg shadow-[#05324f]/20 flex-shrink-0">
-															<Car className="w-5 h-5 text-white" />
-														</div>
-														<div className="min-w-0">
-															<h3 className="text-base font-black text-[#05324f] leading-tight truncate">
-																{vehicle?.make} {vehicle?.model}
-															</h3>
-															<p className="text-[9px] text-gray-400 font-medium truncate mt-0.5">
-																{vehicle?.year} • {vehicle?.color || 'Standard Silver'}
-															</p>
-														</div>
+													<div className="min-w-0">
+														<h3 className="text-base font-black text-[#05324f] leading-tight truncate">
+															{vehicle?.make} {vehicle?.model}
+														</h3>
+														<p className="text-[9px] text-gray-400 font-medium truncate mt-0.5">
+															{vehicle?.year} • {vehicle?.color || 'Standard Silver'}
+														</p>
 													</div>
 												</div>
 

@@ -7,6 +7,8 @@
 		"save": "Save",
 		"delete": "Delete",
 		"edit": "Edit",
+		"confirm_delete": "Confirm Delete",
+		"deleting": "Deleting...",
 		"view": "View",
 		"close": "Close",
 		"back": "Back",
@@ -46,7 +48,9 @@
 		"select_placeholder": "Select...",
 		"go_back": "Go back",
 		"contact_support": "Contact Support",
-		"read_cancellation_policy": "Read Cancellation Policy"
+		"read_cancellation_policy": "Read Cancellation Policy",
+		"dismiss": "Dismiss Record",
+		"not_yet": "Not yet"
 	},
 	"navigation": {
 		"home": "Home",
@@ -64,7 +68,9 @@
 		"proposals": "Proposals",
 		"contracts": "Contracts",
 		"contract": "Contract",
-		"for_workshops": "For Workshops"
+		"for_workshops": "For Workshops",
+		"logout_confirm_title": "Confirm Logout",
+		"logout_confirm_desc": "Are you sure you want to log out of your account?"
 	},
 	"homepage": {
 		"title": "Fix your car directly – fast, easy, safe",
@@ -248,6 +254,11 @@
 			"title": "No booked appointments",
 			"description": "You don't have any booked appointments yet."
 		},
+		"delete_request_title": "Delete Request",
+		"delete_request_description": "Are you sure you want to delete this request? This action cannot be undone and all active offers will be removed.",
+		"edit_request": "Edit Request",
+		"delete_request": "Delete Request",
+		"one_available_offer": "1 available offer",
 		"no_completed_cases": {
 			"title": "No completed jobs",
 			"description": "You haven't completed any jobs yet."
@@ -265,6 +276,8 @@
 		"view_details": "View Details",
 		"workshop_details": "Workshop Details",
 		"workshop_details_desc": "Contact information for your booked workshop.",
+		"request_details_title": "Request Details",
+		"request_details_desc": "Technical summary of your car service request.",
 		"company_name": "Company Name",
 		"email": "Email",
 		"phone": "Phone",
@@ -446,6 +459,9 @@
 		"no_request_id": "Request ID Required",
 		"no_request_id_description": "Please select a request to view offers.",
 		"back_to_cases": "Go to My Cases",
+		"confirm_delete_offer": "Are you sure you want to delete this offer? This action cannot be undone.",
+		"offer_deleted": "Offer deleted successfully",
+		"offer_expired": "Offer Expired",
 		"fetch_error": "Failed to fetch offers",
 		"book_appointment": "Book Appointment",
 		"book_appointment_desc": "Select a date and time for your appointment",
@@ -628,7 +644,7 @@
 			"address_information": "Address Information",
 			"additional_information": "Additional Information",
 			"quick_stats": "Quick Stats",
-			"verified": "Verified",
+			"verified": "Fix2an Verified",
 			"unverified": "Unverified",
 			"not_available": "N/A",
 			"save": "Save",
@@ -805,6 +821,8 @@
 			"open_pdf_new_tab": "Open PDF in New Tab"
 		},
 		"offer": {
+			"offer_valid_for": "Offer Valid For",
+			"included_services": "Included Services",
 			"title": "Create Offer",
 			"subtitle": "Submit your competitive offer for this request",
 			"edit_title": "Edit Offer",

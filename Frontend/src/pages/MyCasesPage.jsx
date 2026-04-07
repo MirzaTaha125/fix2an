@@ -30,6 +30,7 @@ import {
 	User,
 	UserCircle,
 	CreditCard,
+	Shield,
 	ShieldOff,
 	TrendingUp,
 	ExternalLink,
@@ -47,6 +48,10 @@ import {
 	History,
 	Heart,
 	AlertTriangle,
+	MoreVertical,
+	Pencil,
+	Trash2,
+	List,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
@@ -85,6 +90,19 @@ export default function MyCasesPage() {
 	const [completeReviewText, setCompleteReviewText] = useState('')
 	const [detailsModalOpen, setDetailsModalOpen] = useState(false)
 	const [selectedBookingForDetails, setSelectedBookingForDetails] = useState(null)
+	const [activeMenuId, setActiveMenuId] = useState(null)
+	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+	const [requestToDelete, setRequestToDelete] = useState(null)
+	const [isDeleting, setIsDeleting] = useState(false)
+
+	// Close menu when clicking elsewhere
+	useEffect(() => {
+		const handleClickOutside = () => setActiveMenuId(null)
+		if (activeMenuId) {
+			document.addEventListener('click', handleClickOutside)
+		}
+		return () => document.removeEventListener('click', handleClickOutside)
+	}, [activeMenuId])
 
 	// Redirect if not authenticated or wrong role
 	useEffect(() => {
@@ -316,6 +334,23 @@ export default function MyCasesPage() {
 		setCompleteConfirmOpen(true)
 	}
 
+	const handleDeleteRequest = async () => {
+		if (!requestToDelete) return
+		setIsDeleting(true)
+		try {
+			await requestsAPI.delete(requestToDelete._id || requestToDelete.id)
+			toast.success(t('my_cases.delete_success') || 'Request deleted successfully')
+			setDeleteConfirmOpen(false)
+			setRequestToDelete(null)
+			fetchRequests()
+		} catch (error) {
+			console.error('Delete request error:', error)
+			toast.error(error.response?.data?.message || t('my_cases.delete_error') || 'Failed to delete request')
+		} finally {
+			setIsDeleting(false)
+		}
+	}
+
 	// Show loading state while checking auth
 	if (authLoading) {
 		return (
@@ -460,7 +495,9 @@ export default function MyCasesPage() {
 					</div>
 					{requests.length > 0 && (
 						<Link to="/upload" className="self-start sm:self-auto shrink-0">
-							<Button size="sm">
+							<Button 
+								className="px-6 py-2.5 rounded-2xl text-sm font-bold shadow-md shadow-green-500/10 active:scale-95 transition-all duration-200"
+							>
 								<span className="md:hidden">{t('my_cases.upload_case')}</span>
 								<span className="hidden md:inline">{t('my_cases.upload_new_protocol')}</span>
 							</Button>
@@ -469,18 +506,18 @@ export default function MyCasesPage() {
 				</div>
 			</div>
 
-			{/* Navigation Tabs - Hidden if no requests */}
+			{/* Navigation Tabs - Redesigned to match screenshot */}
 			{requests.length > 0 && (
-				<div className="flex flex-col mb-6 animate-fade-in-up">
-					<div className={`grid gap-2 ${visibleTabs.length === 5 ? 'grid-cols-3 md:grid-cols-5' : visibleTabs.length === 4 ? 'grid-cols-2 md:grid-cols-4' : visibleTabs.length === 3 ? 'grid-cols-3' : 'grid-cols-2 max-w-sm'}`}>
+				<div className="flex justify-center mb-8 animate-fade-in-up">
+					<div className="inline-flex p-1 bg-white border border-gray-100 rounded-3xl shadow-sm max-w-full max-md:bg-transparent max-md:border-0 max-md:shadow-none max-md:p-0 max-md:w-full max-md:grid max-md:grid-cols-2 max-md:gap-2">
 						{visibleTabs.map(({ key, label }) => (
 							<button
 								key={key}
 								onClick={() => setActiveTab(key)}
-								className={`px-2 py-2 md:py-3.5 rounded-btn text-xs sm:text-sm font-semibold transition-all duration-200 text-center ${
+								className={`px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[100px] max-md:flex-1 max-md:py-3.5 max-md:rounded-xl shadow-sm border border-transparent ${
 									activeTab === key
-										? 'bg-[#34C759] text-white shadow-sm scale-[1.02]'
-										: 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-[#05324f]'
+										? 'bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759]'
+										: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:border-gray-200'
 								}`}
 							>
 								{label}
@@ -554,7 +591,7 @@ export default function MyCasesPage() {
 						</CardContent>
 					</Card>
 				) : (
-					<div className="bg-white border border-gray-200 rounded-lg overflow-hidden max-md:rounded-xl max-md:shadow-none max-md:space-y-3 max-md:border-0 max-md:bg-transparent">
+					<div className="bg-white border border-gray-200 rounded-lg overflow-visible max-md:rounded-xl max-md:shadow-none max-md:space-y-3 max-md:border-0 max-md:bg-transparent">
 						{filteredRequests.map((request, index) => {
 							// Handle both MongoDB _id and id formats
 							const requestId = request._id || request.id
@@ -573,240 +610,256 @@ export default function MyCasesPage() {
 							return (
 								<div
 									key={requestId}
-									className={`grid grid-cols-1 md:grid-cols-3 items-start py-3 px-3 sm:px-6 gap-2 sm:gap-4 relative max-md:bg-white max-md:rounded-xl max-md:border max-md:border-gray-200 max-md:p-3 max-md:shadow-none ${index !== filteredRequests.length - 1 ? 'border-b border-gray-200 md:border-b' : ''} max-md:border-b-0`}
+									className={`grid grid-cols-1 md:grid-cols-3 items-start py-3 px-3 sm:px-6 gap-2 sm:gap-4 relative max-md:bg-white max-md:rounded-xl max-md:border max-md:border-gray-200 max-md:p-3 max-md:shadow-none ${activeMenuId === requestId ? 'z-20' : 'z-10'} ${index !== filteredRequests.length - 1 ? 'border-b border-gray-200 md:border-b' : ''} max-md:border-b-0`}
 								>
-									{/* Badge in Top Right Corner - Mobile Only */}
-									<div className="absolute top-3 right-3 md:hidden">
-										{getStatusBadge(request.status)}
-									</div>
+									{/* Action Menu - Mobile Only (Top Right) */}
+									{activeTab !== 'cancelled_cases' && (
+										<div className="absolute top-3 right-3 md:hidden">
+											<div className="relative">
+												<button 
+													onClick={(e) => {
+														e.stopPropagation()
+														setActiveMenuId(activeMenuId === requestId ? null : requestId)
+													}}
+													className="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center bg-gray-50 md:bg-transparent"
+												>
+													<MoreVertical className="w-5 h-5 text-black" />
+												</button>
+												
+												{activeMenuId === requestId && (
+													<div className="absolute right-0 mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
+														{/* View Details - Reference the existing complex button labels */}
+														<button 
+															onClick={() => {
+																const detailsTarget = activeTab === 'booked_cases' || activeTab === 'completed_cases' || activeTab === 'rescheduled_cases' || activeTab === 'cancelled_cases' 
+																	? (bookings[0] || request.bookings?.[0]) 
+																	: null
+																
+																setSelectedBookingForDetails(detailsTarget || { ...request, isRequestOnly: true })
+																setDetailsModalOpen(true)
+															}}
+															className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-bold"
+														>
+															<Eye className="w-4 h-4 text-blue-500" />
+															{t('my_cases.view_details') || 'View Details'}
+														</button>
+
+														{/* Show Offers - for requests in bidding */}
+														{['NEW', 'IN_BIDDING', 'BIDDING_CLOSED'].includes(request.status) && (
+															<Link 
+																to={`/offers?requestId=${requestId}`}
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-bold"
+															>
+																<List className="w-4 h-4 text-[#34C759]" />
+																{t('my_cases.show_offer_list') || 'Show Offer List'}
+															</Link>
+														)}
+
+														{/* Edit Request - for new/pending requests */}
+														{['NEW', 'IN_BIDDING'].includes(request.status) && (
+															<Link 
+																to={`/upload?edit=${requestId}`}
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-bold"
+															>
+																<Pencil className="w-4 h-4 text-indigo-500" />
+																{t('my_cases.edit_request') || 'Edit Request'}
+															</Link>
+														)}
+
+														{/* Write Review - for completed cases */}
+														{activeTab === 'completed_cases' && bookings.some(b => b.status === 'DONE') && (
+															<button
+																onClick={() => {
+																	setSelectedRequestForReview(request)
+																	setRating(0)
+																	setReviewText('')
+																	setReviewModalOpen(true)
+																}}
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-bold"
+															>
+																<Star className="w-4 h-4 text-yellow-500" />
+																{t('my_cases.leave_review') || 'Write Review'}
+															</button>
+														)}
+
+														{/* Delete Request - only for NEW/IN_BIDDING */}
+														{['NEW', 'IN_BIDDING'].includes(request.status) && (
+															<button 
+																onClick={() => {
+																	setRequestToDelete(request)
+																	setDeleteConfirmOpen(true)
+																}}
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-red-50 text-red-600 font-bold"
+															>
+																<Trash2 className="w-4 h-4" />
+																{t('my_cases.delete_request') || 'Delete Request'}
+															</button>
+														)}
+													</div>
+												)}
+											</div>
+										</div>
+									)}
 
 									{/* Left: Title, Date, Description */}
-									<div className="min-w-0 pr-20 md:pr-0">
+									<div className="min-w-0 pr-12 md:pr-0">
 										{/* Title (Vehicle Name) */}
-										<h3 className="text-xl font-bold mb-1" style={{ color: '#05324f' }}>
+										<h3 className="text-lg md:text-xl font-bold mb-1" style={{ color: '#05324f' }}>
 											{vehicle?.make} {vehicle?.model}-{vehicle?.year}
 										</h3>
 										{/* Date */}
 										{requestDate && (
-											<p className="text-xs mb-1" style={{ color: '#05324f' }}>{requestDate}</p>
+											<p className="text-[10px] md:text-xs mb-1 opacity-60 font-semibold" style={{ color: '#05324f' }}>{requestDate}</p>
 										)}
 										{/* Description */}
-										<p className="text-xs sm:text-sm" style={{ color: '#05324f' }}>
+										<p className="text-xs sm:text-sm line-clamp-1 md:line-clamp-2" style={{ color: '#05324f' }}>
 											{request.description || t('my_cases.no_description') || 'No description provided'}
 										</p>
 									</div>
 
 									{/* Center: Case Details (Offers Count, Workshop Info, etc.) */}
-									<div className="min-w-0">
-										{/* Mobile: Flex layout with button opposite to offer count */}
-										<div className="flex flex-row items-center justify-between gap-2 md:hidden">
-											{/* Ongoing Requests - Show Offers Count */}
-											{activeTab !== 'booked_cases' && activeTab !== 'completed_cases' && activeTab !== 'cancelled_cases' && activeTab !== 'rescheduled_cases' && (
-												<p className="text-xs" style={{ color: '#05324f' }}>
-													{offers.length === 0 
-														? t('my_cases.no_offers')
-														: `${offers.length} available offer${offers.length !== 1 ? 's' : ''}`
-													}
-												</p>
-											)}
+									<div className="min-w-0 md:pl-4">
+										{/* Filter offers: only count ones that match the detail view (not cancelled) */}
+										{(() => {
+											const activeOffers = offers.filter(o => o.status !== 'CANCELLED')
 											
-											{/* Show Offer List Button - Opposite to Offer Count (Mobile Only) */}
-											{(request.status === 'IN_BIDDING' || request.status === 'BIDDING_CLOSED' || request.status === 'NEW') && (
-												<Link to={`/offers?requestId=${requestId}`} className="w-auto">
-													<Button 
-														size="sm" 
-														className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
-													>
-														{t('my_cases.show_offer_list') || 'Show offer list'}
-													</Button>
-												</Link>
-											)}
-										</div>
-										
-										{/* Desktop: Original layout */}
-										<div className="hidden md:block">
-											{/* Ongoing Requests - Show Offers Count */}
-											{activeTab !== 'booked_cases' && activeTab !== 'completed_cases' && activeTab !== 'cancelled_cases' && activeTab !== 'rescheduled_cases' && (
-												<p className="text-sm" style={{ color: '#05324f' }}>
-													{offers.length === 0 
-														? t('my_cases.no_offers')
-														: `${offers.length} available offer${offers.length !== 1 ? 's' : ''}`
-													}
-												</p>
-											)}
-										</div>
-
-										{/* Booked Cases - Show Workshop Info */}
-										{activeTab === 'booked_cases' && request.status === 'BOOKED' && bookings.length > 0 && bookings[0].workshopId && (
-											<div>
-												<p className="text-xs sm:text-sm font-semibold mb-1" style={{ color: '#05324f' }}>
-													{bookings[0].workshopId?.companyName || 'Workshop'}
-												</p>
-												{bookings[0].scheduledAt && (
-													<p className="text-xs" style={{ color: '#05324f' }}>
-														{formatDate(new Date(bookings[0].scheduledAt))}
-													</p>
-												)}
-											</div>
-										)}
-
-										{/* Completed Cases - Show Workshop Name */}
-										{activeTab === 'completed_cases' && request.status === 'COMPLETED' && bookings.length > 0 && bookings.some(b => b.status === 'DONE') && (
-											<div>
-												{(() => {
-													const completedBooking = bookings.find(b => b.status === 'DONE') || bookings[0]
-													const workshop = completedBooking?.workshopId || bookings[0]?.workshopId
-													
-													return (
-														<p className="text-xs sm:text-sm font-semibold" style={{ color: '#05324f' }}>
-															{workshop?.companyName || 'Workshop'}
+											return (
+												<div className="flex flex-col justify-center h-full">
+													{/* Ongoing Requests - Show Offers Count */}
+													{['my_cases'].includes(activeTab) && (
+														<p className="text-xs md:text-sm font-semibold text-[#05324f] flex items-center gap-1.5">
+															{activeOffers.length === 0 
+																? t('my_cases.no_offers')
+																: activeOffers.length === 1 
+																	? t('my_cases.one_available_offer') || '1 available offer'
+																	: `${activeOffers.length} ${t('my_cases.more_offers') || 'available offers'}`
+															}
 														</p>
-													)
-												})()}
-											</div>
-										)}
-
-										{/* Rescheduled Cases - Show Workshop and Date */}
-										{activeTab === 'rescheduled_cases' && bookings.length > 0 && bookings.some(b => b.status === 'RESCHEDULED') && (
-											<div>
-												{bookings.filter(b => b.status === 'RESCHEDULED').map((booking, idx) => (
-													<div key={idx}>
-														{booking.workshopId && (
-															<p className="text-xs sm:text-sm font-semibold mb-1" style={{ color: '#05324f' }}>
-																{booking.workshopId?.companyName || 'Workshop'}
-															</p>
-														)}
-														{booking.scheduledAt && (
-															<p className="text-xs" style={{ color: '#05324f' }}>
-																{formatDate(new Date(booking.scheduledAt))}
-															</p>
-														)}
-													</div>
-												))}
-											</div>
-										)}
+													)}
+													
+													{/* Booked/Completed/Rescheduled/Cancelled - Show Workshop Info */}
+													{['booked_cases', 'completed_cases', 'rescheduled_cases', 'cancelled_cases'].includes(activeTab) && (
+														<div className="space-y-1">
+															{bookings.length > 0 ? (
+																<>
+																	<p className="text-xs sm:text-sm font-bold truncate" style={{ color: '#05324f' }}>
+																		{bookings[0].workshopId?.companyName || bookings[0].workshop?.companyName || 'Workshop'}
+																	</p>
+																	{bookings[0].scheduledAt && (
+																		<p className="text-[10px] md:text-xs opacity-70" style={{ color: '#05324f' }}>
+																			{formatDate(new Date(bookings[0].scheduledAt))}
+																		</p>
+																	)}
+																</>
+															) : (
+																<p className="text-[10px] md:text-xs italic text-gray-400">
+																	{t('my_cases.no_booking_info') || 'No booking information'}
+																</p>
+															)}
+														</div>
+													)}
+												</div>
+											)
+										})()}
 									</div>
 
-									{/* Right: Status Badge (Desktop) and Action Buttons */}
-									<div className="flex flex-col justify-start items-start md:items-end gap-3">
-										{/* Badge - Desktop Only */}
-										<div className="hidden md:block">
-											{getStatusBadge(request.status)}
-										</div>
-										
-										{/* Desktop: Show Offer List Button */}
-										{(request.status === 'IN_BIDDING' || request.status === 'BIDDING_CLOSED' || request.status === 'NEW') && (
-											<Link to={`/offers?requestId=${requestId}`} className="hidden md:block w-auto">
-												<Button 
-													size="sm" 
-													className="px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
-												>
-													{t('my_cases.show_offer_list') || 'Show offer list'}
-												</Button>
-											</Link>
-										)}
-										
-										{/* Booked Cases - Show Complete, Reschedule, Cancel buttons */}
-										{activeTab === 'booked_cases' && request.status === 'BOOKED' && bookings.length > 0 && (
-											<div className="grid grid-cols-2 md:flex md:flex-row md:flex-wrap md:justify-end gap-1.5 md:gap-2 w-full mt-4 md:mt-0">
-												<Button 
-													onClick={() => {
-														setSelectedBookingForDetails(bookings[0])
-														setDetailsModalOpen(true)
-													}}
-													size="sm" 
-													className="w-full md:w-auto md:min-w-[120px] h-8 md:h-9 px-1 md:px-4 text-[9px] md:text-xs font-bold rounded-lg whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#05324f] text-white hover:bg-[#0a4a75]"
-												>
-													{t('my_cases.view_details') || 'View Details'}
-												</Button>
-
-												<Button 
-													onClick={() => openCompleteConfirm(bookings[0])}
-													size="sm" 
-													className="w-full md:w-auto md:min-w-[120px] h-8 md:h-9 px-1 md:px-4 text-[9px] md:text-xs font-bold rounded-lg whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
-												>
-													<CheckCircle className="w-3 h-3 mr-0.5 md:mr-1" />
-													{t('my_cases.complete_job') || 'Complete'}
-												</Button>
-
-												<Button 
-													onClick={() => openRescheduleModal(bookings[0])}
-													size="sm" 
-													variant="outline"
-													className="w-full md:w-auto md:min-w-[120px] h-8 md:h-9 px-1 md:px-4 text-[9px] md:text-xs font-bold rounded-lg whitespace-nowrap border-[1.5px] border-[#05324f] text-[#05324f] hover:bg-[#05324f]/5 transition-all"
-												>
-													<RotateCcw className="w-3 h-3 mr-0.5 md:mr-1" />
-													{t('my_cases.reschedule_job') || 'Reschedule'}
-												</Button>
-
-												<Button 
-													onClick={() => openCancelConfirm(bookings[0])}
-													size="sm" 
-													variant="destructive"
-													className="w-full md:w-auto md:min-w-[120px] h-8 md:h-9 px-1 md:px-4 text-[9px] md:text-xs font-bold rounded-lg whitespace-nowrap shadow-sm hover:shadow-md transition-all"
-												>
-													<XCircle className="w-3 h-3 mr-0.5 md:mr-1" />
-													{t('my_cases.cancel_job') || 'Cancel'}
-												</Button>
-											</div>
-										)}
-
-										{/* Rescheduled Cases - Show View Details button */}
-										{activeTab === 'rescheduled_cases' && bookings.length > 0 && bookings.some(b => b.status === 'RESCHEDULED') && (
-											<div className="flex flex-col gap-2 w-full md:w-auto md:items-end">
-												{bookings.filter(b => b.status === 'RESCHEDULED').map((booking, idx) => (
-													<div key={idx} className="flex flex-col gap-2 w-full md:w-auto md:items-end">
-														<Button 
+									{/* Right: Action Context (Desktop Only) */}
+									{activeTab !== 'cancelled_cases' && (
+										<div className="hidden md:flex flex-col justify-center items-center gap-1.5 ml-auto pr-1 group">
+											<span className="text-[10px] font-black uppercase tracking-widest text-[#05324f] transition-colors group-hover:text-black whitespace-nowrap">
+												{t('common.actions') || 'Actions'}
+											</span>
+											
+											{/* Desktop Action Menu */}
+											<div className="relative">
+												<div className="flex justify-center mt-[-4px]">
+													<button 
+														onClick={(e) => {
+															e.stopPropagation()
+															setActiveMenuId(activeMenuId === requestId ? null : requestId)
+														}}
+														className={`p-2 hover:bg-gray-100/50 rounded-full transition-all flex items-center justify-center ${activeMenuId === requestId ? 'bg-gray-100 scale-110 shadow-sm' : 'bg-transparent'}`}
+													>
+														<MoreVertical className={`w-5 h-5 ${activeMenuId === requestId ? 'text-black' : 'text-black hover:opacity-100'}`} />
+													</button>
+												</div>
+												
+												{activeMenuId === requestId && (
+													<div className="absolute right-0 mt-3 w-60 bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 py-2.5 animate-in fade-in zoom-in-95 duration-200">
+														{/* View Details */}
+														<button 
 															onClick={() => {
-																setSelectedBookingForDetails(booking)
+																const detailsTarget = activeTab === 'booked_cases' || activeTab === 'completed_cases' || activeTab === 'rescheduled_cases' || activeTab === 'cancelled_cases' 
+																	? (bookings[0] || request.bookings?.[0]) 
+																	: null
+																
+																setSelectedBookingForDetails(detailsTarget || { ...request, isRequestOnly: true })
 																setDetailsModalOpen(true)
 															}}
-															size="sm" 
-															variant="outline"
-															className="w-full md:w-auto px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap border-2 border-[#05324f] text-[#05324f] hover:bg-[#05324f]/5 transition-all"
+															className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#05324f] font-bold transition-colors"
 														>
-															{t('my_cases.view_details') || 'View Details'}
-														</Button>
+															<Eye className="w-4 h-4 text-blue-500" />
+															<span>{t('my_cases.view_details') || 'Review Record'}</span>
+														</button>
+
+														{/* Show Offers */}
+														{['NEW', 'IN_BIDDING', 'BIDDING_CLOSED'].includes(request.status) && (
+															<Link 
+																to={`/offers?requestId=${requestId}`}
+																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#05324f] font-bold transition-colors"
+															>
+																<List className="w-4 h-4 text-[#34C759]" />
+																<span>{t('my_cases.show_offer_list') || 'Audit Offers'}</span>
+															</Link>
+														)}
+
+														{/* Edit Request */}
+														{['NEW', 'IN_BIDDING'].includes(request.status) && (
+															<Link 
+																to={`/upload?edit=${requestId}`}
+																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#05324f] font-bold transition-colors"
+															>
+																<Pencil className="w-4 h-4 text-indigo-500" />
+																<span>{t('my_cases.edit_request') || 'Modify Entry'}</span>
+															</Link>
+														)}
+
+														{/* Write Review */}
+														{activeTab === 'completed_cases' && bookings.some(b => b.status === 'DONE') && (
+															<button
+																onClick={() => {
+																	setSelectedRequestForReview(request)
+																	setRating(0)
+																	setReviewText('')
+																	setReviewModalOpen(true)
+																}}
+																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#05324f] font-bold transition-colors"
+															>
+																<Star className="w-4 h-4 text-yellow-500" />
+																<span>{t('my_cases.leave_review') || 'Write Narrative'}</span>
+															</button>
+														)}
+
+														<div className="h-px bg-gray-100 my-1 overflow-hidden" />
+
+														{/* Delete Request */}
+														{['NEW', 'IN_BIDDING'].includes(request.status) && (
+															<button 
+																onClick={() => {
+																	setRequestToDelete(request)
+																	setDeleteConfirmOpen(true)
+																}}
+																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-red-50 text-red-600 font-bold transition-colors"
+															>
+																<Trash2 className="w-4 h-4" />
+																<span>{t('my_cases.delete_request') || 'Terminate Case'}</span>
+															</button>
+														)}
 													</div>
-												))}
+												)}
 											</div>
-										)}
-
-									{/* Completed Cases - Write Review button */}
-									{activeTab === 'completed_cases' && request.status === 'COMPLETED' && bookings.some(b => b.status === 'DONE') && (
-										<Button
-											size="sm"
-											onClick={() => {
-												setSelectedRequestForReview(request)
-												setRating(0)
-												setReviewText('')
-												setReviewModalOpen(true)
-											}}
-											className="w-full md:w-auto px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap shadow-sm hover:shadow-md transition-all bg-[#34C759] text-white hover:bg-[#2eb34f]"
-										>
-											<Star className="w-3 h-3 mr-1" />
-											{t('my_cases.leave_review') || 'Write Review'}
-										</Button>
+										</div>
 									)}
-
-									{/* Cancelled Cases - Show View Details button */}
-									{activeTab === 'cancelled_cases' && (
-											<div className="w-full md:w-auto">
-												<Button 
-													onClick={() => {
-														const cancelledBooking = bookings.find(b => b.status === 'CANCELLED') || bookings[0];
-														setSelectedBookingForDetails(cancelledBooking)
-														setDetailsModalOpen(true)
-													}}
-													size="sm" 
-													variant="outline"
-													className="w-full md:w-auto px-4 py-2 text-xs font-bold rounded-xl whitespace-nowrap border-2 border-[#05324f] text-[#05324f] hover:bg-[#05324f]/5 transition-all"
-												>
-													{t('my_cases.view_details') || 'View Details'}
-												</Button>
-											</div>
-										)}
-									</div>
 								</div>
 							)
 						})}
@@ -1213,14 +1266,27 @@ export default function MyCasesPage() {
 
 				{/* View Details Modal */}
 				<Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-					<DialogContent onClose={() => setDetailsModalOpen(false)} className="max-w-[50rem] px-4 w-[90vw]">
-						<div className="bg-white rounded-[2.5rem] shadow-2xl p-8 sm:p-10 border border-gray-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
-							<div className="mb-8">
+<DialogContent className="max-w-[55rem] px-4 w-[95vw] shadow-none bg-transparent outline-none ring-0">
+	<div className="bg-white rounded-[2.5rem] shadow-2xl p-8 sm:p-10 border border-gray-100 max-h-[90vh] overflow-y-auto custom-scrollbar relative border-0">
+		{/* Premium Close Button inside card for better alignment */}
+		<button 
+			onClick={() => setDetailsModalOpen(false)}
+			className="absolute top-6 right-6 p-2.5 rounded-full hover:bg-gray-100 transition-all text-gray-400 hover:text-gray-900 z-10 bg-white/80 backdrop-blur-sm shadow-sm border border-gray-50"
+		>
+			<X className="w-6 h-6" />
+		</button>
+		<div className="mb-8 pr-12">
 								<DialogTitle className="text-3xl font-black text-[#05324f] uppercase tracking-tight mb-2">
-									{t('my_cases.workshop_details') || 'Service Identity'}
+									{selectedBookingForDetails?.isRequestOnly 
+										? (t('my_cases.request_details_title') || 'Request Analysis Details')
+										: (t('my_cases.workshop_details') || 'Service Identity')
+									}
 								</DialogTitle>
 								<DialogDescription className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-									{t('my_cases.workshop_details_desc') || 'Full administrative and contact data package'}
+									{selectedBookingForDetails?.isRequestOnly
+										? (t('my_cases.request_details_desc') || 'Administrative summary of your pending car service request')
+										: (t('my_cases.workshop_details_desc') || 'Full administrative and contact data package')
+									}
 								</DialogDescription>
 							</div>
 							
@@ -1254,71 +1320,165 @@ export default function MyCasesPage() {
 										</div>
 									)}
 
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-										{/* Workshop Name */}
-										<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
-											<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
-												<Building2 className="w-6 h-6 text-[#34C759]" />
-											</div>
-											<div className="min-w-0">
-												<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
-													Legal Entity
-												</p>
-												<p className="text-base font-black text-[#05324f] truncate">
-													{selectedBookingForDetails.workshopId?.companyName || 'N/A'}
-												</p>
-											</div>
-										</div>
+									{selectedBookingForDetails.isRequestOnly ? (
+										/* REQUEST DETAILS CONTENT (Non-booked) */
+										<div className="space-y-8">
+											<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+												{/* Vehicle Info */}
+												<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
+													<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
+														<Car className="w-6 h-6 text-[#34C759]" />
+													</div>
+													<div className="min-w-0">
+														<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
+															Target Vehicle
+														</p>
+														<p className="text-base font-black text-[#05324f] truncate">
+															{selectedBookingForDetails.vehicleId?.make} {selectedBookingForDetails.vehicleId?.model}
+														</p>
+														<p className="text-[10px] font-bold text-gray-400">
+															Audit Year: {selectedBookingForDetails.vehicleId?.year}
+														</p>
+													</div>
+												</div>
 
-										{/* Account Manager */}
-										<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
-											<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
-												<User className="w-6 h-6 text-[#007AFF]" />
+												{/* Request Status */}
+												<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
+													<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
+														<Clock className="w-6 h-6 text-[#007AFF]" />
+													</div>
+													<div className="min-w-0">
+														<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
+															Market Status
+														</p>
+														<p className="text-base font-black text-[#05324f] truncate">
+															{selectedBookingForDetails.status === 'IN_BIDDING' ? 'Live Bidding' : selectedBookingForDetails.status}
+														</p>
+														<p className="text-[10px] font-bold text-gray-400">
+															Expires: {formatDate(new Date(selectedBookingForDetails.expiresAt))}
+														</p>
+													</div>
+												</div>
 											</div>
-											<div className="min-w-0">
-												<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
-													Account Holder
-												</p>
-												<p className="text-base font-black text-[#05324f] truncate">
-													{selectedBookingForDetails.workshopId?.name || 'N/A'}
-												</p>
-											</div>
-										</div>
 
-										{/* Email */}
-										<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
-											<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
-												<Mail className="w-6 h-6 text-[#05324f] opacity-50" />
-											</div>
-											<div className="min-w-0">
-												<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
-													Electronic Mail
+											{/* Description */}
+											<div className="p-6 bg-[#05324f]/5 rounded-2xl border border-[#05324f]/10 shadow-inner">
+												<p className="text-[10px] text-[#05324f]/40 uppercase font-black tracking-widest mb-3 leading-none flex items-center gap-2">
+													<FileText className="w-3 h-3" />
+													Audit Description
 												</p>
-												<p className="text-sm font-bold text-[#05324f] truncate">
-													{selectedBookingForDetails.workshopId?.email || 'N/A'}
+												<p className="text-sm font-bold text-[#05324f] leading-relaxed italic">
+													"{selectedBookingForDetails.description || 'No description provided'}"
 												</p>
 											</div>
-										</div>
 
-										{/* Phone */}
-										<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
-											<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
-												<PhoneIcon className="w-6 h-6 text-[#05324f] opacity-50" />
+											{/* Inspection Reports Gallery */}
+											{(selectedBookingForDetails.reportIds?.length > 0 || selectedBookingForDetails.reportId) && (
+												<div className="space-y-4">
+													<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest flex items-center gap-2">
+														<Camera className="w-3 h-3" />
+														Inspection Evidence Gallery
+													</p>
+													<div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+														{[...(selectedBookingForDetails.reportIds || []), selectedBookingForDetails.reportId].filter(Boolean).map((report, idx) => (
+															<a 
+																key={report._id || report.id || idx}
+																href={getFullUrl(report.fileUrl)} 
+																target="_blank" 
+																rel="noopener noreferrer"
+																className="group relative aspect-square bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden flex items-center justify-center hover:border-[#34C759] transition-all"
+															>
+																{report.mimeType?.startsWith('image/') ? (
+																	<>
+																		<img 
+																			src={getFullUrl(report.fileUrl)} 
+																			alt={`Evidence ${idx + 1}`} 
+																			className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+																		/>
+																		<div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+																			<Eye className="text-white w-6 h-6 drop-shadow-md" />
+																		</div>
+																	</>
+																) : (
+																	<div className="flex flex-col items-center gap-2 text-gray-400 group-hover:text-[#34C759]">
+																		<FileText className="w-8 h-8" />
+																		<span className="text-[10px] font-black uppercase tracking-tight">Audit File {idx + 1}</span>
+																	</div>
+																)}
+															</a>
+														))}
+													</div>
+												</div>
+											)}
+										</div>
+									) : (
+										/* WORKSHOP DETAILS CONTENT (Booked) */
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+											{/* Workshop Name */}
+											<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
+												<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
+													<Building2 className="w-6 h-6 text-[#34C759]" />
+												</div>
+												<div className="min-w-0">
+													<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
+														Legal Entity
+													</p>
+													<p className="text-base font-black text-[#05324f] truncate">
+														{selectedBookingForDetails.workshopId?.companyName || 'N/A'}
+													</p>
+												</div>
 											</div>
-											<div className="min-w-0">
-												<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
-													Direct Voice
-												</p>
-												<p className="text-sm font-bold text-[#05324f] truncate">
-													{selectedBookingForDetails.workshopId?.phone || 'N/A'}
-												</p>
+
+											{/* Account Holder */}
+											<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
+												<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
+													<UserCircle className="w-6 h-6 text-[#007AFF]" />
+												</div>
+												<div className="min-w-0">
+													<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
+														Account Holder
+													</p>
+													<p className="text-base font-black text-[#05324f] truncate">
+														{selectedBookingForDetails.workshopId?.userId?.name || 'N/A'}
+													</p>
+												</div>
+											</div>
+
+											{/* Email */}
+											<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
+												<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
+													<Mail className="w-6 h-6 text-[#05324f] opacity-50" />
+												</div>
+												<div className="min-w-0">
+													<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
+														Electronic Mail
+													</p>
+													<p className="text-sm font-bold text-[#05324f] truncate">
+														{selectedBookingForDetails.workshopId?.email || 'N/A'}
+													</p>
+												</div>
+											</div>
+
+											{/* Phone */}
+											<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner flex items-center gap-4">
+												<div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center">
+													<PhoneIcon className="w-6 h-6 text-[#05324f] opacity-50" />
+												</div>
+												<div className="min-w-0">
+													<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1 leading-none">
+														Direct Voice
+													</p>
+													<p className="text-sm font-bold text-[#05324f] truncate">
+														{selectedBookingForDetails.workshopId?.phone || 'N/A'}
+													</p>
+												</div>
 											</div>
 										</div>
-									</div>
+									)}
 
 									{/* Action Buttons */}
 									<div className="flex flex-col gap-3 pt-4 border-t border-gray-50">
-										{selectedBookingForDetails.status === 'BOOKED' && (
+										{selectedBookingForDetails.status === 'BOOKED' && !selectedBookingForDetails.isRequestOnly && (
 											<Button 
 												onClick={() => {
 													setDetailsModalOpen(false)
@@ -1331,7 +1491,7 @@ export default function MyCasesPage() {
 											</Button>
 										)}
 										
-										{(selectedBookingForDetails.status === 'BOOKED' || selectedBookingForDetails.status === 'RESCHEDULED') && (
+										{(selectedBookingForDetails.status === 'BOOKED' || selectedBookingForDetails.status === 'RESCHEDULED') && !selectedBookingForDetails.isRequestOnly && (
 											<Button 
 												onClick={() => {
 													setDetailsModalOpen(false)
@@ -1363,10 +1523,11 @@ export default function MyCasesPage() {
 										)}
 										
 										<Button 
+											variant="ghost"
 											onClick={() => setDetailsModalOpen(false)}
-											className="w-full h-12 bg-white text-gray-400 font-bold rounded-2xl border border-gray-100"
+											className="w-full h-12 text-gray-400 font-bold rounded-2xl hover:bg-transparent uppercase tracking-widest text-[10px]"
 										>
-											Dismiss Record
+											{t('common.dismiss') || 'Dismiss Record'}
 										</Button>
 									</div>
 								</div>
@@ -1376,6 +1537,41 @@ export default function MyCasesPage() {
 				</Dialog>
 
 			<Footer />
+			{/* Delete Confirmation Modal */}
+			<Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+				<DialogContent onClose={() => setDeleteConfirmOpen(false)} className="max-w-md px-4 w-[90vw]">
+					<div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100">
+						<div className="bg-red-50 px-8 py-10 flex flex-col items-center text-center">
+							<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
+								<Trash2 className="w-10 h-10 text-red-600" />
+							</div>
+							<DialogTitle className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+								{t('my_cases.delete_request_title') || 'Delete Request'}
+							</DialogTitle>
+							<DialogDescription className="text-gray-600 font-medium">
+								{t('my_cases.delete_request_description') || 'Are you sure you want to delete this request? This action cannot be undone and all active offers will be removed.'}
+							</DialogDescription>
+						</div>
+						
+						<div className="px-8 py-8 bg-white flex flex-col gap-3">
+							<Button
+								onClick={handleDeleteRequest}
+								disabled={isDeleting}
+								className="w-full h-12 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-base shadow-lg shadow-red-200"
+							>
+								{isDeleting ? t('common.deleting') || 'Deleting...' : t('common.confirm_delete') || 'Confirm Delete'}
+							</Button>
+							<Button
+								variant="ghost"
+								onClick={() => setDeleteConfirmOpen(false)}
+								className="w-full h-12 rounded-xl text-gray-500 font-bold hover:bg-gray-50"
+							>
+								{t('common.cancel') || 'Cancel'}
+							</Button>
+						</div>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

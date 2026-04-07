@@ -16,6 +16,7 @@ import { useAuth } from '../context/AuthContext'
 import { adminAPI, authAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 import Logo from '../components/Logo'
+import StatCard from '../components/ui/StatCard'
 import {
 	Users,
 	Building2,
@@ -98,6 +99,7 @@ export default function AdminPage() {
 	const [emailConfigSaving, setEmailConfigSaving] = useState(false)
 	const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
 	const [twoFactorSetup, setTwoFactorSetup] = useState({ qrCode: '', secret: '' })
+	const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
 	const [twoFactorCode, setTwoFactorCode] = useState('')
 	const [twoFactorDisablePassword, setTwoFactorDisablePassword] = useState('')
 	const [twoFactorDisableCode, setTwoFactorDisableCode] = useState('')
@@ -1419,33 +1421,40 @@ export default function AdminPage() {
 	}
 
 	const LoadingCard = () => (
-		<div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm max-md:border-gray-200 max-md:shadow-none max-md:border max-md:p-4">
+		<div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm transition-all animate-in fade-in duration-500">
 			<div className="flex items-center justify-between gap-4">
-				<div className="flex-1 w-full space-y-2">
-					<Skeleton className="h-5 w-3/4 max-w-[250px]" />
-					<Skeleton className="h-4 w-1/2 max-w-[150px]" />
+				<div className="flex-1 space-y-3">
+					<Skeleton className="h-5 w-2/3 rounded-lg" />
+					<Skeleton className="h-3 w-1/2 rounded-md opacity-60" />
 				</div>
-				<Skeleton className="h-8 w-20 rounded-lg" />
+				<Skeleton className="h-8 w-24 rounded-xl" />
+			</div>
+			<div className="mt-4 pt-4 border-t border-gray-50 flex gap-2">
+				<Skeleton className="h-7 flex-1 rounded-lg" />
+				<Skeleton className="h-7 flex-1 rounded-lg" />
 			</div>
 		</div>
 	)
 
 	const TableSkeleton = ({ rows = 5, cols = 5 }) => (
-		<div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-			<div className="bg-gray-50/50 p-4 flex justify-between">
+		<div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden animate-in fade-in duration-700">
+			<div className="bg-gray-50/50 p-6 flex justify-between border-b border-gray-50">
 				{[...Array(cols)].map((_, i) => (
-					<Skeleton key={i} className="h-4 w-20" />
+					<Skeleton key={i} className={`h-3 ${i === 0 ? 'w-32' : 'w-20'} rounded-full opacity-40`} />
 				))}
 			</div>
 			<div className="divide-y divide-gray-50">
 				{[...Array(rows)].map((_, i) => (
-					<div key={i} className="p-4 flex justify-between items-center bg-white">
-						<Skeleton className="h-4 w-32" />
-						<Skeleton className="h-4 w-40 max-md:hidden" />
-						<Skeleton className="h-4 w-24 max-sm:hidden" />
-						<Skeleton className="h-6 w-16 rounded-full" />
+					<div key={i} className="p-6 flex justify-between items-center bg-white hover:bg-gray-50/30 transition-colors">
+						<div className="space-y-2">
+							<Skeleton className="h-4 w-40 rounded-lg" />
+							<Skeleton className="h-2 w-24 rounded-md opacity-50" />
+						</div>
+						<Skeleton className="h-4 w-48 max-md:hidden rounded-lg opacity-60" />
+						<Skeleton className="h-4 w-32 max-sm:hidden rounded-lg opacity-60" />
+						<Skeleton className="h-6 w-20 rounded-full opacity-80" />
 						<div className="flex gap-2">
-							<Skeleton className="h-8 w-24 rounded-md" />
+							<Skeleton className="h-9 w-28 rounded-xl" />
 						</div>
 					</div>
 				))}
@@ -1454,6 +1463,11 @@ export default function AdminPage() {
 	)
 
 	const handleLogout = () => {
+		setIsLogoutConfirmOpen(true)
+	}
+
+	const confirmLogout = () => {
+		setIsLogoutConfirmOpen(false)
 		logout()
 		navigate('/')
 	}
@@ -1487,64 +1501,83 @@ export default function AdminPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen flex flex-col bg-white">
+			<div className="h-screen flex flex-col overflow-hidden bg-white">
 				{/* Header Skeleton */}
-				<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 max-md:border-gray-200">
-					<div className="flex items-center gap-2 sm:gap-3">
-						<Skeleton className="lg:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-lg" />
-						<Skeleton className="w-32 h-10" />
-						<Skeleton className="hidden max-md:block w-16 h-6 ml-1" />
-					</div>
-					<div className="flex items-center gap-2 sm:gap-3">
-						<Skeleton className="w-24 h-8 sm:h-10 rounded-lg" />
-						<Skeleton className="w-24 h-8 sm:h-10 rounded-lg" />
+				<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-100 max-md:border-gray-200">
+					<div className="flex items-center justify-between gap-4 relative">
+						<div className="flex items-center gap-4">
+							<Skeleton className="lg:hidden w-10 h-10 rounded-xl transition-all" />
+							<Skeleton className="hidden lg:block w-32 h-8 rounded-lg" />
+						</div>
+						<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+							<Skeleton className="w-28 h-10 rounded-xl" />
+						</div>
+						<div className="flex items-center gap-3">
+							<Skeleton className="w-10 h-10 rounded-full" />
+						</div>
 					</div>
 				</header>
 				
-				{/* KPI Cards Skeleton */}
-				<div className="bg-gray-50 px-3 sm:px-6 py-4 sm:py-5 max-md:bg-white max-md:py-4">
-					<div className="flex flex-nowrap overflow-x-auto gap-2 sm:gap-4 max-md:gap-1.5 mb-8 pb-2 no-scrollbar px-1">
-						{[...Array(3)].map((_, i) => (
-							<Skeleton key={`skel-kpi-${i}`} className="flex-shrink-0 w-[110px] sm:w-[160px] h-20 sm:h-32 rounded-card max-md:rounded-lg" />
-						))}
-					</div>
-				</div>
-
-				{/* Content Area Skeleton */}
-				<div className="flex-1 flex min-h-0 pb-3 sm:pb-6">
-					{/* Sidebar Skeleton */}
-					<div className="hidden lg:flex flex-col w-64 flex-shrink-0 rounded-2xl p-4 ml-3 sm:ml-6 mb-3 sm:mb-6" style={{ backgroundColor: '#05324f' }}>
+				{/* Main Skeleton Layout */}
+				<div className="flex-1 flex min-h-0 pb-3 sm:pb-6 overflow-hidden">
+					{/* Sidebar Skeleton - Full Gray Unified Skeleton */}
+					<Skeleton className="hidden lg:flex flex-col w-64 flex-shrink-0 rounded-2xl p-4 ml-3 sm:ml-6 mb-3 sm:mb-6 shadow-sm border border-gray-100">
 						<div className="flex-1 space-y-2">
-							{[...Array(9)].map((_, i) => (
-								<Skeleton key={`skel-nav-${i}`} className="h-12 w-full rounded-lg bg-white/10" />
+							{[...Array(7)].map((_, i) => (
+								<div key={`skel-nav-${i}`} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-white/40">
+									<div className="h-4 w-4 rounded bg-white/60" />
+									<div className={`h-4 ${i === 0 ? 'w-20' : 'w-24'} rounded bg-white/60`} />
+								</div>
 							))}
 						</div>
-					</div>
+						<div className="mt-auto pt-4 space-y-4">
+							<div className="flex items-center gap-3 px-4 py-3 bg-white/40 rounded-lg opacity-80">
+								<div className="h-4 w-4 rounded bg-white/60" />
+								<div className="h-4 w-16 bg-white/60 rounded" />
+							</div>
+							<div className="px-4 pb-2">
+								<div className="h-2.5 w-24 bg-white/40 rounded-full" />
+							</div>
+						</div>
+					</Skeleton>
 
-					{/* Main Content Area Skeleton */}
+					{/* Content Area Skeleton */}
 					<div className="flex-1 flex flex-col min-w-0">
-						<main className="flex-1 overflow-y-auto bg-white p-3 sm:p-4 lg:p-6 max-md:pb-8">
-							<div className="space-y-6">
-								<Skeleton className="h-6 sm:h-7 w-48 mb-4" />
-								<div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-									<div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between">
-										<Skeleton className="h-4 w-24" />
-										<Skeleton className="h-4 w-32" />
-										<Skeleton className="h-4 w-20" />
-										<Skeleton className="h-4 w-16" />
-										<Skeleton className="h-4 w-24" />
+						<main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 space-y-8 animate-in fade-in duration-1000">
+							{/* KPI Cards Skeleton */}
+							<div className="flex flex-nowrap overflow-x-auto gap-4 pb-2 no-scrollbar px-1">
+								{[...Array(3)].map((_, i) => (
+									<div key={`skel-kpi-${i}`} className="flex-shrink-0 w-[110px] sm:w-[180px] bg-white rounded-[2rem] border border-gray-100 shadow-sm p-6 space-y-3">
+										<Skeleton className="h-10 w-12 rounded-xl opacity-60" />
+										<Skeleton className="h-4 w-2/3 rounded-md" />
 									</div>
-									<div className="divide-y divide-gray-100">
+								))}
+							</div>
+
+							{/* Main Table Skeleton */}
+							<div className="space-y-6">
+								<div className="flex items-center justify-between">
+									<Skeleton className="h-8 w-48 rounded-xl" />
+									<Skeleton className="h-10 w-40 rounded-xl" />
+								</div>
+								
+								<div className="bg-white rounded-[2rem] border border-gray-100 p-2 shadow-sm overflow-hidden">
+									<div className="p-6 border-b border-gray-50 flex justify-between">
 										{[...Array(5)].map((_, i) => (
-											<div key={`skel-row-${i}`} className="p-4 flex justify-between items-center bg-white">
-												<Skeleton className="h-4 w-32" />
-												<Skeleton className="h-4 w-48" />
-												<Skeleton className="h-4 w-24" />
-												<Skeleton className="h-6 w-20 rounded-full" />
-												<div className="flex gap-2">
-													<Skeleton className="h-8 w-24 rounded-md" />
-													<Skeleton className="h-8 w-24 rounded-md" />
+											<Skeleton key={`h-${i}`} className={`h-3 ${i === 0 ? 'w-32' : 'w-20'} rounded-full opacity-30`} />
+										))}
+									</div>
+									<div className="divide-y divide-gray-50">
+										{[...Array(6)].map((_, i) => (
+											<div key={`r-${i}`} className="p-6 flex justify-between items-center">
+												<div className="space-y-2">
+													<Skeleton className="h-5 w-40 rounded-lg" />
+													<Skeleton className="h-3 w-24 rounded-md opacity-40" />
 												</div>
+												<Skeleton className="h-4 w-40 rounded-lg opacity-30" />
+												<Skeleton className="h-4 w-24 rounded-lg opacity-30" />
+												<Skeleton className="h-7 w-24 rounded-full opacity-60" />
+												<Skeleton className="h-9 w-32 rounded-xl" />
 											</div>
 										))}
 									</div>
@@ -1569,24 +1602,32 @@ export default function AdminPage() {
 			{/* Header */}
 			<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-100 max-md:border-gray-200">
 				<div className="flex items-center justify-between gap-4 relative">
-					{/* Left: Menu Button (Mobile) */}
-					<div className="flex items-center lg:hidden">
-						<button
-							onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-							className="p-2 hover:bg-gray-100 rounded-lg"
-						>
-							<Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
-						</button>
+					{/* Left: Mobile Menu / Desktop Admin Title */}
+					<div className="flex items-center min-w-0">
+						<div className="lg:hidden">
+							<button
+								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+								className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+							>
+								<Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
+							</button>
+						</div>
+						<div className="hidden lg:flex items-center gap-2">
+							<Shield className="w-5 h-5 text-gray-400" />
+							<span className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent tracking-tight">Admin Panel</span>
+						</div>
 					</div>
 
-					{/* Center: Logo (Mobile) / Left: Logo (Desktop) */}
-					<div className="flex items-center lg:static absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:translate-x-0 lg:translate-y-0 lg:left-0 lg:top-0">
+					{/* Center: Logo (Absolute Centering) */}
+					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
 						<Logo />
 					</div>
 
 					{/* Right: Language Switcher */}
-					<div className="flex items-center">
-						<LanguageSwitcher isScrolled={true} />
+					<div className="flex items-center gap-4">
+						<div className="flex items-center">
+							<LanguageSwitcher isScrolled={true} />
+						</div>
 					</div>
 				</div>
 			</header>
@@ -1621,7 +1662,7 @@ export default function AdminPage() {
 					</nav>
 					<div className="mt-auto pt-4 space-y-4">
 						<button
-							onClick={handleLogout}
+							onClick={() => setIsLogoutConfirmOpen(true)}
 							className="flex items-center gap-3 w-full text-left px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
 						>
 							<LogOut className="w-4 h-4" />
@@ -1675,7 +1716,10 @@ export default function AdminPage() {
 					</nav>
 					<div className="p-3 mt-auto space-y-3">
 						<button
-							onClick={handleLogout}
+							onClick={() => {
+								setIsLogoutConfirmOpen(true)
+								setMobileMenuOpen(false)
+							}}
 							className="flex items-center gap-2.5 w-full text-left px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all text-[15px] font-medium"
 						>
 							<LogOut className="w-4 h-4" />
@@ -1691,19 +1735,31 @@ export default function AdminPage() {
 				{activeTab === 'dashboard' && (
 						<div className="space-y-6">
 							{/* KPI Cards - only on dashboard */}
-							<div className="flex flex-nowrap overflow-x-auto gap-2 sm:gap-4 max-md:gap-1.5 mb-8 pb-2 custom-scrollbar no-scrollbar scroll-smooth px-1">
-								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-3 sm:p-6 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-3 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="text-xl sm:text-5xl font-semibold text-[#05324f] leading-none mb-1.5 max-md:text-2xl">{stats.totalCustomers}</div>
-									<div className="text-[10px] sm:text-sm text-gray-500 font-medium max-md:text-[10px] uppercase tracking-tighter">{t('admin.stats.customers')}</div>
-								</div>
-								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-3 sm:p-6 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-3 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="text-xl sm:text-5xl font-semibold text-[#05324f] leading-none mb-1.5 max-md:text-2xl">{stats.totalWorkshops}</div>
-									<div className="text-[10px] sm:text-sm text-gray-500 font-medium max-md:text-[10px] uppercase tracking-tighter">{t('admin.stats.workshops')}</div>
-								</div>
-								<div className="flex-shrink-0 w-[110px] sm:w-[160px] rounded-xl border border-gray-100 bg-white shadow-card p-3 sm:p-6 max-md:rounded-lg max-md:border-gray-200 max-md:shadow-none max-md:p-3 max-md:flex max-md:flex-col max-md:items-center max-md:text-center">
-									<div className="text-xl sm:text-5xl font-semibold text-[#05324f] leading-none mb-1.5 max-md:text-2xl">{stats.totalRequests}</div>
-									<div className="text-[10px] sm:text-sm text-gray-500 font-medium max-md:text-[10px] uppercase tracking-tighter">{t('admin.stats.requests')}</div>
-								</div>
+							<div className="flex flex-wrap gap-3 sm:gap-6 mb-8 max-md:mb-6 max-w-4xl">
+								<StatCard
+									icon={Users}
+									value={stats.totalCustomers}
+									label={t('admin.stats.customers')}
+									className="w-full sm:w-48"
+									iconColor="#05324f"
+									iconBg="bg-blue-50"
+								/>
+								<StatCard
+									icon={Building2}
+									value={stats.totalWorkshops}
+									label={t('admin.stats.workshops')}
+									className="w-full sm:w-48"
+									iconColor="#34C759"
+									iconBg="bg-green-50"
+								/>
+								<StatCard
+									icon={FileText}
+									value={stats.totalRequests}
+									label={t('admin.stats.requests')}
+									className="w-full sm:w-48"
+									iconColor="#05324f"
+									iconBg="bg-blue-50"
+								/>
 							</div>
 						{/* Pending Workshops */}
 									<div>
@@ -2875,6 +2931,38 @@ export default function AdminPage() {
 				</div>
 			</DialogContent>
 		</Dialog>
+
+			{/* Logout Confirmation Modal */}
+			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
+				<DialogContent className="max-w-[400px] w-[90%] bg-white rounded-2xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
+					<DialogHeader className="text-left items-start">
+						<div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+							<LogOut className="w-6 h-6 text-red-600" />
+						</div>
+						<DialogTitle className="text-2xl font-black text-[#05324f] leading-tight mb-2">
+							{t('navigation.logout_confirm_title')}
+						</DialogTitle>
+						<DialogDescription className="text-gray-500 text-base leading-relaxed">
+							{t('navigation.logout_confirm_desc')}
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row gap-3">
+						<Button
+							variant="outline"
+							onClick={() => setIsLogoutConfirmOpen(false)}
+							className="flex-1 h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold"
+						>
+							{t('common.cancel') || 'Cancel'}
+						</Button>
+						<Button
+							onClick={confirmLogout}
+							className="flex-1 h-11 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all shadow-md active:scale-95"
+						>
+							{t('navigation.logout') || 'Log Out'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	</div>
 	)

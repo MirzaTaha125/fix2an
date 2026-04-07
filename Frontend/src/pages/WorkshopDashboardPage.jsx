@@ -178,21 +178,27 @@ export default function WorkshopDashboardPage() {
 				</div>
 
 				{/* Stats Grid - 3 cards inline on all screens */}
-				<div className="grid grid-cols-3 gap-2 sm:gap-6 mb-10 max-md:mb-6">
+				<div className="grid grid-cols-3 gap-3 sm:gap-6 mb-8 max-md:mb-6">
 					<StatCard
 						icon={TrendingUp}
 						value={stats.totalRequests}
 						label={t('workshop.dashboard.stats.new_inquiries') || t('workshop.dashboard.stats.total_requests') || 'New inquiries'}
+						iconColor="#05324f"
+						iconBg="bg-blue-50"
 					/>
 					<StatCard
 						icon={Briefcase}
 						value={stats.completedJobs}
 						label={t('workshop.dashboard.stats.won_jobs') || t('workshop.dashboard.stats.completed_jobs') || 'Won jobs'}
+						iconColor="#34C759"
+						iconBg="bg-green-50"
 					/>
 					<StatCard
 						icon={DollarSign}
 						value={formatPrice(stats.totalRevenue)}
 						label={t('workshop.dashboard.stats.monthly_revenue') || 'Income'}
+						iconColor="#05324f"
+						iconBg="bg-blue-50"
 					/>
 				</div>
 

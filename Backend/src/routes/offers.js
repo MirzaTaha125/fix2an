@@ -318,5 +318,39 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 	return R * c
 }
 
+// Delete an offer
+router.delete('/:id', authenticate, async (req, res) => {
+	try {
+		const { id } = req.params
+
+		const offer = await Offer.findById(id).populate('requestId')
+		if (!offer) {
+			return res.status(404).json({ message: 'Offer not found' })
+		}
+
+		// Only the owner of the request (CUSTOMER) or an ADMIN may delete an offer
+		const customerId = offer.requestId?.customerId?.toString?.() || offer.requestId?.customerId
+		if (req.user.role !== 'ADMIN' && req.user._id.toString() !== customerId) {
+			return res.status(403).json({ message: 'Forbidden: Only the request owner can delete offers' })
+		}
+
+		// If the offer is ACCEPTED, we should probably prevent deletion if it's already booked
+		if (offer.status === 'ACCEPTED') {
+			const Booking = (await import('../models/Booking.js')).default
+			const booking = await Booking.findOne({ offerId: offer._id })
+			if (booking && booking.status !== 'CANCELLED') {
+				return res.status(400).json({ message: 'Cannot delete an accepted offer that is already booked' })
+			}
+		}
+
+		await Offer.findByIdAndDelete(id)
+
+		return res.json({ message: 'Offer deleted successfully' })
+	} catch (error) {
+		console.error('Delete offer error:', error)
+		return res.status(500).json({ message: 'Failed to delete offer' })
+	}
+})
+
 export default router
 

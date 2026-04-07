@@ -320,7 +320,7 @@ export default function WorkshopSignupPage() {
 			<section id="signup-form" className="bg-white pt-28 sm:pt-20 md:pt-24 pb-12">
 				<div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
 					<div className="text-center mb-8 sm:mb-10">
-						<h1 className="text-xl sm:text-xl md:text-xl font-bold mb-2" style={{ color: '#05324f' }}>
+						<h1 className="text-2xl md:text-5xl font-bold mb-6" style={{ color: '#05324f' }}>
 							{t('workshop.signup.title')}
 						</h1>
 						<p className="text-sm sm:text-base md:text-lg" style={{ color: '#05324f' }}>

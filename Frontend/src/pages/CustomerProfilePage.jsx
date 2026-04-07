@@ -28,6 +28,7 @@ import {
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import StatCard from '../components/ui/StatCard'
 
 import { authAPI, requestsAPI, bookingsAPI, uploadAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
@@ -267,15 +268,14 @@ export default function CustomerProfilePage() {
 					</div>
 
 					{/* Skeleton Stats */}
-					<div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+					<div className="grid grid-cols-3 gap-3 sm:gap-6 mb-8">
 						{[...Array(3)].map((_, i) => (
-							<div key={i} className={`bg-white border border-gray-100 rounded-xl p-6 shadow-sm ${i === 2 ? 'col-span-2 lg:col-span-1' : ''}`}>
-								<div className="flex justify-between items-center mb-4">
-									<Skeleton className="w-10 h-10 rounded-lg" />
-									<Skeleton className="h-8 w-16" />
+							<div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 sm:p-6 shadow-sm">
+								<div className="flex justify-between items-center mb-4 sm:mb-6">
+									<Skeleton className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl" />
 								</div>
-								<Skeleton className="h-4 w-24 mb-2" />
-								<Skeleton className="h-3 w-16" />
+								<Skeleton className="h-6 sm:h-8 w-16 mb-2 sm:mb-3" />
+								<Skeleton className="h-3 w-20" />
 							</div>
 						))}
 					</div>
@@ -356,7 +356,7 @@ export default function CustomerProfilePage() {
 								<img 
 									src={profileData.image} 
 									alt={profileData.name || 'Profile'} 
-									className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-green-100 shadow-lg"
+									className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
 									onError={(e) => {
 										// If image fails to load, hide image and show default
 										const parent = e.target.parentElement
@@ -377,9 +377,9 @@ export default function CustomerProfilePage() {
 								/>
 							) : null}
 							<div 
-								className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center border-4 border-green-100 shadow-lg profile-image-fallback ${profileData.image && profileData.image.trim() !== '' ? 'hidden' : ''}`}
+								className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#F0F2F5] flex items-center justify-center border-4 border-white shadow-lg profile-image-fallback ${profileData.image && profileData.image.trim() !== '' ? 'hidden' : ''}`}
 							>
-								<User className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+								<User className="w-12 h-12 sm:w-14 sm:h-14 text-[#ACB0B4]" />
 							</div>
 							<button
 								type="button"
@@ -412,39 +412,30 @@ export default function CustomerProfilePage() {
 				</div>
 
 				{/* Stats Grid */}
-				<div className="grid grid-cols-3 gap-3 sm:gap-4 mb-8">
-					<Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-						<CardContent className="p-4 sm:p-6 text-center">
-							<div className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
-								{stats.totalRequests}
-							</div>
-							<h3 className="text-[10px] sm:text-sm font-semibold text-gray-500 uppercase tracking-wider">
-								{t('profile.my_cases') || 'Requests'}
-							</h3>
-						</CardContent>
-					</Card>
+				<div className="grid grid-cols-3 gap-3 sm:gap-6 mb-8 max-md:mb-6">
+					<StatCard
+						icon={FileText}
+						value={stats.totalRequests}
+						label={t('profile.my_cases') || 'Requests'}
+						iconColor="#05324f"
+						iconBg="bg-blue-50"
+					/>
 
-					<Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-						<CardContent className="p-4 sm:p-6 text-center">
-							<div className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
-								{stats.completedBookings}
-							</div>
-							<h3 className="text-[10px] sm:text-sm font-semibold text-gray-500 uppercase tracking-wider">
-								{t('profile.completed_cases') || 'Finished'}
-							</h3>
-						</CardContent>
-					</Card>
+					<StatCard
+						icon={CheckCircle}
+						value={stats.completedBookings}
+						label={t('profile.completed_cases') || 'Finished'}
+						iconColor="#34C759"
+						iconBg="bg-green-50"
+					/>
 
-					<Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-						<CardContent className="p-4 sm:p-6 text-center">
-							<div className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
-								{formatCompactNumber(stats.totalSpend)}
-							</div>
-							<h3 className="text-[10px] sm:text-sm font-semibold text-gray-500 uppercase tracking-wider">
-								{t('profile.total_spend') || 'Spend'}
-							</h3>
-						</CardContent>
-					</Card>
+					<StatCard
+						icon={DollarSign}
+						value={formatCompactNumber(stats.totalSpend)}
+						label={t('profile.total_spend') || 'Spend'}
+						iconColor="#05324f"
+						iconBg="bg-blue-50"
+					/>
 				</div>
 
 				{/* Main Content Grid */}

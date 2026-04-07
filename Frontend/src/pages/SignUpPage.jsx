@@ -124,7 +124,7 @@ export default function SignUpPage() {
 		<div className="flex-1 flex items-start sm:items-center justify-center px-4 pt-28 sm:py-20">
 			<div className="max-w-2xl w-full space-y-8 animate-fade-in-up">
 				<div className="text-center">
-					<h2 className="text-xl font-bold mb-2" style={{ color: '#05324f' }}>{t('auth.signup.title')}</h2>
+					<h2 className="text-2xl md:text-5xl font-bold mb-6" style={{ color: '#05324f' }}>{t('auth.signup.title')}</h2>
 						<p style={{ color: '#05324f' }}>
 							{t('auth.signup.subtitle')}{' '}
 							<Link to="/auth/signin" className="font-semibold hover:opacity-80 transition-colors underline-offset-4 hover:underline" style={{ color: '#05324f' }}>

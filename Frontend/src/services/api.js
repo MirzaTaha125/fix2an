@@ -92,6 +92,8 @@ export const requestsAPI = {
 	getByCustomer: (customerId) => api.get(`/api/requests/customer/${customerId}`),
 	getAvailable: (params) => api.get('/api/requests/available', { params }),
 	getById: (requestId) => api.get(`/api/requests/${requestId}`),
+	update: (requestId, data) => api.patch(`/api/requests/${requestId}`, data),
+	delete: (requestId) => api.delete(`/api/requests/${requestId}`),
 }
 
 // Offers API
@@ -102,6 +104,7 @@ export const offersAPI = {
 		api.get(`/api/offers/request/${requestId}`, { params }),
 	getByWorkshop: () => api.get('/api/offers/workshop/me'),
 	getAvailableRequests: (params) => api.get('/api/offers/requests/available', { params }),
+	delete: (offerId) => api.delete(`/api/offers/${offerId}`),
 }
 
 // Bookings API

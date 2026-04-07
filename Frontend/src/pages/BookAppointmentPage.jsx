@@ -16,6 +16,7 @@ import {
 	Calendar,
 	Star,
 	Building2,
+	Clock,
 } from 'lucide-react'
 
 export default function BookAppointmentPage() {
@@ -460,8 +461,25 @@ export default function BookAppointmentPage() {
 								<span className="text-lg">{formatPrice(totalPrice)}</span>
 							</div>
 						</div>
+
+						{/* Offer Validity and Inclusions - Mobile */}
+						<div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+							<div className="flex items-center gap-2 text-sm text-gray-600">
+								<Clock className="w-4 h-4 text-[#34C759]" />
+								<span>{t('workshop.offer.offer_valid_for') || 'Offer Valid For'}: <span className="font-bold text-gray-900">{offer.validityDays} Days</span></span>
+							</div>
+							{offer.inclusions && (
+								<div className="flex items-start gap-2 text-sm text-gray-600">
+									<CheckCircle className="w-4 h-4 text-[#34C759] mt-0.5 shrink-0" />
+									<p>
+										<span className="font-bold text-gray-900">{t('workshop.offer.included_services') || 'Included Services'}:</span> {offer.inclusions}
+									</p>
+								</div>
+							)}
+						</div>
+
 						{offer.note && (
-							<p className="text-sm text-gray-600 mt-4 pt-4 border-t border-gray-200">{offer.note}</p>
+							<p className="text-sm text-gray-600 mt-4 pt-4 border-t border-gray-200 italic leading-relaxed">{offer.note}</p>
 						)}
 					</div>
 
@@ -595,7 +613,29 @@ export default function BookAppointmentPage() {
 											</div>
 											<span className="font-bold text-3xl text-[#34C759]">{formatPrice(totalPrice)}</span>
 										</div>
-										{offer.note && <p className="text-sm text-gray-500 mt-4 pt-4 border-t border-gray-200 italic">{offer.note}</p>}
+
+										{/* Offer Details - Desktop Column 1 Overlay */}
+										<div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
+											<div className="flex items-center gap-2.5 text-sm text-gray-600">
+												<div className="p-1 bg-green-50 rounded-md">
+													<Clock className="w-4 h-4 text-[#34C759]" />
+												</div>
+												<span>{t('workshop.offer.offer_valid_for') || 'Offer Valid For'}: <span className="font-bold text-gray-900">{offer.validityDays} Days</span></span>
+											</div>
+											{offer.inclusions && (
+												<div className="flex items-start gap-2.5 text-sm text-gray-600">
+													<div className="p-1 bg-green-50 rounded-md mt-0.5">
+														<CheckCircle className="w-4 h-4 text-[#34C759]" />
+													</div>
+													<p>
+														<span className="font-bold text-gray-900">{t('workshop.offer.included_services') || 'Included Services'}:</span>{' '}
+														{offer.inclusions}
+													</p>
+												</div>
+											)}
+										</div>
+
+										{offer.note && <p className="text-sm text-gray-500 mt-4 pt-4 border-t border-gray-200 italic leading-relaxed">"{offer.note}"</p>}
 									</div>
 								</div>
 

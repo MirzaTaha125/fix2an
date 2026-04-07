@@ -15,7 +15,7 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 	try {
 		const {
 			vehicleId,
-			reportId,
+			reportIds,
 			description,
 			latitude,
 			longitude,
@@ -26,14 +26,14 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 			expiresAt,
 		} = req.body
 
-		if (!vehicleId || !reportId || !latitude || !longitude || !address || !city || !expiresAt) {
+		if (!vehicleId || !reportIds || !latitude || !longitude || !address || !city || !expiresAt) {
 			return res.status(400).json({ message: 'Missing required fields' })
 		}
 
 		const request = await Request.create({
 			customerId: req.user._id,
 			vehicleId,
-			reportId,
+			reportIds,
 			description,
 			latitude,
 			longitude,
@@ -47,6 +47,7 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 		const populatedRequest = await Request.findById(request._id)
 			.populate('customerId', 'name email')
 			.populate('vehicleId')
+			.populate('reportIds')
 			.populate('reportId')
 
 		// Notifications (fire-and-forget)
@@ -71,6 +72,7 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 
 		const requests = await Request.find({ customerId })
 			.populate('vehicleId')
+			.populate('reportIds')
 			.populate('reportId')
 			.populate('customerId', 'name email')
 			.sort({ createdAt: -1 })
@@ -83,7 +85,11 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 					.sort({ createdAt: -1 })
 
 				const bookings = await Booking.find({ requestId: request._id })
-					.populate('workshopId', 'companyName rating reviewCount email phone')
+					.populate({
+						path: 'workshopId',
+						select: 'companyName rating reviewCount email phone userId',
+						populate: { path: 'userId', select: 'name' }
+					})
 					.populate('offerId', '_id id status price')
 					.sort({ createdAt: -1 })
 
@@ -188,6 +194,88 @@ router.get('/available', authenticate, requireRole('WORKSHOP'), async (req, res)
 	} catch (error) {
 		console.error('Fetch available requests error:', error)
 		return res.status(500).json({ message: 'Failed to fetch available requests' })
+	}
+})
+
+// Update a request
+router.patch('/:id', authenticate, async (req, res) => {
+	try {
+		const { id } = req.params
+		const updateData = req.body
+
+		const request = await Request.findById(id)
+		if (!request) {
+			return res.status(404).json({ message: 'Request not found' })
+		}
+
+		// Ownership check
+		const customerId = request.customerId?._id || request.customerId
+		if (customerId.toString() !== req.user._id.toString() && req.user.role !== 'ADMIN') {
+			return res.status(403).json({ message: 'Forbidden' })
+		}
+
+		// Status check - only allow edit if NEW or IN_BIDDING
+		if (!['NEW', 'IN_BIDDING'].includes(request.status)) {
+			return res.status(400).json({ message: 'Cannot edit a request that is already booked, completed, or cancelled' })
+		}
+
+		// Update fields
+		if (updateData.vehicleId) request.vehicleId = updateData.vehicleId
+		if (updateData.description !== undefined) request.description = updateData.description
+		if (updateData.latitude) request.latitude = updateData.latitude
+		if (updateData.longitude) request.longitude = updateData.longitude
+		if (updateData.address) request.address = updateData.address
+		if (updateData.city) request.city = updateData.city
+		if (updateData.postalCode) request.postalCode = updateData.postalCode
+		if (updateData.expiresAt) request.expiresAt = new Date(updateData.expiresAt)
+
+		await request.save()
+
+		const populatedRequest = await Request.findById(id)
+			.populate('customerId', 'name email')
+			.populate('vehicleId')
+			.populate('reportIds')
+			.populate('reportId')
+
+		return res.json(populatedRequest)
+	} catch (error) {
+		console.error('Update request error:', error)
+		return res.status(500).json({ message: 'Failed to update request' })
+	}
+})
+
+// Delete a request
+router.delete('/:id', authenticate, async (req, res) => {
+	try {
+		const { id } = req.params
+
+		const request = await Request.findById(id)
+		if (!request) {
+			return res.status(404).json({ message: 'Request not found' })
+		}
+
+		// Ownership check
+		const customerId = request.customerId?._id || request.customerId
+		if (customerId.toString() !== req.user._id.toString() && req.user.role !== 'ADMIN') {
+			return res.status(403).json({ message: 'Forbidden' })
+		}
+
+		// Check for active bookings
+		const activeBooking = await Booking.findOne({ requestId: id, status: { $in: ['BOOKED', 'DONE'] } })
+		if (activeBooking) {
+			return res.status(400).json({ message: 'Cannot delete a request with active or completed bookings' })
+		}
+
+		// Delete related offers
+		await Offer.deleteMany({ requestId: id })
+
+		// Delete the request
+		await Request.findByIdAndDelete(id)
+
+		return res.json({ message: 'Request deleted successfully' })
+	} catch (error) {
+		console.error('Delete request error:', error)
+		return res.status(500).json({ message: 'Failed to delete request' })
 	}
 })
 

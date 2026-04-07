@@ -3,7 +3,8 @@ import mongoose from 'mongoose'
 const requestSchema = new mongoose.Schema({
 	customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 	vehicleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle', required: true },
-	reportId: { type: mongoose.Schema.Types.ObjectId, ref: 'InspectionReport', required: true },
+	reportIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'InspectionReport' }],
+	reportId: { type: mongoose.Schema.Types.ObjectId, ref: 'InspectionReport' },
 	description: { type: String },
 	status: { 
 		type: String, 

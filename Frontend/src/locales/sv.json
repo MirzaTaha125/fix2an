@@ -7,6 +7,8 @@
 		"save": "Spara",
 		"delete": "Ta bort",
 		"edit": "Redigera",
+		"confirm_delete": "Bekräfta radering",
+		"deleting": "Raderar...",
 		"view": "Visa",
 		"close": "Stäng",
 		"back": "Tillbaka",
@@ -46,7 +48,9 @@
 		"select_placeholder": "Välj...",
 		"go_back": "Gå tillbaka",
 		"contact_support": "Kontakta support",
-		"read_cancellation_policy": "Läs avbokningsregler"
+		"read_cancellation_policy": "Läs avbokningsregler",
+		"dismiss": "Avfärda",
+		"not_yet": "Inte än"
 	},
 	"navigation": {
 		"home": "Hem",
@@ -64,7 +68,9 @@
 		"proposals": "Förslag",
 		"contracts": "Kontrakt",
 		"contract": "Kontrakt",
-		"for_workshops": "För verkstäder"
+		"for_workshops": "För verkstäder",
+		"logout_confirm_title": "Bekräfta utloggning",
+		"logout_confirm_desc": "Är du säker på att du vill logga ut från ditt konto?"
 	},
 	"homepage": {
 		"title": "Fixa din tvåa direkt – snabbt, enkelt, tryggt",
@@ -248,6 +254,11 @@
 			"title": "Inga bokade möten",
 			"description": "Du har inga bokade möten än."
 		},
+		"delete_request_title": "Ta bort förfrågan",
+		"delete_request_description": "Är du säker på att du vill ta bort denna förfrågan? Denna åtgärd kan inte ångras och alla aktiva erbjudanden kommer att tas bort.",
+		"edit_request": "Redigera förfrågan",
+		"delete_request": "Ta bort förfrågan",
+		"one_available_offer": "1 tillgängligt erbjudande",
 		"no_completed_cases": {
 			"title": "Inga slutförda jobb",
 			"description": "Du har inte slutfört några jobb än."
@@ -263,8 +274,10 @@
 		"rescheduled_for": "Ombokad för",
 		"reschedule_again": "Boka om igen",
 		"view_details": "Visa detaljer",
-		"workshop_details": "Verkstadsdetaljer",
+		"workshop_details": "Verkstadsinformation",
 		"workshop_details_desc": "Kontaktinformation för din bokade verkstad.",
+		"request_details_title": "Ärendedetaljer",
+		"request_details_desc": "Teknisk sammanfattning av din förfrågan.",
 		"company_name": "Företagsnamn",
 		"email": "E-post",
 		"phone": "Telefon",
@@ -445,6 +458,9 @@
 		"no_request_id": "Förfrågnings-ID krävs",
 		"no_request_id_description": "Vänligen välj en förfrågan för att visa erbjudanden.",
 		"back_to_cases": "Gå till Mina ärenden",
+		"confirm_delete_offer": "Är du säker på att du vill ta bort den här offerten? Denna åtgärd kan inte ångras.",
+		"offer_deleted": "Offerten har tagits bort",
+		"offer_expired": "Offerten har gått ut",
 		"fetch_error": "Kunde inte hämta erbjudanden",
 		"book_appointment": "Boka tid",
 		"book_appointment_desc": "Välj datum och tid för din tid",
@@ -627,7 +643,7 @@
 			"address_information": "Adressinformation",
 			"additional_information": "Ytterligare information",
 			"quick_stats": "Snabbstatistik",
-			"verified": "Verifierad",
+			"verified": "Fixa2an Verifierad",
 			"unverified": "Overifierad",
 			"not_available": "N/A",
 			"save": "Spara",
@@ -804,6 +820,8 @@
 			"open_pdf_new_tab": "Öppna PDF i ny flik"
 		},
 		"offer": {
+			"offer_valid_for": "Erbjudandet giltigt i",
+			"included_services": "Ingående tjänster",
 			"title": "Skapa erbjudande",
 			"subtitle": "Skicka ditt konkurrenskraftiga erbjudande för denna förfrågan",
 			"edit_title": "Redigera erbjudande",

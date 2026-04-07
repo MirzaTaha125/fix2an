@@ -17,6 +17,8 @@ import {
 	AlertCircle,
 	ArrowRight,
 	CheckCircle,
+	Trash2,
+	AlertTriangle,
 } from 'lucide-react'
 
 const SORT_OPTIONS = [
@@ -92,6 +94,19 @@ export default function OffersPage() {
 		setSortBy(key)
 		setListLoading(true)
 		setTimeout(() => setListLoading(false), 300)
+	}
+
+	const handleDeleteOffer = async (offerId) => {
+		if (!window.confirm(t('offers_page.confirm_delete_offer') || 'Are you sure you want to delete this offer?')) return
+
+		try {
+			await offersAPI.delete(offerId)
+			toast.success(t('offers_page.offer_deleted') || 'Offer deleted successfully')
+			setOffers(prev => prev.filter(o => (o._id || o.id) !== offerId))
+		} catch (error) {
+			console.error('Failed to delete offer:', error)
+			toast.error(t('errors.delete_failed') || 'Failed to delete offer')
+		}
 	}
 
 	if (!requestId) {
@@ -274,8 +289,21 @@ export default function OffersPage() {
 											<div className="flex flex-col md:hidden">
 												<div className="flex items-center gap-4 mb-4">
 													{/* Avatar at top-left of the info block */}
-													<div className="flex w-12 h-12 rounded-full bg-[#05324f] text-white items-center justify-center text-sm font-bold shrink-0 shadow-sm border border-white">
-														{initials}
+													<div className="relative shrink-0">
+														{workshop?.image && workshop.image.trim() !== '' ? (
+															<img 
+																src={workshop.image} 
+																alt={workshop?.companyName || 'Workshop'} 
+																className="w-12 h-12 rounded-full object-cover border border-white shadow-sm"
+																onError={(e) => {
+																	e.target.style.display = 'none'
+																	e.target.nextElementSibling.style.display = 'flex'
+																}}
+															/>
+														) : null}
+														<div className={`w-12 h-12 rounded-full bg-[#F0F2F5] flex items-center justify-center border border-white shadow-sm ${workshop?.image && workshop.image.trim() !== '' ? 'hidden' : ''}`}>
+															<User className="w-6 h-6 text-[#ACB0B4]" />
+														</div>
 													</div>
 													<div className="flex-1 min-w-0">
 														<div className="flex flex-wrap items-center gap-2">
@@ -312,14 +340,27 @@ export default function OffersPage() {
 														)}
 													</div>
 													
-													<div className="shrink-0">
+													<div className="shrink-0 flex flex-col gap-2">
 														{offer.status !== 'ACCEPTED' ? (
-															<Button
-																onClick={() => handleAcceptOffer(offer)}
-																className="!bg-[#34C759] !text-white rounded-xl px-5 py-2.5 font-semibold shadow-sm"
-															>
-																{t('offers_page.choose')}
-															</Button>
+															<>
+																<Button
+																	onClick={() => handleAcceptOffer(offer)}
+																	className="!bg-[#34C759] !text-white rounded-xl px-5 py-2.5 font-semibold shadow-sm"
+																>
+																	{t('offers_page.choose')}
+																</Button>
+																{expiresAt && expiresAt < new Date() && (
+																	<Button
+																		variant="ghost"
+																		size="sm"
+																		onClick={() => handleDeleteOffer(offerId)}
+																		className="text-red-500 hover:bg-red-50 rounded-xl"
+																	>
+																		<Trash2 className="w-4 h-4 mr-1" />
+																		{t('common.delete')}
+																	</Button>
+																)}
+															</>
 														) : (
 															<span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-bold text-xs px-4 py-2 rounded-full border border-green-200">
 																<CheckCircle size={14} />
@@ -330,13 +371,38 @@ export default function OffersPage() {
 												</div>
 											</div>
 
-											{/* Desktop: original layout */}
 											<div className="md:block hidden">
-												<div className="flex items-center gap-3 mb-4">
-													<h3 className="text-xl font-bold text-[#05324f]">
-														{workshop?.companyName || 'Workshop'}
-													</h3>
-													{workshop?.isVerified && <VerifiedBadge />}
+												<div className="flex items-center gap-4 mb-5">
+													<div className="relative shrink-0">
+														{workshop?.image && workshop.image.trim() !== '' ? (
+															<img 
+																src={workshop.image} 
+																alt={workshop?.companyName || 'Workshop'} 
+																className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md"
+																onError={(e) => {
+																	e.target.style.display = 'none'
+																	e.target.nextElementSibling.style.display = 'flex'
+																}}
+															/>
+														) : null}
+														<div className={`w-14 h-14 rounded-full bg-[#F0F2F5] flex items-center justify-center border-2 border-white shadow-md ${workshop?.image && workshop.image.trim() !== '' ? 'hidden' : ''}`}>
+															<User className="w-8 h-8 text-[#ACB0B4]" />
+														</div>
+													</div>
+													<div>
+														<div className="flex items-center gap-3 mb-1">
+															<h3 className="text-xl font-bold text-[#05324f]">
+																{workshop?.companyName || 'Workshop'}
+															</h3>
+															{workshop?.isVerified && <VerifiedBadge />}
+														</div>
+														{workshopRating != null && (
+															<div className="flex items-center gap-1">
+																<Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+																<span className="text-sm font-bold text-gray-700">{workshopRating.toFixed(1)}</span>
+															</div>
+														)}
+													</div>
 												</div>
 												{/* Meta row */}
 												<div className="flex flex-wrap items-center gap-2 mb-5">
@@ -371,21 +437,34 @@ export default function OffersPage() {
 														</div>
 														<p className="text-3xl font-bold text-[#34C759] leading-none">{formatPrice(offer.price)}</p>
 														{expiresAt && (
-															<p className="text-[10px] text-red-500 mt-2 font-medium italic">
-																{t('offers_page.offer_expires') || 'Offer Valid Until'}: {formatDate(expiresAt)}
+															<p className={`text-[10px] mt-2 font-medium italic ${expiresAt < new Date() ? 'text-red-500' : 'text-gray-400'}`}>
+																{expiresAt < new Date() ? (t('offers_page.offer_expired') || 'Offer Expired') : (t('offers_page.offer_expires') || 'Offer Valid Until')}: {formatDate(expiresAt)}
 															</p>
 														)}
 													</div>
-													{offer.status !== 'ACCEPTED' ? (
-														<Button onClick={() => handleAcceptOffer(offer)} className="flex items-center gap-2 shrink-0 h-12 px-8">
-															{t('offers_page.choose')}
-															<ArrowRight size={16} />
-														</Button>
-													) : (
-														<span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-semibold text-sm px-4 py-2.5 rounded-btn border border-green-200">
-															{t('offers_page.accepted')}
-														</span>
-													)}
+													<div className="flex items-center gap-3">
+														{expiresAt && expiresAt < new Date() && (
+															<Button
+																variant="ghost"
+																size="icon"
+																onClick={() => handleDeleteOffer(offerId)}
+																className="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl"
+																title={t('common.delete')}
+															>
+																<Trash2 className="w-5 h-5" />
+															</Button>
+														)}
+														{offer.status !== 'ACCEPTED' ? (
+															<Button onClick={() => handleAcceptOffer(offer)} className={`flex items-center gap-2 shrink-0 h-12 px-8 ${expiresAt && expiresAt < new Date() ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+																{t('offers_page.choose')}
+																<ArrowRight size={16} />
+															</Button>
+														) : (
+															<span className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 font-semibold text-sm px-4 py-2.5 rounded-btn border border-green-200">
+																{t('offers_page.accepted')}
+															</span>
+														)}
+													</div>
 												</div>
 											</div>
 										</div>

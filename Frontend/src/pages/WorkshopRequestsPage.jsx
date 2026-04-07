@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import { formatPrice, formatDate, calculateDistance } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import StatCard from '../components/ui/StatCard'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
@@ -299,56 +300,31 @@ export default function WorkshopRequestsPage() {
 						{workshopName}
 					</h1>
 
-					<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-						<div className="rounded-card border border-gray-100 bg-white shadow-card p-5">
-							<div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mb-3">
-								<CheckCircle size={20} className="text-[#34C759]" />
-							</div>
-							<p className="text-3xl font-bold text-[#05324f] leading-none mb-1">{stats.totalRequests}</p>
-							<p className="text-small text-gray-500 font-medium">{t('workshop.requests.new_requests')}</p>
-						</div>
-						<div className="rounded-card border border-gray-100 bg-white shadow-card p-5">
-							<div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mb-3">
-								<CheckCircle size={20} className="text-[#34C759]" />
-							</div>
-							<p className="text-3xl font-bold text-[#05324f] leading-none mb-1">{stats.completedContracts}</p>
-							<p className="text-small text-gray-500 font-medium">{t('workshop.requests.won_jobs')}</p>
-						</div>
-						<div className="rounded-card border border-gray-100 bg-white shadow-card p-5">
-							<div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mb-3">
-								<DollarSign size={20} className="text-[#34C759]" />
-							</div>
-							<p className="text-3xl font-bold text-[#05324f] leading-none mb-1">{formatK(stats.monthlyRevenue)}</p>
-							<p className="text-small text-gray-500 font-medium">{t('workshop.requests.revenue_this_month')}</p>
-						</div>
+					<div className="grid grid-cols-3 gap-3 sm:gap-6 mb-8 max-md:mb-6">
+						<StatCard
+							icon={CheckCircle}
+							value={stats.totalRequests}
+							label={t('workshop.requests.new_requests')}
+							iconColor="#05324f"
+							iconBg="bg-blue-50"
+						/>
+						<StatCard
+							icon={CheckCircle}
+							value={stats.completedContracts}
+							label={t('workshop.requests.won_jobs')}
+							iconColor="#34C759"
+							iconBg="bg-green-50"
+						/>
+						<StatCard
+							icon={DollarSign}
+							value={formatK(stats.monthlyRevenue)}
+							label={t('workshop.requests.revenue_this_month')}
+							iconColor="#05324f"
+							iconBg="bg-blue-50"
+						/>
 					</div>
 				</div>
 			)}
-
-			{/* Mobile: 3 stat cards - reference (icon in gray square, number, label) */}
-			<div className="md:hidden grid grid-cols-3 gap-2 mb-6">
-				<div className="rounded-xl border border-gray-200 bg-white p-4 flex flex-col items-center text-center shadow-none">
-					<div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mb-2">
-						<ChevronDown className="w-5 h-5 text-[#05324f]" />
-					</div>
-					<p className="text-2xl font-bold text-[#05324f] leading-none">{stats.totalRequests}</p>
-					<p className="text-xs text-gray-500 mt-1">{t('workshop.requests.new_inquiries')}</p>
-				</div>
-				<div className="rounded-xl border border-gray-200 bg-white p-4 flex flex-col items-center text-center shadow-none">
-					<div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mb-2">
-						<CheckCircle className="w-5 h-5 text-[#34C759]" />
-					</div>
-					<p className="text-2xl font-bold text-[#05324f] leading-none">{stats.completedContracts}</p>
-					<p className="text-xs text-gray-500 mt-1">{t('workshop.requests.won_jobs')}</p>
-				</div>
-				<div className="rounded-xl border border-gray-200 bg-white p-4 flex flex-col items-center text-center shadow-none">
-					<div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mb-2">
-						<DollarSign className="w-5 h-5 text-[#34C759]" />
-					</div>
-					<p className="text-xl font-bold text-[#05324f] leading-none">{formatK(stats.monthlyRevenue)}</p>
-					<p className="text-xs text-gray-500 mt-1">{t('workshop.requests.income')}</p>
-				</div>
-			</div>
 
 			{/* Offer Inbox Section */}
 			<div className="mb-6">

@@ -32,7 +32,7 @@ export function DialogContent({ children, onClose, className = '' }) {
 			{onClose && (
 				<button
 					onClick={onClose}
-					className="absolute top-0 right-0 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+					className="absolute top-4 right-4 z-[10001] p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
 				>
 					<X className="w-5 h-5" />
 				</button>

@@ -430,38 +430,71 @@ export default function CreateOfferPage() {
 					</CardHeader>
 					<CardContent className="pt-0 px-5 sm:px-7 pb-5 sm:pb-7">
 						<form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-							{/* Price and Duration Grid */}
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
-								{/* Price Breakdown */}
-								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-									{/* Total Price */}
-									<div className="space-y-2 col-span-1 sm:col-span-2 bg-[#05324f]/5 p-4 rounded-xl border border-[#05324f]/10">
-										<Label htmlFor="price" className="flex items-center gap-2 text-sm font-bold text-[#05324f]">
-											<DollarSign className="w-5 h-5 text-[#34C759]" />
-											<span>
-												Total Price (VAT Included) <span className="text-red-500">*</span>
-											</span>
-										</Label>
-										<div className="relative mt-2">
-											<Input
-												id="price"
-												type="number"
-												min="0"
-												step="0.01"
-												value={formData.price}
-												disabled={viewMode}
-											onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-												placeholder="0.00"
-												required
-												className="pl-12 h-14 text-xl font-bold text-[#05324f] border-[#05324f]/20 focus:border-[#34C759]"
-											/>
-											<div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#05324f] font-bold text-lg">kr</div>
+							{/* Price and Duration Structure */}
+							<div className="space-y-8">
+								{/* Top Section: Price and Validity */}
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 items-start">
+									<div className="space-y-6">
+										{/* Total Price */}
+										<div className="space-y-2 bg-[#05324f]/5 p-5 rounded-2xl border border-[#05324f]/10 shadow-sm transition-all hover:shadow-md">
+											<Label htmlFor="price" className="flex items-center gap-2 text-sm font-bold text-[#05324f]">
+												<DollarSign className="w-5 h-5 text-[#34C759]" />
+												<span>
+													Total Price (VAT Included) <span className="text-red-500">*</span>
+												</span>
+											</Label>
+											<div className="relative mt-3">
+												<Input
+													id="price"
+													type="number"
+													min="0"
+													step="0.01"
+													value={formData.price}
+													disabled={viewMode}
+													onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+													placeholder="0.00"
+													required
+													className="pl-12 h-14 text-2xl font-bold text-[#05324f] border-[#05324f]/20 focus:border-[#34C759] bg-white rounded-xl shadow-inner transition-all"
+												/>
+												<div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#05324f] font-bold text-xl">kr</div>
+											</div>
+										</div>
+
+										{/* Offer Validity */}
+										<div className="space-y-3 px-1">
+											<Label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+												<Clock className="w-4 h-4 text-[#34C759]" />
+												<span>Offer Valid For</span>
+											</Label>
+											<div className="flex gap-3">
+												{['7', '14', '30'].map((days) => (
+													<button
+														key={days}
+														type="button"
+														disabled={viewMode}
+														onClick={() => setFormData({ ...formData, validityDays: days })}
+														className={`flex-1 py-3 px-4 rounded-xl border-2 font-bold text-sm transition-all duration-200 ${
+															formData.validityDays === days
+																? 'bg-[#05324f] border-[#05324f] text-white shadow-lg scale-[1.02]'
+																: 'border-gray-100 bg-gray-50 text-gray-400 hover:border-gray-200'
+														} ${viewMode ? 'cursor-default' : 'hover:shadow-md active:scale-95'}`}
+													>
+														{days} Days
+													</button>
+												))}
+											</div>
 										</div>
 									</div>
 
+									{/* Right side spacer for desktop, can be used for extra info if needed later */}
+									<div className="hidden md:block"></div>
+								</div>
+
+								{/* Inline Costs and Duration Breakdown */}
+								<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 pt-2">
 									{/* Labor Cost */}
-									<div className="space-y-2">
-										<Label htmlFor="laborCost" className="text-xs font-semibold text-gray-600">
+									<div className="space-y-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+										<Label htmlFor="laborCost" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
 											Labor Cost (SEK)
 										</Label>
 										<Input
@@ -471,13 +504,13 @@ export default function CreateOfferPage() {
 											value={formData.laborCost}
 											onChange={(e) => setFormData({ ...formData, laborCost: e.target.value })}
 											placeholder="0.00"
-											className="h-10 text-sm"
+											className="h-11 text-base font-medium border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-lg bg-white"
 										/>
 									</div>
 
 									{/* Parts Cost */}
-									<div className="space-y-2">
-										<Label htmlFor="partsCost" className="text-xs font-semibold text-gray-600">
+									<div className="space-y-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+										<Label htmlFor="partsCost" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
 											Materials & Parts (SEK)
 										</Label>
 										<Input
@@ -487,41 +520,14 @@ export default function CreateOfferPage() {
 											value={formData.partsCost}
 											onChange={(e) => setFormData({ ...formData, partsCost: e.target.value })}
 											placeholder="0.00"
-											className="h-10 text-sm"
+											className="h-11 text-base font-medium border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-lg bg-white"
 										/>
-									</div>
-								</div>
-
-								<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
-									{/* Offer Validity */}
-									<div className="space-y-3">
-										<Label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-											<Clock className="w-4 h-4 text-[#34C759]" />
-											<span>Offer Valid For</span>
-										</Label>
-										<div className="flex gap-2">
-											{['7', '14', '30'].map((days) => (
-												<button
-													key={days}
-													type="button"
-													disabled={viewMode}
-													onClick={() => setFormData({ ...formData, validityDays: days })}
-													className={`flex-1 py-2 px-3 rounded-lg border-2 font-bold text-sm transition-all ${
-														formData.validityDays === days
-															? 'bg-[#05324f] border-[#05324f] text-white'
-															: 'border-gray-200 text-gray-500 hover:border-gray-300'
-													} ${viewMode ? 'cursor-default opacity-90' : ''}`}
-												>
-													{days} Days
-												</button>
-											))}
-										</div>
 									</div>
 
 									{/* Estimated Duration */}
-									<div className="space-y-3 focus-within:ring-0">
-										<Label htmlFor="estimatedDuration" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-											<Clock className="w-4 h-4 text-[#34C759]" />
+									<div className="space-y-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100 col-span-1 sm:col-span-2 md:col-span-1">
+										<Label htmlFor="estimatedDuration" className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+											<Clock className="w-3.5 h-3.5 text-[#34C759]" />
 											<span>Estimated Duration (mins)</span>
 										</Label>
 										<Input
@@ -533,7 +539,7 @@ export default function CreateOfferPage() {
 											onChange={(e) => setFormData({ ...formData, estimatedDuration: e.target.value })}
 											placeholder="60"
 											required
-											className="h-10 text-sm font-semibold"
+											className="h-11 text-base font-bold text-[#05324f] border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-lg bg-white"
 										/>
 									</div>
 								</div>

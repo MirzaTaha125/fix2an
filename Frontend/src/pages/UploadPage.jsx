@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useCallback, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDropzone } from 'react-dropzone'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
@@ -36,7 +36,38 @@ export default function UploadPage() {
 		year: new Date().getFullYear(),
 	})
 	const [description, setDescription] = useState('')
+	const [searchParams] = useSearchParams()
+	const editId = searchParams.get('edit') || searchParams.get('requestId')
+	const [existingRequest, setExistingRequest] = useState(null)
 	const [isUploading, setIsUploading] = useState(false)
+
+	// Load existing request data if editing
+	useEffect(() => {
+		if (editId) {
+			const fetchRequest = async () => {
+				try {
+					const response = await requestsAPI.getById(editId)
+					const request = response.data
+					setExistingRequest(request)
+					
+					if (request.vehicleId) {
+						setVehicleData({
+							make: request.vehicleId.make || '',
+							model: request.vehicleId.model || '',
+							year: request.vehicleId.year || new Date().getFullYear(),
+						})
+					}
+					
+					setDescription(request.description || '')
+					// We don't pre-fill files for now as it's complex with dropzone/blob
+				} catch (error) {
+					console.error('Fetch request for edit error:', error)
+					toast.error('Failed to load request data')
+				}
+			}
+			fetchRequest()
+		}
+	}, [editId])
 
 	const onDrop = useCallback(
 		(acceptedFiles) => {
@@ -133,11 +164,6 @@ export default function UploadPage() {
 	const handleSubmit = async (e) => {
 		e.preventDefault()
 
-		if (files.length === 0) {
-			toast.error(t('errors.file_required'))
-			return
-		}
-
 		if (!vehicleData.make || !vehicleData.model) {
 			toast.error(t('errors.vehicle_info_required'))
 			return
@@ -146,68 +172,64 @@ export default function UploadPage() {
 		setIsUploading(true)
 
 		try {
-			// Upload files one by one
-			const uploadedFiles = []
-			for (const file of files) {
-				const formData = new FormData()
-				formData.append('file', file)
-
-				try {
-					const response = await uploadAPI.uploadFile(formData)
-					// Backend returns: { id, fileName, fileUrl, fileSize, mimeType }
-					uploadedFiles.push(response.data)
-				} catch (error) {
-					console.error('File upload error:', error)
-					throw new Error(error.response?.data?.message || 'File upload failed')
+			if (editId && existingRequest) {
+				// Update existing request
+				const updateBody = {
+					description,
+					// Only update vehicle if it changed
+					...( (vehicleData.make !== existingRequest.vehicleId?.make || 
+						  vehicleData.model !== existingRequest.vehicleId?.model || 
+						  vehicleData.year !== existingRequest.vehicleId?.year) ? {
+						vehicleId: (await vehiclesAPI.create(vehicleData)).data._id
+					} : {} )
 				}
-			}
 
-			// Use the first uploaded file's report ID
-			// In the new backend, each upload creates an InspectionReport
-			const reportId = uploadedFiles[0]?.id || uploadedFiles[0]?._id
+				await requestsAPI.update(editId, updateBody)
+				toast.success(t('success.request_updated') || 'Request updated successfully')
+				navigate('/my-cases')
+			} else {
+				// Create new request
+				if (files.length === 0) {
+					toast.error(t('errors.file_required'))
+					setIsUploading(false)
+					return
+				}
 
-			if (!reportId) {
-				throw new Error('No report ID received from file upload')
-			}
+				// Upload files one by one
+				const uploadedFiles = []
+				for (const file of files) {
+					const formData = new FormData()
+					formData.append('file', file)
 
-			// Create vehicle
-			let vehicle
-			try {
+					try {
+						const response = await uploadAPI.uploadFile(formData)
+						uploadedFiles.push(response.data)
+					} catch (error) {
+						console.error('File upload error:', error)
+						throw new Error(error.response?.data?.message || 'File upload failed')
+					}
+				}
+
+				const reportIds = uploadedFiles.map(file => file.id || file._id)
 				const vehicleResponse = await vehiclesAPI.create(vehicleData)
-				vehicle = vehicleResponse.data
-			} catch (error) {
-				console.error('Vehicle creation error:', error)
-				throw new Error(error.response?.data?.message || 'Vehicle creation failed')
-			}
+				const vehicleId = vehicleResponse.data._id || vehicleResponse.data.id
 
-			// Get vehicle ID (backend may return _id or id)
-			const vehicleId = vehicle._id || vehicle.id
-			if (!vehicleId) {
-				throw new Error('No vehicle ID received from vehicle creation')
-			}
+				const requestBody = {
+					vehicleId: vehicleId,
+					reportIds: reportIds,
+					description,
+					latitude: user.latitude || 59.3293,
+					longitude: user.longitude || 18.0686,
+					address: user.address || 'Stockholm',
+					city: user.city || 'Stockholm',
+					postalCode: user.postalCode || '111 22',
+					country: user.country || 'SE',
+					expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+				}
 
-			// Create request with default values if not provided
-			// Backend will set customerId from authenticated user
-			const requestBody = {
-				vehicleId: vehicleId,
-				reportId: reportId,
-				description,
-				latitude: user.latitude || 59.3293, // Default to Stockholm
-				longitude: user.longitude || 18.0686,
-				address: user.address || 'Stockholm',
-				city: user.city || 'Stockholm',
-				postalCode: user.postalCode || '111 22',
-				country: user.country || 'SE',
-				expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-			}
-
-			try {
 				await requestsAPI.create(requestBody)
 				toast.success(t('success.request_sent'))
 				navigate('/my-cases')
-			} catch (error) {
-				console.error('Request creation error:', error)
-				throw new Error(error.response?.data?.message || 'Request creation failed')
 			}
 		} catch (error) {
 			console.error('Upload error:', error)

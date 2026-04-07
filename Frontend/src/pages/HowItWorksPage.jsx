@@ -16,7 +16,7 @@ export default function HowItWorksPage() {
 				{/* Header Section */}
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
 					<div className="text-center">
-						<h1 className="text-xl md:text-xl lg:text-xl font-extrabold mb-6" style={{ color: '#34C759' }}>
+						<h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6" style={{ color: '#05324f' }}>
 							{t('homepage.how_it_works.title')}
 						</h1>
 						<p className="text-base md:text-lg max-w-3xl mx-auto leading-relaxed text-gray-600">

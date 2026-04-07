@@ -5,7 +5,7 @@ import { Button } from './ui/Button'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { User, LogOut, Menu, X, Building2, Users, ChevronDown, ArrowLeft } from 'lucide-react'
-import { Dialog } from './ui/Dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/Dialog'
 import RegisterTypeModal from './RegisterTypeModal'
 import Logo from './Logo'
 
@@ -18,6 +18,8 @@ function Navbar() {
 	const [isScrolled, setIsScrolled] = useState(false)
 	const [registerModalOpen, setRegisterModalOpen] = useState(false)
 	const [userDropdownOpen, setUserDropdownOpen] = useState(false)
+	const [registerDropdownOpen, setRegisterDropdownOpen] = useState(false)
+	const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
 
 	// Detect scroll position
 	useEffect(() => {
@@ -49,6 +51,13 @@ function Navbar() {
 	const shouldUseWhiteNavbar = true
 
 	const handleLogout = () => {
+		setIsLogoutConfirmOpen(true)
+	}
+
+	const confirmLogout = () => {
+		setIsLogoutConfirmOpen(false)
+		setUserDropdownOpen(false)
+		setMobileMenuOpen(false)
 		logout()
 		navigate('/')
 	}
@@ -232,15 +241,15 @@ function Navbar() {
 											<img 
 												src={user.image} 
 												alt={user.name || 'User'} 
-												className="w-6 h-6 rounded-full object-cover border border-gray-200"
+												className="w-6 h-6 rounded-full object-cover border border-white shadow-sm"
 												onError={(e) => {
 													e.target.style.display = 'none'
 													e.target.nextElementSibling.style.display = 'flex'
 												}}
 											/>
 										) : null}
-										<div className={`w-6 h-6 rounded-full bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center ${user.image && user.image.trim() !== '' ? 'hidden' : ''}`}>
-											<User className="w-3.5 h-3.5 text-white" />
+										<div className={`w-6 h-6 rounded-full bg-[#F0F2F5] flex items-center justify-center shrink-0 border border-white shadow-sm ${user.image && user.image.trim() !== '' ? 'hidden' : ''}`}>
+											<User className="w-3.5 h-3.5 text-[#ACB0B4]" />
 										</div>
 										<span className="text-sm font-medium">{user.name || user.email}</span>
 										<ChevronDown className={`w-4 h-4 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
@@ -310,16 +319,64 @@ function Navbar() {
 								>
 									{t('navigation.login')}
 								</Link>
-								<button
-									onClick={() => setRegisterModalOpen(true)}
-									className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg font-medium ${
-										shouldUseWhiteNavbar 
-											? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-50' 
-											: 'text-white/80 hover:text-white hover:bg-white/10'
-									}`}
-								>
-									{t('navigation.register')}
-								</button>
+								<div className="relative">
+									<button
+										onClick={() => setRegisterDropdownOpen(!registerDropdownOpen)}
+										className={`flex items-center gap-2 whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg font-medium ${
+											shouldUseWhiteNavbar 
+												? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-50' 
+												: 'text-white/80 hover:text-white hover:bg-white/10'
+										}`}
+									>
+										<span>{t('navigation.register')}</span>
+										<ChevronDown className={`w-4 h-4 transition-transform duration-200 ${registerDropdownOpen ? 'rotate-180' : ''}`} />
+									</button>
+
+									{/* Register Dropdown Menu */}
+									{registerDropdownOpen && (
+										<>
+											<div 
+												className="fixed inset-0 z-10" 
+												onClick={() => setRegisterDropdownOpen(false)}
+											></div>
+											<div className={`absolute right-0 mt-2 w-56 rounded-xl shadow-2xl border z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${
+												shouldUseWhiteNavbar 
+													? 'bg-white border-gray-100' 
+													: 'bg-white/95 backdrop-blur-md border-white/10'
+											}`}>
+												<div className="py-1.5 px-1.5 flex flex-col gap-1">
+													<Link
+														to="/auth/signup"
+														onClick={() => setRegisterDropdownOpen(false)}
+														className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#05324f] hover:bg-blue-50/50 rounded-lg transition-colors group"
+													>
+														<div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+															<Users className="w-4 h-4 text-blue-600 group-hover:text-white transition-colors" />
+														</div>
+														<div className="flex flex-col">
+															<span>{t('common.register_as_customer') || 'Register as Customer'}</span>
+															<span className="text-[10px] text-gray-400 font-normal leading-tight">Find trusted workshops</span>
+														</div>
+													</Link>
+
+													<Link
+														to="/workshop/signup"
+														onClick={() => setRegisterDropdownOpen(false)}
+														className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#05324f] hover:bg-green-50/50 rounded-lg transition-colors group"
+													>
+														<div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-[#34C759] transition-colors">
+															<Building2 className="w-4 h-4 text-green-600 group-hover:text-white transition-colors" />
+														</div>
+														<div className="flex flex-col">
+															<span>{t('common.register_as_workshop') || 'Register as Workshop'}</span>
+															<span className="text-[10px] text-gray-400 font-normal leading-tight">Grow your business</span>
+														</div>
+													</Link>
+												</div>
+											</div>
+										</>
+									)}
+								</div>
 							</>
 						)}
 						<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} />
@@ -456,15 +513,15 @@ function Navbar() {
 												<img 
 													src={user.image} 
 													alt={user.name || 'User'} 
-													className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+													className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0"
 													onError={(e) => {
 														e.target.style.display = 'none'
 														e.target.nextElementSibling.style.display = 'flex'
 													}}
 												/>
 											) : null}
-											<div className={`w-8 h-8 rounded-full bg-[#05324f] flex items-center justify-center flex-shrink-0 ${user.image && user.image.trim() !== '' ? 'hidden' : ''}`}>
-												<User className="w-4 h-4 text-white" />
+											<div className={`w-8 h-8 rounded-full bg-[#F0F2F5] flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm ${user.image && user.image.trim() !== '' ? 'hidden' : ''}`}>
+												<User className="w-4 h-4 text-[#ACB0B4]" />
 											</div>
 											<div className="flex-1 min-w-0 text-left">
 												<p className="text-sm font-semibold text-gray-900 truncate">
@@ -553,6 +610,38 @@ function Navbar() {
 				isOpen={registerModalOpen} 
 				onClose={() => setRegisterModalOpen(false)} 
 			/>
+
+			{/* Logout Confirmation Modal */}
+			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
+				<DialogContent className="max-w-[400px] w-[90%] bg-white rounded-2xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
+					<DialogHeader className="text-left items-start">
+						<div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+							<LogOut className="w-6 h-6 text-red-600" />
+						</div>
+						<DialogTitle className="text-2xl font-black text-[#05324f] leading-tight mb-2">
+							{t('navigation.logout_confirm_title')}
+						</DialogTitle>
+						<DialogDescription className="text-gray-500 text-base leading-relaxed">
+							{t('navigation.logout_confirm_desc')}
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row gap-3">
+						<Button
+							variant="outline"
+							onClick={() => setIsLogoutConfirmOpen(false)}
+							className="flex-1 h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold"
+						>
+							{t('common.cancel') || 'Cancel'}
+						</Button>
+						<Button
+							onClick={confirmLogout}
+							className="flex-1 h-11 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all shadow-md active:scale-95"
+						>
+							{t('navigation.logout') || 'Log Out'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</header>
 	)
 }

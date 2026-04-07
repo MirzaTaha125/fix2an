@@ -383,7 +383,7 @@ export default function WorkshopProfilePage() {
 								<img 
 									src={profileData.image} 
 									alt={profileData.name || profileData.companyName || 'Profile'} 
-									className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-green-100 shadow-lg"
+									className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
 									onError={(e) => {
 										// If image fails to load, hide image and show default
 										const parent = e.target.parentElement
@@ -404,9 +404,9 @@ export default function WorkshopProfilePage() {
 								/>
 							) : null}
 							<div 
-								className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center border-4 border-green-100 shadow-lg profile-image-fallback ${profileData.image && profileData.image.trim() !== '' ? 'hidden' : ''}`}
+								className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#F0F2F5] flex items-center justify-center border-4 border-white shadow-lg profile-image-fallback ${profileData.image && profileData.image.trim() !== '' ? 'hidden' : ''}`}
 							>
-								<Building2 className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+								<User className="w-12 h-12 sm:w-14 sm:h-14 text-[#ACB0B4]" />
 							</div>
 							<button
 								type="button"

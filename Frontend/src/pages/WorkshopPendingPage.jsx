@@ -1,16 +1,23 @@
-import React from 'react'
+import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Clock, LogOut, ShieldCheck } from 'lucide-react'
 import { Button } from '../components/ui/Button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/Dialog'
 
 export default function WorkshopPendingPage() {
 	const { t } = useTranslation()
 	const { logout } = useAuth()
 	const navigate = useNavigate()
+	const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
 
 	const handleLogout = () => {
+		setIsLogoutConfirmOpen(true)
+	}
+
+	const confirmLogout = () => {
+		setIsLogoutConfirmOpen(false)
 		logout()
 		navigate('/auth/signin')
 	}
@@ -64,13 +71,37 @@ export default function WorkshopPendingPage() {
 				</div>
 			</div>
 
-			{/* Corner Decorative */}
-			<div className="absolute top-10 right-10 hidden lg:block">
-				<div className="flex items-center gap-3">
-					<div className="w-2 h-2 rounded-full bg-[#34C759] animate-pulse"></div>
-					<span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#05324f]/30">Verification Portal</span>
-				</div>
-			</div>
+			{/* Logout Confirmation Modal */}
+			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
+				<DialogContent className="max-w-[400px] w-[90%] bg-white rounded-2xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
+					<DialogHeader className="text-left items-start">
+						<div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+							<LogOut className="w-6 h-6 text-red-600" />
+						</div>
+						<DialogTitle className="text-2xl font-black text-[#05324f] leading-tight mb-2">
+							{t('navigation.logout_confirm_title')}
+						</DialogTitle>
+						<DialogDescription className="text-gray-500 text-base leading-relaxed">
+							{t('navigation.logout_confirm_desc')}
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row gap-3">
+						<Button
+							variant="outline"
+							onClick={() => setIsLogoutConfirmOpen(false)}
+							className="flex-1 h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold"
+						>
+							{t('common.cancel') || 'Cancel'}
+						</Button>
+						<Button
+							onClick={confirmLogout}
+							className="flex-1 h-11 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all shadow-md active:scale-95"
+						>
+							{t('navigation.logout') || 'Log Out'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }
