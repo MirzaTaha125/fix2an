@@ -19,6 +19,7 @@ import {
 	CheckCircle,
 	Trash2,
 	AlertTriangle,
+	User,
 } from 'lucide-react'
 
 const SORT_OPTIONS = [
@@ -203,14 +204,14 @@ export default function OffersPage() {
 					</p>
 
 					{/* Sort Tabs - reference: pill style, active green */}
-					<div className="inline-flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1 gap-1 max-md:w-full max-md:bg-gray-100 max-md:border-0 max-md:shadow-none max-md:p-0 max-md:gap-2">
+					<div className="inline-flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1 gap-1 max-md:w-full max-md:bg-gray-100 max-md:border-0 max-md:shadow-none max-md:p-0 max-md:gap-2 max-md:rounded-xl">
 						{SORT_OPTIONS.map(({ key, labelKey }) => (
 							<button
 								key={key}
 								onClick={() => handleSort(key)}
-								className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 max-md:flex-1 max-md:py-3 max-md:rounded-full ${
+								className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 whitespace-nowrap min-w-[80px] sm:min-w-[100px] max-md:flex-1 max-md:py-2 max-md:rounded-lg max-md:text-[11px] shadow-sm border border-transparent ${
 									sortBy === key
-										? 'bg-[#34C759] text-white shadow-sm'
+										? 'bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759]'
 										: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 max-md:bg-gray-200 max-md:text-gray-600'
 								}`}
 							>

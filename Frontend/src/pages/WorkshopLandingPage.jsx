@@ -25,10 +25,10 @@ export default function WorkshopLandingPage() {
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 					<div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <div className="text-center lg:text-left">
-						    <h1 className="font-bold mb-6 leading-tight text-white" style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)' }}>
+						    <h1 className="font-bold mb-6 leading-tight text-white" style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)' }}>
 							    {t('homepage.workshop.title')}
 						    </h1>
-						    <p className="text-lg sm:text-xl mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed text-white/90">
+						    <p className="text-lg sm:text-xl mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed text-white/90 max-md:text-base">
 							    {t('homepage.workshop.subtitle')}
 						    </p>
 						    <div className="flex justify-center lg:justify-start gap-4">

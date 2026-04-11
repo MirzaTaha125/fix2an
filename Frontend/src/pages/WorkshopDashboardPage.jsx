@@ -168,37 +168,21 @@ export default function WorkshopDashboardPage() {
 			<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24">
 
 				{/* Header - mobile: compact */}
-				<div className="mb-8 max-md:mb-6">
-					<p className="text-small text-gray-400 font-medium uppercase tracking-wide mb-1 max-md:hidden">
-						{t('workshop.dashboard.welcome') || 'Welcome back'}
-					</p>
-					<h1 className="text-xl font-bold text-[#05324f] max-md:text-xl">
-						{user?.workshop?.companyName || user?.name || 'Workshop'}
-					</h1>
-				</div>
+
 
 				{/* Stats Grid - 3 cards inline on all screens */}
-				<div className="grid grid-cols-3 gap-3 sm:gap-6 mb-8 max-md:mb-6">
+				<div className="grid grid-cols-3 gap-2 sm:gap-6 mb-8 max-md:mb-6">
 					<StatCard
-						icon={TrendingUp}
 						value={stats.totalRequests}
 						label={t('workshop.dashboard.stats.new_inquiries') || t('workshop.dashboard.stats.total_requests') || 'New inquiries'}
-						iconColor="#05324f"
-						iconBg="bg-blue-50"
 					/>
 					<StatCard
-						icon={Briefcase}
 						value={stats.completedJobs}
 						label={t('workshop.dashboard.stats.won_jobs') || t('workshop.dashboard.stats.completed_jobs') || 'Won jobs'}
-						iconColor="#34C759"
-						iconBg="bg-green-50"
 					/>
 					<StatCard
-						icon={DollarSign}
 						value={formatPrice(stats.totalRevenue)}
 						label={t('workshop.dashboard.stats.monthly_revenue') || 'Income'}
-						iconColor="#05324f"
-						iconBg="bg-blue-50"
 					/>
 				</div>
 

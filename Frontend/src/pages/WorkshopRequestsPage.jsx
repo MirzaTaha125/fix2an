@@ -292,35 +292,21 @@ export default function WorkshopRequestsPage() {
 		<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24 w-full">
 			{/* Greeting + Stats - desktop */}
 			{workshopName && (
-				<div className="mb-8 max-md:mb-4 max-md:hidden">
-					<p className="text-small text-gray-400 font-medium uppercase tracking-wide mb-1">
-						{t('workshop.requests.hi') || 'Welcome'}
-					</p>
-					<h1 className="text-xl font-bold text-[#05324f] mb-8">
-						{workshopName}
-					</h1>
+				<div className="mb-8 max-md:mb-4">
 
-					<div className="grid grid-cols-3 gap-3 sm:gap-6 mb-8 max-md:mb-6">
+
+					<div className="grid grid-cols-3 gap-2 sm:gap-6 mb-8 max-md:mb-6">
 						<StatCard
-							icon={CheckCircle}
 							value={stats.totalRequests}
 							label={t('workshop.requests.new_requests')}
-							iconColor="#05324f"
-							iconBg="bg-blue-50"
 						/>
 						<StatCard
-							icon={CheckCircle}
 							value={stats.completedContracts}
 							label={t('workshop.requests.won_jobs')}
-							iconColor="#34C759"
-							iconBg="bg-green-50"
 						/>
 						<StatCard
-							icon={DollarSign}
 							value={formatK(stats.monthlyRevenue)}
 							label={t('workshop.requests.revenue_this_month')}
-							iconColor="#05324f"
-							iconBg="bg-blue-50"
 						/>
 					</div>
 				</div>
@@ -389,12 +375,8 @@ export default function WorkshopRequestsPage() {
 												<p className="text-sm mb-1.5 md:mb-0 max-md:text-sm max-md:mb-1 text-gray-700" style={{ color: 'inherit' }}>
 													{request.description || t('workshop.requests.no_description_provided')}
 												</p>
-												{/* "8 km away · Latest 2 May" - reference line with middle dot */}
-												<p className="text-xs text-gray-500 max-md:block">
+												<p className="text-xs text-gray-500 mt-1">
 													{distance != null ? `${Math.round(distance)} ${t('workshop.requests.km_away')}` : (request.city || t('common.no_data'))}
-													{latestDate && <br className="md:hidden" />}
-													{distance != null && latestDate && <span className="hidden md:inline"> · </span>}
-													{latestDate && `${t('workshop.requests.latest')} ${latestDate}`}
 												</p>
 												{/* Desktop only: Username + Date, Distance */}
 												<div className="hidden md:flex items-center gap-2 mb-1 flex-wrap mt-2">
@@ -407,22 +389,12 @@ export default function WorkshopRequestsPage() {
 													{customer?.name && requestDateTime && <span style={{ color: '#05324f' }}>·</span>}
 													{requestDateTime && <p className="text-xs" style={{ color: '#05324f' }}>{requestDateTime}</p>}
 												</div>
-												<div className="hidden md:block mt-1">
-													{distance !== null ? (
-														<p className="text-xs text-gray-500">{Math.round(distance)} {t('workshop.requests.km_from_job')}</p>
-													) : (
-														<p className="text-xs text-gray-500">{request.city || t('common.no_data')}</p>
-													)}
-												</div>
+
 											</div>
 
 											{/* Center: Desktop only */}
 											<div className="hidden md:flex justify-center">
-												{distance !== null ? (
-													<p className="text-xs sm:text-sm" style={{ color: '#05324f' }}>{Math.round(distance)} {t('workshop.requests.km_from_job')}</p>
-												) : (
-													<p className="text-xs sm:text-sm" style={{ color: '#05324f' }}>{request.city || t('common.no_data')}</p>
-												)}
+												{/* Redundant location removed per user request */}
 											</div>
 
 											{/* Right: View report + Submit offer - both visible on mobile */}

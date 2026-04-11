@@ -22,6 +22,7 @@ import {
 	User,
 	Mail,
 	Phone,
+	Inbox,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -77,15 +78,41 @@ export default function WorkshopProposalsPage() {
 		}
 	}, [user])
 
+	const counts = {
+		sent: offers.filter(o => o.status === 'SENT').length,
+		accepted: offers.filter(o => o.status === 'ACCEPTED').length,
+		declined: offers.filter(o => o.status === 'DECLINED').length,
+		expired: offers.filter(o => o.status === 'EXPIRED').length,
+		cancelled: offers.filter(o => o.status === 'CANCELLED').length,
+	}
+
+	const allTabs = [
+		{ key: 'all', label: t('workshop.proposals.tabs.all') || 'All' },
+		{ key: 'sent', label: t('workshop.proposals.tabs.sent') || 'Sent' },
+		{ key: 'accepted', label: t('workshop.proposals.tabs.accepted') || 'Accepted' },
+		{ key: 'declined', label: t('workshop.proposals.tabs.declined') || 'Declined' },
+		{ key: 'expired', label: t('workshop.proposals.tabs.expired') || 'Expired' },
+		{ key: 'cancelled', label: t('workshop.proposals.tabs.cancelled') || 'Cancelled' },
+	]
+
+	const visibleTabs = allTabs.filter(tab => tab.key === 'all' || counts[tab.key] > 0)
+
+	// Auto-reset tab if it becomes hidden
+	useEffect(() => {
+		if (activeTab !== 'all' && !visibleTabs.find(t => t.key === activeTab)) {
+			setActiveTab('all')
+		}
+	}, [visibleTabs, activeTab])
+
 	const getStatusBadge = (status) => {
 		const statusMap = {
 			SENT: {
 				label: t('workshop.proposals.status.sent') || 'Sent',
-				className: 'bg-blue-50 text-blue-700 border-blue-100',
+				className: 'bg-green-50 text-green-800 border-green-200',
 			},
 			ACCEPTED: {
 				label: t('workshop.proposals.status.accepted') || 'Accepted',
-				className: 'bg-green-50 text-green-700 border-green-100',
+				className: 'bg-green-50 text-green-800 border-green-200',
 			},
 			DECLINED: {
 				label: t('workshop.proposals.status.declined') || 'Declined',
@@ -93,11 +120,11 @@ export default function WorkshopProposalsPage() {
 			},
 			EXPIRED: {
 				label: t('workshop.proposals.status.expired') || 'Expired',
-				className: 'bg-red-50 text-red-700 border-red-100',
+				className: 'bg-green-50 text-green-800 border-green-200',
 			},
 			CANCELLED: {
 				label: t('workshop.proposals.status.cancelled') || 'Cancelled',
-				className: 'bg-orange-50 text-orange-700 border-orange-100',
+				className: 'bg-red-50 text-red-600 border-red-200',
 			},
 		}
 
@@ -118,9 +145,9 @@ export default function WorkshopProposalsPage() {
 			case 'DECLINED':
 				return <XCircle className="w-4 h-4" />
 			case 'EXPIRED':
-				return <AlertCircle className="w-4 h-4" />
+				return <Clock className="w-4 h-4" />
 			case 'CANCELLED':
-				return <XCircle className="w-4 h-4" />
+				return <AlertCircle className="w-4 h-4" />
 			default:
 				return <Clock className="w-4 h-4" />
 		}
@@ -129,17 +156,15 @@ export default function WorkshopProposalsPage() {
 	const getStatusIconColor = (status) => {
 		switch (status) {
 			case 'SENT':
-				return '#3b82f6' // blue-500
 			case 'ACCEPTED':
-				return '#34C759' // green
-			case 'DECLINED':
-				return '#ef4444' // red-500
 			case 'EXPIRED':
-				return '#6b7280' // gray-500
+				return '#166534' // green-800
+			case 'DECLINED':
+				return '#4b5563' // gray-600
 			case 'CANCELLED':
-				return '#f97316' // orange-500
+				return '#dc2626' // red-600 (full red)
 			default:
-				return '#34C759' // green
+				return '#34C759' // default green
 		}
 	}
 
@@ -211,14 +236,7 @@ export default function WorkshopProposalsPage() {
 		return null
 	}
 
-	const tabs = [
-		{ key: 'all', label: t('workshop.proposals.tabs.all') || 'All' },
-		{ key: 'sent', label: t('workshop.proposals.tabs.sent') || 'Sent' },
-		{ key: 'accepted', label: t('workshop.proposals.tabs.accepted') || 'Accepted' },
-		{ key: 'declined', label: t('workshop.proposals.tabs.declined') || 'Declined' },
-		{ key: 'expired', label: t('workshop.proposals.tabs.expired') || 'Expired' },
-		{ key: 'cancelled', label: t('workshop.proposals.tabs.cancelled') || 'Cancelled' },
-	]
+
 
 	return (
 	<div className="min-h-screen bg-gray-50 flex flex-col">
@@ -234,20 +252,20 @@ export default function WorkshopProposalsPage() {
 				</p>
 			</div>
 
-			{/* Navigation Tabs - Redesigned Segmented Control */}
-			<div className="flex justify-center mb-8 animate-fade-in-up">
-				<div className="inline-flex p-1 bg-white border border-gray-100 rounded-full shadow-sm max-md:rounded-2xl max-w-full gap-1 max-md:bg-transparent max-md:border-0 max-md:shadow-none max-md:p-0 max-md:gap-2 max-md:w-full max-md:grid max-md:grid-cols-3">
-					{tabs.map(({ key, label }) => (
+			{/* Navigation Tabs - Synchronized & Refined Mobile Styling */}
+			<div className="flex justify-start mb-8 animate-fade-in-up overflow-x-auto no-scrollbar pb-2">
+				<div className="inline-flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1 gap-1 max-md:w-full max-md:bg-gray-100 max-md:border-0 max-md:shadow-none max-md:p-0 max-md:gap-2 max-md:rounded-xl">
+					{visibleTabs.map(({ key, label }) => (
 						<button
 							key={key}
 							onClick={() => setActiveTab(key)}
-							className={`px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[100px] max-md:flex-1 max-md:py-3.5 max-md:rounded-xl shadow-sm border border-transparent ${
+							className={`px-4 py-2 sm:px-6 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[100px] max-md:flex-1 max-md:py-2 max-md:rounded-lg max-md:text-[11px] shadow-sm border border-transparent flex items-center justify-center gap-2 ${
 								activeTab === key
 									? 'bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759]'
-									: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:border-gray-200'
+									: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:bg-gray-200 max-md:border-0'
 							}`}
 						>
-							{label}
+							<span>{label}</span>
 						</button>
 					))}
 				</div>
@@ -268,8 +286,8 @@ export default function WorkshopProposalsPage() {
 								</h3>
 								<p className="text-lg text-gray-600 max-w-xl mx-auto leading-relaxed" style={{ color: 'inherit' }}>
 									{activeTab === 'all' 
-										? (t('workshop.proposals.no_proposals.description') || 'You haven\'t submitted any proposals yet. Check the jobs tab to find new opportunities.')
-										: (t(`workshop.proposals.no_proposals.${activeTab}_description`) || `You don't have any ${activeTab} proposals at the moment.`)
+										? (t('workshop.proposals.no_proposals.description', { defaultValue: "You haven't submitted any proposals yet. Check the jobs tab to find new opportunities." }))
+										: (t(`workshop.proposals.no_proposals.${activeTab}_description`, { defaultValue: `You don't have any ${activeTab} proposals at the moment.` }))
 									}
 								</p>
 							</CardContent>

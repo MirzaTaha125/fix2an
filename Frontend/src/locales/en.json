@@ -50,7 +50,10 @@
 		"contact_support": "Contact Support",
 		"read_cancellation_policy": "Read Cancellation Policy",
 		"dismiss": "Dismiss Record",
-		"not_yet": "Not yet"
+		"not_yet": "Not yet",
+		"make": "Make",
+		"model": "Model",
+		"year": "Year"
 	},
 	"navigation": {
 		"home": "Home",
@@ -365,7 +368,8 @@
 		"contract_with": "Contract with",
 		"star": "star",
 		"stars": "stars",
-		"review_no_booking": "No completed booking found for this request",
+		"cancel_success": "Request cancelled successfully",
+		"no_booking_info": "No booking information",
 		"no_description": "No description provided"
 	},
 	"profile": {
@@ -743,7 +747,11 @@
 			"title": "Proposals",
 			"subtitle": "View and manage your submitted proposals",
 			"submitted": "Submitted",
+			"total_price": "Total Price",
 			"offer_details": "Offer Details",
+			"labor": "Labor",
+			"parts": "Parts",
+			"vat": "VAT",
 			"price": "Price",
 			"estimated_duration": "Estimated Duration",
 			"warranty": "Warranty",
@@ -755,7 +763,12 @@
 			"fetch_error": "Failed to fetch proposals",
 			"no_proposals": {
 				"title": "No Proposals",
-				"description": "You haven't submitted any proposals yet."
+				"description": "You haven't submitted any proposals yet.",
+				"sent_description": "You don't have any sent proposals at the moment.",
+				"accepted_description": "You don't have any accepted proposals. Keep submitting offers to win new jobs!",
+				"declined_description": "You don't have any declined proposals.",
+				"expired_description": "You don't have any expired proposals.",
+				"cancelled_description": "You don't have any cancelled proposals."
 			},
 			"tabs": {
 				"all": "All",
@@ -1011,11 +1024,16 @@
 				"blocked": "Blocked",
 				"closed": "Closed",
 				"workshop_not_found": "Workshop not found",
-				"failed_load_details": "Failed to load workshop details"
+				"failed_load_details": "Failed to load workshop details",
+				"basic_information": "Workshop Information",
+				"vehicle_information": "Vehicle Information"
 			}
 		},
 		"customers": {
 			"title": "Customers",
+			"details": {
+				"basic_information": "Customer Information"
+			},
 			"search": "Search customers...",
 			"filter": "Filter",
 			"name": "Name",
@@ -1051,10 +1069,24 @@
 			"no_requests": "No requests found",
 			"vehicle": "Vehicle",
 			"customer": "Customer",
-			"location": "Location"
+			"location": "Location",
+			"details": {
+				"title": "Request Overview",
+				"description": "Description",
+				"location": "Location",
+				"time_location": "Time & Location"
+			}
 		},
 		"offers": {
 			"title": "Offers",
+			"details": {
+				"title": "Offer Overview",
+				"workshop_notes": "Workshop Notes",
+				"financial_summary": "Financial Summary",
+				"cancellation_audit": "Cancellation Audit",
+				"cancelled_by": "Cancelled By",
+				"reason": "Reason"
+			},
 			"sent": "Sent",
 			"accepted": "Accepted",
 			"declined": "Declined",
@@ -1079,7 +1111,10 @@
 			"done": "Done",
 			"no_show": "No Show",
 			"no_bookings": "No bookings found",
-			"search": "Search bookings..."
+			"search": "Search bookings...",
+			"details": {
+				"title": "Booking Overview"
+			}
 		},
 		"settings": {
 			"title": "Settings",

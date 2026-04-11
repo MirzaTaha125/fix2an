@@ -19,34 +19,34 @@ export function StatCard({
 	return (
 		<div
 			className={cn(
-				'rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group relative overflow-hidden h-full min-w-[160px]',
+				'rounded-2xl border border-gray-100 bg-white p-3.5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group relative overflow-hidden h-full',
 				className
 			)}
 		>
 			{/* Top Row: Label & Icon */}
-			<div className="flex items-start justify-between w-full mb-3 gap-3">
+			<div className="flex items-start justify-between w-full mb-3 gap-2">
 				{label && (
-					<p className="text-sm font-medium text-gray-500 leading-tight">
+					<p className="text-[10px] sm:text-sm font-medium text-gray-500 leading-tight">
 						{label}
 					</p>
 				)}
 				{Icon && (
 					<div className={cn(
-						'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 duration-300',
+						'w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 duration-300',
 						iconBg
 					)}>
-						<Icon size={20} style={{ color: iconColor }} strokeWidth={2.5} />
+						<Icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: iconColor }} strokeWidth={2.5} />
 					</div>
 				)}
 			</div>
 			
 			{/* Middle Row: Value */}
-			<div className="flex items-baseline gap-1 mb-2">
-				{prefix && <span className="text-lg font-bold text-gray-400">{prefix}</span>}
-				<p className="text-2xl sm:text-3xl font-black text-[#05324f] leading-none tracking-tight">
+			<div className="flex items-baseline gap-1 mb-2 overflow-hidden">
+				{prefix && <span className="text-sm sm:text-lg font-bold text-gray-400">{prefix}</span>}
+				<p className="text-xl sm:text-3xl font-black text-[#05324f] leading-none tracking-tight truncate">
 					{value ?? '0'}
 				</p>
-				{suffix && <span className="text-sm font-bold text-gray-400 ml-1">{suffix}</span>}
+				{suffix && <span className="text-[10px] sm:text-sm font-bold text-gray-400 ml-1">{suffix}</span>}
 			</div>
 
 			{/* Bottom Row: Trend indicator */}

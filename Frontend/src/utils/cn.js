@@ -20,21 +20,37 @@ export function formatCompactNumber(number) {
 }
 
 export function formatDate(date) {
+	if (!date) return 'N/A'
+	const d = new Date(date)
+	if (isNaN(d.getTime())) return 'N/A'
 	return new Intl.DateTimeFormat('sv-SE', {
 		year: 'numeric',
 		month: 'long',
 		day: 'numeric',
-	}).format(new Date(date))
+	}).format(d)
 }
 
 export function formatDateTime(date) {
+	if (!date) return 'N/A'
+	const d = new Date(date)
+	if (isNaN(d.getTime())) return 'N/A'
 	return new Intl.DateTimeFormat('sv-SE', {
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric',
 		hour: '2-digit',
 		minute: '2-digit',
-	}).format(new Date(date))
+	}).format(d)
+}
+
+export function formatTime(date) {
+	if (!date) return 'N/A'
+	const d = new Date(date)
+	if (isNaN(d.getTime())) return 'N/A'
+	return new Intl.DateTimeFormat('sv-SE', {
+		hour: '2-digit',
+		minute: '2-digit',
+	}).format(d)
 }
 
 export function calculateDistance(lat1, lon1, lat2, lon2) {

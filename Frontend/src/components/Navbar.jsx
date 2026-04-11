@@ -73,54 +73,52 @@ function Navbar() {
 			}}
 		>
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-1 sm:pb-0">
-				<div className="grid grid-cols-3 md:flex justify-between items-center py-2 sm:py-2.5 w-full">
-					<div className="flex justify-start md:hidden">
-						{shouldShowBackButton ? (
-							<button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
-								<ArrowLeft className="w-6 h-6 text-[#05324f]" />
-							</button>
-						) : (
-							!user && (
-								<button 
-									onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-									className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
-								>
-									{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
+				<div className="relative flex justify-between items-center py-2 sm:py-2.5 w-full">
+					{/* Left Section: Mobile controls & Admin Identity */}
+					<div className="flex items-center justify-start flex-1 min-w-0">
+						<div className="flex md:hidden">
+							{shouldShowBackButton ? (
+								<button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
+									<ArrowLeft className="w-6 h-6 text-[#05324f]" />
 								</button>
-							)
-						)}
-					</div>
-					<div className="flex items-center justify-center md:justify-start gap-3 w-full">
-						<Logo />
+							) : (
+								!user && (
+									<button 
+										onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+										className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
+									>
+										{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
+									</button>
+								)
+							)}
+						</div>
+
+						{/* Admin Identity Stack (Desktop & Mobile) */}
 						{user?.role === 'ADMIN' && (
-							<span className={`text-sm font-medium hidden sm:block transition-colors duration-300 ${
-								shouldUseWhiteNavbar ? 'text-gray-600' : 'text-white/80 drop-shadow-md'
-							}`}>
-								{t('common.admin_tagline') || 'Manage & Monitor'}
-							</span>
+							<Link to="/admin" className="flex flex-col group ml-2 md:ml-0">
+								<span className="text-sm sm:text-lg font-bold text-[#05324f] tracking-tight leading-tight group-hover:text-[#34C759] transition-colors">
+									Admin <span className="text-[#34C759]">Panel</span>
+								</span>
+								<span className="text-[8px] sm:text-[10px] font-semibold text-gray-400 uppercase tracking-widest leading-none">
+									{t('common.admin_tagline')}
+								</span>
+							</Link>
 						)}
 					</div>
+
+					{/* Center Section: Logo (Absolute Centering) */}
+					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-auto">
+						<Logo />
+					</div>
+
+					{/* Right Section: Desktop Navigation & Utilities */}
+					<div className="flex items-center justify-end flex-1">
 
 					{/* Desktop Navigation */}
 					<nav className="hidden md:flex space-x-6 lg:space-x-8 items-center">
 						{!loading && user ? (
 							<>
-								{user.role === 'ADMIN' && (
-									<Link 
-										to="/admin" 
-										className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${
-											isActive('/admin') 
-												? shouldUseWhiteNavbar 
-													? 'text-[#05324f] font-semibold' 
-													: 'text-white font-semibold bg-white/25 shadow-md backdrop-blur-sm'
-												: shouldUseWhiteNavbar 
-													? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-50 hover:shadow-sm' 
-													: 'text-white/80 hover:text-white hover:bg-white/10'
-										}`}
-									>
-										<span>Admin <span className="text-[#34C759]">Panel</span></span>
-									</Link>
-								)}
+
 								{user.role === 'CUSTOMER' && (
 									<>
 										<Link 
@@ -387,6 +385,7 @@ function Navbar() {
 						<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} />
 					</div>
 				</div>
+			</div>
 
 				{/* Mobile Navigation */}
 				{mobileMenuOpen && (
@@ -615,9 +614,6 @@ function Navbar() {
 			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
 				<DialogContent className="max-w-[400px] w-[90%] bg-white rounded-2xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
 					<DialogHeader className="text-left items-start">
-						<div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
-							<LogOut className="w-6 h-6 text-red-600" />
-						</div>
 						<DialogTitle className="text-2xl font-black text-[#05324f] leading-tight mb-2">
 							{t('navigation.logout_confirm_title')}
 						</DialogTitle>
@@ -635,7 +631,7 @@ function Navbar() {
 						</Button>
 						<Button
 							onClick={confirmLogout}
-							className="flex-1 h-11 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all shadow-md active:scale-95"
+							className="flex-1 h-11 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold transition-all shadow-md active:scale-95"
 						>
 							{t('navigation.logout') || 'Log Out'}
 						</Button>

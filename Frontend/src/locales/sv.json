@@ -50,7 +50,10 @@
 		"contact_support": "Kontakta support",
 		"read_cancellation_policy": "Läs avbokningsregler",
 		"dismiss": "Avfärda",
-		"not_yet": "Inte än"
+		"not_yet": "Inte än",
+		"make": "Märke",
+		"model": "Modell",
+		"year": "År"
 	},
 	"navigation": {
 		"home": "Hem",
@@ -364,7 +367,8 @@
 		"contract_with": "Kontrakt med",
 		"star": "stjärna",
 		"stars": "stjärnor",
-		"review_no_booking": "Ingen slutförd bokning hittades för denna förfrågan",
+		"cancel_success": "Ärendet har avbrutits",
+		"no_booking_info": "Ingen bokningsinformation",
 		"no_description": "Ingen beskrivning angiven"
 	},
 	"profile": {
@@ -742,7 +746,11 @@
 			"title": "Förslag",
 			"subtitle": "Visa och hantera dina skickade förslag",
 			"submitted": "Skickad",
+			"total_price": "Totalpris",
 			"offer_details": "Erbjudandedetaljer",
+			"labor": "Arbetskostnad",
+			"parts": "Materialkostnad",
+			"vat": "Moms",
 			"price": "Pris",
 			"estimated_duration": "Beräknad varaktighet",
 			"warranty": "Garanti",
@@ -754,7 +762,12 @@
 			"fetch_error": "Kunde inte hämta förslag",
 			"no_proposals": {
 				"title": "Inga förslag",
-				"description": "Du har inte skickat några förslag än."
+				"description": "Du har inte skickat några förslag än.",
+				"sent_description": "Du har inga skickade förslag för tillfället.",
+				"accepted_description": "Du har inga accepterade förslag. Fortsätt skicka offerter för att vinna nya jobb!",
+				"declined_description": "Du har inga avslagna förslag.",
+				"expired_description": "Du har inga utgångna förslag.",
+				"cancelled_description": "Du har inga avbrutna förslag."
 			},
 			"tabs": {
 				"all": "Alla",
@@ -952,6 +965,9 @@
 			"more_features_coming": "Fler funktioner kommer snart..."
 		},
 		"customers": {
+			"details": {
+				"basic_information": "Kundinformation"
+			},
 			"title": "Kundhantering",
 			"search": "Sök",
 			"filter": "Filter",
@@ -1030,7 +1046,8 @@
 				"blocked": "Blockerad",
 				"closed": "Stängt",
 				"workshop_not_found": "Verkstad hittades inte",
-				"failed_load_details": "Kunde inte ladda verkstadsdetaljer"
+				"failed_load_details": "Kunde inte ladda verkstadsdetaljer",
+				"vehicle_information": "Fordonsinformation"
 			},
 			"offers": "Erbjudanden",
 			"bookings": "Bokningar",
@@ -1050,10 +1067,24 @@
 			"no_requests": "Inga förfrågningar hittades",
 			"vehicle": "Fordon",
 			"customer": "Kund",
-			"location": "Plats"
+			"location": "Plats",
+			"details": {
+				"title": "Översikt av förfrågan",
+				"description": "Beskrivning",
+				"location": "Plats",
+				"time_location": "Tid & Plats"
+			}
 		},
 		"offers": {
 			"title": "Erbjudanden",
+			"details": {
+				"title": "Översikt av erbjudande",
+				"workshop_notes": "Verkstadsnoteringar",
+				"financial_summary": "Ekonomisk sammanställning",
+				"cancellation_audit": "Avbokningsgranskning",
+				"cancelled_by": "Avbokad av",
+				"reason": "Orsak"
+			},
 			"sent": "Skickad",
 			"accepted": "Accepterad",
 			"declined": "Avvisad",
@@ -1078,7 +1109,10 @@
 			"done": "Genomförd",
 			"no_show": "Utebliven",
 			"no_bookings": "Inga bokningar hittades",
-			"search": "Sök bokningar..."
+			"search": "Sök bokningar...",
+			"details": {
+				"title": "Bokningsöversikt"
+			}
 		},
 		"settings": {
 			"title": "Inställningar",

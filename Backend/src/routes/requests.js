@@ -3,6 +3,7 @@ import Request from '../models/Request.js'
 import Workshop from '../models/Workshop.js'
 import Offer from '../models/Offer.js'
 import Booking from '../models/Booking.js'
+import Review from '../models/Review.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import { expireRequests } from '../utils/expireRequests.js'
 import { expireOffers } from '../utils/expireOffers.js'
@@ -111,18 +112,22 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 							reviewCount: offer.workshopId?.reviewCount || 0,
 						},
 					})),
-					bookings: bookings.map(booking => ({
-						id: booking._id,
-						_id: booking._id,
-						status: booking.status,
-						scheduledAt: booking.scheduledAt,
-						totalAmount: booking.totalAmount,
-						workshop: {
-							companyName: booking.workshopId?.companyName,
-							rating: booking.workshopId?.rating || 0,
-							reviewCount: booking.workshopId?.reviewCount || 0,
-						},
-						workshopId: booking.workshopId,
+					bookings: await Promise.all(bookings.map(async (booking) => {
+						const review = await Review.findOne({ bookingId: booking._id })
+						return {
+							id: booking._id,
+							_id: booking._id,
+							status: booking.status,
+							scheduledAt: booking.scheduledAt,
+							totalAmount: booking.totalAmount,
+							hasReview: !!review,
+							workshop: {
+								companyName: booking.workshopId?.companyName,
+								rating: booking.workshopId?.rating || 0,
+								reviewCount: booking.workshopId?.reviewCount || 0,
+							},
+							workshopId: booking.workshopId,
+						}
 					})),
 				}
 			})
@@ -228,6 +233,31 @@ router.patch('/:id', authenticate, async (req, res) => {
 		if (updateData.city) request.city = updateData.city
 		if (updateData.postalCode) request.postalCode = updateData.postalCode
 		if (updateData.expiresAt) request.expiresAt = new Date(updateData.expiresAt)
+
+		// Handle status change to CANCELLED
+		if (updateData.status === 'CANCELLED') {
+			// Safety check: Don't cancel if there are active bookings
+			const activeBooking = await Booking.findOne({ 
+				requestId: id, 
+				status: { $in: ['BOOKED', 'DONE'] } 
+			})
+			if (activeBooking) {
+				return res.status(400).json({ message: 'Cannot cancel a request with active or completed bookings' })
+			}
+
+			request.status = 'CANCELLED'
+			
+			// Also cancel all SENT offers associated with this request
+			await Offer.updateMany(
+				{ requestId: id, status: 'SENT' },
+				{ 
+					status: 'CANCELLED',
+					cancellationReason: 'Request was cancelled by owner',
+					cancelledBy: 'CUSTOMER',
+					cancelledAt: new Date()
+				}
+			)
+		}
 
 		await request.save()
 

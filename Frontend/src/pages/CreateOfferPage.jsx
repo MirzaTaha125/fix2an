@@ -475,7 +475,7 @@ export default function CreateOfferPage() {
 														onClick={() => setFormData({ ...formData, validityDays: days })}
 														className={`flex-1 py-3 px-4 rounded-xl border-2 font-bold text-sm transition-all duration-200 ${
 															formData.validityDays === days
-																? 'bg-[#05324f] border-[#05324f] text-white shadow-lg scale-[1.02]'
+																? 'bg-[#34C759] border-[#34C759] text-white shadow-lg scale-[1.02]'
 																: 'border-gray-100 bg-gray-50 text-gray-400 hover:border-gray-200'
 														} ${viewMode ? 'cursor-default' : 'hover:shadow-md active:scale-95'}`}
 													>
@@ -526,8 +526,7 @@ export default function CreateOfferPage() {
 
 									{/* Estimated Duration */}
 									<div className="space-y-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100 col-span-1 sm:col-span-2 md:col-span-1">
-										<Label htmlFor="estimatedDuration" className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
-											<Clock className="w-3.5 h-3.5 text-[#34C759]" />
+										<Label htmlFor="estimatedDuration" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
 											<span>Estimated Duration (mins)</span>
 										</Label>
 										<Input
@@ -539,7 +538,7 @@ export default function CreateOfferPage() {
 											onChange={(e) => setFormData({ ...formData, estimatedDuration: e.target.value })}
 											placeholder="60"
 											required
-											className="h-11 text-base font-bold text-[#05324f] border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-lg bg-white"
+											className="h-11 text-base font-medium text-[#05324f] border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-lg bg-white"
 										/>
 									</div>
 								</div>

@@ -94,6 +94,8 @@ export default function MyCasesPage() {
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 	const [requestToDelete, setRequestToDelete] = useState(null)
 	const [isDeleting, setIsDeleting] = useState(false)
+	const [selectedReport, setSelectedReport] = useState(null)
+	const [showReportDialog, setShowReportDialog] = useState(false)
 
 	// Close menu when clicking elsewhere
 	useEffect(() => {
@@ -338,14 +340,15 @@ export default function MyCasesPage() {
 		if (!requestToDelete) return
 		setIsDeleting(true)
 		try {
-			await requestsAPI.delete(requestToDelete._id || requestToDelete.id)
-			toast.success(t('my_cases.delete_success') || 'Request deleted successfully')
+			await requestsAPI.update(requestToDelete._id || requestToDelete.id, { status: 'CANCELLED' })
+			toast.success(t('my_cases.cancel_success') || 'Request cancelled successfully')
 			setDeleteConfirmOpen(false)
 			setRequestToDelete(null)
 			fetchRequests()
+			setActiveTab('cancelled_cases')
 		} catch (error) {
-			console.error('Delete request error:', error)
-			toast.error(error.response?.data?.message || t('my_cases.delete_error') || 'Failed to delete request')
+			console.error('Cancel request error:', error)
+			toast.error(error.response?.data?.message || t('my_cases.cancel_error') || 'Failed to cancel request')
 		} finally {
 			setIsDeleting(false)
 		}
@@ -506,18 +509,18 @@ export default function MyCasesPage() {
 				</div>
 			</div>
 
-			{/* Navigation Tabs - Redesigned to match screenshot */}
+			{/* Navigation Tabs - Synchronized & Refined Mobile Styling */}
 			{requests.length > 0 && (
-				<div className="flex justify-center mb-8 animate-fade-in-up">
-					<div className="inline-flex p-1 bg-white border border-gray-100 rounded-3xl shadow-sm max-w-full max-md:bg-transparent max-md:border-0 max-md:shadow-none max-md:p-0 max-md:w-full max-md:grid max-md:grid-cols-2 max-md:gap-2">
+				<div className="flex justify-start mb-8 animate-fade-in-up overflow-x-auto no-scrollbar pb-2">
+					<div className="inline-flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1 gap-1 max-md:w-full max-md:bg-gray-100 max-md:border-0 max-md:shadow-none max-md:p-0 max-md:gap-2 max-md:rounded-xl">
 						{visibleTabs.map(({ key, label }) => (
 							<button
 								key={key}
 								onClick={() => setActiveTab(key)}
-								className={`px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[100px] max-md:flex-1 max-md:py-3.5 max-md:rounded-xl shadow-sm border border-transparent ${
+								className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 whitespace-nowrap min-w-[80px] sm:min-w-[100px] max-md:flex-1 max-md:py-2 max-md:rounded-lg max-md:text-[11px] shadow-sm border border-transparent ${
 									activeTab === key
 										? 'bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759]'
-										: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:border-gray-200'
+										: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 max-md:bg-gray-200 max-md:text-gray-600'
 								}`}
 							>
 								{label}
@@ -613,8 +616,7 @@ export default function MyCasesPage() {
 									className={`grid grid-cols-1 md:grid-cols-3 items-start py-3 px-3 sm:px-6 gap-2 sm:gap-4 relative max-md:bg-white max-md:rounded-xl max-md:border max-md:border-gray-200 max-md:p-3 max-md:shadow-none ${activeMenuId === requestId ? 'z-20' : 'z-10'} ${index !== filteredRequests.length - 1 ? 'border-b border-gray-200 md:border-b' : ''} max-md:border-b-0`}
 								>
 									{/* Action Menu - Mobile Only (Top Right) */}
-									{activeTab !== 'cancelled_cases' && (
-										<div className="absolute top-3 right-3 md:hidden">
+									<div className="absolute top-3 right-3 md:hidden">
 											<div className="relative">
 												<button 
 													onClick={(e) => {
@@ -628,46 +630,32 @@ export default function MyCasesPage() {
 												
 												{activeMenuId === requestId && (
 													<div className="absolute right-0 mt-2 w-52 bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
-														{/* View Details - Reference the existing complex button labels */}
-														<button 
-															onClick={() => {
-																const detailsTarget = activeTab === 'booked_cases' || activeTab === 'completed_cases' || activeTab === 'rescheduled_cases' || activeTab === 'cancelled_cases' 
-																	? (bookings[0] || request.bookings?.[0]) 
-																	: null
-																
-																setSelectedBookingForDetails(detailsTarget || { ...request, isRequestOnly: true })
-																setDetailsModalOpen(true)
-															}}
-															className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-bold"
-														>
-															<Eye className="w-4 h-4 text-blue-500" />
-															{t('my_cases.view_details') || 'View Details'}
-														</button>
+														{/* View Inspection Report */}
+														{(request.reportId || request.report || (request.reportIds && request.reportIds.length > 0)) && (
+															<button 
+																onClick={() => {
+																	const report = request.reportId || request.report || (request.reportIds && request.reportIds[0])
+																	setSelectedReport(report)
+																	setShowReportDialog(true)
+																}}
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#34C759] font-semibold"
+															>
+																View Inspection Report
+															</button>
+														)}
 
 														{/* Show Offers - for requests in bidding */}
 														{['NEW', 'IN_BIDDING', 'BIDDING_CLOSED'].includes(request.status) && (
 															<Link 
 																to={`/offers?requestId=${requestId}`}
-																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-bold"
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-semibold"
 															>
-																<List className="w-4 h-4 text-[#34C759]" />
 																{t('my_cases.show_offer_list') || 'Show Offer List'}
 															</Link>
 														)}
 
-														{/* Edit Request - for new/pending requests */}
-														{['NEW', 'IN_BIDDING'].includes(request.status) && (
-															<Link 
-																to={`/upload?edit=${requestId}`}
-																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-bold"
-															>
-																<Pencil className="w-4 h-4 text-indigo-500" />
-																{t('my_cases.edit_request') || 'Edit Request'}
-															</Link>
-														)}
-
 														{/* Write Review - for completed cases */}
-														{activeTab === 'completed_cases' && bookings.some(b => b.status === 'DONE') && (
+														{activeTab === 'completed_cases' && (request.bookings || []).some(b => b.status === 'DONE') && (
 															<button
 																onClick={() => {
 																	setSelectedRequestForReview(request)
@@ -675,9 +663,8 @@ export default function MyCasesPage() {
 																	setReviewText('')
 																	setReviewModalOpen(true)
 																}}
-																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-bold"
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-semibold"
 															>
-																<Star className="w-4 h-4 text-yellow-500" />
 																{t('my_cases.leave_review') || 'Write Review'}
 															</button>
 														)}
@@ -689,9 +676,8 @@ export default function MyCasesPage() {
 																	setRequestToDelete(request)
 																	setDeleteConfirmOpen(true)
 																}}
-																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-red-50 text-red-600 font-bold"
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-red-50 text-red-600 font-semibold"
 															>
-																<Trash2 className="w-4 h-4" />
 																{t('my_cases.delete_request') || 'Delete Request'}
 															</button>
 														)}
@@ -699,7 +685,6 @@ export default function MyCasesPage() {
 												)}
 											</div>
 										</div>
-									)}
 
 									{/* Left: Title, Date, Description */}
 									<div className="min-w-0 pr-12 md:pr-0">
@@ -713,7 +698,7 @@ export default function MyCasesPage() {
 										)}
 										{/* Description */}
 										<p className="text-xs sm:text-sm line-clamp-1 md:line-clamp-2" style={{ color: '#05324f' }}>
-											{request.description || t('my_cases.no_description') || 'No description provided'}
+											{request.description || t('my_cases.no_description', 'No description provided')}
 										</p>
 									</div>
 
@@ -729,10 +714,10 @@ export default function MyCasesPage() {
 													{['my_cases'].includes(activeTab) && (
 														<p className="text-xs md:text-sm font-semibold text-[#05324f] flex items-center gap-1.5">
 															{activeOffers.length === 0 
-																? t('my_cases.no_offers')
+																? t('my_cases.no_offers', 'No offers yet')
 																: activeOffers.length === 1 
-																	? t('my_cases.one_available_offer') || '1 available offer'
-																	: `${activeOffers.length} ${t('my_cases.more_offers') || 'available offers'}`
+																	? t('my_cases.one_available_offer', '1 available offer')
+																	: `${activeOffers.length} ${t('my_cases.more_offers', 'more offers')}`
 															}
 														</p>
 													)}
@@ -753,7 +738,7 @@ export default function MyCasesPage() {
 																</>
 															) : (
 																<p className="text-[10px] md:text-xs italic text-gray-400">
-																	{t('my_cases.no_booking_info') || 'No booking information'}
+																	{t('my_cases.no_booking_info', 'No booking information')}
 																</p>
 															)}
 														</div>
@@ -764,15 +749,13 @@ export default function MyCasesPage() {
 									</div>
 
 									{/* Right: Action Context (Desktop Only) */}
-									{activeTab !== 'cancelled_cases' && (
-										<div className="hidden md:flex flex-col justify-center items-center gap-1.5 ml-auto pr-1 group">
-											<span className="text-[10px] font-black uppercase tracking-widest text-[#05324f] transition-colors group-hover:text-black whitespace-nowrap">
-												{t('common.actions') || 'Actions'}
-											</span>
-											
-											{/* Desktop Action Menu */}
+									<div className="hidden md:flex flex-col justify-center items-center gap-1.5 ml-auto pr-1 group">
+										
+										{/* Desktop Action Menu */}
+										<div className="flex items-center gap-3">
+
 											<div className="relative">
-												<div className="flex justify-center mt-[-4px]">
+												<div className="flex justify-center">
 													<button 
 														onClick={(e) => {
 															e.stopPropagation()
@@ -786,46 +769,33 @@ export default function MyCasesPage() {
 												
 												{activeMenuId === requestId && (
 													<div className="absolute right-0 mt-3 w-60 bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 py-2.5 animate-in fade-in zoom-in-95 duration-200">
-														{/* View Details */}
-														<button 
-															onClick={() => {
-																const detailsTarget = activeTab === 'booked_cases' || activeTab === 'completed_cases' || activeTab === 'rescheduled_cases' || activeTab === 'cancelled_cases' 
-																	? (bookings[0] || request.bookings?.[0]) 
-																	: null
-																
-																setSelectedBookingForDetails(detailsTarget || { ...request, isRequestOnly: true })
-																setDetailsModalOpen(true)
-															}}
-															className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#05324f] font-bold transition-colors"
-														>
-															<Eye className="w-4 h-4 text-blue-500" />
-															<span>{t('my_cases.view_details') || 'Review Record'}</span>
-														</button>
+														{/* View Inspection Report */}
+														{(request.reportId || request.report || (request.reportIds && request.reportIds.length > 0)) && (
+															<button 
+																onClick={() => {
+																	const report = request.reportId || request.report || (request.reportIds && request.reportIds[0])
+																	setSelectedReport(report)
+																	setShowReportDialog(true)
+																}}
+																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#34C759] font-semibold transition-colors"
+															>
+																View Inspection Report
+															</button>
+														)}
 
 														{/* Show Offers */}
 														{['NEW', 'IN_BIDDING', 'BIDDING_CLOSED'].includes(request.status) && (
 															<Link 
 																to={`/offers?requestId=${requestId}`}
-																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#05324f] font-bold transition-colors"
+																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#05324f] font-semibold transition-colors"
 															>
-																<List className="w-4 h-4 text-[#34C759]" />
 																<span>{t('my_cases.show_offer_list') || 'Audit Offers'}</span>
 															</Link>
 														)}
 
-														{/* Edit Request */}
-														{['NEW', 'IN_BIDDING'].includes(request.status) && (
-															<Link 
-																to={`/upload?edit=${requestId}`}
-																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#05324f] font-bold transition-colors"
-															>
-																<Pencil className="w-4 h-4 text-indigo-500" />
-																<span>{t('my_cases.edit_request') || 'Modify Entry'}</span>
-															</Link>
-														)}
-
-														{/* Write Review */}
-														{activeTab === 'completed_cases' && bookings.some(b => b.status === 'DONE') && (
+														{/* Write Review - only if not already reviewed */}
+														{activeTab === 'completed_cases' && 
+														 (request.bookings || []).some(b => b.status === 'DONE' && !b.hasReview) && (
 															<button
 																onClick={() => {
 																	setSelectedRequestForReview(request)
@@ -833,25 +803,23 @@ export default function MyCasesPage() {
 																	setReviewText('')
 																	setReviewModalOpen(true)
 																}}
-																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#05324f] font-bold transition-colors"
+																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#05324f] font-semibold transition-colors"
 															>
-																<Star className="w-4 h-4 text-yellow-500" />
 																<span>{t('my_cases.leave_review') || 'Write Narrative'}</span>
 															</button>
 														)}
 
 														<div className="h-px bg-gray-100 my-1 overflow-hidden" />
 
-														{/* Delete Request */}
+														{/* Delete Request - only for NEW/IN_BIDDING */}
 														{['NEW', 'IN_BIDDING'].includes(request.status) && (
 															<button 
 																onClick={() => {
 																	setRequestToDelete(request)
 																	setDeleteConfirmOpen(true)
 																}}
-																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-red-50 text-red-600 font-bold transition-colors"
+																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-red-50 text-red-600 font-semibold transition-colors"
 															>
-																<Trash2 className="w-4 h-4" />
 																<span>{t('my_cases.delete_request') || 'Terminate Case'}</span>
 															</button>
 														)}
@@ -859,7 +827,7 @@ export default function MyCasesPage() {
 												)}
 											</div>
 										</div>
-									)}
+									</div>
 								</div>
 							)
 						})}
@@ -869,8 +837,8 @@ export default function MyCasesPage() {
 
 			{/* Complete Job Confirmation Modal with Rating and Review */}
 				<Dialog open={completeConfirmOpen} onOpenChange={setCompleteConfirmOpen}>
-					<DialogContent onClose={() => setCompleteConfirmOpen(false)} className="max-w-md px-4 w-[90vw]">
-						<div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100">
+					<DialogContent onClose={() => setCompleteConfirmOpen(false)} className="max-w-md p-0 overflow-hidden rounded-[2.5rem] w-[90vw]">
+						<div className="bg-white shadow-2xl overflow-hidden border border-gray-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
 							<div className="bg-green-50 px-8 py-10 flex flex-col items-center text-center">
 								<div className="w-16 h-16 bg-[#34C759]/10 rounded-full flex items-center justify-center mb-6">
 									<CheckCircle className="w-10 h-10 text-[#34C759]" />
@@ -878,12 +846,12 @@ export default function MyCasesPage() {
 								<DialogTitle className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">
 									{t('my_cases.complete_job_confirm_title') || 'Complete Job'}
 								</DialogTitle>
-								<DialogDescription className="text-gray-600 font-medium whitespace-pre-line">
+								<DialogDescription className="text-gray-600 font-medium whitespace-pre-line px-4">
 									{t('my_cases.complete_job_confirm_description') || 'Please rate and review the service before completing the job.'}
 								</DialogDescription>
 							</div>
 							
-							<div className="px-8 py-8 bg-white">
+							<div className="px-6 py-8 bg-white">
 								{/* Workshop Name */}
 								{bookingToComplete && (() => {
 									const bookingId = bookingToComplete._id || bookingToComplete.id
@@ -988,7 +956,7 @@ export default function MyCasesPage() {
 				{/* Cancel Booking Confirmation Modal */}
 				<Dialog open={cancelConfirmOpen} onOpenChange={setCancelConfirmOpen}>
 					<DialogContent onClose={() => setCancelConfirmOpen(false)} className="max-w-md px-4 w-[90vw]">
-						<div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100">
+						<div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
 							<div className="bg-red-50 px-8 py-10 flex flex-col items-center text-center">
 								<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
 									<XCircle className="w-10 h-10 text-red-600" />
@@ -1058,7 +1026,7 @@ export default function MyCasesPage() {
 				{/* Reschedule Modal */}
 				<Dialog open={rescheduleModalOpen} onOpenChange={setRescheduleModalOpen}>
 					<DialogContent onClose={() => setRescheduleModalOpen(false)} className="max-w-md px-4 w-[90vw]">
-						<div className="bg-white rounded-[2.5rem] shadow-2xl p-8 border border-gray-100">
+						<div className="bg-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 border border-gray-100 max-h-[90vh] overflow-y-auto">
 							<div className="mb-8">
 								<DialogTitle className="text-2xl font-black text-[#05324f] uppercase tracking-tight mb-2">
 									{t('my_cases.reschedule_job_title') || 'Reschedule Job'}
@@ -1152,7 +1120,7 @@ export default function MyCasesPage() {
 				{/* Review Modal */}
 				<Dialog open={reviewModalOpen} onOpenChange={setReviewModalOpen}>
 					<DialogContent onClose={() => setReviewModalOpen(false)} className="max-w-md px-4 w-[90vw]">
-						<div className="bg-white rounded-[2.5rem] shadow-2xl p-8 border border-gray-100">
+						<div className="bg-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 border border-gray-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
 							<div className="mb-8">
 								<DialogTitle className="text-2xl font-black text-[#05324f] uppercase tracking-tight mb-2">
 									{t('my_cases.review_title') || 'Rate Your Experience'}
@@ -1266,17 +1234,10 @@ export default function MyCasesPage() {
 
 				{/* View Details Modal */}
 				<Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-<DialogContent className="max-w-[55rem] px-4 w-[95vw] shadow-none bg-transparent outline-none ring-0">
-	<div className="bg-white rounded-[2.5rem] shadow-2xl p-8 sm:p-10 border border-gray-100 max-h-[90vh] overflow-y-auto custom-scrollbar relative border-0">
-		{/* Premium Close Button inside card for better alignment */}
-		<button 
-			onClick={() => setDetailsModalOpen(false)}
-			className="absolute top-6 right-6 p-2.5 rounded-full hover:bg-gray-100 transition-all text-gray-400 hover:text-gray-900 z-10 bg-white/80 backdrop-blur-sm shadow-sm border border-gray-50"
-		>
-			<X className="w-6 h-6" />
-		</button>
+					<DialogContent onClose={() => setDetailsModalOpen(false)} className="max-w-3xl px-4 w-[90vw]">
+						<div className="bg-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 border border-gray-100 max-h-[90vh] overflow-y-auto custom-scrollbar relative">
 		<div className="mb-8 pr-12">
-								<DialogTitle className="text-3xl font-black text-[#05324f] uppercase tracking-tight mb-2">
+								<DialogTitle className="text-2xl font-black text-[#05324f] uppercase tracking-tight mb-2">
 									{selectedBookingForDetails?.isRequestOnly 
 										? (t('my_cases.request_details_title') || 'Request Analysis Details')
 										: (t('my_cases.workshop_details') || 'Service Identity')
@@ -1542,9 +1503,6 @@ export default function MyCasesPage() {
 				<DialogContent onClose={() => setDeleteConfirmOpen(false)} className="max-w-md px-4 w-[90vw]">
 					<div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100">
 						<div className="bg-red-50 px-8 py-10 flex flex-col items-center text-center">
-							<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
-								<Trash2 className="w-10 h-10 text-red-600" />
-							</div>
 							<DialogTitle className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">
 								{t('my_cases.delete_request_title') || 'Delete Request'}
 							</DialogTitle>
@@ -1553,22 +1511,83 @@ export default function MyCasesPage() {
 							</DialogDescription>
 						</div>
 						
-						<div className="px-8 py-8 bg-white flex flex-col gap-3">
-							<Button
-								onClick={handleDeleteRequest}
-								disabled={isDeleting}
-								className="w-full h-12 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-base shadow-lg shadow-red-200"
-							>
-								{isDeleting ? t('common.deleting') || 'Deleting...' : t('common.confirm_delete') || 'Confirm Delete'}
-							</Button>
+						<div className="px-8 py-8 bg-white flex flex-row gap-3">
 							<Button
 								variant="ghost"
 								onClick={() => setDeleteConfirmOpen(false)}
-								className="w-full h-12 rounded-xl text-gray-500 font-bold hover:bg-gray-50"
+								className="flex-1 h-12 rounded-xl text-gray-500 font-bold hover:bg-gray-50"
 							>
 								{t('common.cancel') || 'Cancel'}
 							</Button>
+							<Button
+								onClick={handleDeleteRequest}
+								disabled={isDeleting}
+								className="flex-1 h-12 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-bold text-base shadow-lg shadow-green-100"
+							>
+								{isDeleting ? t('common.deleting') || 'Deleting...' : t('common.confirm_delete') || 'Confirm Delete'}
+							</Button>
 						</div>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			{/* Inspection Report Dialog */}
+			<Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+				<DialogContent onClose={() => setShowReportDialog(false)} className="max-w-2xl px-4 w-[90vw]">
+					<div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 p-5 sm:p-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
+						<div className="flex items-center justify-between mb-6">
+							<DialogTitle className="text-2xl font-black text-[#05324f] uppercase tracking-tighter">
+								{t('workshop.requests.inspection_report') || 'Inspection Report'}
+							</DialogTitle>
+						</div>
+						
+						{selectedReport && (
+							<div className="space-y-8">
+								{selectedReport.mimeType && selectedReport.mimeType.startsWith('image/') ? (
+									<div className="flex justify-center bg-gray-50 rounded-2xl p-3 border border-gray-100 shadow-inner group relative">
+										<img
+											src={getFullUrl(selectedReport.fileUrl)}
+											alt={selectedReport.fileName || 'Inspection Report'}
+											className="max-w-full h-auto rounded-xl border-2 border-white shadow-xl transition-transform duration-500 group-hover:scale-[1.01]"
+											onError={(e) => {
+												e.target.style.display = 'none'
+												const errorDiv = e.target.nextSibling
+												if (errorDiv) {
+													errorDiv.style.display = 'block'
+												}
+											}}
+										/>
+										<div style={{ display: 'none' }} className="text-center p-20 text-red-600 bg-white rounded-3xl border border-red-100">
+											<AlertCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
+											<p className="font-black text-xs uppercase tracking-widest">{t('workshop.requests.failed_to_load_image') || 'Transfer Failure'}</p>
+										</div>
+									</div>
+								) : (
+									<div className="flex flex-col items-center space-y-8 p-16 bg-gray-50 rounded-[3rem] border border-gray-100 shadow-inner">
+										<div className="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center shadow-2xl border border-gray-50 rotate-3 transition-transform hover:rotate-0">
+											<FileText className="w-12 h-12 text-[#05324f]" />
+										</div>
+										<div className="text-center space-y-3">
+											<p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Protocol Metadata Analysis</p>
+											<p className="text-sm font-bold text-[#05324f]">Audit Protocol File Type: {selectedReport.mimeType || 'PDF_STANDARD'}</p>
+										</div>
+										<Button
+											asChild
+											className="bg-[#34C759] hover:bg-[#2EB04F] text-white px-10 py-8 h-auto rounded-[2rem] shadow-2xl shadow-[#34C759]/30 font-black uppercase tracking-widest text-xs transition-all active:scale-95 group"
+										>
+											<a
+												href={getFullUrl(selectedReport.fileUrl)}
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												<Eye className="w-5 h-5 mr-3 group-hover:animate-pulse" />
+												{t('workshop.requests.open_pdf_new_tab') || 'View External PDF Structure'}
+											</a>
+										</Button>
+									</div>
+								)}
+							</div>
+						)}
 					</div>
 				</DialogContent>
 			</Dialog>

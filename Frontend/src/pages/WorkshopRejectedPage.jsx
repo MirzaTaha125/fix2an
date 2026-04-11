@@ -115,9 +115,6 @@ export default function WorkshopRejectedPage() {
 			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
 				<DialogContent className="max-w-[400px] w-[90%] bg-white rounded-2xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
 					<DialogHeader className="text-left items-start">
-						<div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
-							<LogOut className="w-6 h-6 text-red-600" />
-						</div>
 						<DialogTitle className="text-2xl font-black text-[#05324f] leading-tight mb-2">
 							{t('navigation.logout_confirm_title')}
 						</DialogTitle>
@@ -135,7 +132,7 @@ export default function WorkshopRejectedPage() {
 						</Button>
 						<Button
 							onClick={confirmLogout}
-							className="flex-1 h-11 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all shadow-md active:scale-95"
+							className="flex-1 h-11 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold transition-all shadow-md active:scale-95"
 						>
 							{t('navigation.logout') || 'Log Out'}
 						</Button>

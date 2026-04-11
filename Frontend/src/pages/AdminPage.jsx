@@ -650,12 +650,10 @@ export default function AdminPage() {
 					<Badge
 						className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border transition-none"
 						style={
-							request.status === 'COMPLETED' || request.status === 'BOOKED'
+							request.status === 'NEW' || request.status === 'IN_BIDDING' || request.status === 'BOOKED' || request.status === 'COMPLETED'
 								? { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
 								: request.status === 'EXPIRED' || request.status === 'CANCELLED'
 								? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-								: request.status === 'NEW' || request.status === 'IN_BIDDING'
-								? { backgroundColor: '#EFF6FF', color: '#1D4ED8', borderColor: '#DBEAFE' }
 								: { backgroundColor: '#F9FAFB', color: '#4B5563', borderColor: '#F3F4F6' }
 						}
 					>
