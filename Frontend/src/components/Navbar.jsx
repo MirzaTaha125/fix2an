@@ -97,8 +97,6 @@ function Navbar() {
 							)}
 						</div>
 
-						</div>
-
 						{/* Center Section: Admin Identity (Absolute Centered) */}
 						{user?.role === 'ADMIN' && (
 							<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 px-4">
