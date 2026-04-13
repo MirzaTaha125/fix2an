@@ -23,6 +23,7 @@ router.get('/stats', async (req, res) => {
 		const pendingWorkshops = await Workshop.countDocuments({ isVerified: false, verificationStatus: 'PENDING' })
 		const totalRequests = await Request.countDocuments()
 		const totalBookings = await Booking.countDocuments()
+		const totalOffers = await Offer.countDocuments()
 		// Calculate stats — removing commission-based revenue
 		res.json({
 			totalCustomers,
@@ -30,6 +31,7 @@ router.get('/stats', async (req, res) => {
 			pendingWorkshops,
 			totalRequests,
 			totalBookings,
+			totalOffers,
 		})
 	} catch (error) {
 		console.error('Admin stats error:', error)
