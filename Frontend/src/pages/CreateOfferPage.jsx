@@ -436,14 +436,14 @@ export default function CreateOfferPage() {
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 items-start">
 									<div className="space-y-6">
 										{/* Total Price */}
-										<div className="space-y-2 bg-[#05324f]/5 p-5 rounded-2xl border border-[#05324f]/10 shadow-sm transition-all hover:shadow-md">
-											<Label htmlFor="price" className="flex items-center gap-2 text-sm font-bold text-[#05324f]">
-												<DollarSign className="w-5 h-5 text-[#34C759]" />
+										<div className="space-y-2">
+											<Label htmlFor="price" className="flex items-center gap-2 text-sm font-bold text-gray-700">
+												<DollarSign className="w-4 h-4 text-[#34C759]" />
 												<span>
 													Total Price (VAT Included) <span className="text-red-500">*</span>
 												</span>
 											</Label>
-											<div className="relative mt-3">
+											<div className="relative">
 												<Input
 													id="price"
 													type="number"
@@ -454,9 +454,9 @@ export default function CreateOfferPage() {
 													onChange={(e) => setFormData({ ...formData, price: e.target.value })}
 													placeholder="0.00"
 													required
-													className="pl-12 h-14 text-2xl font-bold text-[#05324f] border-[#05324f]/20 focus:border-[#34C759] bg-white rounded-xl shadow-inner transition-all"
+													className="pl-10 h-12 text-lg font-bold text-gray-900 border-gray-200 focus:border-[#34C759] bg-white rounded-xl shadow-sm transition-all"
 												/>
-												<div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#05324f] font-bold text-xl">kr</div>
+												<div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm">kr</div>
 											</div>
 										</div>
 
@@ -493,7 +493,7 @@ export default function CreateOfferPage() {
 								{/* Inline Costs and Duration Breakdown */}
 								<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 pt-2">
 									{/* Labor Cost */}
-									<div className="space-y-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+									<div className="space-y-2 px-1">
 										<Label htmlFor="laborCost" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
 											Labor Cost (SEK)
 										</Label>
@@ -504,12 +504,12 @@ export default function CreateOfferPage() {
 											value={formData.laborCost}
 											onChange={(e) => setFormData({ ...formData, laborCost: e.target.value })}
 											placeholder="0.00"
-											className="h-11 text-base font-medium border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-lg bg-white"
+											className="h-11 text-base font-medium border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-xl bg-white shadow-sm transition-all"
 										/>
 									</div>
 
 									{/* Parts Cost */}
-									<div className="space-y-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+									<div className="space-y-2 px-1">
 										<Label htmlFor="partsCost" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
 											Materials & Parts (SEK)
 										</Label>
@@ -520,12 +520,12 @@ export default function CreateOfferPage() {
 											value={formData.partsCost}
 											onChange={(e) => setFormData({ ...formData, partsCost: e.target.value })}
 											placeholder="0.00"
-											className="h-11 text-base font-medium border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-lg bg-white"
+											className="h-11 text-base font-medium border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-xl bg-white shadow-sm transition-all"
 										/>
 									</div>
 
 									{/* Estimated Duration */}
-									<div className="space-y-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100 col-span-1 sm:col-span-2 md:col-span-1">
+									<div className="space-y-2 px-1 col-span-1 sm:col-span-2 md:col-span-1">
 										<Label htmlFor="estimatedDuration" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
 											<span>Estimated Duration (mins)</span>
 										</Label>
@@ -538,7 +538,7 @@ export default function CreateOfferPage() {
 											onChange={(e) => setFormData({ ...formData, estimatedDuration: e.target.value })}
 											placeholder="60"
 											required
-											className="h-11 text-base font-medium text-[#05324f] border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-lg bg-white"
+											className="h-11 text-base font-medium text-gray-900 border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-xl bg-white shadow-sm transition-all"
 										/>
 									</div>
 								</div>

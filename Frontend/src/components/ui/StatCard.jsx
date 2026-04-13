@@ -19,7 +19,7 @@ export function StatCard({
 	return (
 		<div
 			className={cn(
-				'rounded-2xl border border-gray-100 bg-white p-3.5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group relative overflow-hidden h-full',
+				'rounded-2xl border border-gray-100 bg-white p-2.5 sm:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group relative overflow-hidden h-full',
 				className
 			)}
 		>

@@ -313,8 +313,13 @@ export default function WorkshopProposalsPage() {
 										key={offerId}
 										className={`grid grid-cols-1 md:grid-cols-3 items-start py-4 px-4 sm:px-6 gap-3 sm:gap-4 ${index !== filteredOffers.length - 1 ? 'border-b border-gray-200' : ''}`}
 									>
-										{/* Left: Title, Name with Date, Description/Price */}
 										<div className="min-w-0 md:col-span-2">
+											{/* Date (Desktop & Mobile) at the top */}
+											{offerDate && (
+												<div className="mb-1">
+													<p className="text-[10px] text-gray-400 font-normal uppercase tracking-widest">{offerDate}</p>
+												</div>
+											)}
 											{/* Title (Vehicle Name) with Status Badge (Mobile) */}
 											<div className="flex items-start justify-between gap-2 mb-1">
 												<h3 className="text-base font-bold flex-1" style={{ color: '#05324f' }}>
@@ -325,19 +330,12 @@ export default function WorkshopProposalsPage() {
 													{getStatusBadge(offer.status)}
 												</div>
 											</div>
-											{/* Username with Date and Time */}
 											<div className="flex items-center gap-2 mb-1 flex-wrap">
 												{customer?.name && (
 													<div className="flex items-center gap-1.5">
 														<User className="w-3 h-3" style={{ color: '#05324f' }} />
 														<p className="text-xs font-semibold" style={{ color: '#05324f' }}>{customer.name}</p>
 													</div>
-												)}
-												{customer?.name && offerDate && (
-													<span style={{ color: '#05324f' }}>•</span>
-												)}
-												{offerDate && (
-													<p className="text-xs" style={{ color: '#05324f' }}>{offerDate}</p>
 												)}
 											</div>
 											{/* Description/Note or Price with Edit Button (Mobile) */}
@@ -369,10 +367,8 @@ export default function WorkshopProposalsPage() {
 													<Link to={`/workshop/requests/${request?._id || request?.id || request}/offer?view=true`}>
 														<Button
 															size="sm"
-															variant="outline"
-															className="px-3 py-1 text-xs font-bold rounded-lg border-[#05324f] text-[#05324f]"
+															className="px-4 py-1 text-xs font-semibold rounded-lg bg-[#05324f] text-white hover:bg-[#05324f]/90 transition-colors"
 														>
-															<Eye className="w-3 h-3 mr-1.5" />
 															{t('common.view') || 'View'}
 														</Button>
 													</Link>
@@ -389,10 +385,8 @@ export default function WorkshopProposalsPage() {
 												<Link to={`/workshop/requests/${request?._id || request?.id || request}/offer?view=true`}>
 													<Button
 														size="sm"
-														variant="outline"
-														className="px-4 py-1.5 text-xs font-bold rounded-lg border-2 border-[#05324f] text-[#05324f] hover:bg-[#05324f]/5"
+														className="px-6 py-1.5 text-xs font-semibold rounded-lg bg-[#05324f] text-white hover:bg-[#05324f]/90 transition-colors"
 													>
-														<Eye className="w-3.5 h-3.5 mr-1.5" />
 														{t('common.view') || 'View'}
 													</Button>
 												</Link>

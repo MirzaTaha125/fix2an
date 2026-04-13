@@ -71,6 +71,7 @@ export default function AdminPage() {
 		pendingWorkshops: 0,
 		totalRequests: 0,
 		totalBookings: 0,
+		totalOffers: 0,
 	})
 	
 	// Data states
@@ -128,6 +129,17 @@ export default function AdminPage() {
 			}
 		}
 	}, [user, authLoading, navigate])
+
+	const getTabCount = (tab) => {
+		switch (tab) {
+			case 'customers': return stats.totalCustomers
+			case 'workshops': return stats.totalWorkshops
+			case 'requests': return stats.totalRequests
+			case 'offers': return stats.totalOffers
+			case 'bookings': return stats.totalBookings
+			default: return null
+		}
+	}
 
 	// Close menu when clicking outside
 	useEffect(() => {
@@ -638,23 +650,21 @@ export default function AdminPage() {
 					<Button 
 						variant="outline" 
 						size="sm" 
-						className="h-7 w-7 p-0 rounded-full border-gray-200 text-gray-400 hover:text-[#34C759] hover:border-[#34C759] transition-all"
+						className="h-8 px-4 text-[10px] font-semibold border-gray-100 uppercase tracking-widest hover:bg-[#34C759] hover:text-white hover:border-[#34C759] transition-all"
 						onClick={(e) => {
 							e.stopPropagation()
 							setSelectedRequest(request)
 							setRequestDetailModalOpen(true)
 						}}
 					>
-						<Eye className="w-3.5 h-3.5" />
+						{t('admin.workshops.view_details_short')}
 					</Button>
 					<Badge
 						className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border transition-none"
 						style={
-							request.status === 'NEW' || request.status === 'IN_BIDDING' || request.status === 'BOOKED' || request.status === 'COMPLETED'
-								? { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
-								: request.status === 'EXPIRED' || request.status === 'CANCELLED'
+							request.status === 'CANCELLED' || request.status === 'EXPIRED'
 								? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-								: { backgroundColor: '#F9FAFB', color: '#4B5563', borderColor: '#F3F4F6' }
+								: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
 						}
 					>
 						{request.status === 'NEW' ? t('admin.requests.new') : request.status === 'IN_BIDDING' ? t('admin.requests.in_bidding') : request.status === 'BIDDING_CLOSED' ? t('admin.requests.bidding_closed') : request.status === 'BOOKED' ? t('admin.requests.booked') : request.status === 'COMPLETED' ? t('admin.requests.completed') : request.status === 'CANCELLED' ? t('admin.requests.cancelled') : request.status === 'EXPIRED' ? t('workshop.proposals.status.expired') : request.status}
@@ -734,31 +744,29 @@ export default function AdminPage() {
 				open={requestDetailModalOpen} 
 				onOpenChange={setRequestDetailModalOpen}
 			>
-				<DialogContent className="w-[95vw] md:w-[80vw] lg:w-[50vw] max-h-[95vh] overflow-y-auto custom-scrollbar border-none shadow-2xl rounded-[2.5rem] p-0 overflow-hidden bg-white animate-in zoom-in-95 duration-300">
+				<DialogContent className="w-[95vw] md:w-[80vw] lg:w-[50vw] max-h-[95vh] overflow-y-auto custom-scrollbar border-none shadow-2xl rounded-3xl p-0 overflow-hidden bg-white animate-in zoom-in-95 duration-300">
 					<Button 
 						variant="ghost" 
 						size="icon" 
-						className="absolute right-8 top-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all z-50 h-10 w-10 shadow-sm border border-gray-100"
+						className="absolute right-4 top-4 md:right-8 md:top-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all z-50 h-9 w-9 md:h-10 md:w-10 shadow-sm border border-gray-100 bg-white/80 backdrop-blur-sm"
 						onClick={() => setRequestDetailModalOpen(false)}
 					>
 						<X className="w-5 h-5" />
 					</Button>
 					
-					<DialogHeader className="p-10 pb-6 border-b border-gray-50 bg-white">
+					<DialogHeader className="p-6 md:p-10 pb-4 md:pb-6 border-b border-gray-50 bg-white">
 						<div className="flex items-center justify-between">
 							<div>
 								<div className="flex items-center gap-3 mb-2">
 									<DialogTitle className="text-2xl font-black text-[#05324f] tracking-tight uppercase">
-										Request Oversight
+										{t('admin.oversight.request_overview')}
 									</DialogTitle>
 									<Badge
 										className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-none shadow-sm"
 										style={
-											selectedRequest.status === 'IN_BIDDING'
-												? { backgroundColor: '#34C759', color: 'white' }
-												: selectedRequest.status === 'CANCELLED'
-												? { backgroundColor: '#FF3B30', color: 'white' }
-												: { backgroundColor: '#007AFF', color: 'white' }
+											selectedRequest.status === 'CANCELLED' || selectedRequest.status === 'EXPIRED'
+												? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
+												: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
 										}
 									>
 										{selectedRequest.status}
@@ -771,79 +779,94 @@ export default function AdminPage() {
 						</div>
 					</DialogHeader>
 
-					<div className="p-10 space-y-8 bg-gray-50/30">
+					<div className="p-6 md:p-10 space-y-6 md:space-y-10 group/modal">
 						{/* Master Identity Grid */}
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-2">
-							{/* Client Identity Card */}
-							<div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between">
-								<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-									<UserCircle className="w-4 h-4 text-[#007AFF]" /> Client Identity
-								</p>
-								<div className="space-y-4">
-									<div className="flex items-center gap-4">
-										<div className="w-12 h-12 rounded-2xl bg-[#007AFF]/10 flex items-center justify-center text-[#007AFF] shadow-sm">
-											<User className="w-6 h-6" />
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<Card className="border border-gray-200 shadow-sm rounded-2xl md:rounded-3xl hover:shadow-md transition-shadow">
+								<CardContent className="p-5 md:p-8">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+										{t('admin.oversight.basic_info')}
+									</h2>
+									<div className="space-y-4">
+										<div>
+											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.account_holder')}</p>
+											<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedRequest.customer?.name}</p>
+										</div>
+										<div className="pt-4 border-t border-gray-100 space-y-3">
+											<div>
+												<p className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+													<Mail className="w-3.5 h-3.5" />
+													{t('admin.oversight.email') || 'Email'}
+												</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedRequest.customer?.email}</p>
+											</div>
+											<div>
+												<p className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+													<Smartphone className="w-3.5 h-3.5" />
+													{t('admin.oversight.phone') || 'Phone'}
+												</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedRequest.customer?.phone || 'N/A'}</p>
+											</div>
+										</div>
+									</div>
+								</CardContent>
+							</Card>
+
+							{/* Vehicle Hub Card */}
+							<Card className="border border-gray-200 shadow-sm rounded-2xl md:rounded-3xl hover:shadow-md transition-shadow">
+								<CardContent className="p-5 md:p-8 h-full flex flex-col">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+										{t('admin.oversight.vehicle_info')}
+									</h2>
+									<div className="grid grid-cols-1 sm:grid-cols-3 gap-6 flex-1">
+										<div>
+											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.manufacturer') || 'Manufacturer'}</p>
+											<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{vehicle.make}</p>
 										</div>
 										<div>
-											<p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight mb-1">Account Holder</p>
-											<p className="text-lg font-black text-[#05324f]">{selectedRequest.customer?.name}</p>
+											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.model_basis') || 'Model Basis'}</p>
+											<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{vehicle.model}</p>
+										</div>
+										<div>
+											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.production_cycle') || 'Production Cycle'}</p>
+											<p className="text-sm font-semibold" style={{ color: '#34C759' }}>{vehicle.year}</p>
 										</div>
 									</div>
-									<div className="pt-4 border-t border-gray-50 grid grid-cols-1 gap-3">
-										<div className="flex items-center gap-2 text-xs font-bold text-gray-600 truncate">
-											<Mail className="w-4 h-4 text-gray-300" /> {selectedRequest.customer?.email}
-										</div>
-										<div className="flex items-center gap-2 text-xs font-bold text-gray-600">
-											<Smartphone className="w-4 h-4 text-gray-300" /> {selectedRequest.customer?.phone || 'N/A'}
-										</div>
-									</div>
-								</div>
-							</div>
-
-							{/* Vehicle Hub Card - Elite Standard */}
-							<div className="bg-[#05324f] p-6 rounded-3xl text-white shadow-xl shadow-[#05324f]/20 relative overflow-hidden flex flex-col justify-between h-full">
-								<div className="absolute right-0 top-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl opacity-50" />
-								<p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-5 flex items-center gap-3 relative z-10">
-									<Car className="w-4 h-4 text-[#34C759]" /> Vehicle Identity
-								</p>
-								<div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
-									<div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-										<p className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1.5">Manufacturer</p>
-										<p className="text-lg font-black uppercase tracking-tight text-white/90">{vehicle.make}</p>
-									</div>
-									<div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-										<p className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1.5">Model Basis</p>
-										<p className="text-lg font-black uppercase tracking-tight text-white/90">{vehicle.model}</p>
-									</div>
-									<div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-										<p className="text-[9px] font-black text-[#34C759] uppercase tracking-widest mb-1.5 opacity-80">Production Cycle</p>
-										<p className="text-lg font-black tracking-tight text-[#34C759]">{vehicle.year}</p>
-									</div>
-								</div>
-							</div>
+								</CardContent>
+							</Card>
 						</div>
 
-						{/* Request Briefing & Action Location */}
-						<div className="flex flex-col gap-6">
-							<div className="w-full space-y-6">
-								<div className="p-8 border border-gray-100 rounded-[2rem] bg-white shadow-sm hover:shadow-md transition-shadow">
-									<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-										<Wrench className="w-4 h-4 text-[#05324f]" /> Core Briefing Description
+						{/* Request Briefing & Location */}
+						<div className="grid grid-cols-1 gap-6">
+							<Card className="border border-gray-200 shadow-sm rounded-2xl md:rounded-3xl hover:shadow-md transition-shadow">
+								<CardContent className="p-5 md:p-8">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+										{t('admin.oversight.description')}
+									</h2>
+									<p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100 border-dashed">
+										{selectedRequest.description || t('admin.oversight.no_description')}
 									</p>
-									<p className="text-sm text-gray-700 leading-relaxed font-semibold italic p-6 bg-gray-50/50 rounded-2xl border-l-[6px] border-[#05324f]">
-										"{selectedRequest.description || 'No specific description provided by the client.'}"
-									</p>
-								</div>
-								
-								<div className="p-6 bg-white border border-gray-100 rounded-3xl shadow-sm">
-									<p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-										<MapPin className="w-4 h-4 text-red-500" /> Operational Geo-Marker
-									</p>
-									<p className="text-sm font-black text-[#05324f] uppercase tracking-tight pl-6 leading-none">
-										{selectedRequest.address}, {selectedRequest.city}
-									</p>
-								</div>
-							</div>
+								</CardContent>
+							</Card>
+							
+							<Card className="border border-gray-200 shadow-sm rounded-2xl md:rounded-3xl hover:shadow-md transition-shadow">
+								<CardContent className="p-5 md:p-8">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+										{t('admin.oversight.location')}
+									</h2>
+									<div className="space-y-4">
+										<div>
+											<p className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+												<MapPin className="w-3.5 h-3.5" />
+												{t('admin.oversight.location')}
+											</p>
+											<p className="text-sm font-semibold" style={{ color: '#05324f' }}>
+												{selectedRequest.address}, {selectedRequest.city}
+											</p>
+										</div>
+									</div>
+								</CardContent>
+							</Card>
 						</div>
 					</div>
 				</DialogContent>
@@ -855,8 +878,8 @@ export default function AdminPage() {
 		<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
-						<Package className="w-5 h-5 text-[#34C759]" />
+					<div className="w-8 h-8 rounded-full bg-[#EDFBF1] flex items-center justify-center">
+						<Package className="w-4 h-4 text-[#34C759]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{offer.workshop?.companyName}</h4>
@@ -869,25 +892,21 @@ export default function AdminPage() {
 					<Button 
 						variant="outline" 
 						size="sm" 
-						className="h-7 w-7 p-0 rounded-full border-gray-200 text-gray-400 hover:text-[#34C759] hover:border-[#34C759] transition-all"
+						className="h-8 px-4 text-[10px] font-semibold bg-white text-[#007AFF] border-[#007AFF]/20 uppercase tracking-widest hover:bg-[#007AFF] hover:text-white hover:border-[#007AFF] transition-all shadow-sm"
 						onClick={(e) => {
 							e.stopPropagation()
 							setSelectedOffer(offer)
 							setOfferDetailModalOpen(true)
 						}}
 					>
-						<Eye className="w-3.5 h-3.5" />
+						{t('admin.workshops.view_details_short')}
 					</Button>
 					<Badge
 						className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border transition-none"
 						style={
-							offer.status === 'ACCEPTED'
-								? { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
-								: offer.status === 'CANCELLED' || offer.status === 'EXPIRED' || offer.status === 'DECLINED'
+							['CANCELLED', 'EXPIRED'].includes(offer.status)
 								? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-								: offer.status === 'SENT'
-								? { backgroundColor: '#EFF6FF', color: '#1D4ED8', borderColor: '#DBEAFE' }
-								: { backgroundColor: '#F9FAFB', color: '#4B5563', borderColor: '#F3F4F6' }
+								: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
 						}
 					>
 						{offer.status === 'SENT' ? t('workshop.proposals.status.sent') : offer.status === 'ACCEPTED' ? t('workshop.proposals.status.accepted') : offer.status === 'DECLINED' ? t('workshop.proposals.status.declined') : offer.status === 'EXPIRED' ? t('workshop.proposals.status.expired') : offer.status === 'CANCELLED' ? t('workshop.proposals.status.cancelled') : offer.status}
@@ -901,9 +920,9 @@ export default function AdminPage() {
 					<div className="flex items-center gap-3">
 						<Clock className="w-4 h-4 text-gray-500 shrink-0" />
 						<div className="flex-1">
-							<p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Offer Expired</p>
+							<p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">{t('admin.oversight.offer_expired_title')}</p>
 							<p className="text-xs text-gray-600 font-medium leading-tight">
-								This offer was automatically closed because the request expired or another workshop was booked.
+								{t('admin.oversight.offer_expired_desc')}
 							</p>
 						</div>
 					</div>
@@ -917,10 +936,10 @@ export default function AdminPage() {
 						<AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
 						<div className="flex-1">
 							<p className="text-[9px] font-black text-red-700 uppercase tracking-widest mb-0.5">
-								{offer.cancelledBy === 'WORKSHOP' ? 'Cancelled by Workshop' : 'Cancelled by Customer'}
+								{offer.cancelledBy === 'WORKSHOP' ? t('admin.oversight.cancelled_by_workshop') : t('admin.oversight.cancelled_by_customer')}
 							</p>
 							<p className="text-xs text-red-800 font-medium italic leading-tight">
-								"{offer.cancellationReason || 'No reason provided'}"
+								"{offer.cancellationReason || t('admin.oversight.no_description')}"
 							</p>
 						</div>
 					</div>
@@ -929,7 +948,7 @@ export default function AdminPage() {
 
 			<div className="space-y-2.5 mb-4">
 				<div className="flex justify-between items-center bg-gray-50/50 p-2 rounded-lg border border-gray-50">
-					<span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Total Price</span>
+					<span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('workshop.proposals.total_price')}</span>
 					<span className="text-lg font-black text-[#34C759] tracking-tighter">
 						{formatPrice(offer.price)}
 					</span>
@@ -937,16 +956,16 @@ export default function AdminPage() {
 				
 				<div className="grid grid-cols-3 gap-2 px-1">
 					<div className="text-center">
-						<p className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter mb-0.5">Labor</p>
-						<p className="text-[10px] font-semibold text-gray-700">{formatPrice(offer.laborCost || 0)}</p>
+						<p className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter mb-0.5">{t('workshop.proposals.labor')}</p>
+						<p className="text-[10px] font-black text-gray-700">{formatPrice(offer.laborCost || 0)}</p>
 					</div>
 					<div className="text-center border-l border-gray-100">
-						<p className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter mb-0.5">Parts</p>
-						<p className="text-[10px] font-semibold text-gray-700">{formatPrice(offer.partsCost || 0)}</p>
+						<p className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter mb-0.5">{t('workshop.proposals.parts')}</p>
+						<p className="text-[10px] font-black text-gray-700">{formatPrice(offer.partsCost || 0)}</p>
 					</div>
 					<div className="text-center border-l border-gray-100">
-						<p className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter mb-0.5">VAT</p>
-						<p className="text-[10px] font-semibold text-gray-700">{formatPrice(offer.vat || 0)}</p>
+						<p className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter mb-0.5">{t('workshop.proposals.vat')}</p>
+						<p className="text-[10px] font-black text-gray-700">{formatPrice(offer.vat || 0)}</p>
 					</div>
 				</div>
 			</div>
@@ -957,13 +976,13 @@ export default function AdminPage() {
 					{formatDate(new Date(offer.createdAt))}
 				</div>
 				<div 
-					className="flex items-center gap-1.5 text-[9px] font-bold text-[#34C759] uppercase tracking-widest cursor-pointer hover:translate-x-1 transition-transform"
+					className="flex items-center gap-1.5 text-[9px] font-bold text-[#007AFF] uppercase tracking-widest cursor-pointer hover:translate-x-1 transition-transform"
 					onClick={() => {
 						setSelectedOffer(offer)
 						setOfferDetailModalOpen(true)
 					}}
 				>
-					Details <TrendingUp className="w-3 h-3" />
+					{t('admin.workshops.view_details_short')} <TrendingUp className="w-3 h-3" />
 				</div>
 			</div>
 		</div>
@@ -978,170 +997,168 @@ export default function AdminPage() {
 				open={offerDetailModalOpen} 
 				onOpenChange={setOfferDetailModalOpen}
 			>
-				<DialogContent className="w-[95vw] md:w-[80vw] lg:w-[50vw] max-h-[95vh] overflow-y-auto custom-scrollbar border-none shadow-2xl rounded-[2.5rem] p-0 overflow-hidden bg-white animate-in zoom-in-95 duration-300">
+				<DialogContent className="w-[95vw] md:w-[80vw] lg:w-[50vw] max-h-[95vh] overflow-y-auto custom-scrollbar border-none shadow-2xl rounded-3xl p-0 overflow-hidden bg-white animate-in zoom-in-95 duration-300">
 					<Button 
 						variant="ghost" 
 						size="icon" 
-						className="absolute right-8 top-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all z-50 h-10 w-10 shadow-sm border border-gray-100"
+						className="absolute right-4 top-4 md:right-8 md:top-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all z-50 h-9 w-9 md:h-10 md:w-10 shadow-sm border border-gray-100 bg-white/80 backdrop-blur-sm"
 						onClick={() => setOfferDetailModalOpen(false)}
 					>
 						<X className="w-5 h-5" />
 					</Button>
-					<DialogHeader className="p-10 pb-6 border-b border-gray-50 bg-white">
+					<DialogHeader className="p-6 md:p-10 pb-4 md:pb-6 border-b border-gray-50 bg-white">
 						<div className="flex items-center justify-between pr-8">
 							<div>
 								<div className="flex items-center gap-3 mb-2">
 									<DialogTitle className="text-2xl font-black text-[#05324f] tracking-tight uppercase px-4 md:px-0">
-										Offer Detail Oversight
+										{t('admin.oversight.offer_overview')}
 									</DialogTitle>
 									<Badge
-										className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-none shadow-sm"
+										className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm"
 										style={
-											selectedOffer.status === 'ACCEPTED'
-												? { backgroundColor: '#34C759', color: 'white' }
-												: selectedOffer.status === 'CANCELLED' || selectedOffer.status === 'EXPIRED'
-												? { backgroundColor: '#FF3B30', color: 'white' }
-												: { backgroundColor: '#007AFF', color: 'white' }
+											selectedOffer.status === 'CANCELLED' || selectedOffer.status === 'EXPIRED'
+												? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
+												: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
 										}
 									>
 										{selectedOffer.status}
 									</Badge>
 								</div>
 								<DialogDescription className="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-4 md:px-0">
-									Offer ID: {selectedOffer.id} • Registered: {formatDate(new Date(selectedOffer.createdAt))}
+									{t('admin.oversight.offer_id')}: {selectedOffer.id} • Registered: {formatDate(new Date(selectedOffer.createdAt))}
 								</DialogDescription>
 							</div>
 						</div>
 					</DialogHeader>
 
-					<div className="p-10 space-y-10 bg-gray-50/30">
+					<div className="p-6 md:p-10 space-y-6 md:space-y-10 group/modal">
 						{/* Strategic Identity Center */}
 						<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-							<div className="space-y-6">
-								{/* Workshop Party Card */}
-								<div className="p-8 bg-white border border-gray-100 rounded-[2.5rem] shadow-sm flex flex-col justify-between h-full">
-									<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-										<Building2 className="w-4 h-4 text-[#34C759]" /> Service Entity Identification
-									</p>
-									<div className="space-y-5 flex-1">
-										<div className="flex items-center gap-5">
-											<div className="w-14 h-14 rounded-3xl bg-[#34C759]/10 flex items-center justify-center text-[#34C759] shadow-inner">
-												<Building2 className="w-8 h-8" />
+							{/* Workshop Party Card */}
+							<Card className="border border-gray-200 shadow-sm rounded-2xl md:rounded-3xl hover:shadow-md transition-shadow">
+								<CardContent className="p-5 md:p-8 h-full flex flex-col">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+										{t('admin.oversight.basic_info')}
+									</h2>
+									<div className="space-y-4">
+										<div>
+											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.contractor_name')}</p>
+											<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedOffer.workshop?.companyName}</p>
+										</div>
+										<div className="pt-4 border-t border-gray-100 space-y-3">
+											<div>
+												<p className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+													<Mail className="w-3.5 h-3.5" />
+													{t('admin.oversight.email') || 'Email'}
+												</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedOffer.workshop?.email}</p>
 											</div>
 											<div>
-												<p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1 opacity-60">Contractor Name</p>
-												<span className="text-lg font-black text-[#05324f] uppercase tracking-tight">{selectedOffer.workshop?.companyName}</span>
-											</div>
-										</div>
-										<div className="pt-6 border-t border-gray-50 grid grid-cols-1 gap-4">
-											<div className="flex items-center gap-3 text-xs font-black text-gray-600 truncate bg-gray-50/50 p-2.5 rounded-xl border border-gray-100">
-												<Mail className="w-4 h-4 text-gray-300" /> {selectedOffer.workshop?.email}
-											</div>
-											<div className="flex items-center gap-3 text-xs font-black text-gray-600 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100">
-												<Phone className="w-4 h-4 text-gray-300" /> {selectedOffer.workshop?.phone || 'N/A PERSISTENT_LINE'}
+												<p className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+													<Phone className="w-3.5 h-3.5" />
+													{t('admin.oversight.phone') || 'Phone'}
+												</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedOffer.workshop?.phone || 'N/A'}</p>
 											</div>
 										</div>
 									</div>
-								</div>
-							</div>
+								</CardContent>
+							</Card>
 
-							<div className="space-y-6">
-								{/* Vehicle Specs Section */}
-								{vehicle && (
-									<div className="p-8 bg-[#05324f] border border-[#05324f] text-white rounded-[2.5rem] flex flex-col h-full shadow-2xl shadow-[#05324f]/20 relative overflow-hidden">
-										<div className="absolute right-0 top-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-4xl" />
-										<p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-6 flex items-center gap-2 relative z-10">
-											<Car className="w-4 h-4 text-[#34C759]" /> Destination Vehicle Hub
-										</p>
-										<div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10 w-full">
-											<div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-												<p className="text-[8px] font-black text-white/30 uppercase tracking-widest opacity-60 leading-none mb-1.5">Manufacturer</p>
-												<p className="text-sm font-black text-white/90 uppercase tracking-widest">{vehicle.make}</p>
+							{/* Vehicle Specs Section */}
+							{vehicle && (
+								<Card className="border border-gray-200 shadow-sm">
+									<CardContent className="p-8 h-full flex flex-col">
+										<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+											{t('admin.oversight.vehicle_info')}
+										</h2>
+										<div className="grid grid-cols-1 sm:grid-cols-3 gap-6 flex-1">
+											<div>
+												<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.manufacturer') || 'Manufacturer'}</p>
+												<p className="text-sm font-semibold uppercase" style={{ color: '#05324f' }}>{vehicle.make}</p>
 											</div>
-											<div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-												<p className="text-[8px] font-black text-white/30 uppercase tracking-widest opacity-60 leading-none mb-1.5">Model Basis</p>
-												<p className="text-sm font-black text-white/90 uppercase tracking-widest">{vehicle.model}</p>
+											<div>
+												<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.model_basis') || 'Model Basis'}</p>
+												<p className="text-sm font-semibold uppercase" style={{ color: '#05324f' }}>{vehicle.model}</p>
 											</div>
-											<div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-												<p className="text-[8px] font-black text-[#34C759] uppercase tracking-widest leading-none mb-1.5">Production Cycle</p>
-												<p className="text-sm font-black text-[#34C759] tracking-widest">{vehicle.year}</p>
+											<div>
+												<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.production_cycle') || 'Production Cycle'}</p>
+												<p className="text-sm font-semibold" style={{ color: '#34C759' }}>{vehicle.year}</p>
 											</div>
 										</div>
-									</div>
-								)}
-							</div>
+									</CardContent>
+								</Card>
+							)}
 						</div>
 
 						{/* Offer Statement & Financials */}
 						<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-							<div className="p-6 border border-gray-100 rounded-2xl bg-white shadow-sm flex flex-col h-full">
-								<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Workshop Technical Notes</p>
-								<div className="p-4 bg-gray-50/50 border-l-4 border-[#34C759] rounded-r-xl flex-1">
-									<p className="text-sm text-gray-700 leading-relaxed italic font-medium">
-										"{selectedOffer.note || 'No additional technical notes provided for this proposal.'}"
-									</p>
-								</div>
-							</div>
+							<Card className="border border-gray-200 shadow-sm rounded-2xl md:rounded-3xl hover:shadow-md transition-shadow">
+								<CardContent className="p-5 md:p-8">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+										{t('admin.oversight.workshop_notes')}
+									</h2>
+									<div className="p-4 bg-gray-50/50 rounded-xl border border-gray-100 border-dashed">
+										<p className="text-sm text-gray-700 leading-relaxed italic font-medium">
+											"{selectedOffer.note || t('admin.oversight.no_notes')}"
+										</p>
+									</div>
+								</CardContent>
+							</Card>
 
-							<div className="p-8 bg-[#05324f] rounded-2xl text-white shadow-2xl shadow-[#05324f]/20">
-								<div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-									<div>
-										<p className="text-[10px] font-black text-[#34C759] uppercase tracking-widest mb-1.5 flex items-center gap-2">
-											<CreditCard className="w-4 h-4" /> Proposal Financials
-										</p>
-										<h5 className="text-xl font-black uppercase tracking-tight">Bid Total Value</h5>
-									</div>
-									<div className="text-right">
-										<p className="text-3xl font-black text-[#34C759] tracking-tighter leading-none">
+							<Card className="border border-gray-200 shadow-sm rounded-2xl md:rounded-3xl hover:shadow-md transition-shadow">
+								<CardContent className="p-5 md:p-8">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+										{t('admin.oversight.financial_summary')}
+									</h2>
+									<div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-50">
+										<span className="text-sm font-bold text-[#05324f]">{t('admin.oversight.total_bid_amount')}</span>
+										<span className="text-3xl font-black text-[#34C759] tracking-tighter">
 											{formatPrice(selectedOffer.price)}
-										</p>
+										</span>
 									</div>
-								</div>
-								
-								<div className="grid grid-cols-3 gap-8">
-									<div className="space-y-2">
-										<p className="text-[10px] text-white/40 font-black uppercase tracking-widest">Labor Cost</p>
-										<p className="text-lg font-bold">{formatPrice(selectedOffer.laborCost || 0)}</p>
+									
+									<div className="grid grid-cols-3 gap-8">
+										<div>
+											<p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">{t('workshop.proposals.labor')}</p>
+											<p className="text-sm font-bold text-[#05324f]">{formatPrice(selectedOffer.laborCost || 0)}</p>
+										</div>
+										<div className="border-l border-gray-100 pl-8">
+											<p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">{t('workshop.proposals.parts')}</p>
+											<p className="text-sm font-bold text-[#05324f]">{formatPrice(selectedOffer.partsCost || 0)}</p>
+										</div>
+										<div className="border-l border-gray-100 pl-8">
+											<p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">{t('workshop.proposals.vat')}</p>
+											<p className="text-sm font-bold text-[#05324f]">{formatPrice(selectedOffer.vat || 0)}</p>
+										</div>
 									</div>
-									<div className="space-y-2 border-l border-white/10 pl-8">
-										<p className="text-[10px] text-white/40 font-black uppercase tracking-widest">Total Parts</p>
-										<p className="text-lg font-bold">{formatPrice(selectedOffer.partsCost || 0)}</p>
-									</div>
-									<div className="space-y-2 border-l border-white/10 pl-8">
-										<p className="text-[10px] text-white/40 font-black uppercase tracking-widest">VAT (Tax)</p>
-										<p className="text-lg font-bold">{formatPrice(selectedOffer.vat || 0)}</p>
-									</div>
-								</div>
-							</div>
+								</CardContent>
+							</Card>
 						</div>
 
 						{/* Cancellation Analytics */}
 						{selectedOffer.status === 'CANCELLED' && (
-							<div className="p-6 border-2 border-red-100 bg-red-50/30 rounded-2xl overflow-hidden hover:bg-red-50/50 transition-colors">
-								<div className="flex items-center gap-4 mb-4 pb-4 border-b border-red-100">
-									<div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center text-white shadow-md shadow-red-500/20 animate-pulse">
-										<ShieldOff className="w-5 h-5" />
+							<Card className="border-2 border-red-100 bg-red-50/30 shadow-none">
+								<CardContent className="p-8">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-red-200 text-red-800">
+										{t('admin.oversight.cancellation_audit') || 'Cancellation Audit'}
+									</h2>
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+										<div>
+											<p className="text-xs font-medium text-red-600/60 mb-1">Cancelled By</p>
+											<p className="text-sm font-bold text-red-800 uppercase tracking-widest flex items-center gap-2">
+												<UserCircle className="w-4 h-4" /> {selectedOffer.cancelledBy === 'WORKSHOP' ? t('admin.oversight.workshop') : t('admin.oversight.customer')}
+											</p>
+										</div>
+										<div>
+											<p className="text-xs font-medium text-red-600/60 mb-1 text-right">{t('admin.oversight.reason')}</p>
+											<p className="text-sm font-bold text-red-900 italic leading-tight text-right">
+												"{selectedOffer.cancellationReason || t('admin.oversight.no_revocation_reason')}"
+											</p>
+										</div>
 									</div>
-									<div>
-										<p className="text-[11px] font-black text-red-600 uppercase tracking-widest leading-none mb-1">Termination Audit</p>
-										<p className="text-sm font-black text-red-800">Proposal Revoked / Cancelled</p>
-									</div>
-								</div>
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-									<div className="space-y-1.5">
-										<p className="text-[10px] text-red-600/50 font-black uppercase tracking-widest">Party Signature</p>
-										<p className="text-sm font-black text-red-700 uppercase tracking-widest flex items-center gap-2">
-											<UserCircle className="w-4 h-4" /> {selectedOffer.cancelledBy || 'AUTOMATED_SYSTEM'}
-										</p>
-									</div>
-									<div className="space-y-1.5">
-										<p className="text-[10px] text-red-600/50 font-black uppercase tracking-widest">Revocation Reason</p>
-										<p className="text-sm font-bold text-red-900 italic leading-tight bg-white/50 p-3 rounded-lg border border-red-100/50">
-											"{selectedOffer.cancellationReason || 'No technical revocation reason provided.'}"
-										</p>
-									</div>
-								</div>
-							</div>
+								</CardContent>
+							</Card>
 						)}
 					</div>
 				</DialogContent>
@@ -1159,8 +1176,8 @@ export default function AdminPage() {
 		>
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
-					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center group-hover:scale-110 transition-transform">
-						<Calendar className="w-5 h-5 text-[#34C759]" />
+					<div className="w-8 h-8 rounded-full bg-[#EDFBF1] flex items-center justify-center group-hover:scale-110 transition-transform">
+						<Calendar className="w-4 h-4 text-[#34C759]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{booking.workshop?.companyName}</h4>
@@ -1174,23 +1191,21 @@ export default function AdminPage() {
 					<Button 
 						variant="outline" 
 						size="sm" 
-						className="h-7 w-7 p-0 rounded-full border-gray-200 text-gray-400 hover:text-[#34C759] hover:border-[#34C759] transition-all"
+						className="h-8 px-4 text-[10px] font-semibold bg-white text-[#007AFF] border-[#007AFF]/20 uppercase tracking-widest hover:bg-[#007AFF] hover:text-white hover:border-[#007AFF] transition-all shadow-sm"
 						onClick={(e) => {
 							e.stopPropagation()
 							setSelectedBooking(booking)
 							setBookingDetailModalOpen(true)
 						}}
 					>
-						<Eye className="w-3.5 h-3.5" />
+						{t('admin.workshops.view_details_short')}
 					</Button>
 					<Badge
 						className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border transition-none"
 						style={
-							booking.status === 'DONE' || booking.status === 'CONFIRMED'
-								? { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
-								: booking.status === 'CANCELLED' || booking.status === 'NO_SHOW'
+							['CANCELLED', 'EXPIRED'].includes(booking.status)
 								? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-								: { backgroundColor: '#EFF6FF', color: '#1D4ED8', borderColor: '#DBEAFE' }
+								: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
 						}
 					>
 						{booking.status === 'CONFIRMED' ? t('admin.bookings.confirmed') : booking.status === 'RESCHEDULED' ? t('admin.bookings.rescheduled') : booking.status === 'CANCELLED' ? t('workshop.proposals.status.cancelled') : booking.status === 'DONE' ? t('admin.bookings.done') : booking.status === 'NO_SHOW' ? t('admin.bookings.no_show') : booking.status}
@@ -1200,7 +1215,7 @@ export default function AdminPage() {
 
 			{/* Cancellation Notice */}
 			{booking.status === 'CANCELLED' && (
-				<div className="mb-4 p-3 bg-red-50/50 border-l-4 border-red-500 rounded-r-xl animate-in fade-in slide-in-from-left-4 duration-500">
+				<div className="mb-4 p-3 bg-red-50/50 rounded-xl animate-in fade-in slide-in-from-left-4 duration-500">
 					<div className="flex items-center gap-3">
 						<AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
 						<div className="flex-1">
@@ -1208,7 +1223,7 @@ export default function AdminPage() {
 								{booking.cancelledBy === 'WORKSHOP' ? 'Cancelled by Workshop' : 'Cancelled by Customer'}
 							</p>
 							<p className="text-xs text-red-800 font-medium italic leading-tight">
-								"{booking.cancellationReason || 'No reason provided'}"
+								"{booking.cancellationReason || t('admin.oversight.no_description')}"
 							</p>
 						</div>
 					</div>
@@ -1217,13 +1232,13 @@ export default function AdminPage() {
 
 			<div className="grid grid-cols-2 gap-4 mb-3">
 				<div>
-					<p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Scheduled At</p>
+					<p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">{t('admin.oversight.scheduled_at')}</p>
 					<div className="text-xs font-medium text-gray-700 leading-tight">
 						{formatDateTime(new Date(booking.scheduledAt))}
 					</div>
 				</div>
 				<div className="text-right">
-					<p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Total Amount</p>
+					<p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">{t('admin.oversight.total_amount')}</p>
 					<div className="text-sm font-medium text-gray-900 tracking-tighter">
 						{formatPrice(booking.totalAmount)}
 					</div>
@@ -1231,9 +1246,9 @@ export default function AdminPage() {
 			</div>
 
 			<div className="pt-3 border-t border-gray-50 flex items-center justify-between">
-				<p className="text-[9px] text-gray-300 font-medium uppercase tracking-tighter">Booking ID: {booking.id.substring(0, 8)}</p>
-				<div className="flex items-center gap-1 text-[9px] font-bold text-[#34C759] uppercase tracking-widest group-hover:translate-x-1 transition-transform">
-					Details <TrendingUp className="w-3 h-3" />
+				<p className="text-[9px] text-gray-300 font-medium uppercase tracking-tighter">{t('admin.oversight.booking_id')}: {booking.id.substring(0, 8)}</p>
+				<div className="flex items-center gap-1 text-[9px] font-bold text-[#007AFF] uppercase tracking-widest group-hover:translate-x-1 transition-transform">
+					{t('admin.workshops.view_details_short')} <TrendingUp className="w-3 h-3" />
 				</div>
 			</div>
 		</div>
@@ -1250,167 +1265,174 @@ export default function AdminPage() {
 				open={bookingDetailModalOpen} 
 				onOpenChange={setBookingDetailModalOpen}
 			>
-				<DialogContent className="w-[95vw] md:w-[80vw] lg:w-[50vw] max-h-[95vh] overflow-y-auto custom-scrollbar border-none shadow-2xl rounded-[2.5rem] p-0 overflow-hidden bg-white animate-in zoom-in-95 duration-300">
+				<DialogContent className="w-[95vw] md:w-[80vw] lg:w-[50vw] max-h-[95vh] overflow-y-auto custom-scrollbar border-none shadow-2xl rounded-3xl p-0 overflow-hidden bg-white animate-in zoom-in-95 duration-300">
 					<Button 
 						variant="ghost" 
 						size="icon" 
-						className="absolute right-8 top-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all z-50 h-10 w-10 shadow-sm border border-gray-100"
+						className="absolute right-4 top-4 md:right-8 md:top-8 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all z-50 h-9 w-9 md:h-10 md:w-10 shadow-sm border border-gray-100 bg-white/80 backdrop-blur-sm"
 						onClick={() => setBookingDetailModalOpen(false)}
 					>
 						<X className="w-5 h-5" />
 					</Button>
 					
-					<DialogHeader className="p-10 pb-6 border-b border-gray-50 bg-white">
+					<DialogHeader className="p-6 md:p-10 pb-4 md:pb-6 border-b border-gray-50 bg-white">
 						<div className="flex items-center justify-between">
 							<div>
 								<div className="flex items-center gap-3 mb-2">
 									<DialogTitle className="text-2xl font-black text-[#05324f] tracking-tight uppercase">
-										Booking Oversight
+										{t('admin.oversight.booking_overview')}
 									</DialogTitle>
 									<Badge
-										className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-none shadow-sm"
+										className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm"
 										style={
-											selectedBooking.status === 'DONE' || selectedBooking.status === 'CONFIRMED'
-												? { backgroundColor: '#34C759', color: 'white' }
-												: selectedBooking.status === 'CANCELLED' || selectedBooking.status === 'NO_SHOW'
-												? { backgroundColor: '#FF3B30', color: 'white' }
-												: { backgroundColor: '#007AFF', color: 'white' }
+											selectedBooking.status === 'CANCELLED' || selectedBooking.status === 'EXPIRED'
+												? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
+												: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
 										}
 									>
 										{selectedBooking.status}
 									</Badge>
 								</div>
 								<DialogDescription className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-									Ref: {selectedBooking.id} • Registered: {formatDate(new Date(selectedBooking.createdAt))}
+									{t('admin.oversight.reference')}: {selectedBooking.id} • Registered: {formatDate(new Date(selectedBooking.createdAt))}
 								</DialogDescription>
 							</div>
 						</div>
 					</DialogHeader>
 
-					<div className="p-10 space-y-8 bg-gray-50/30">
+					<div className="p-6 md:p-10 space-y-6 md:space-y-10 group/modal">
 						{/* Double Identity Grid */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							{/* Client Card */}
-							<div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between">
-								<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-									<UserCircle className="w-4 h-4 text-[#007AFF]" /> Client Identity
-								</p>
-								<div className="space-y-4">
-									<div className="flex items-center gap-4">
-										<div className="w-12 h-12 rounded-2xl bg-[#007AFF]/10 flex items-center justify-center text-[#007AFF] shadow-sm">
-											<User className="w-6 h-6" />
-										</div>
+							<Card className="border border-gray-200 shadow-sm rounded-2xl md:rounded-3xl hover:shadow-md transition-shadow">
+								<CardContent className="p-5 md:p-8 h-full flex flex-col">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+										{t('admin.oversight.basic_info')}
+									</h2>
+									<div className="space-y-4">
 										<div>
-											<p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight mb-1">Account Holder</p>
-											<p className="text-lg font-black text-[#05324f]">{selectedBooking.customer?.name}</p>
+											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.account_holder')}</p>
+											<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedBooking.customer?.name}</p>
+										</div>
+										<div className="pt-4 border-t border-gray-100 space-y-3">
+											<div>
+												<p className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+													<Mail className="w-3.5 h-3.5" />
+													{t('admin.oversight.email') || 'Email'}
+												</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedBooking.customer?.email}</p>
+											</div>
+											<div>
+												<p className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+													<Phone className="w-3.5 h-3.5" />
+													{t('admin.oversight.phone') || 'Phone'}
+												</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedBooking.customer?.phone || 'N/A'}</p>
+											</div>
 										</div>
 									</div>
-									<div className="pt-4 border-t border-gray-50 grid grid-cols-1 gap-3">
-										<div className="flex items-center gap-2 text-xs font-bold text-gray-600 truncate">
-											<Mail className="w-4 h-4 text-gray-300" /> {selectedBooking.customer?.email}
-										</div>
-										<div className="flex items-center gap-2 text-xs font-bold text-gray-600">
-											<Phone className="w-4 h-4 text-gray-300" /> {selectedBooking.customer?.phone || 'N/A'}
-										</div>
-									</div>
-								</div>
-							</div>
+								</CardContent>
+							</Card>
 
 							{/* Workshop Card */}
-							<div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between">
-								<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-									<Building2 className="w-4 h-4 text-[#34C759]" /> Workshop Identity
-								</p>
-								<div className="space-y-4">
-									<div className="flex items-center gap-4">
-										<div className="w-12 h-12 rounded-2xl bg-[#34C759]/10 flex items-center justify-center text-[#34C759] shadow-sm">
-											<Building2 className="w-6 h-6" />
-										</div>
+							<Card className="border border-gray-200 shadow-sm rounded-2xl md:rounded-3xl hover:shadow-md transition-shadow">
+								<CardContent className="p-5 md:p-8 h-full flex flex-col">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+										{t('admin.oversight.workshop_notes')}
+									</h2>
+									<div className="space-y-4">
 										<div>
-											<p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight mb-1">Service Entity</p>
-											<p className="text-lg font-black text-[#05324f]">{selectedBooking.workshop?.companyName}</p>
+											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.service_entity')}</p>
+											<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedBooking.workshop?.companyName}</p>
+										</div>
+										<div className="pt-4 border-t border-gray-100 space-y-3">
+											<div>
+												<p className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+													<Mail className="w-3.5 h-3.5" />
+													{t('admin.oversight.email') || 'Email'}
+												</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedBooking.workshop?.email}</p>
+											</div>
+											<div>
+												<p className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+													<Phone className="w-3.5 h-3.5" />
+													{t('admin.oversight.phone') || 'Phone'}
+												</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedBooking.workshop?.phone || 'N/A'}</p>
+											</div>
 										</div>
 									</div>
-									<div className="pt-4 border-t border-gray-50 grid grid-cols-1 gap-3">
-										<div className="flex items-center gap-2 text-xs font-bold text-gray-600 truncate">
-											<Mail className="w-4 h-4 text-gray-300" /> {selectedBooking.workshop?.email}
-										</div>
-										<div className="flex items-center gap-2 text-xs font-bold text-gray-600">
-											<Phone className="w-4 h-4 text-gray-300" /> {selectedBooking.workshop?.phone || 'N/A'}
-										</div>
-									</div>
-								</div>
-							</div>
+								</CardContent>
+							</Card>
 						</div>
 
 						{/* Vehicle Identity Card */}
 						{vehicle && (
-							<div className="bg-[#05324f] p-8 rounded-[2rem] text-white shadow-xl shadow-[#05324f]/20 relative overflow-hidden">
-								<div className="absolute right-0 top-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl" />
-								<p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-6 flex items-center gap-2">
-									<Car className="w-4 h-4" /> Vehicle Identity
-								</p>
-								<div className="grid grid-cols-1 sm:grid-cols-3 gap-6 relative z-10">
-									<div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-										<p className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1.5">Manufacturer</p>
-										<p className="text-lg font-black uppercase tracking-tight">{vehicle.make}</p>
+							<Card className="border border-gray-200 shadow-sm rounded-2xl md:rounded-3xl hover:shadow-md transition-shadow">
+								<CardContent className="p-5 md:p-8">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+										{t('admin.oversight.vehicle_info')}
+									</h2>
+									<div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+										<div>
+											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.manufacturer') || 'Manufacturer'}</p>
+											<p className="text-sm font-semibold uppercase" style={{ color: '#05324f' }}>{vehicle.make}</p>
+										</div>
+										<div>
+											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.model_basis') || 'Model Basis'}</p>
+											<p className="text-sm font-semibold uppercase" style={{ color: '#05324f' }}>{vehicle.model}</p>
+										</div>
+										<div>
+											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.production_cycle') || 'Production Cycle'}</p>
+											<p className="text-sm font-semibold" style={{ color: '#34C759' }}>{vehicle.year}</p>
+										</div>
 									</div>
-									<div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-										<p className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1.5">Model Basis</p>
-										<p className="text-lg font-black uppercase tracking-tight">{vehicle.model}</p>
-									</div>
-									<div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-										<p className="text-[9px] font-black text-[#34C759] uppercase tracking-widest mb-1.5 opacity-80">Production Cycle</p>
-										<p className="text-lg font-black tracking-tight">{vehicle.year}</p>
-									</div>
-								</div>
-							</div>
+								</CardContent>
+							</Card>
 						)}
 
 						{/* Financial Authority Section */}
-						<div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
-							<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-8 flex items-center gap-2">
-								<Receipt className="w-4 h-4 text-[#34C759]" /> Financial Summary
-							</p>
-							<div className="flex flex-col md:flex-row items-center justify-between gap-10">
-								<div className="flex-1 w-full">
-									<p className="text-[11px] font-black text-[#05324f] uppercase tracking-widest mb-2 opacity-50">Total Amount (Inc. VAT)</p>
-									<p className="text-5xl font-black text-[#34C759] tracking-tighter">
-										{formatPrice(selectedBooking.totalAmount)}
-									</p>
-								</div>
-								<div className="grid grid-cols-2 gap-8 md:w-1/2 w-full pt-6 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 md:pl-10">
-									<div>
-										<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Labor Cost</p>
-										<p className="text-xl font-black text-[#05324f]">{formatPrice(offer?.laborCost || 0)}</p>
+						<Card className="border border-gray-200 shadow-sm rounded-2xl md:rounded-3xl hover:shadow-md transition-shadow">
+							<CardContent className="p-5 md:p-8">
+								<h2 className="text-lg font-bold mb-8 pb-2 border-b border-gray-200" style={{ color: '#05324f' }}>
+									{t('admin.oversight.financial_summary') || 'Financial Summary'}
+								</h2>
+								<div className="flex flex-col md:flex-row items-center justify-between gap-10">
+									<div className="flex-1 w-full">
+										<p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">{t('workshop.proposals.total_price')}</p>
+										<p className="text-5xl font-black text-[#34C759] tracking-tighter">
+											{formatPrice(selectedBooking.totalAmount)}
+										</p>
 									</div>
-									<div>
-										<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Service Cost</p>
-										<p className="text-xl font-black text-[#05324f]">{formatPrice(offer?.partsCost || 0)}</p>
+									<div className="grid grid-cols-2 gap-8 md:w-1/2 w-full pt-6 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 md:pl-10">
+										<div>
+											<p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">{t('workshop.proposals.labor')}</p>
+											<p className="text-xl font-bold text-[#05324f]">{formatPrice(offer?.laborCost || 0)}</p>
+										</div>
+										<div>
+											<p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">{t('workshop.proposals.parts')}</p>
+											<p className="text-xl font-bold text-[#05324f]">{formatPrice(offer?.partsCost || 0)}</p>
+										</div>
 									</div>
 								</div>
-							</div>
-						</div>
+							</CardContent>
+						</Card>
 
 						{/* Conditional Cancellation Audit */}
 						{selectedBooking.status === 'CANCELLED' && (
-							<div className="p-8 border-2 border-red-50 bg-red-50/50 rounded-[2rem] shadow-sm animate-in zoom-in-95 duration-500">
-								<div className="flex items-center gap-4 mb-6">
-									<div className="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center text-white shadow-xl shadow-red-500/20">
-										<ShieldAlert className="w-6 h-6" />
+							<Card className="border-2 border-red-50 bg-red-50/50 shadow-none">
+								<CardContent className="p-8">
+									<h2 className="text-lg font-bold mb-4 pb-2 border-b border-red-100 text-red-800">
+										{t('admin.oversight.cancellation_audit') || 'Cancellation Audit'}
+									</h2>
+									<div className="bg-white p-5 rounded-2xl border border-red-100/50 shadow-inner text-center">
+										<p className="text-xs font-medium text-red-600/60 mb-2 uppercase tracking-widest">{t('admin.oversight.root_reason')}</p>
+										<p className="text-sm font-bold text-red-900 italic leading-relaxed">
+											"{selectedBooking.cancellationReason || 'No technical revocation reason provided.'}"
+										</p>
 									</div>
-									<div>
-										<p className="text-[11px] font-black text-red-600 uppercase tracking-widest leading-none mb-1.5">Audit Alert</p>
-										<p className="text-base font-black text-red-900 uppercase">Cancellation Reason Surface</p>
-									</div>
-								</div>
-								<div className="bg-white p-5 rounded-2xl border border-red-100/50 shadow-inner text-center">
-									<p className="text-[10px] text-red-600 font-black uppercase tracking-widest mb-2 opacity-50">Root Stated Reason</p>
-									<p className="text-sm font-bold text-red-900 italic leading-relaxed">
-										"{selectedBooking.cancellationReason || 'No technical revocation reason provided.'}"
-									</p>
-								</div>
-							</div>
+								</CardContent>
+							</Card>
 						)}
 					</div>
 				</DialogContent>
@@ -1602,17 +1624,20 @@ export default function AdminPage() {
 				<div className="flex items-center justify-between gap-4 relative">
 					{/* Left: Mobile Menu / Desktop Admin Title */}
 					<div className="flex items-center min-w-0">
-						<div className="lg:hidden">
-							<button
-								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-								className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-							>
-								<Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
-							</button>
-						</div>
-						<div className="hidden lg:flex items-center gap-2">
-							<Shield className="w-5 h-5 text-gray-400" />
-							<span className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent tracking-tight">Admin Panel</span>
+						<button 
+							onClick={() => setMobileMenuOpen(true)}
+							className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors mr-2"
+						>
+							<Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
+						</button>
+						
+						<div className="hidden lg:flex flex-col">
+							<span className="text-lg font-black bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1">
+								Admin Panel
+							</span>
+							<span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">
+								{t('common.admin_tagline')}
+							</span>
 						</div>
 					</div>
 
@@ -1648,13 +1673,18 @@ export default function AdminPage() {
 											setStatusFilter('all')
 											setPagination({ ...pagination, page: 1 })
 								}}
-								className={`w-full text-left px-4 py-3 transition-all rounded-lg text-sm font-medium ${
+								className={`w-full flex items-center justify-between px-4 py-3 transition-all rounded-lg text-sm font-medium ${
 											activeTab === tab
 										? 'bg-white text-gray-900 font-semibold'
 										: 'text-white/80 hover:text-white hover:bg-white/10'
 								}`}
 									>
-										{t(`admin.tabs.${tab}`)}
+										<span>{t(`admin.tabs.${tab}`)}</span>
+										{getTabCount(tab) !== null && (
+											<span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${activeTab === tab ? 'bg-gray-100 text-[#05324f]' : 'bg-white/20 text-white'}`}>
+												{getTabCount(tab)}
+											</span>
+										)}
 									</button>
 								))}
 					</nav>
@@ -1702,13 +1732,18 @@ export default function AdminPage() {
 										setPagination({ ...pagination, page: 1 })
 									setMobileMenuOpen(false)
 									}}
-								className={`w-full text-left px-3 py-2.5 transition-all rounded-lg text-[15px] font-medium ${
+								className={`w-full flex items-center justify-between px-3 py-2.5 transition-all rounded-lg text-[15px] font-medium ${
 										activeTab === tab
 										? 'bg-white text-gray-900 font-bold shadow-sm'
 										: 'text-white/80 hover:text-white hover:bg-white/10'
 								}`}
 								>
-									{t(`admin.tabs.${tab}`)}
+									<span>{t(`admin.tabs.${tab}`)}</span>
+									{getTabCount(tab) !== null && (
+										<span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm ${activeTab === tab ? 'bg-[#05324f] text-white' : 'bg-white/20 text-white'}`}>
+											{getTabCount(tab)}
+										</span>
+									)}
 								</button>
 							))}
 					</nav>
@@ -1733,30 +1768,26 @@ export default function AdminPage() {
 				{activeTab === 'dashboard' && (
 						<div className="space-y-6">
 							{/* KPI Cards - only on dashboard */}
-							<div className="flex flex-wrap gap-3 sm:gap-6 mb-8 max-md:mb-6 max-w-4xl">
+							<div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8 max-md:mb-6">
 								<StatCard
-									icon={Users}
 									value={stats.totalCustomers}
 									label={t('admin.stats.customers')}
-									className="w-full sm:w-48"
-									iconColor="#05324f"
-									iconBg="bg-blue-50"
 								/>
 								<StatCard
-									icon={Building2}
 									value={stats.totalWorkshops}
 									label={t('admin.stats.workshops')}
-									className="w-full sm:w-48"
-									iconColor="#34C759"
-									iconBg="bg-green-50"
 								/>
 								<StatCard
-									icon={FileText}
 									value={stats.totalRequests}
 									label={t('admin.stats.requests')}
-									className="w-full sm:w-48"
-									iconColor="#05324f"
-									iconBg="bg-blue-50"
+								/>
+								<StatCard
+									value={stats.totalOffers}
+									label={t('admin.stats.offers') || 'Offers'}
+								/>
+								<StatCard
+									value={stats.totalBookings}
+									label={t('admin.stats.bookings') || 'Bookings'}
 								/>
 							</div>
 						{/* Pending Workshops */}
@@ -2352,13 +2383,9 @@ export default function AdminPage() {
 																	<Badge
 																		className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-none"
 																		style={
-																			request.status === 'COMPLETED' || request.status === 'BOOKED'
-																				? { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
-																				: request.status === 'EXPIRED' || request.status === 'CANCELLED'
+																			request.status === 'EXPIRED' || request.status === 'CANCELLED'
 																				? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-																				: request.status === 'NEW' || request.status === 'IN_BIDDING'
-																				? { backgroundColor: '#EFF6FF', color: '#1D4ED8', borderColor: '#DBEAFE' }
-																				: { backgroundColor: '#F9FAFB', color: '#4B5563', borderColor: '#F3F4F6' }
+																				: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
 																		}
 																	>
 																		{request.status === 'NEW' ? t('admin.requests.new') : request.status === 'IN_BIDDING' ? t('admin.requests.in_bidding') : request.status === 'BIDDING_CLOSED' ? t('admin.requests.bidding_closed') : request.status === 'BOOKED' ? t('admin.requests.booked') : request.status === 'COMPLETED' ? t('admin.requests.completed') : request.status === 'CANCELLED' ? t('admin.requests.cancelled') : request.status === 'EXPIRED' ? t('workshop.proposals.status.expired') : request.status}
@@ -2511,13 +2538,9 @@ export default function AdminPage() {
 																	<Badge
 																		className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-none"
 																		style={
-																			offer.status === 'ACCEPTED'
-																				? { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
-																				: offer.status === 'CANCELLED' || offer.status === 'EXPIRED' || offer.status === 'DECLINED'
+																			offer.status === 'CANCELLED' || offer.status === 'EXPIRED'
 																				? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-																				: offer.status === 'SENT'
-																				? { backgroundColor: '#EFF6FF', color: '#1D4ED8', borderColor: '#DBEAFE' }
-																				: { backgroundColor: '#F9FAFB', color: '#4B5563', borderColor: '#F3F4F6' }
+																				: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
 																		}
 																	>
 																		{offer.status === 'SENT' ? t('workshop.proposals.status.sent') : offer.status === 'ACCEPTED' ? t('workshop.proposals.status.accepted') : offer.status === 'DECLINED' ? t('workshop.proposals.status.declined') : offer.status === 'EXPIRED' ? t('workshop.proposals.status.expired') : offer.status}
@@ -2669,11 +2692,9 @@ export default function AdminPage() {
 																	<Badge
 																		className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-none"
 																		style={
-																			booking.status === 'DONE' || booking.status === 'CONFIRMED'
-																				? { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
-																				: booking.status === 'CANCELLED' || booking.status === 'NO_SHOW'
+																			booking.status === 'CANCELLED' || booking.status === 'EXPIRED'
 																				? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-																				: { backgroundColor: '#EFF6FF', color: '#1D4ED8', borderColor: '#DBEAFE' }
+																				: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
 																		}
 																	>
 																		{booking.status === 'CONFIRMED' ? t('admin.bookings.confirmed') : booking.status === 'RESCHEDULED' ? t('admin.bookings.rescheduled') : booking.status === 'CANCELLED' ? t('workshop.proposals.status.cancelled') : booking.status === 'DONE' ? t('admin.bookings.done') : booking.status === 'NO_SHOW' ? t('admin.bookings.no_show') : booking.status}

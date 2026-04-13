@@ -369,27 +369,32 @@ export default function WorkshopRequestsPage() {
 										>
 											{/* Left: Vehicle (bold) + Description + "X km away · Latest date" - reference card layout */}
 											<div className="min-w-0 flex-1 w-full">
+												{/* Date (Desktop & Mobile) at the top */}
+												{requestDateTime && (
+													<div className="mb-1">
+														<p className="text-[10px] text-gray-400 font-normal uppercase tracking-widest">{requestDateTime}</p>
+													</div>
+												)}
 												<h3 className="text-base font-bold mb-1 max-md:text-base max-md:mb-1.5 text-gray-900" style={{ color: '#05324f' }}>
 													{vehicle?.make} {vehicle?.model} {vehicle?.year}
 												</h3>
-												<p className="text-sm mb-1.5 md:mb-0 max-md:text-sm max-md:mb-1 text-gray-700" style={{ color: 'inherit' }}>
-													{request.description || t('workshop.requests.no_description_provided')}
-												</p>
-												<p className="text-xs text-gray-500 mt-1">
-													{distance != null ? `${Math.round(distance)} ${t('workshop.requests.km_away')}` : (request.city || t('common.no_data'))}
-												</p>
-												{/* Desktop only: Username + Date, Distance */}
-												<div className="hidden md:flex items-center gap-2 mb-1 flex-wrap mt-2">
+												
+												{/* Customer info - Visible on both desktop and mobile */}
+												<div className="flex items-center gap-2 mb-2 flex-wrap">
 													{customer?.name && (
 														<div className="flex items-center gap-1.5">
 															<User className="w-3 h-3" style={{ color: '#05324f' }} />
 															<p className="text-xs font-semibold" style={{ color: '#05324f' }}>{customer.name}</p>
 														</div>
 													)}
-													{customer?.name && requestDateTime && <span style={{ color: '#05324f' }}>·</span>}
-													{requestDateTime && <p className="text-xs" style={{ color: '#05324f' }}>{requestDateTime}</p>}
 												</div>
 
+												<p className="text-sm mb-1.5 md:mb-1 max-md:text-sm max-md:mb-1 text-gray-700" style={{ color: 'inherit' }}>
+													{request.description || t('workshop.requests.no_description_provided')}
+												</p>
+												<p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">
+													{distance != null ? `${Math.round(distance)} ${t('workshop.requests.km_away')}` : (request.city || t('common.no_data'))}
+												</p>
 											</div>
 
 											{/* Center: Desktop only */}

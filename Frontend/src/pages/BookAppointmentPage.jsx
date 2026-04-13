@@ -437,12 +437,12 @@ export default function BookAppointmentPage() {
 
 				{/* Mobile Layout */}
 				<div className="max-md:block hidden space-y-5 pb-10">
-					<div className="text-center">
-						<p className="text-3xl font-bold text-[#05324f]">{formatPrice(totalPrice)}</p>
-						<span className="text-[10px] text-green-600 font-bold uppercase tracking-wider">{t('offers_page.incl_vat') || 'Incl. VAT'}</span>
+					<div className="space-y-1">
+						<p className="text-2xl font-bold text-[#34C759]">{formatPrice(totalPrice)}</p>
+						<span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{t('offers_page.incl_vat') || 'Incl. VAT'}</span>
 					</div>
 
-					<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+					<div className="bg-white rounded-xl border border-gray-200 p-5">
 						<h2 className="text-base font-bold text-gray-900 mb-4">{t('offers_page.price_breakdown')}</h2>
 						<div className="space-y-2">
 							<div className="flex justify-between text-sm text-gray-600">
@@ -595,23 +595,23 @@ export default function BookAppointmentPage() {
 							<div className="space-y-6">
 								<div>
 									<h2 className="text-lg font-bold text-gray-900 mb-4">Offer Price</h2>
-									<div className="p-5 bg-gray-50 rounded-xl border border-gray-200">
+									<div className="py-2">
 										<div className="space-y-2 mb-4">
-											<div className="flex justify-between text-sm text-gray-600">
+											<div className="flex justify-between text-sm text-gray-500">
 												<span>{t('offers_page.labor_cost') || 'Labor'}</span>
-												<span className="font-semibold">{formatPrice(laborAmount)}</span>
+												<span className="font-semibold text-gray-700">{formatPrice(laborAmount)}</span>
 											</div>
-											<div className="flex justify-between text-sm text-gray-600">
+											<div className="flex justify-between text-sm text-gray-500">
 												<span>{t('offers_page.material_cost') || 'Materials'}</span>
-												<span className="font-semibold">{formatPrice(materialAmount)}</span>
+												<span className="font-semibold text-gray-700">{formatPrice(materialAmount)}</span>
 											</div>
 										</div>
-										<div className="flex justify-between items-center pt-4 border-t border-gray-200">
+										<div className="flex justify-between items-center pt-4 border-t border-gray-100">
 											<div className="flex flex-col">
-												<span className="font-semibold text-gray-600">Total Price</span>
-												<span className="text-[10px] text-green-700 font-bold uppercase">{t('offers_page.incl_vat') || 'Incl. VAT'}</span>
+												<span className="font-bold text-gray-900">Total Price</span>
+												<span className="text-[10px] text-gray-400 font-bold uppercase">{t('offers_page.incl_vat') || 'Incl. VAT'}</span>
 											</div>
-											<span className="font-bold text-3xl text-[#34C759]">{formatPrice(totalPrice)}</span>
+											<span className="font-bold text-2xl text-[#34C759]">{formatPrice(totalPrice)}</span>
 										</div>
 
 										{/* Offer Details - Desktop Column 1 Overlay */}

@@ -301,25 +301,31 @@ export default function WorkshopContractsPage() {
 						))}
 					</div>
 					{/* Contracts List Skeleton */}
-					<div className="bg-white border border-gray-200 rounded-lg overflow-hidden space-y-0">
+					<div className="bg-white border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-100">
 						{[...Array(4)].map((_, i) => (
-							<div key={`skel-comp-${i}`} className="border-b border-gray-100 last:border-b-0">
-								<div className="p-4 sm:p-6 block hover:bg-gray-50 transition-colors">
-									<div className="flex flex-col sm:flex-row justify-between gap-4">
-										<div className="space-y-3 flex-1">
-											<div className="flex items-center gap-3">
-												<Skeleton className="h-5 w-48" />
-												<Skeleton className="h-6 w-20 rounded-full hidden sm:block" />
-											</div>
-											<Skeleton className="h-4 w-3/4 max-w-[400px]" />
-											<div className="flex flex-wrap gap-4 mt-2">
-												<Skeleton className="h-4 w-24" />
-												<Skeleton className="h-4 w-32 hidden sm:block" />
-											</div>
+							<div key={`skel-comp-${i}`} className="p-4 sm:p-6">
+								<div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+									<div className="space-y-3">
+										<div className="flex items-center gap-2">
+											<Skeleton className="h-4 w-16 rounded-full" />
+											<Skeleton className="h-3 w-12" />
 										</div>
-										<div className="hidden sm:flex flex-col items-end gap-2 shrink-0">
-											<Skeleton className="h-6 w-24 rounded-full" />
+										<Skeleton className="h-5 w-40" />
+										<div className="flex items-center gap-2">
+											<Skeleton className="h-3 w-24" />
+											<Skeleton className="h-6 w-6 rounded-md" />
+											<Skeleton className="h-6 w-6 rounded-md" />
 										</div>
+									</div>
+									<div className="hidden md:flex flex-col items-center gap-2">
+										<Skeleton className="h-4 w-24" />
+										<Skeleton className="h-3 w-20" />
+									</div>
+									<div className="flex justify-end items-center md:items-end gap-3">
+										<div className="flex-1 md:flex-none text-right space-y-1">
+											<Skeleton className="h-6 w-20 ml-auto" />
+										</div>
+										<Skeleton className="h-9 w-24 rounded-lg" />
 									</div>
 								</div>
 							</div>
@@ -456,59 +462,52 @@ export default function WorkshopContractsPage() {
 				</h1>
 			</div>
 
-				{/* Navigation Tabs - Redesigned Segmented Control */}
-				<div className="flex justify-center mb-10 animate-fade-in-up">
-					<div className="inline-flex p-1 bg-white border border-gray-100 rounded-full shadow-sm max-md:rounded-2xl max-w-full gap-1 max-md:bg-transparent max-md:border-0 max-md:shadow-none max-md:p-0 max-md:gap-2 max-md:w-full max-md:grid max-md:grid-cols-2">
+				{/* Navigation Tabs - Synchronized & Refined Style */}
+				<div className="flex justify-start mb-8 animate-fade-in-up overflow-x-auto no-scrollbar pb-2">
+					<div className="inline-flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1 gap-1 max-md:w-full max-md:bg-gray-100 max-md:border-0 max-md:shadow-none max-md:p-0 max-md:gap-2 max-md:rounded-xl">
 						<button
 							onClick={() => setActiveTab('current')}
-							className={`px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[120px] max-md:flex-1 max-md:py-3.5 max-md:rounded-xl shadow-sm border border-transparent flex items-center justify-center gap-2 ${
+							className={`px-4 py-2 sm:px-6 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[100px] max-md:flex-1 max-md:py-2 max-md:rounded-lg max-md:text-[11px] shadow-sm border border-transparent flex items-center justify-center gap-2 ${
 								activeTab === 'current'
 									? 'bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759]'
-									: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:border-gray-200'
+									: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:bg-gray-200 max-md:border-0'
 							}`}
 						>
-							<Clock className="w-4 h-4" />
-							{t('workshop.contracts.active_jobs') || 'Active Jobs'}
-							<Badge className={`ml-1 border-0 h-5 min-w-[20px] flex items-center justify-center text-[10px] ${activeTab === 'current' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'}`}>
-								{contracts.filter(offer => {
-									const booking = bookings.find(b => (b.offerId?._id || b.offerId?.id || b.offerId) === (offer._id || offer.id))
-									return !booking || booking.status !== 'DONE'
-								}).length}
-							</Badge>
+							<span>{t('workshop.contracts.active_jobs') || 'Active Jobs'}</span>
+
 						</button>
 
 						<button
 							onClick={() => setActiveTab('completed')}
-							className={`px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[120px] max-md:flex-1 max-md:py-3.5 max-md:rounded-xl shadow-sm border border-transparent flex items-center justify-center gap-2 ${
+							className={`px-4 py-2 sm:px-6 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[100px] max-md:flex-1 max-md:py-2 max-md:rounded-lg max-md:text-[11px] shadow-sm border border-transparent flex items-center justify-center gap-2 ${
 								activeTab === 'completed'
 									? 'bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759]'
-									: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:border-gray-200'
+									: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:bg-gray-200 max-md:border-0'
 							}`}
 						>
-							<CheckCircle className="w-4 h-4" />
-							{t('workshop.contracts.past_records') || 'Past Records'}
-							<Badge className={`ml-1 border-0 h-5 min-w-[20px] flex items-center justify-center text-[10px] ${activeTab === 'completed' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'}`}>
-								{contracts.filter(offer => {
-									const booking = bookings.find(b => (b.offerId?._id || b.offerId?.id || b.offerId) === (offer._id || offer.id))
-									return booking && booking.status === 'DONE'
-								}).length}
-							</Badge>
+							<span>{t('workshop.contracts.past_records') || 'Past Records'}</span>
+
 						</button>
 					</div>
 				</div>
 
 				{/* Contracts List */}
-				<div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+				<div className="bg-transparent md:bg-white md:border md:border-gray-200 md:rounded-xl md:overflow-hidden flex flex-col md:block gap-4 md:gap-0">
 					{filteredContracts.length === 0 ? (
-						<Card className="border-0 shadow-2xl overflow-hidden">
+						<Card className="border-0 shadow-xl overflow-hidden rounded-3xl animate-fade-in-up">
 							<CardContent className="text-center py-20 sm:py-24 px-6 bg-white">
-								<h3 className="text-xl font-bold mb-4" style={{ color: '#05324f' }}>
+								<div className="relative inline-block mb-8">
+									<div className="w-24 h-24 bg-[#34C759]/10 rounded-3xl flex items-center justify-center mb-0 rotate-3 transition-transform hover:rotate-0">
+										<Car className="w-12 h-12 text-[#34C759]" />
+									</div>
+								</div>
+								<h3 className="text-2xl sm:text-3xl font-bold mb-4" style={{ color: '#05324f' }}>
 									{activeTab === 'current' 
 										? (t('workshop.contracts.no_current_contracts') || 'No Current Contracts')
 										: (t('workshop.contracts.no_completed_contracts') || 'No Completed Contracts')
 									}
 								</h3>
-								<p className="text-lg max-w-xl mx-auto leading-relaxed" style={{ color: '#05324f' }}>
+								<p className="text-lg text-gray-600 max-w-xl mx-auto leading-relaxed" style={{ color: '#05324f' }}>
 									{activeTab === 'current'
 										? (t('workshop.contracts.no_current_contracts_desc') || 'You don\'t have any active contracts at the moment.')
 										: (t('workshop.contracts.no_completed_contracts_desc') || 'You don\'t have any completed contracts yet.')
@@ -535,125 +534,104 @@ export default function WorkshopContractsPage() {
 								return (
 									<div
 										key={offerId}
-										className={`p-0 transition-all hover:bg-gray-50/30 ${index !== filteredContracts.length - 1 ? 'border-b border-gray-100' : ''}`}
+										className={`flex flex-col md:grid md:grid-cols-[1.5fr_1fr_1fr] md:items-center py-6 px-5 sm:px-8 gap-5 md:gap-4 md:py-4 md:px-6 bg-white md:bg-transparent rounded-3xl md:rounded-none border border-gray-100 md:border-0 md:border-b last:border-b-0 shadow-sm md:shadow-none transition-all hover:bg-gray-50/30 group animate-fade-in-up`}
+										style={{ animationDelay: `${index * 50}ms` }}
 									>
-										<div className="p-4">
-											{/* Top Header Label */}
-											<div className="flex items-center justify-between mb-3">
-												<div className="flex items-center gap-2">
-													<Badge className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tight border-0 ${
-														booking?.status === 'RESCHEDULED' 
-															? 'bg-amber-100 text-amber-700' 
-															: booking?.status === 'CANCELLED'
-																? 'bg-red-100 text-red-700'
-																: activeTab === 'current' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-													}`}>
-														{booking?.status === 'RESCHEDULED' 
-															? 'Rescheduled' 
-															: booking?.status === 'CANCELLED'
-																? 'Cancelled'
-																: activeTab === 'current' ? 'Active' : 'Completed'
-														}
-													</Badge>
-													<span className="text-[8px] text-gray-300 font-bold tracking-widest uppercase truncate max-w-[60px]">ID: {offerId.slice(-6)}</span>
-												</div>
-												<div className="flex items-center gap-1 text-gray-400">
-													<Calendar className="w-3 h-3" />
-													<span className="text-[10px] font-bold">{booking?.scheduledAt ? formatDate(booking.scheduledAt) : 'Pending'}</span>
-												</div>
+										{/* Section 1: Vehicle & Customer Info */}
+										<div className="w-full flex-1 flex flex-col gap-1.5 min-w-0">
+											<div className="flex items-center gap-2 mb-0.5 flex-wrap">
+												<Badge className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tight border-0 transition-none ${
+													booking?.status === 'CANCELLED'
+														? 'bg-red-50 text-red-600'
+														: 'bg-green-50 text-green-600'
+												}`}>
+													{booking?.status || (activeTab === 'current' ? 'Active' : 'Completed')}
+												</Badge>
+												<span className="text-[10px] text-gray-300 font-bold tracking-widest uppercase">REF: {offerId.slice(-6)}</span>
 											</div>
 
-											<div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-												{/* Left: Car & Info */}
-												<div className="lg:col-span-3 border-b lg:border-b-0 lg:border-r border-gray-100 pb-3 lg:pb-0 lg:pr-4">
-													<div className="min-w-0">
-														<h3 className="text-base font-black text-[#05324f] leading-tight truncate">
-															{vehicle?.make} {vehicle?.model}
-														</h3>
-														<p className="text-[9px] text-gray-400 font-medium truncate mt-0.5">
-															{vehicle?.year} • {vehicle?.color || 'Standard Silver'}
-														</p>
-													</div>
-												</div>
+											<h3 className="text-base font-bold text-[#05324f] leading-tight mb-1">
+												{vehicle?.make} {vehicle?.model} {vehicle?.year}
+											</h3>
+											
+											<div className="flex flex-col gap-0.5 md:gap-0">
+												{customer?.name && (
+													<p className="text-xs font-bold text-gray-700">{customer.name}</p>
+												)}
+												{customer?.phone && (
+													<a 
+														href={`tel:${customer.phone}`} 
+														className="text-[11px] text-gray-500 font-medium hover:text-[#34C759] hover:underline flex items-center gap-1 transition-colors w-max"
+													>
+														{customer.phone}
+													</a>
+												)}
+												{customer?.email && (
+													<a 
+														href={`mailto:${customer.email}`} 
+														className="text-[11px] text-gray-400 font-medium hover:text-[#05324f] hover:underline flex items-center gap-1 transition-colors w-max"
+													>
+														{customer.email}
+													</a>
+												)}
+											</div>
+										</div>
 
-												{/* Middle: Customer & Details */}
-												<div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-													{/* Customer Group */}
-													<div className="flex items-center gap-2">
-														<div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
-															<User className="w-3.5 h-3.5 text-[#34C759]" />
-														</div>
-														<div className="min-w-0 flex-1">
-															<p className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">Customer</p>
-															<p className="text-xs font-bold text-[#05324f] truncate leading-tight">{customer?.name}</p>
-															<div className="flex items-center gap-1.5 mt-1">
-																<a href={`tel:${customer?.phone}`} className="p-1 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-600 hover:text-white transition-all">
-																	<Phone className="w-2.5 h-2.5" />
-																</a>
-																<a href={`mailto:${customer?.email}`} className="p-1 bg-gray-50 text-gray-400 rounded-md hover:bg-[#05324f] hover:text-white transition-all">
-																	<Mail className="w-2.5 h-2.5" />
-																</a>
-															</div>
-														</div>
-													</div>
+										{/* Section 2: Inline Divider Info Row (Mobile Card) / Grid Cell (PC Row) */}
+										<div className="flex flex-row md:flex-col items-center md:justify-center gap-4 md:gap-1 py-3 px-4 md:py-0 md:px-0 bg-gray-50/80 md:bg-transparent rounded-2xl md:rounded-none w-max max-md:w-full border border-gray-100/50 md:border-0">
+											<div className="flex items-center gap-2">
+												<Calendar className="w-3.5 h-3.5 text-[#34C759]" />
+												<span className="text-xs font-bold text-[#05324f]">
+													{booking?.scheduledAt ? formatDate(booking.scheduledAt) : 'No Date'}
+												</span>
+											</div>
+											
+											<div className="w-px h-3.5 bg-gray-300 md:hidden"></div>
+											
+											<div className="flex items-center gap-2 text-gray-400">
+												<Clock className="w-3.5 h-3.5 text-gray-300" />
+												<span className="text-[11px] font-bold">
+													{booking?.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+												</span>
+											</div>
+										</div>
 
-													{/* Appointment Brief */}
-													<div className="bg-gray-50/50 px-3 py-2 rounded-xl border border-gray-100/50 self-center">
-														<div className="flex items-center gap-2">
-															<Clock className="w-3 h-3 text-[#34C759]" />
-															<p className="text-sm font-black text-[#05324f]">
-																{booking?.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '09:00'}
-															</p>
-															<span className="text-[9px] text-gray-400 font-medium">• Slot</span>
-														</div>
-													</div>
-												</div>
+										{/* Section 3 & 4 (Combined for Grid on PC) */}
+										<div className="flex flex-row md:flex-col justify-between md:justify-end items-center md:items-end gap-3 w-full md:w-auto pt-3 md:pt-0 max-md:border-t max-md:border-gray-50">
+											<div className="text-right">
+												<p className="text-xl md:text-lg font-black text-[#34C759]">
+													{formatPrice(offer.price)}
+												</p>
+											</div>
 
-
-												{/* Right: Actions */}
-												<div className="lg:col-span-3 flex flex-row lg:flex-col items-center lg:items-end gap-4 lg:gap-2 justify-between lg:justify-center border-t lg:border-t-0 lg:border-l border-gray-100 pt-3 lg:pt-0 lg:pl-4">
-													<div className="text-left lg:text-right min-w-[70px]">
-														<div className="flex items-baseline justify-center lg:justify-end gap-0.5">
-															<span className="text-xl font-black text-[#05324f] tracking-tight">{formatPrice(offer.price)}</span>
-														</div>
-														<p className="text-[8px] text-[#34C759] font-bold flex items-center justify-center lg:justify-end gap-0.5">
-															<Shield className="w-2 h-2" />
-															VAT INC
-														</p>
-													</div>
-
-													<div className="flex-1 flex flex-col items-stretch lg:items-end w-full max-w-[140px]">
-														{activeTab === 'current' ? (
-															<>
-																<Button
-																	onClick={() => handleDoneClick(offer)}
-																	className="w-full h-9 bg-[#34C759] hover:bg-[#2eb34f] text-white font-bold rounded-lg shadow-sm hover:scale-[1.01] transition-all active:scale-95 text-[10px]"
-																>
-																	<CheckCircle className="w-3.5 h-3.5 mr-1.5" />
-																	{t('workshop.contracts.mark_completed') || 'Done'}
-																</Button>
-																<button
-																	onClick={() => handleCancelClick(offerId)}
-																	className="w-full py-1 text-[8px] text-gray-400 hover:text-red-500 font-bold transition-colors uppercase tracking-widest"
-																>
-																	{t('workshop.contracts.cancel_job') || 'Cancel'}
-																</button>
-															</>
-														) : (
-															<Button
-																variant="outline"
-																size="sm"
-																onClick={() => {
-																	setSelectedContractForDetails({ offer, booking })
-																	setDetailsModalOpen(true)
-																}}
-																className="w-full text-[10px] font-bold border-2 border-[#05324f] text-[#05324f] rounded-lg hover:bg-[#05324f]/5"
-															>
-																View Details
-															</Button>
-														)}
-													</div>
-												</div>
+											<div className="flex flex-row items-center gap-2 w-full md:w-auto">
+												{activeTab === 'current' ? (
+													<>
+														<Button
+															onClick={() => handleDoneClick(offer)}
+															className="flex-1 h-9 md:h-8 px-4 rounded-xl md:rounded-lg bg-[#34C759] text-white font-black text-[10px] uppercase tracking-widest hover:bg-[#2eb34f] transition-all active:scale-[0.98] shadow-lg shadow-green-100 md:shadow-none"
+														>
+															Done
+														</Button>
+														<Button
+															variant="outline"
+															onClick={() => handleCancelClick(offerId)}
+															className="flex-1 h-9 md:h-8 px-4 rounded-xl md:rounded-lg border-gray-200 text-gray-400 font-black text-[10px] uppercase tracking-widest hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all active:scale-[0.98]"
+														>
+															Cancel
+														</Button>
+													</>
+												) : (
+													<Button
+														onClick={() => {
+															setSelectedContractForDetails({ offer, booking })
+															setDetailsModalOpen(true)
+														}}
+														className="flex-1 h-9 md:h-8 px-6 rounded-xl md:rounded-lg bg-[#05324f] text-white font-black text-[10px] uppercase tracking-widest hover:bg-[#05324f]/90 transition-all active:scale-[0.98]"
+													>
+														Details
+													</Button>
+												)}
 											</div>
 										</div>
 									</div>
@@ -677,71 +655,86 @@ export default function WorkshopContractsPage() {
 						</div>
 						
 						{selectedContractForDetails && (
-							<div className="space-y-8">
+							<div className="space-y-6">
 								{/* Simplified Cancellation Notice */}
 								{selectedContractForDetails.booking?.status === 'CANCELLED' && (
-									<div className="bg-red-50/50 border-l-4 border-red-500 rounded-r-2xl p-6 animate-in fade-in slide-in-from-left-4 duration-500">
-										<div className="flex items-center gap-5">
-											<div className="bg-red-100 p-3 rounded-2xl shrink-0">
-												<AlertTriangle className="w-6 h-6 text-red-600" />
-											</div>
-											<div className="flex-1">
-												<p className="text-[10px] font-black text-red-700 uppercase tracking-widest mb-1.5 leading-none">
-													{selectedContractForDetails.booking.cancelledBy === 'WORKSHOP' ? 'Audit: Revoked by Workshop' : 'Audit: Terminated by Customer'}
-												</p>
-												<p className="text-sm text-red-900 font-bold italic leading-relaxed bg-white/40 p-3 rounded-xl border border-red-100">
-													"{selectedContractForDetails.booking.cancellationReason || 'No formal reason provided'}"
-												</p>
-												{selectedContractForDetails.booking.cancelledAt && (
-													<p className="text-[9px] text-red-400 mt-2.5 font-black uppercase tracking-widest">
-														Timestamp: {formatDate(selectedContractForDetails.booking.cancelledAt)}
-													</p>
-												)}
-											</div>
-										</div>
+									<div className="bg-red-50 border border-red-100 rounded-2xl p-5 mb-2">
+										<p className="text-[10px] font-black text-red-700 uppercase tracking-widest mb-2 leading-none">
+											{selectedContractForDetails.booking.cancelledBy === 'WORKSHOP' ? 'Audit: Revoked by Workshop' : 'Audit: Terminated by Customer'}
+										</p>
+										<p className="text-sm text-red-900 font-bold leading-relaxed">
+											"{selectedContractForDetails.booking.cancellationReason || 'No formal reason provided'}"
+										</p>
 									</div>
 								)}
 
-								<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-									<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner">
-										<p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-4 flex items-center gap-2">
-											<Car className="w-4 h-4 text-[#05324f]" /> Destination Vehicle
-										</p>
-										<p className="text-base font-black text-[#05324f] uppercase tracking-tight">
-											{selectedContractForDetails.offer.requestId?.vehicleId?.make} {selectedContractForDetails.offer.requestId?.vehicleId?.model}
-										</p>
-										<p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">Build Cycle: {selectedContractForDetails.offer.requestId?.vehicleId?.year}</p>
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-gray-100">
+									{/* Customer Section */}
+									<div className="space-y-4">
+										<h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Client Details</h4>
+										<div className="space-y-3">
+											<div>
+												<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Account Holder</p>
+												<p className="text-sm font-bold text-[#05324f]">{selectedContractForDetails.offer.requestId?.customerId?.name}</p>
+											</div>
+											<div>
+												<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email Reference</p>
+												<p className="text-sm font-bold text-[#05324f]">{selectedContractForDetails.offer.requestId?.customerId?.email}</p>
+											</div>
+											<div>
+												<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Contact Phone</p>
+												<p className="text-sm font-bold text-[#05324f]">{selectedContractForDetails.offer.requestId?.customerId?.phone || 'N/A'}</p>
+											</div>
+										</div>
 									</div>
-									
-									<div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner">
-										<p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-4 flex items-center gap-2">
-											<User className="w-4 h-4 text-[#34C759]" /> Service Recipient
-										</p>
-										<p className="text-base font-black text-[#05324f] uppercase tracking-tight">
-											{selectedContractForDetails.offer.requestId?.customerId?.name}
-										</p>
-										<p className="text-xs font-bold text-gray-400 mt-1 truncate">{selectedContractForDetails.offer.requestId?.customerId?.email}</p>
+
+									{/* Vehicle Section */}
+									<div className="space-y-4">
+										<h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Machine Info</h4>
+										<div className="space-y-3">
+											<div>
+												<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Manufacturer</p>
+												<p className="text-sm font-bold text-[#05324f]">
+													{selectedContractForDetails.offer.requestId?.vehicleId?.make} {selectedContractForDetails.offer.requestId?.vehicleId?.model}
+												</p>
+											</div>
+											<div>
+												<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Build Cycle</p>
+												<p className="text-sm font-bold text-[#05324f]">{selectedContractForDetails.offer.requestId?.vehicleId?.year}</p>
+											</div>
+											<div>
+												<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Primary Color</p>
+												<p className="text-sm font-bold text-[#05324f]">{selectedContractForDetails.offer.requestId?.vehicleId?.color || 'Standard Silver'}</p>
+											</div>
+										</div>
 									</div>
 								</div>
 
-								<div className="p-8 bg-[#05324f] rounded-3xl text-white shadow-2xl shadow-[#05324f]/20">
-									<p className="text-[10px] font-black text-[#34C759] uppercase tracking-widest mb-6 flex items-center gap-2">
-										<Shield className="w-4 h-4" /> Financial Finality
+								{/* Service Brief */}
+								<div className="pt-6 border-t border-gray-100">
+									<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Service Brief</p>
+									<p className="text-sm font-semibold text-[#05324f] leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+										{selectedContractForDetails.offer.requestId?.description || 'No description available'}
 									</p>
-									<div className="flex justify-between items-end">
-										<div>
-											<p className="text-xs text-white/40 font-bold uppercase tracking-widest mb-1">Contract Total</p>
-											<p className="text-3xl font-black text-white tracking-tighter">
-												{formatPrice(selectedContractForDetails.offer.price)}
-											</p>
-										</div>
-										<Badge className="bg-[#34C759] text-white border-0 font-black text-[9px] px-3 py-1 uppercase tracking-widest mb-2 shadow-lg shadow-[#34C759]/20">VAT INCLUDED</Badge>
+								</div>
+
+								{/* Financial Block */}
+								<div className="pt-6 border-t border-gray-100 flex justify-between items-end px-1">
+									<div>
+										<p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Job Value</p>
+										<p className="text-2xl font-black text-[#34C759]">
+											{formatPrice(selectedContractForDetails.offer.price)}
+										</p>
+									</div>
+									<div className="flex flex-col items-end gap-1">
+										<Badge className="bg-green-50 text-green-700 border-0 font-black text-[9px] px-2 py-0.5 uppercase tracking-widest shadow-none">VAT INCLUDED</Badge>
+										<p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Final Amount</p>
 									</div>
 								</div>
 								
 								<Button 
 									onClick={() => setDetailsModalOpen(false)}
-									className="w-full h-14 bg-gray-50 hover:bg-gray-100 text-[#05324f] font-black uppercase tracking-widest text-[10px] rounded-2xl border border-gray-200 transition-all active:scale-95"
+									className="w-full h-14 bg-gray-50 hover:bg-white text-[#05324f] font-black uppercase tracking-widest text-[10px] rounded-2xl border border-gray-200 transition-all active:scale-95 shadow-sm mt-4"
 								>
 									Dismiss Record
 								</Button>

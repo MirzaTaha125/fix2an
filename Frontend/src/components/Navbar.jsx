@@ -74,9 +74,13 @@ function Navbar() {
 		>
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-1 sm:pb-0">
 				<div className="relative flex justify-between items-center py-2 sm:py-2.5 w-full">
-					{/* Left Section: Mobile controls & Admin Identity */}
-					<div className="flex items-center justify-start flex-1 min-w-0">
-						<div className="flex md:hidden">
+					{/* Left Section: Mobile controls, Logo & Admin Identity */}
+					<div className="flex items-center justify-start flex-1 min-w-0 gap-4">
+						<Link to="/" className="flex-shrink-0">
+							<Logo />
+						</Link>
+						
+					<div className="flex md:hidden">
 							{shouldShowBackButton ? (
 								<button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
 									<ArrowLeft className="w-6 h-6 text-[#05324f]" />
@@ -93,22 +97,21 @@ function Navbar() {
 							)}
 						</div>
 
-						{/* Admin Identity Stack (Desktop & Mobile) */}
-						{user?.role === 'ADMIN' && (
-							<Link to="/admin" className="flex flex-col group ml-2 md:ml-0">
-								<span className="text-sm sm:text-lg font-bold text-[#05324f] tracking-tight leading-tight group-hover:text-[#34C759] transition-colors">
-									Admin <span className="text-[#34C759]">Panel</span>
-								</span>
-								<span className="text-[8px] sm:text-[10px] font-semibold text-gray-400 uppercase tracking-widest leading-none">
-									{t('common.admin_tagline')}
-								</span>
-							</Link>
-						)}
-					</div>
+						</div>
 
-					{/* Center Section: Logo (Absolute Centering) */}
-					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-auto">
-						<Logo />
+						{/* Center Section: Admin Identity (Absolute Centered) */}
+						{user?.role === 'ADMIN' && (
+							<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 px-4">
+								<Link to="/admin" className="flex flex-col items-center group pointer-events-auto">
+									<span className="text-sm sm:text-lg font-black bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1 group-hover:from-[#34C759] group-hover:to-[#34C759] transition-all duration-300">
+										Admin <span className="text-[#34C759]">Panel</span>
+									</span>
+									<span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">
+										{t('common.admin_tagline')}
+									</span>
+								</Link>
+							</div>
+						)}
 					</div>
 
 					{/* Right Section: Desktop Navigation & Utilities */}
