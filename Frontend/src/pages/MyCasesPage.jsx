@@ -638,7 +638,7 @@ export default function MyCasesPage() {
 																	setSelectedReport(report)
 																	setShowReportDialog(true)
 																}}
-																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#34C759] font-semibold"
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#34C759] font-medium"
 															>
 																View Inspection Report
 															</button>
@@ -648,7 +648,7 @@ export default function MyCasesPage() {
 														{['NEW', 'IN_BIDDING', 'BIDDING_CLOSED'].includes(request.status) && (
 															<Link 
 																to={`/offers?requestId=${requestId}`}
-																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-semibold"
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#34C759] font-medium"
 															>
 																{t('my_cases.show_offer_list') || 'Show Offer List'}
 															</Link>
@@ -663,7 +663,7 @@ export default function MyCasesPage() {
 																	setReviewText('')
 																	setReviewModalOpen(true)
 																}}
-																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-semibold"
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-gray-50 text-[#05324f] font-medium"
 															>
 																{t('my_cases.leave_review') || 'Write Review'}
 															</button>
@@ -676,7 +676,7 @@ export default function MyCasesPage() {
 																	setRequestToDelete(request)
 																	setDeleteConfirmOpen(true)
 																}}
-																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-red-50 text-red-600 font-semibold"
+																className="w-full text-left px-4 py-3 text-sm flex items-center gap-3 hover:bg-red-50 text-red-600 font-medium"
 															>
 																{t('my_cases.delete_request') || 'Delete Request'}
 															</button>
@@ -777,7 +777,7 @@ export default function MyCasesPage() {
 																	setSelectedReport(report)
 																	setShowReportDialog(true)
 																}}
-																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#34C759] font-semibold transition-colors"
+																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#34C759] font-medium transition-colors"
 															>
 																View Inspection Report
 															</button>
@@ -787,7 +787,7 @@ export default function MyCasesPage() {
 														{['NEW', 'IN_BIDDING', 'BIDDING_CLOSED'].includes(request.status) && (
 															<Link 
 																to={`/offers?requestId=${requestId}`}
-																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#05324f] font-semibold transition-colors"
+																className="w-full text-left px-5 py-3 text-sm flex items-center gap-3.5 hover:bg-gray-50 text-[#34C759] font-medium transition-colors"
 															>
 																<span>{t('my_cases.show_offer_list') || 'Audit Offers'}</span>
 															</Link>

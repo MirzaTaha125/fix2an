@@ -72,52 +72,53 @@ function Navbar() {
 			}}
 		>
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-1 sm:pb-0">
-				<div className="relative flex justify-between items-center py-2 sm:py-2.5 w-full">
-					{/* Left Section: Mobile controls & Desktop Logo */}
-					<div className="flex items-center justify-start flex-1 min-w-0">
-						{/* Mobile Hamburger/Back Button - Now on the left */}
-						<div className="flex md:hidden">
-							{shouldShowBackButton ? (
-								<button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
-									<ArrowLeft className="w-6 h-6 text-[#05324f]" />
+				{/* ── Mobile navbar: strict 3-col grid ── */}
+				<div className="md:hidden grid grid-cols-3 items-center py-2 w-full">
+					{/* Left: hamburger / back */}
+					<div className="flex items-center justify-start">
+						{shouldShowBackButton ? (
+							<button onClick={() => navigate(-1)} className="p-2 -ml-2 mt-5 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
+								<ArrowLeft className="w-6 h-6 text-[#05324f]" />
+							</button>
+						) : (
+							!user && (
+								<button
+									onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+									className="p-2 -ml-2 mt-5 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
+								>
+									{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
 								</button>
-							) : (
-								!user && (
-									<button
-										onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-										className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
-									>
-										{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
-									</button>
-								)
-							)}
-						</div>
-
-						{/* Desktop Logo - Remains on the left */}
-						<div className="hidden md:block">
-							<Logo />
-						</div>
+							)
+						)}
 					</div>
 
-					{/* Center Section: Mobile Logo & Admin Identity (Absolute Centered) */}
-					<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 px-4">
-						{/* Mobile Logo - Now in the center */}
-						{user?.role !== 'ADMIN' && (
-							<div className="md:hidden pointer-events-auto">
-								<Logo size="text-4xl" />
-							</div>
-						)}
-
-						{user?.role === 'ADMIN' && (
-							<Link to="/admin" className="flex flex-col items-center group pointer-events-auto">
-								<span className="text-sm sm:text-lg font-black bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1 group-hover:from-[#34C759] group-hover:to-[#34C759] transition-all duration-300">
+					{/* Center: logo or admin identity */}
+					<div className="flex items-center justify-center">
+						{user?.role === 'ADMIN' ? (
+							<Link to="/admin" className="flex flex-col items-center group">
+								<span className="text-sm font-black bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1 group-hover:from-[#34C759] group-hover:to-[#34C759] transition-all duration-300">
 									Admin <span className="text-[#34C759]">Panel</span>
 								</span>
-								<span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">
+								<span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">
 									{t('common.admin_tagline')}
 								</span>
 							</Link>
+						) : (
+							<Logo />
 						)}
+					</div>
+
+					{/* Right: language switcher */}
+					<div className="flex items-center justify-end mt-5">
+						<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} />
+					</div>
+				</div>
+
+				{/* ── Desktop navbar: original flex layout ── */}
+				<div className="hidden md:flex relative justify-between items-center py-2.5 w-full">
+					{/* Desktop Logo */}
+					<div className="flex items-center justify-start flex-1 min-w-0">
+						<Logo />
 					</div>
 
 					{/* Right Section: Desktop Navigation & Utilities */}
@@ -343,9 +344,6 @@ function Navbar() {
 															onClick={() => setRegisterDropdownOpen(false)}
 															className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#05324f] hover:bg-blue-50/50 rounded-lg transition-colors group"
 														>
-															<div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-500 transition-colors">
-																<Users className="w-4 h-4 text-blue-600 group-hover:text-white transition-colors" />
-															</div>
 															<div className="flex flex-col">
 																<span>{t('common.register_as_customer') || 'Register as Customer'}</span>
 																<span className="text-[10px] text-gray-400 font-normal leading-tight">Find trusted workshops</span>
@@ -357,9 +355,6 @@ function Navbar() {
 															onClick={() => setRegisterDropdownOpen(false)}
 															className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#05324f] hover:bg-green-50/50 rounded-lg transition-colors group"
 														>
-															<div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center group-hover:bg-[#34C759] transition-colors">
-																<Building2 className="w-4 h-4 text-green-600 group-hover:text-white transition-colors" />
-															</div>
 															<div className="flex flex-col">
 																<span>{t('common.register_as_workshop') || 'Register as Workshop'}</span>
 																<span className="text-[10px] text-gray-400 font-normal leading-tight">Grow your business</span>
@@ -374,11 +369,6 @@ function Navbar() {
 							)}
 							<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} />
 						</nav>
-
-						{/* Mobile Menu Button (Globe Only) */}
-						<div className="md:hidden flex items-center justify-end pr-2">
-							<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} />
-						</div>
 					</div>
 				</div>
 

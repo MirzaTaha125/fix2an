@@ -9,16 +9,17 @@ function App() {
 			<AuthProvider>
 				<AppRoutes />
 				<Toaster 
-					position="top-center" 
+					position="top-right" 
 					toastOptions={{
 						duration: 4000,
 						style: {
-							background: '#05324f',
-							color: '#fff',
+							background: '#ffffff',
+							color: '#1a1a1a',
 							borderRadius: '16px',
 							fontSize: '14px',
 							fontWeight: '600',
 							padding: '12px 24px',
+							border: '1px solid rgba(0, 0, 0, 0.05)',
 							boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
 						},
 						success: {
