@@ -1,18 +1,16 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { cn } from '../utils/cn'
+import mainLogo from '../assets/main_logo.png'
 
-const Logo = ({ className, size = "text-4xl", ...props }) => {
+const Logo = ({ className, ...props }) => {
 	return (
-		<Link 
-			to="/" 
+		<Link
+			to="/"
 			className={cn("flex items-center transition-all duration-300 hover:scale-105", className)}
 			{...props}
 		>
-			<span className={cn(size, "sm:text-6xl md:text-6xl font-extrabold tracking-tight")}>
-				<span className="text-[#05324f]">Fix</span>
-				<span className="text-green-500">2an</span>
-			</span>
+			<img src={mainLogo} alt="Fix2An" className="h-12 md:h-16 w-auto object-contain" />
 		</Link>
 	)
 }

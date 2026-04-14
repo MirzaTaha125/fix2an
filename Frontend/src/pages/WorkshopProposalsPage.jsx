@@ -1,35 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
+import { Card, CardContent } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice, formatDate } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
-import {
-	Car,
-	Calendar,
-	CheckCircle,
-	XCircle,
-	Clock,
-	FileText,
-	Eye,
-	Edit,
-	DollarSign,
-	AlertCircle,
-	Send,
-	User,
-	Mail,
-	Phone,
-	Inbox,
-} from 'lucide-react'
+import { FileText, User } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
 import { offersAPI } from '../services/api'
-import { getFullUrl } from '../config/api.js'
 
 export default function WorkshopProposalsPage() {
 	const navigate = useNavigate()
@@ -108,7 +91,7 @@ export default function WorkshopProposalsPage() {
 		const statusMap = {
 			SENT: {
 				label: t('workshop.proposals.status.sent') || 'Sent',
-				className: 'bg-green-50 text-green-800 border-green-200',
+				className: 'bg-blue-50 text-blue-700 border-blue-200',
 			},
 			ACCEPTED: {
 				label: t('workshop.proposals.status.accepted') || 'Accepted',
@@ -116,11 +99,11 @@ export default function WorkshopProposalsPage() {
 			},
 			DECLINED: {
 				label: t('workshop.proposals.status.declined') || 'Declined',
-				className: 'bg-gray-50 text-gray-600 border-gray-100',
+				className: 'bg-gray-100 text-gray-500 border-gray-200',
 			},
 			EXPIRED: {
 				label: t('workshop.proposals.status.expired') || 'Expired',
-				className: 'bg-green-50 text-green-800 border-green-200',
+				className: 'bg-orange-50 text-orange-700 border-orange-200',
 			},
 			CANCELLED: {
 				label: t('workshop.proposals.status.cancelled') || 'Cancelled',
@@ -136,52 +119,10 @@ export default function WorkshopProposalsPage() {
 		)
 	}
 
-	const getStatusIcon = (status) => {
-		switch (status) {
-			case 'SENT':
-				return <Send className="w-4 h-4" />
-			case 'ACCEPTED':
-				return <CheckCircle className="w-4 h-4" />
-			case 'DECLINED':
-				return <XCircle className="w-4 h-4" />
-			case 'EXPIRED':
-				return <Clock className="w-4 h-4" />
-			case 'CANCELLED':
-				return <AlertCircle className="w-4 h-4" />
-			default:
-				return <Clock className="w-4 h-4" />
-		}
-	}
-
-	const getStatusIconColor = (status) => {
-		switch (status) {
-			case 'SENT':
-			case 'ACCEPTED':
-			case 'EXPIRED':
-				return '#166534' // green-800
-			case 'DECLINED':
-				return '#4b5563' // gray-600
-			case 'CANCELLED':
-				return '#dc2626' // red-600 (full red)
-			default:
-				return '#34C759' // default green
-		}
-	}
-
 	const filteredOffers = offers.filter((offer) => {
 		if (activeTab === 'all') return true
 		return offer.status === activeTab.toUpperCase()
 	})
-
-	const formatK = (value) => {
-		if (!value) return '0'
-		const num = Number(value)
-		if (isNaN(num)) return '0'
-		if (num >= 1000) {
-			return (num / 1000).toFixed(2).replace(/\.00$/, '') + 'k'
-		}
-		return num.toString()
-	}
 
 	if (authLoading || loading) {
 		return (
@@ -355,6 +296,7 @@ export default function WorkshopProposalsPage() {
 													<p className="text-base font-bold text-[#34C759]">
 														{formatPrice(offer.price)}
 													</p>
+													<p className="text-[10px] text-gray-400 font-medium">inkl. moms</p>
 													{offer.expiresAt && (
 														<p className="text-[10px] text-red-500 italic">
 															{t('offers_page.offer_expires') || 'Expires'}: {formatDate(offer.expiresAt)}

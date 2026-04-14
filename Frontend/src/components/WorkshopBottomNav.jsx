@@ -90,7 +90,7 @@ export default function WorkshopBottomNav() {
 					</button>
 				
 				{dropdownOpen && (
-					<div className="absolute bottom-full mb-3 right-[-12px] w-48 bg-white border border-gray-200 shadow-xl rounded-xl py-2 z-50">
+					<div className="absolute bottom-full mb-3 right-[-12px] w-48 bg-white border border-gray-200 shadow-xl rounded-xl py-2 z-[60]">
 						<div className="absolute -bottom-2 right-8 w-4 h-4 bg-white border-b border-r border-gray-200 transform rotate-45 pointer-events-none"></div>
 						<div className="relative z-50 flex flex-col bg-white rounded-xl">
 							<Link 

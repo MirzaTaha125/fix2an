@@ -7,8 +7,8 @@ import { Label } from '../components/ui/Label'
 import { Textarea } from '../components/ui/Textarea'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
-import { formatPrice, formatDate } from '../utils/cn'
-import { Car, Send, Clock, DollarSign, FileText, Shield, Calendar, User, MessageSquare, CheckCircle, ArrowLeft, Eye, AlertTriangle } from 'lucide-react'
+import { formatDate } from '../utils/cn'
+import { Car, Clock, DollarSign, FileText, Shield, Calendar, User, MessageSquare, CheckCircle, AlertTriangle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -650,16 +650,20 @@ export default function CreateOfferPage() {
 							<div className="space-y-3">
 								<Label htmlFor="inclusions" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
 									<CheckCircle className="w-4 h-4 text-[#34C759]" />
-									<span>Included Services (e.g., Free wash, loaner car)</span>
+									<span>Included Services</span>
 								</Label>
-								<Input
+								<Textarea
 									id="inclusions"
 									value={formData.inclusions}
 									disabled={viewMode}
 									onChange={(e) => setFormData({ ...formData, inclusions: e.target.value })}
-									placeholder="Wash included, 2 years warranty on parts..."
-									className="h-10 text-sm"
+									placeholder="E.g.: Labor: 2 hours, Parts: Brake pads (OEM), Includes: Free car wash after service"
+									rows={3}
+									className="resize-none text-sm"
 								/>
+								<p className="text-xs text-gray-500 ml-6">
+									List what is covered — labor, materials, parts, and any extras included in the price
+								</p>
 							</div>
 
 							{/* Note */}

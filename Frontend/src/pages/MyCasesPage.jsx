@@ -972,9 +972,9 @@ export default function MyCasesPage() {
 							<div className="px-8 py-8 bg-white">
 								<p className="text-sm text-gray-500 mb-8 text-center leading-relaxed font-semibold">
 									{t('my_cases.cancel_explanation') || 'Are you sure you want to cancel your appointment? Repeated cancellations may affect your platform trust score.'}
-									<Link to="/policy/cancellation" className="text-[#05324f] font-black underline ml-1.5 inline-block text-[10px] uppercase tracking-tight">
+									<a href="https://fixa2an.se/policy" target="_blank" rel="noopener noreferrer" className="text-[#05324f] font-black underline ml-1.5 inline-block text-[10px] uppercase tracking-tight">
 										{t('common.read_cancellation_policy') || 'Read Policy'}
-									</Link>
+									</a>
 								</p>
 
 								<div className="space-y-4 mb-8">

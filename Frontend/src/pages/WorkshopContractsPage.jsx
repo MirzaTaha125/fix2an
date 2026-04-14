@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card'
+import { Card, CardContent } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../components/ui/Dialog'
 import { Skeleton } from '../components/ui/Skeleton'
@@ -12,22 +12,16 @@ import {
 	Car,
 	Calendar,
 	CheckCircle,
-	User,
-	Phone,
-	Mail,
-	DollarSign,
 	FileText,
-	X,
 	AlertTriangle,
 	Clock,
-	Shield,
+	Timer,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
 import { offersAPI, bookingsAPI } from '../services/api'
-import { getFullUrl } from '../config/api.js'
 
 export default function WorkshopContractsPage() {
 	const navigate = useNavigate()
@@ -36,15 +30,13 @@ export default function WorkshopContractsPage() {
 	const [contracts, setContracts] = useState([])
 	const [bookings, setBookings] = useState([])
 	const [loading, setLoading] = useState(true)
-	const [cancellingId, setCancellingId] = useState(null)
-	const [showCancelDialog, setShowCancelDialog] = useState(false)
+const [showCancelDialog, setShowCancelDialog] = useState(false)
 	const [contractToCancel, setContractToCancel] = useState(null)
 	const [activeTab, setActiveTab] = useState('current')
 	const [showDoneDialog, setShowDoneDialog] = useState(false)
 	const [contractToDone, setContractToDone] = useState(null)
 	const [isCompleting, setIsCompleting] = useState(false)
-	const [finalPrice, setFinalPrice] = useState('')
-	const [cancellationReason, setCancellationReason] = useState('')
+const [cancellationReason, setCancellationReason] = useState('')
 	const [selectedContractForDetails, setSelectedContractForDetails] = useState(null)
 	const [detailsModalOpen, setDetailsModalOpen] = useState(false)
 
@@ -104,83 +96,39 @@ export default function WorkshopContractsPage() {
 	}
 
 	// Filter contracts based on active tab
-	const getFilteredContracts = () => {
-		if (activeTab === 'current') {
-			// Current contracts: ACCEPTED offers where booking is NOT DONE AND request is NOT COMPLETED
-			// When offer is accepted, it shows in current contracts
-			// When customer completes job, booking status becomes 'DONE' and request status becomes 'COMPLETED'
-			// Contract should then move to completed tab
-			return contracts.filter(offer => {
-				const offerId = offer._id || offer.id
-				if (!offerId) return false
-				
-				// Find matching booking by offerId
-				const booking = bookings.find(b => {
-					let bookingOfferId = null
-					if (b.offerId && typeof b.offerId === 'object' && b.offerId !== null) {
-						bookingOfferId = b.offerId._id || b.offerId.id
-					} else if (b.offerId) {
-						bookingOfferId = b.offerId
-					}
-					if (!bookingOfferId) return false
-					return String(bookingOfferId) === String(offerId)
-				})
-				
-				// Check booking status
-				const bookingStatus = booking?.status?.toUpperCase()
-				const isBookingDone = booking && bookingStatus === 'DONE'
-				
-				// Check request status (when booking is DONE, request status becomes COMPLETED)
-				const request = offer.requestId || offer.request
-				const requestStatus = request?.status?.toUpperCase()
-				const isRequestCompleted = requestStatus === 'COMPLETED'
-				
-				// Show in current ONLY if:
-				// 1. Booking is NOT DONE, AND
-				// 2. Request is NOT COMPLETED
-				// If either is true, it should show in completed tab
-				return !isBookingDone && !isRequestCompleted
+	const getFilteredContracts = (tab) => {
+		const targetTab = tab || activeTab
+		return contracts.filter(offer => {
+			const offerId = offer._id || offer.id
+			if (!offerId) return false
+
+			const booking = bookings.find(b => {
+				let bookingOfferId = null
+				if (b.offerId && typeof b.offerId === 'object' && b.offerId !== null) {
+					bookingOfferId = b.offerId._id || b.offerId.id
+				} else if (b.offerId) {
+					bookingOfferId = b.offerId
+				}
+				if (!bookingOfferId) return false
+				return String(bookingOfferId) === String(offerId)
 			})
-		} else {
-			// Completed contracts: ACCEPTED offers where booking status is DONE OR request status is COMPLETED
-			// When customer completes job, booking status becomes 'DONE' and request status becomes 'COMPLETED'
-			return contracts.filter(offer => {
-				const offerId = offer._id || offer.id
-				if (!offerId) return false
-				
-				// Find matching booking by offerId
-				const booking = bookings.find(b => {
-					let bookingOfferId = null
-					if (b.offerId && typeof b.offerId === 'object' && b.offerId !== null) {
-						bookingOfferId = b.offerId._id || b.offerId.id
-					} else if (b.offerId) {
-						bookingOfferId = b.offerId
-					}
-					if (!bookingOfferId) return false
-					return String(bookingOfferId) === String(offerId)
-				})
-				
-				// Check booking status
-				const bookingStatus = booking?.status?.toUpperCase()
-				const isBookingDone = booking && bookingStatus === 'DONE'
-				
-				// Check request status (when booking is DONE, request status becomes COMPLETED)
-				const request = offer.requestId || offer.request
-				const requestStatus = request?.status?.toUpperCase()
-				const isRequestCompleted = requestStatus === 'COMPLETED'
-				
-				// Show if booking is DONE OR request is COMPLETED
-				return isBookingDone || isRequestCompleted
-			})
-		}
+
+			const isBookingDone = booking && booking?.status?.toUpperCase() === 'DONE'
+			const request = offer.requestId || offer.request
+			const isRequestCompleted = request?.status?.toUpperCase() === 'COMPLETED'
+
+			if (targetTab === 'current') return !isBookingDone && !isRequestCompleted
+			return isBookingDone || isRequestCompleted
+		})
 	}
 
 	const filteredContracts = getFilteredContracts()
+	const currentCount = getFilteredContracts('current').length
+	const completedCount = getFilteredContracts('completed').length
 
 	const handleDoneClick = (offer) => {
 		setContractToDone(offer)
-		setFinalPrice(offer.price?.toString() || '')
-		setShowDoneDialog(true)
+	setShowDoneDialog(true)
 	}
 
 	const handleDoneConfirm = async () => {
@@ -289,7 +237,7 @@ export default function WorkshopContractsPage() {
 		return (
 			<div className="min-h-screen bg-gray-50 flex flex-col">
 				<Navbar />
-				<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
+				<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-28 md:pb-20 w-full">
 					{/* Header Skeleton */}
 					<div className="mb-8">
 						<Skeleton className="h-8 md:h-10 w-48" />
@@ -426,6 +374,12 @@ export default function WorkshopContractsPage() {
 										className="w-full min-h-[120px] p-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-[#34C759] transition-all outline-none resize-none shadow-inner"
 										required
 									></textarea>
+									<p className="text-[10px] text-gray-400 mt-2">
+										{t('workshop.contracts.cancel_policy_note') || 'By cancelling, you agree to our'}{' '}
+										<a href="https://fixa2an.se/policy" target="_blank" rel="noopener noreferrer" className="text-[#34C759] hover:underline font-semibold">
+											{t('workshop.contracts.cancellation_policy') || 'Cancellation Policy'}
+										</a>
+									</p>
 								</div>
 							</div>
 
@@ -454,7 +408,7 @@ export default function WorkshopContractsPage() {
 				</DialogContent>
 			</Dialog>
 			
-		<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
+		<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-28 md:pb-20 w-full">
 			{/* Header */}
 			<div className="mb-8">
 				<h1 className="text-xl md:text-xl font-bold text-[#05324f]">
@@ -474,7 +428,11 @@ export default function WorkshopContractsPage() {
 							}`}
 						>
 							<span>{t('workshop.contracts.active_jobs') || 'Active Jobs'}</span>
-
+							{currentCount > 0 && (
+								<span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${activeTab === 'current' ? 'bg-white/30 text-white' : 'bg-gray-100 text-gray-500'}`}>
+									{currentCount}
+								</span>
+							)}
 						</button>
 
 						<button
@@ -486,7 +444,11 @@ export default function WorkshopContractsPage() {
 							}`}
 						>
 							<span>{t('workshop.contracts.past_records') || 'Past Records'}</span>
-
+							{completedCount > 0 && (
+								<span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${activeTab === 'completed' ? 'bg-white/30 text-white' : 'bg-gray-100 text-gray-500'}`}>
+									{completedCount}
+								</span>
+							)}
 						</button>
 					</div>
 				</div>
@@ -594,6 +556,19 @@ export default function WorkshopContractsPage() {
 													{booking?.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
 												</span>
 											</div>
+											{offer.estimatedDuration && (
+												<>
+													<div className="w-px h-3.5 bg-gray-300 md:hidden"></div>
+													<div className="flex items-center gap-2 text-gray-400">
+														<Timer className="w-3.5 h-3.5 text-gray-300" />
+														<span className="text-[11px] font-bold">
+															{offer.estimatedDuration >= 60
+																? `~${Math.floor(offer.estimatedDuration / 60)}h${offer.estimatedDuration % 60 > 0 ? ` ${offer.estimatedDuration % 60}m` : ''}`
+																: `~${offer.estimatedDuration} min`}
+														</span>
+													</div>
+												</>
+											)}
 										</div>
 
 										{/* Section 3 & 4 (Combined for Grid on PC) */}
@@ -602,6 +577,7 @@ export default function WorkshopContractsPage() {
 												<p className="text-xl md:text-lg font-black text-[#34C759]">
 													{formatPrice(offer.price)}
 												</p>
+												<p className="text-[10px] text-gray-400 font-medium">inkl. moms</p>
 											</div>
 
 											<div className="flex flex-row items-center gap-2 w-full md:w-auto">
