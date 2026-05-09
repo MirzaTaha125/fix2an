@@ -17,6 +17,7 @@ const requestSchema = new mongoose.Schema({
 	city: { type: String, required: true },
 	postalCode: { type: String, default: '' },
 	country: { type: String, default: 'SE' },
+	registrationNumber: { type: String, default: '', uppercase: true, trim: true },
 	expiresAt: { type: Date, required: true },
 	cancellationReason: { type: String },
 	cancelledBy: { type: String, enum: ['CUSTOMER', 'WORKSHOP', 'ADMIN'] },

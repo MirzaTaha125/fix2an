@@ -56,6 +56,7 @@ export default function WorkshopRequestsPage() {
 	const [workshopCoords, setWorkshopCoords] = useState({ lat: null, lng: null })
 	const [selectedReport, setSelectedReport] = useState(null)
 	const [showReportDialog, setShowReportDialog] = useState(false)
+	const [mobileTab, setMobileTab] = useState('new')
 
 	// Redirect if not authenticated or not workshop
 	useEffect(() => {
@@ -204,20 +205,11 @@ export default function WorkshopRequestsPage() {
 		}
 	}
 
-	// Filter requests: remove already applied jobs and apply search filter
-	const filteredRequests = requests.filter((request) => {
-		// Remove requests where workshop has already applied
-		const offers = request.offers || []
-		const hasOffer = offers.length > 0
-		if (hasOffer) return false
-
-		// Apply search filter if query exists
+	const matchesSearch = (request) => {
 		if (!searchQuery.trim()) return true
-
 		const query = searchQuery.toLowerCase()
 		const vehicle = request.vehicleId || request.vehicle
 		const customer = request.customerId || request.customer
-
 		return (
 			(vehicle?.make && vehicle.make.toLowerCase().includes(query)) ||
 			(vehicle?.model && vehicle.model.toLowerCase().includes(query)) ||
@@ -227,7 +219,19 @@ export default function WorkshopRequestsPage() {
 			(customer?.name && customer.name.toLowerCase().includes(query)) ||
 			(request.description && request.description.toLowerCase().includes(query))
 		)
+	}
+
+	// "New" — only requests workshop hasn't applied to (default for desktop + mobile Nya tab)
+	const filteredRequests = requests.filter((request) => {
+		const offers = request.offers || []
+		if (offers.length > 0) return false
+		return matchesSearch(request)
 	})
+
+	// "All" — every request matching search (mobile Alla tab)
+	const allRequests = requests.filter(matchesSearch)
+
+	const mobileList = mobileTab === 'all' ? allRequests : filteredRequests
 
 	const formatK = (value) => {
 		if (!value) return '0'
@@ -237,6 +241,22 @@ export default function WorkshopRequestsPage() {
 			return (num / 1000).toFixed(2).replace(/\.00$/, '') + 'k'
 		}
 		return num.toString()
+	}
+
+	const formatRelativeSent = (dateStr) => {
+		if (!dateStr) return ''
+		try {
+			const d = new Date(dateStr)
+			const now = new Date()
+			const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+			const yesterday = new Date(today.getTime() - 86400000)
+			const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
+			if (d >= today) return t('workshop.requests.sent_today', { time }) || `Today ${time}`
+			if (d >= yesterday) return t('workshop.requests.sent_yesterday', { time }) || `Yesterday ${time}`
+			return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) + ' ' + time
+		} catch {
+			return ''
+		}
 	}
 
 	return (
@@ -290,9 +310,131 @@ export default function WorkshopRequestsPage() {
 			</div>
 		) : (
 		<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24 w-full">
+			{/* Mobile-only Header (image 9) */}
+			<div className="md:hidden mb-5">
+				<h1 className="text-3xl font-black text-[#05324f] leading-tight mb-1.5">
+					{t('workshop.requests.page_title') || 'Requests'}
+				</h1>
+				<p className="text-sm text-gray-500 leading-snug">
+					{t('workshop.requests.page_subtitle') || 'See new requests from customers here.'}
+				</p>
+			</div>
+
+			{/* Mobile-only Tabs (Nya / Alla) */}
+			<div className="md:hidden flex gap-2 mb-5">
+				<button
+					type="button"
+					onClick={() => setMobileTab('new')}
+					className={`flex-1 py-2.5 px-4 rounded-xl font-black text-sm transition-all ${
+						mobileTab === 'new'
+							? 'bg-[#38BC54] text-white shadow-sm'
+							: 'bg-gray-100 text-gray-500'
+					}`}
+				>
+					{t('workshop.requests.tab_new') || 'New'} ({filteredRequests.length})
+				</button>
+				<button
+					type="button"
+					onClick={() => setMobileTab('all')}
+					className={`flex-1 py-2.5 px-4 rounded-xl font-black text-sm transition-all ${
+						mobileTab === 'all'
+							? 'bg-[#38BC54] text-white shadow-sm'
+							: 'bg-gray-100 text-gray-500'
+					}`}
+				>
+					{t('workshop.requests.tab_all') || 'All'} ({allRequests.length})
+				</button>
+			</div>
+
+			{/* Mobile-only Card List (image 9) */}
+			<div className="md:hidden space-y-3 mb-4">
+				{mobileList.length === 0 ? (
+					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+						<Car className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+						<h3 className="text-base font-black text-[#05324f] mb-1">{t('workshop.requests.no_requests.title')}</h3>
+						<p className="text-xs text-gray-500">{t('workshop.requests.no_requests.description')}</p>
+					</div>
+				) : (
+					mobileList.map((request) => {
+						const requestId = request._id || request.id
+						const vehicle = request.vehicleId || request.vehicle
+						const hasOffer = (request.offers || []).length > 0
+						return (
+							<div key={`m-${requestId}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
+								<div className="flex gap-3">
+									<div className="w-20 h-20 rounded-xl bg-gray-50 overflow-hidden flex items-center justify-center shrink-0 border border-gray-100">
+										{vehicle?.image ? (
+											<img src={getFullUrl(vehicle.image)} alt={`${vehicle.make} ${vehicle.model}`} className="w-full h-full object-cover" />
+										) : (
+											<Car className="text-gray-300 w-8 h-8" />
+										)}
+									</div>
+									<div className="flex-1 min-w-0">
+										<div className="flex items-start justify-between gap-2 mb-1">
+											<h3 className="text-sm font-black text-[#05324f] truncate">
+												{vehicle?.make} {vehicle?.model} {vehicle?.year}
+											</h3>
+											{hasOffer ? (
+												<span className="shrink-0 text-[10px] font-black bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md border border-gray-200">
+													{t('workshop.requests.offer_sent') || 'Sent'}
+												</span>
+											) : (
+												<span className="shrink-0 text-[10px] font-black bg-[#F2F9F4] text-[#38BC54] px-2 py-0.5 rounded-md border border-[#38BC54]/20">
+													{t('workshop.requests.new_badge') || 'New'}
+												</span>
+											)}
+										</div>
+										<div className="space-y-0.5">
+											{request.description && (
+												<p className="text-[11px] text-[#05324f]/80 leading-snug">
+													<span className="font-bold">{t('workshop.requests.problem_label') || 'Problem'}:</span> {request.description}
+												</p>
+											)}
+											{request.city && (
+												<p className="text-[11px] text-[#05324f]/80">
+													<span className="font-bold">{t('workshop.requests.location_label') || 'Location'}:</span> {request.city}
+												</p>
+											)}
+											{request.createdAt && (
+												<p className="text-[11px] text-[#05324f]/80">
+													<span className="font-bold">{t('workshop.requests.sent_label') || 'Sent'}:</span> {formatRelativeSent(request.createdAt)}
+												</p>
+											)}
+										</div>
+									</div>
+								</div>
+								{hasOffer ? (
+									<div className="mt-3 w-full h-10 bg-gray-100 text-gray-500 rounded-xl font-black text-xs flex items-center justify-center gap-1.5">
+										<CheckCircle className="w-4 h-4" />
+										{t('workshop.requests.offer_already_submitted') || 'Offer already submitted'}
+									</div>
+								) : (
+									<Link to={`/workshop/requests/${requestId}/offer`} className="block mt-3">
+										<Button className="w-full h-10 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl font-black text-xs flex items-center justify-center gap-1.5 shadow-sm">
+											{t('workshop.requests.leave_a_quote') || 'Submit offer'}
+											<ChevronDown className="w-4 h-4 rotate-[-90deg]" />
+										</Button>
+									</Link>
+								)}
+							</div>
+						)
+					})
+				)}
+			</div>
+
+			{/* Mobile-only Disclaimer */}
+			{mobileList.length > 0 && (
+				<div className="md:hidden flex items-start gap-2 px-1 mb-4">
+					<CheckCircle className="w-4 h-4 text-[#38BC54] shrink-0 mt-0.5" />
+					<p className="text-[11px] text-gray-500 leading-snug">
+						{t('workshop.requests.share_disclaimer') || 'You only share offers with the customer if you choose to send them.'}
+					</p>
+				</div>
+			)}
+
 			{/* Greeting + Stats - desktop */}
 			{workshopName && (
-				<div className="mb-8 max-md:mb-4">
+				<div className="mb-8 max-md:mb-4 max-md:hidden">
 
 
 					<div className="grid grid-cols-3 gap-2 sm:gap-6 mb-8 max-md:mb-6">
@@ -312,9 +454,9 @@ export default function WorkshopRequestsPage() {
 				</div>
 			)}
 
-			{/* Offer Inbox Section */}
-			<div className="mb-6">
-				<h2 className="text-xl font-bold text-[#05324f] mb-6 max-md:mb-3 max-md:text-lg">{t('workshop.requests.offer_inbox')}</h2>
+			{/* Offer Inbox Section - Desktop only */}
+			<div className="mb-6 max-md:hidden">
+				<h2 className="text-xl font-bold text-[#05324f] mb-6">{t('workshop.requests.offer_inbox')}</h2>
 					
 					<div className="bg-white border border-gray-200 rounded-lg overflow-hidden max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:bg-transparent max-md:border-0">
 						{filteredRequests.length === 0 ? (

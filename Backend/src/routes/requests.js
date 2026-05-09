@@ -25,6 +25,7 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 			postalCode,
 			country = 'SE',
 			expiresAt,
+			registrationNumber,
 		} = req.body
 
 		if (!vehicleId || !reportIds || !latitude || !longitude || !address || !city || !expiresAt) {
@@ -43,6 +44,7 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 			postalCode,
 			country,
 			expiresAt: new Date(expiresAt),
+			registrationNumber: registrationNumber || '',
 		})
 
 		const populatedRequest = await Request.findById(request._id)
@@ -82,14 +84,18 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 		const requestsWithOffersAndBookings = await Promise.all(
 			requests.map(async (request) => {
 				const offers = await Offer.find({ requestId: request._id })
-					.populate('workshopId', 'companyName rating reviewCount email phone')
+					.populate({
+						path: 'workshopId',
+						select: 'companyName rating reviewCount email phone userId',
+						populate: { path: 'userId', select: 'image' }
+					})
 					.sort({ createdAt: -1 })
 
 				const bookings = await Booking.find({ requestId: request._id })
 					.populate({
 						path: 'workshopId',
-						select: 'companyName rating reviewCount email phone userId',
-						populate: { path: 'userId', select: 'name' }
+						select: 'companyName rating reviewCount email phone userId address city',
+						populate: { path: 'userId', select: 'name image' }
 					})
 					.populate('offerId', '_id id status price')
 					.sort({ createdAt: -1 })
@@ -110,6 +116,7 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 							companyName: offer.workshopId?.companyName,
 							rating: offer.workshopId?.rating || 0,
 							reviewCount: offer.workshopId?.reviewCount || 0,
+							logo: offer.workshopId?.userId?.image,
 						},
 					})),
 					bookings: await Promise.all(bookings.map(async (booking) => {
@@ -125,6 +132,10 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 								companyName: booking.workshopId?.companyName,
 								rating: booking.workshopId?.rating || 0,
 								reviewCount: booking.workshopId?.reviewCount || 0,
+								logo: booking.workshopId?.userId?.image,
+								address: {
+									city: booking.workshopId?.city
+								}
 							},
 							workshopId: booking.workshopId,
 						}
@@ -232,6 +243,7 @@ router.patch('/:id', authenticate, async (req, res) => {
 		if (updateData.address) request.address = updateData.address
 		if (updateData.city) request.city = updateData.city
 		if (updateData.postalCode) request.postalCode = updateData.postalCode
+		if (updateData.registrationNumber !== undefined) request.registrationNumber = updateData.registrationNumber
 		if (updateData.expiresAt) request.expiresAt = new Date(updateData.expiresAt)
 
 		// Handle status change to CANCELLED

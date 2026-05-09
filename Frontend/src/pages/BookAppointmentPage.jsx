@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { offersAPI, bookingsAPI } from '../services/api'
+import { getFullUrl } from '../config/api.js'
 import {
 	MapPin,
 	CheckCircle,
@@ -17,6 +18,10 @@ import {
 	Star,
 	Building2,
 	Clock,
+	Check,
+	ShieldCheck,
+	ArrowRight,
+	MessageCircle,
 } from 'lucide-react'
 
 export default function BookAppointmentPage() {
@@ -356,68 +361,149 @@ export default function BookAppointmentPage() {
 	}
 
 	if (bookingSuccess) {
+		const successSteps = [
+			{ key: 's1', label: t('upload.form.step1') || 'Upload', state: 'done' },
+			{ key: 's2', label: t('upload.form.step2') || 'Details', state: 'done' },
+			{ key: 's3', label: t('offers_page.step_select_workshop') || 'Choose', state: 'done' },
+			{ key: 's4', label: t('offers_page.step_done') || 'Done!', state: 'active' },
+		]
+
 		return (
-			<div className="min-h-screen bg-gray-50">
+			<div className="min-h-screen bg-[#FAFBFC] flex flex-col">
 				<Navbar />
-				<div className="max-w-xl mx-auto px-4 pt-24 pb-20">
-					<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-						<div className="p-8 text-center space-y-4">
-							<div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-								<CheckCircle className="w-10 h-10 text-[#34C759]" />
-							</div>
-							<h1 className="text-2xl font-bold text-gray-900">{t('offers_page.booking_confirmed') || 'Booking Confirmed!'}</h1>
-							<p className="text-gray-600">{t('offers_page.booking_confirmed_desc') || "Your appointment has been successfully scheduled. You'll receive a confirmation email shortly."}</p>
-						</div>
-
-						<div className="p-6 border-t border-gray-100 space-y-6">
-							<div className="space-y-4">
-								<h2 className="text-lg font-bold text-gray-900">{t('offers_page.workshop_details') || 'Workshop Details'}</h2>
-								<div className="space-y-3">
-									<div className="flex items-start gap-3">
-										<Building2 className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-										<div>
-											<p className="text-sm font-semibold text-gray-900">{workshopName}</p>
-											<p className="text-xs text-gray-500">{fullAddress}</p>
-										</div>
+				<div className="flex-1 max-w-xl w-full mx-auto px-4 pt-24 md:pt-28 pb-20 max-md:pb-24">
+					{/* Step Indicator */}
+					<div className="flex items-center justify-center mb-6">
+						{successSteps.map((step, idx, arr) => (
+							<div key={step.key} className="flex items-center">
+								<div className="flex flex-col items-center">
+									<div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${
+										step.state === 'done' ? 'bg-[#38BC54] text-white' :
+										step.state === 'active' ? 'bg-[#38BC54] text-white shadow-md shadow-green-200' :
+										'bg-gray-200 text-gray-400'
+									}`}>
+										{step.state === 'done' || step.state === 'active' ? <Check className="w-4 h-4" strokeWidth={3} /> : idx + 1}
 									</div>
-									{workshop?.phone && (
-										<div className="flex items-center gap-3">
-											<div className="w-5 h-5 flex items-center justify-center">
-												<span className="text-gray-400">📞</span>
-											</div>
-											<p className="text-sm text-gray-700">{workshop.phone}</p>
-										</div>
-									)}
-									{workshop?.email && (
-										<div className="flex items-center gap-3">
-											<div className="w-5 h-5 flex items-center justify-center">
-												<span className="text-gray-400">✉️</span>
-											</div>
-											<p className="text-sm text-gray-700">{workshop.email}</p>
-										</div>
-									)}
+									<span className={`text-[8px] sm:text-[9px] font-bold mt-1 whitespace-nowrap ${step.state === 'pending' ? 'text-gray-400' : 'text-[#05324f]'}`}>
+										{step.label}
+									</span>
 								</div>
+								{idx < arr.length - 1 && (
+									<div className={`h-[2px] w-3 sm:w-5 mx-0.5 sm:mx-1 -mt-5 ${arr[idx + 1].state !== 'pending' ? 'bg-[#38BC54]' : 'bg-gray-200'}`} />
+								)}
 							</div>
+						))}
+					</div>
 
-							<div className="p-4 bg-gray-50 rounded-xl space-y-2">
-								<div className="flex justify-between items-center text-sm">
-									<span className="text-gray-600">{t('offers_page.accepted_price') || 'Accepted Price'}</span>
-									<span className="font-bold text-lg text-[#05324f]">{formatPrice(totalPrice)}</span>
-								</div>
-								<p className="text-xs text-amber-700 font-medium">
-									* {t('offers_page.payment_notice') || 'Payment happens directly with the workshop upon completion.'}
-								</p>
-							</div>
-
-							<Button
-								onClick={() => navigate('/my-cases')}
-								className="w-full py-4 rounded-xl font-normal"
-								style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
-							>
-								{t('offers_page.go_to_my_cases') || 'Go to My Cases'}
-							</Button>
+					{/* Big check + sparkles */}
+					<div className="relative flex justify-center mb-5">
+						<div className="absolute -top-2 -left-3 text-2xl text-[#38BC54] opacity-60">✦</div>
+						<div className="absolute top-2 -right-2 text-xl text-[#38BC54] opacity-50">✦</div>
+						<div className="absolute -bottom-1 -left-1 text-lg text-[#38BC54] opacity-40">✦</div>
+						<div className="absolute bottom-3 right-0 text-base text-[#38BC54] opacity-30">✦</div>
+						<div className="w-20 h-20 rounded-full bg-[#F2F9F4] border-4 border-white shadow-lg flex items-center justify-center">
+							<Check className="w-10 h-10 text-[#38BC54]" strokeWidth={3.5} />
 						</div>
 					</div>
+
+					{/* Heading */}
+					<div className="text-center mb-6">
+						<h1 className="text-2xl sm:text-3xl font-black text-[#05324f] leading-tight mb-2">
+							{t('offers_page.thanks_title') || 'Thanks! Your booking has been sent.'}
+						</h1>
+						<p className="text-sm text-gray-500 leading-snug px-2">
+							{t('offers_page.thanks_subtitle', { workshop: workshopName }) || `${workshopName} will contact you soon.`}
+						</p>
+					</div>
+
+					{/* Workshop card */}
+					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-5">
+						<div className="flex gap-3">
+							<div className="w-14 h-14 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0 overflow-hidden">
+								{workshop?.image ? (
+									<img src={getFullUrl(workshop.image)} alt={workshopName} className="w-full h-full object-cover" />
+								) : (
+									<Building2 className="text-white/30 w-6 h-6" />
+								)}
+							</div>
+							<div className="flex-1 min-w-0">
+								<div className="flex items-center gap-1.5 mb-0.5">
+									<h3 className="text-[0.95rem] font-black text-[#05324f] truncate">{workshopName}</h3>
+									{isVerified && <ShieldCheck size={14} className="text-[#38BC54] shrink-0" fill="#38BC54" fillOpacity={0.15} />}
+								</div>
+								{workshopRating != null && (
+									<div className="flex items-center gap-1">
+										<span className="text-[11px] font-bold text-[#05324f]">{workshopRating.toFixed(1)}</span>
+										<div className="flex gap-0.5">
+											{[...Array(5)].map((_, i) => (
+												<Star key={i} size={10} fill={i < Math.floor(workshopRating) ? '#FFB800' : 'none'} className={i < Math.floor(workshopRating) ? 'text-[#FFB800]' : 'text-gray-200'} />
+											))}
+										</div>
+										<span className="text-[11px] text-gray-400 font-semibold">({reviewCount} {t('offers_page.reviews') || 'reviews'})</span>
+									</div>
+								)}
+								{offer.distance != null && (
+									<div className="flex items-center gap-1 text-[11px] text-gray-500 font-semibold mt-0.5">
+										<MapPin size={11} className="text-gray-400" />
+										{offer.distance.toFixed(1)} {t('offers_page.km_from_you') || 'km from you'}
+									</div>
+								)}
+							</div>
+							<div className="text-right shrink-0">
+								<div className="text-base font-black text-[#05324f] leading-none">{formatPrice(totalPrice)}</div>
+								<div className="text-[10px] text-gray-400 font-bold mt-0.5">{t('offers_page.incl_vat') || 'incl. VAT'}</div>
+							</div>
+						</div>
+					</div>
+
+					{/* What happens now */}
+					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
+						<h4 className="text-sm font-black text-[#05324f] mb-4">
+							{t('offers_page.what_happens_now') || 'What happens now?'}
+						</h4>
+						<div className="space-y-4">
+							{[
+								{ icon: <Building2 className="w-4 h-4 text-[#38BC54]" />, title: t('offers_page.step_contact_title') || 'The workshop contacts you', desc: t('offers_page.step_contact_desc') || "You'll receive a call or SMS from the workshop shortly." },
+								{ icon: <Calendar className="w-4 h-4 text-[#38BC54]" />, title: t('offers_page.step_pick_time_title') || 'Schedule a time that suits you', desc: t('offers_page.step_pick_time_desc') || 'Choose a time that suits you and the workshop.' },
+								{ icon: <CheckCircle className="w-4 h-4 text-[#38BC54]" />, title: t('offers_page.step_get_fixed_title') || 'Get your car fixed', desc: t('offers_page.step_get_fixed_desc') || 'The workshop completes the work and notifies you. Done!' },
+							].map((step, i) => (
+								<div key={i} className="flex items-start gap-3">
+									<div className="w-9 h-9 rounded-full bg-[#F2F9F4] flex items-center justify-center shrink-0">
+										{step.icon}
+									</div>
+									<div className="flex-1 min-w-0 pt-0.5">
+										<p className="text-sm font-black text-[#05324f] leading-tight">{step.title}</p>
+										<p className="text-[11px] text-gray-500 font-semibold leading-snug mt-0.5">{step.desc}</p>
+									</div>
+								</div>
+							))}
+						</div>
+					</div>
+
+					{/* Help footer */}
+					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 mb-5">
+						<div className="w-10 h-10 rounded-full bg-[#F2F9F4] flex items-center justify-center shrink-0">
+							<MessageCircle className="w-5 h-5 text-[#38BC54]" />
+						</div>
+						<div className="flex-1 min-w-0">
+							<p className="text-sm font-black text-[#05324f]">{t('offers_page.need_help') || 'Need help?'}</p>
+							<p className="text-[11px] text-gray-400 font-semibold leading-tight">{t('offers_page.need_help_subtitle') || "We're here if you have any questions."}</p>
+						</div>
+						<a
+							href="mailto:info@fixa2an.se"
+							className="px-3 py-2 border border-[#38BC54] rounded-lg text-[#38BC54] text-xs font-black active:scale-95 transition-transform"
+						>
+							{t('offers_page.contact_us') || 'Contact us'}
+						</a>
+					</div>
+
+					{/* CTA */}
+					<Button
+						onClick={() => navigate('/my-cases')}
+						className="w-full h-13 py-4 text-base font-black bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl shadow-md shadow-green-200/50 transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+					>
+						{t('offers_page.to_my_bookings') || 'To my bookings'} <ArrowRight className="w-5 h-5" />
+					</Button>
 				</div>
 				<Footer />
 			</div>
@@ -435,99 +521,144 @@ export default function BookAppointmentPage() {
 					<p className="text-gray-500 text-base">{t('offers_page.your_chosen_workshop')}</p>
 				</div>
 
-				{/* Mobile Layout */}
+				{/* Mobile Layout - Image 5 */}
 				<div className="max-md:block hidden space-y-5 pb-10">
-					<div className="space-y-1">
-						<p className="text-2xl font-bold text-[#34C759]">{formatPrice(totalPrice)}</p>
-						<span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{t('offers_page.incl_vat') || 'Incl. VAT'}</span>
-					</div>
-
-					<div className="bg-white rounded-xl border border-gray-200 p-5">
-						<h2 className="text-base font-bold text-gray-900 mb-4">{t('offers_page.price_breakdown')}</h2>
-						<div className="space-y-2">
-							<div className="flex justify-between text-sm text-gray-600">
-								<span>{t('offers_page.labor_cost') || 'Labor'}</span>
-								<span>{formatPrice(laborAmount)}</span>
-							</div>
-							<div className="flex justify-between text-sm text-gray-600">
-								<span>{t('offers_page.material_cost') || 'Materials'}</span>
-								<span>{formatPrice(materialAmount)}</span>
-							</div>
-							<div className="flex justify-between items-center text-sm text-gray-900 font-bold pt-2 border-t border-gray-100">
-								<div className="flex flex-col">
-									<span>{t('offers_page.total')}</span>
-									<span className="text-[10px] text-green-600 font-bold uppercase tracking-wider">{t('offers_page.incl_vat')}</span>
-								</div>
-								<span className="text-lg">{formatPrice(totalPrice)}</span>
-							</div>
-						</div>
-
-						{/* Offer Validity and Inclusions - Mobile */}
-						<div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-							<div className="flex items-center gap-2 text-sm text-gray-600">
-								<Clock className="w-4 h-4 text-[#34C759]" />
-								<span>{t('workshop.offer.offer_valid_for') || 'Offer Valid For'}: <span className="font-bold text-gray-900">{offer.validityDays} Days</span></span>
-							</div>
-							{offer.inclusions && (
-								<div className="flex items-start gap-2 text-sm text-gray-600">
-									<CheckCircle className="w-4 h-4 text-[#34C759] mt-0.5 shrink-0" />
-									<p>
-										<span className="font-bold text-gray-900">{t('workshop.offer.included_services') || 'Included Services'}:</span> {offer.inclusions}
-									</p>
-								</div>
-							)}
-						</div>
-
-						{offer.note && (
-							<p className="text-sm text-gray-600 mt-4 pt-4 border-t border-gray-200 italic leading-relaxed">{offer.note}</p>
-						)}
-					</div>
-
-					<div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-						<div className="flex gap-4">
-							<div className="flex-1 min-w-0">
-								<h3 className="text-base font-bold text-gray-900">{workshopName}</h3>
-								{city && <p className="text-sm text-gray-600 mt-0.5">{city}</p>}
-								{isVerified && (
-									<div className="flex items-center gap-1.5 mt-2">
-										<CheckCircle className="w-4 h-4 text-[#34C759] shrink-0" />
-										<span className="text-sm text-gray-700">{t('offers_page.certified')}</span>
+					{/* Step Indicator */}
+					<div className="flex items-center justify-center mb-2">
+						{[
+							{ key: 's1', label: t('upload.form.step1') || 'Upload', state: 'done' },
+							{ key: 's2', label: t('upload.form.step2') || 'Details', state: 'done' },
+							{ key: 's3', label: t('offers_page.step_select_workshop') || 'Choose workshop', state: 'active' },
+						].map((step, idx, arr) => (
+							<div key={step.key} className="flex items-center">
+								<div className="flex flex-col items-center">
+									<div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+										step.state === 'done' ? 'bg-[#38BC54] text-white' :
+										step.state === 'active' ? 'bg-[#38BC54] text-white shadow-md shadow-green-200' :
+										'bg-gray-200 text-gray-400'
+									}`}>
+										{step.state === 'done' ? <Check className="w-4 h-4" strokeWidth={3} /> : idx + 1}
 									</div>
+									<span className={`text-[9px] font-bold mt-1 whitespace-nowrap ${step.state === 'pending' ? 'text-gray-400' : 'text-[#05324f]'}`}>
+										{step.label}
+									</span>
+								</div>
+								{idx < arr.length - 1 && (
+									<div className={`h-[2px] w-5 mx-1 -mt-5 ${arr[idx + 1].state !== 'pending' ? 'bg-[#38BC54]' : 'bg-gray-200'}`} />
 								)}
+							</div>
+						))}
+					</div>
+
+					{/* Heading */}
+					<div className="text-center pt-2">
+						<h1 className="text-2xl font-black text-[#05324f] leading-tight mb-1.5">
+							{t('offers_page.confirm_title') || "You're one step from booking!"}
+						</h1>
+						<p className="text-sm text-gray-500 leading-snug px-2">
+							{t('offers_page.confirm_subtitle') || 'Review your selection and confirm to continue.'}
+						</p>
+					</div>
+
+					{/* Workshop Card */}
+					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+						<div className="flex gap-3">
+							{/* Black logo box */}
+							<div className="w-14 h-14 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0 overflow-hidden">
+								{workshop?.image ? (
+									<img src={getFullUrl(workshop.image)} alt={workshopName} className="w-full h-full object-cover" />
+								) : (
+									<Building2 className="text-white/30 w-6 h-6" />
+								)}
+							</div>
+							<div className="flex-1 min-w-0">
+								<div className="flex items-center gap-1.5 mb-0.5">
+									<h3 className="text-[0.95rem] font-black text-[#05324f] truncate">{workshopName}</h3>
+									{isVerified && <ShieldCheck size={14} className="text-[#38BC54] shrink-0" fill="#38BC54" fillOpacity={0.15} />}
+								</div>
 								{workshopRating != null && (
-									<button 
-										onClick={() => navigate(`/workshop/${workshop._id || workshop.id}/reviews`, { state: { workshopName } })}
-										className="flex items-center gap-1.5 mt-2 hover:bg-gray-50 p-1.5 -ml-1.5 rounded-lg transition-colors text-left w-fit"
-									>
-										<div className="flex">
-											{[1,2,3,4,5].map((i) => (
-												<Star
-													key={i}
-													className={`w-4 h-4 shrink-0 ${i <= Math.round(workshopRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
-												/>
+									<div className="flex items-center gap-1">
+										<span className="text-[11px] font-bold text-[#05324f]">{workshopRating.toFixed(1)}</span>
+										<div className="flex gap-0.5">
+											{[...Array(5)].map((_, i) => (
+												<Star key={i} size={10} fill={i < Math.floor(workshopRating) ? '#FFB800' : 'none'} className={i < Math.floor(workshopRating) ? 'text-[#FFB800]' : 'text-gray-200'} />
 											))}
 										</div>
-										<span className="text-sm font-semibold text-gray-700 ml-0.5">{workshopRating.toFixed(1).replace('.', ',')}</span>
-										<span className="text-sm text-[#34C759] hover:text-[#2eaa4e] underline decoration-[#34C759]/30 underline-offset-2 ml-1">
-											({reviewCount} {t('customer_reviews.reviews') || 'reviews'})
-										</span>
-									</button>
+										<span className="text-[11px] text-gray-400 font-semibold">({reviewCount} {t('offers_page.reviews') || 'reviews'})</span>
+									</div>
+								)}
+								{offer.distance != null && (
+									<div className="flex items-center gap-1 text-[11px] text-gray-500 font-semibold mt-0.5">
+										<MapPin size={11} className="text-gray-400" />
+										{offer.distance.toFixed(1)} {t('offers_page.km_from_you') || 'km from you'}
+									</div>
 								)}
 							</div>
-							{mapSrc && (
-								<div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 shrink-0">
-									<iframe title="Map" width="96" height="96" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={mapSrc} className="pointer-events-none scale-150 origin-top-left w-[200%] h-[200%]" />
-								</div>
-							)}
+							<div className="text-right shrink-0">
+								<div className="text-base font-black text-[#05324f] leading-none">{formatPrice(totalPrice)}</div>
+								<div className="text-[10px] text-gray-400 font-bold mt-0.5">{t('offers_page.incl_vat') || 'incl. VAT'}</div>
+							</div>
+						</div>
+
+						<div className="border-t border-gray-100 mt-4 pt-3">
+							<div className="flex items-center gap-1.5 mb-0.5">
+								<CheckCircle size={12} className="text-[#38BC54]" />
+								<span className="text-xs font-black text-[#05324f]">{t('offers_page.price_fixed') || 'Price is fixed – no hidden fees'}</span>
+							</div>
+							<p className="text-[11px] text-gray-400 font-semibold ml-5">{t('offers_page.pay_directly') || 'You pay directly to the workshop.'}</p>
 						</div>
 					</div>
 
-					<div className="space-y-3 px-1">
-						<Label className="text-sm font-semibold text-gray-900 block">
+					{/* Inclusions */}
+					{offer.inclusions && (
+						<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+							<h4 className="text-sm font-black text-[#05324f] mb-3">{t('offers_page.included_question') || "What's included in the price?"}</h4>
+							<div className="space-y-2">
+								{offer.inclusions.split(/[,;\n]+/).map((item, i) => {
+									const trimmed = item.trim()
+									if (!trimmed) return null
+									return (
+										<div key={i} className="flex items-start gap-2">
+											<Check size={14} className="text-[#38BC54] mt-0.5 shrink-0" strokeWidth={3} />
+											<span className="text-xs text-[#05324f] font-semibold leading-snug">{trimmed}</span>
+										</div>
+									)
+								})}
+							</div>
+							{offer.note && (
+								<details className="mt-3 group">
+									<summary className="cursor-pointer flex items-center gap-1 text-xs font-bold text-[#38BC54] underline-offset-2 hover:underline list-none">
+										{t('offers_page.see_full_description') || 'See full description'}
+										<ArrowRight size={12} className="group-open:rotate-90 transition-transform" />
+									</summary>
+									<p className="text-[11px] text-[#05324f]/80 font-semibold leading-snug mt-2 pl-1 italic">
+										{offer.note}
+									</p>
+								</details>
+							)}
+						</div>
+					)}
+
+					{/* 100% Safe Choice */}
+					<div className="bg-[#F2F9F4] rounded-2xl border border-[#38BC54]/15 p-4 flex items-start gap-3">
+						<div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
+							<ShieldCheck className="w-4 h-4 text-[#38BC54]" fill="#38BC54" fillOpacity={0.15} />
+						</div>
+						<div className="flex-1">
+							<p className="text-sm font-black text-[#05324f]">{t('offers_page.safe_choice_title') || '100% safe choice'}</p>
+							<p className="text-[11px] text-[#05324f]/70 font-semibold leading-snug mt-0.5">
+								{t('offers_page.safe_choice_desc') || "Only verified workshops. We don't commit you to anything until you continue."}
+							</p>
+						</div>
+					</div>
+
+					{/* Slot picker (functional) */}
+					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+						<Label className="text-sm font-bold text-[#05324f] block">
 							{t('offers_page.workshop_available_times') || "Workshop's available times"} *
 						</Label>
 						{availableSlots.length === 0 ? (
-							<p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+							<p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
 								{t('offers_page.no_available_times') || "Workshop hasn't set available times."}
 							</p>
 						) : (
@@ -537,10 +668,10 @@ export default function BookAppointmentPage() {
 										key={slot}
 										type="button"
 										onClick={() => setScheduledAt(slot)}
-										className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
+										className={`px-3 py-2 rounded-lg text-xs font-bold border transition-colors ${
 											scheduledAt === slot
-												? 'border-[#34C759] bg-[#34C759]/10 text-[#34C759]'
-												: 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+												? 'border-[#38BC54] bg-[#F2F9F4] text-[#38BC54]'
+												: 'border-gray-200 bg-white text-gray-600'
 										}`}
 									>
 										{formatSlotLabel(slot)}
@@ -548,42 +679,32 @@ export default function BookAppointmentPage() {
 								))}
 							</div>
 						)}
-						<Label htmlFor="notes-m" className="text-sm font-semibold text-gray-900 block pt-2">{t('offers_page.notes')}</Label>
-						<textarea id="notes-m" value={bookingNotes} onChange={(e) => setBookingNotes(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] outline-none text-sm" rows={2} placeholder={t('offers_page.notes_placeholder')} />
-					</div>
-
-					<div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
-						<div className="flex items-start gap-3">
-							<CheckCircle className="w-4 h-4 text-amber-600 mt-0.5" />
-							<p className="text-xs text-amber-800 leading-relaxed">
-								<span className="font-bold">{t('offers_page.notice_title')}:</span>{' '}
-								{t('offers_page.no_show_notice')}
-							</p>
-						</div>
-						<div className="flex items-center gap-3 pt-1">
+						<div className="flex items-start gap-2 pt-1">
 							<input
 								type="checkbox"
 								id="agreeToTerms-m"
 								checked={agreeToTerms}
 								onChange={(e) => setAgreeToTerms(e.target.checked)}
-								className="w-5 h-5 rounded border-gray-300 text-[#34C759] focus:ring-[#34C759]"
+								className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#38BC54] focus:ring-[#38BC54]"
 							/>
-							<label htmlFor="agreeToTerms-m" className="text-sm font-semibold text-gray-900 cursor-pointer">
+							<label htmlFor="agreeToTerms-m" className="text-[11px] font-semibold text-[#05324f] cursor-pointer leading-snug">
 								{t('offers_page.agree_to_terms')} *
 							</label>
 						</div>
 					</div>
 
+					{/* Confirm button */}
 					<Button
 						onClick={handleBooking}
 						disabled={availableSlots.length === 0 || !scheduledAt || !agreeToTerms || isBooking}
-						className="w-full py-4 rounded-xl font-normal text-white text-base"
-						style={{ backgroundColor: agreeToTerms ? '#34C759' : '#9ca3af' }}
+						className="w-full h-13 py-4 text-base font-black bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl shadow-md shadow-green-200/50 transition-all active:scale-[0.99] flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:shadow-none"
 					>
 						{isBooking ? (
-							<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 inline-block" />{t('offers_page.booking')}</>
+							<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{t('offers_page.booking')}</>
 						) : (
-							t('offers_page.book_workshop')
+							<>
+								{t('offers_page.confirm_continue') || 'Confirm and continue'} <ArrowRight className="w-5 h-5" />
+							</>
 						)}
 					</Button>
 				</div>

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { Skeleton } from './components/ui/Skeleton'
 import Navbar from './components/Navbar'
@@ -27,6 +27,7 @@ import HowItWorksPage from './pages/HowItWorksPage'
 import WorkshopSignupPage from './pages/WorkshopSignupPage'
 import OffersPage from './pages/OffersPage'
 import BookAppointmentPage from './pages/BookAppointmentPage'
+import HelpSupportPage from './pages/HelpSupportPage'
 import WorkshopPendingPage from './pages/WorkshopPendingPage'
 import WorkshopRejectedPage from './pages/WorkshopRejectedPage'
 
@@ -90,6 +91,11 @@ function PrivateRoute({ children, allowedRoles = [] }) {
 	return children
 }
 
+function RequestRedirect() {
+	const { id } = useParams()
+	return <Navigate to={`/offers?requestId=${id}`} replace />
+}
+
 function AppRoutes() {
 	return (
 		<>
@@ -99,6 +105,7 @@ function AppRoutes() {
 				<Route path="/sv" element={<HomePage />} />
 				<Route path="/workshop" element={<WorkshopLandingPage />} />
 				<Route path="/how-it-works" element={<HowItWorksPage />} />
+				<Route path="/support" element={<HelpSupportPage />} />
 				<Route path="/workshop/signup" element={<WorkshopSignupPage />} />
 				<Route path="/auth/signin" element={<SignInPage />} />
 				<Route path="/auth/signup" element={<SignUpPage />} />
@@ -115,6 +122,7 @@ function AppRoutes() {
 						</PrivateRoute>
 					}
 				/>
+				<Route path="/requests/:id" element={<RequestRedirect />} />
 				<Route
 					path="/upload"
 					element={

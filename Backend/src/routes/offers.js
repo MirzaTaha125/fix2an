@@ -103,10 +103,14 @@ router.get('/request/:requestId', authenticate, async (req, res) => {
 		}
 
 		const offers = await Offer.find({ requestId })
-			.populate('workshopId', 'companyName rating reviewCount isVerified latitude longitude address city postalCode phone email openingHours')
+			.populate({
+				path: 'workshopId',
+				select: 'companyName rating reviewCount isVerified latitude longitude address city postalCode phone email openingHours userId',
+				populate: { path: 'userId', select: 'image name' },
+			})
 			.sort({ createdAt: -1 })
 
-		// Calculate distance for each offer if we have location data
+		// Calculate distance and attach workshop image for each offer
 		const offersWithDistance = offers.map((offer) => {
 			const offerObj = offer.toObject()
 			if (request.latitude && request.longitude && offer.workshopId?.latitude && offer.workshopId?.longitude) {
@@ -116,6 +120,10 @@ router.get('/request/:requestId', authenticate, async (req, res) => {
 					offer.workshopId.latitude,
 					offer.workshopId.longitude
 				)
+			}
+			// Surface workshop's profile image (stored on user) at workshop level for the frontend
+			if (offerObj.workshopId && offerObj.workshopId.userId?.image) {
+				offerObj.workshopId.image = offerObj.workshopId.userId.image
 			}
 			return offerObj
 		})

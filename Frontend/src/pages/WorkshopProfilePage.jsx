@@ -10,6 +10,7 @@ import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
+import { Dialog, DialogContent, DialogTitle } from '../components/ui/Dialog'
 import {
 	User,
 	Building2,
@@ -30,6 +31,11 @@ import {
 	FileCheck,
 	Briefcase,
 	Camera,
+	ChevronRight,
+	ShieldCheck,
+	Settings,
+	HelpCircle,
+	LogOut,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -40,7 +46,7 @@ import { getFullUrl } from '../config/api.js'
 
 export default function WorkshopProfilePage() {
 	const navigate = useNavigate()
-	const { user, loading: authLoading, fetchUser } = useAuth()
+	const { user, loading: authLoading, fetchUser, logout } = useAuth()
 	const { t } = useTranslation()
 	const [loading, setLoading] = useState(true)
 	const [isEditing, setIsEditing] = useState(false)
@@ -71,6 +77,9 @@ export default function WorkshopProfilePage() {
 		isVerified: false,
 	})
 	const [originalProfileData, setOriginalProfileData] = useState({})
+	const [settingsOpen, setSettingsOpen] = useState(false)
+	const [showInfoOnMobile, setShowInfoOnMobile] = useState(false)
+	const { i18n } = useTranslation()
 
 	// Redirect if not authenticated or wrong role
 	useEffect(() => {
@@ -370,10 +379,126 @@ export default function WorkshopProfilePage() {
 		return null
 	}
 
+	const handleLogout = () => {
+		logout()
+		navigate('/auth/signin', { replace: true })
+	}
+
 	return (
-		<div className="min-h-screen bg-white">
+		<div className="min-h-screen bg-[#FAFBFC] md:bg-white">
 			<Navbar />
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-32 pb-12">
+
+			{/* Mobile-only menu view (image 10) */}
+			<div className="md:hidden max-w-2xl mx-auto px-4 pt-20 pb-24">
+				<div className="mb-6">
+					<h1 className="text-3xl font-black text-[#05324f] leading-tight mb-1.5">
+						{t('workshop.profile.title') || 'Profile'}
+					</h1>
+					<p className="text-sm text-gray-500 leading-snug">
+						{t('workshop.profile.subtitle_mobile') || 'Manage your workshop and your settings.'}
+					</p>
+				</div>
+
+				{/* Workshop hero card */}
+				<button
+					type="button"
+					onClick={() => {
+						const el = document.getElementById('workshop-info-section')
+						if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+					}}
+					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 mb-5 flex items-center gap-3 active:scale-[0.99] transition-transform"
+				>
+					<div className="w-14 h-14 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0 overflow-hidden">
+						{profileData.image ? (
+							<img src={profileData.image} alt={profileData.companyName || 'Workshop'} className="w-full h-full object-cover" />
+						) : (
+							<Building2 className="text-white/30 w-6 h-6" />
+						)}
+					</div>
+					<div className="flex-1 min-w-0 text-left">
+						<h3 className="text-base font-black text-[#05324f] truncate">
+							{profileData.companyName || profileData.name || t('workshop.profile.workshop')}
+						</h3>
+						{profileData.isVerified && (
+							<div className="inline-flex items-center gap-1 mt-1 text-[10px] font-black bg-[#F2F9F4] text-[#38BC54] px-2 py-0.5 rounded-md border border-[#38BC54]/20">
+								<ShieldCheck size={10} className="shrink-0" />
+								{t('workshop.profile.verified_workshop') || 'Verified workshop'}
+							</div>
+						)}
+					</div>
+					<ChevronRight className="text-gray-300 shrink-0" size={20} />
+				</button>
+
+				{/* Menu items */}
+				<div className="space-y-3 mb-6">
+					{[
+						{
+							icon: <Building2 className="w-5 h-5 text-[#05324f]" />,
+							title: t('workshop.profile.workshop_info_title') || 'Workshop information',
+							desc: t('workshop.profile.workshop_info_desc') || 'Address, contact details and opening hours',
+							onClick: () => {
+								setShowInfoOnMobile(true)
+								setTimeout(() => {
+									const el = document.getElementById('workshop-info-form')
+									if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+								}, 50)
+							},
+						},
+						{
+							icon: <Settings className="w-5 h-5 text-[#05324f]" />,
+							title: t('workshop.profile.settings_title') || 'Settings',
+							desc: t('workshop.profile.settings_desc') || 'Notifications, language and other settings',
+							onClick: () => setSettingsOpen(true),
+						},
+						{
+							icon: <HelpCircle className="w-5 h-5 text-[#05324f]" />,
+							title: t('workshop.profile.help_title') || 'Help and support',
+							desc: t('workshop.profile.help_desc') || 'FAQ and contact support',
+							onClick: () => navigate('/support'),
+						},
+					].map((item, i) => (
+						<button
+							key={i}
+							type="button"
+							onClick={item.onClick}
+							className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 active:scale-[0.99] transition-transform text-left"
+						>
+							<div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
+								{item.icon}
+							</div>
+							<div className="flex-1 min-w-0">
+								<p className="text-sm font-black text-[#05324f]">{item.title}</p>
+								<p className="text-[11px] text-gray-400 font-semibold leading-tight mt-0.5">{item.desc}</p>
+							</div>
+							<ChevronRight className="text-gray-300 shrink-0" size={20} />
+						</button>
+					))}
+				</div>
+
+				{/* Logout button */}
+				<button
+					type="button"
+					onClick={handleLogout}
+					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-center gap-2 text-red-600 font-black text-sm active:scale-[0.99] transition-transform"
+				>
+					<LogOut className="w-5 h-5" />
+					{t('workshop.profile.logout') || 'Log out'}
+				</button>
+
+			</div>
+
+			{/* Profile form (always on desktop; on mobile, only when "Verkstadsinformation" tapped) */}
+			<div id="workshop-info-form" className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 md:pt-32 pb-12 ${showInfoOnMobile ? 'block' : 'hidden md:block'}`} style={{ scrollMarginTop: '5rem' }}>
+				{/* Mobile back button */}
+				<button
+					type="button"
+					onClick={() => setShowInfoOnMobile(false)}
+					className="md:hidden mb-4 flex items-center gap-1.5 text-[#38BC54] font-bold text-sm active:opacity-70"
+				>
+					<ChevronRight className="w-4 h-4 rotate-180" />
+					{t('common.back') || 'Back'}
+				</button>
+
 				{/* Header Section */}
 				<div className="mb-8">
 					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -782,6 +907,66 @@ export default function WorkshopProfilePage() {
 			</div>
 			
 			<Footer />
+
+			{/* Settings Dialog */}
+			<Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+				<DialogContent
+					onClose={() => setSettingsOpen(false)}
+					className="w-[92vw] max-w-md p-0 bg-white rounded-2xl shadow-2xl"
+				>
+					<div className="px-6 pt-6 pb-4 border-b border-gray-100">
+						<DialogTitle>{t('workshop.profile.settings_title') || 'Settings'}</DialogTitle>
+					</div>
+
+					<div className="px-6 py-5 space-y-5">
+						<div>
+							<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-2">
+								{t('workshop.profile.language') || 'Language'}
+							</p>
+							<div className="grid grid-cols-2 gap-2">
+								{[
+									{ code: 'sv', name: 'Svenska', flag: '🇸🇪' },
+									{ code: 'en', name: 'English', flag: '🇺🇸' },
+								].map((lang) => (
+									<button
+										key={lang.code}
+										onClick={() => {
+											i18n.changeLanguage(lang.code)
+											localStorage.setItem('language', lang.code)
+										}}
+										className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-bold transition-all ${
+											i18n.language === lang.code
+												? 'border-[#38BC54] bg-[#F2F9F4] text-[#38BC54]'
+												: 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+										}`}
+									>
+										<span className="text-base">{lang.flag}</span>
+										{lang.name}
+									</button>
+								))}
+							</div>
+						</div>
+
+						<div className="border-t border-gray-100 pt-5">
+							<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-2">
+								{t('workshop.profile.notifications') || 'Notifications'}
+							</p>
+							<p className="text-xs text-gray-500">
+								{t('workshop.profile.notifications_managed_by_email') || 'Email notifications are managed by your verified email account.'}
+							</p>
+						</div>
+					</div>
+
+					<div className="p-5 border-t border-gray-100">
+						<Button
+							onClick={() => setSettingsOpen(false)}
+							className="w-full h-11 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl font-black"
+						>
+							{t('common.close') || 'Close'}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }
