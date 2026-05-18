@@ -16,13 +16,13 @@ export default defineConfig({
 			'/api': {
 				// ⚠️ Update this URL when your ngrok URL changes!
 				// Should match the URL in src/config/api.js
-				target: 'https://fix2an-production.up.railway.app/',
+				target: 'fix2an-production-773f.up.railway.app',
 				// target: 'http://localhost:4000/',
 				changeOrigin: true,
 				secure: true,
 			},
 			'/uploads': {
-				target: 'https://fix2an-production.up.railway.app/',
+				target: 'https://fix2an-production-773f.up.railway.app/',
 				changeOrigin: true,
 				secure: true,
 			},

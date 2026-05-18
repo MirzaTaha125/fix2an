@@ -500,7 +500,15 @@ export default function OffersPage() {
 															{workshop?.isVerified && <ShieldCheck size={14} className="text-[#38BC54] shrink-0" fill="#38BC54" fillOpacity={0.15} />}
 														</div>
 														{workshopRating != null ? (
-															<div className="flex items-center gap-1">
+															<button
+																type="button"
+																onClick={(e) => {
+																	e.stopPropagation()
+																	const wid = workshop?._id || workshop?.id
+																	if (wid) navigate(`/workshop/${wid}/reviews`, { state: { workshopName: workshop.companyName } })
+																}}
+																className="flex items-center gap-1 -mx-0.5 px-0.5 rounded hover:bg-gray-50 active:opacity-70 transition-colors"
+															>
 																<div className="flex gap-0.5">
 																	{[...Array(5)].map((_, i) => (
 																		<Star
@@ -513,9 +521,9 @@ export default function OffersPage() {
 																</div>
 																<span className="text-[11px] font-bold text-[#05324f] ml-0.5">{workshopRating.toFixed(1)}</span>
 																{reviewCount != null && (
-																	<span className="text-[11px] text-gray-400 font-semibold">({reviewCount} {t('offers_page.reviews') || 'reviews'})</span>
+																	<span className="text-[11px] text-[#38BC54] font-bold underline-offset-2 hover:underline">({reviewCount} {t('offers_page.reviews') || 'reviews'})</span>
 																)}
-															</div>
+															</button>
 														) : (
 															<div className="flex gap-0.5">
 																{[...Array(5)].map((_, i) => (
@@ -717,11 +725,21 @@ export default function OffersPage() {
 									<div className="flex-1 min-w-0">
 										<h3 className="text-base font-black text-[#05324f] truncate">{ws.companyName || 'Workshop'}</h3>
 										{ws.rating != null && (
-											<div className="flex items-center gap-1 text-[11px] mt-0.5">
+											<button
+												type="button"
+												onClick={() => {
+													const wid = ws._id || ws.id
+													if (wid) {
+														setDetailsOffer(null)
+														navigate(`/workshop/${wid}/reviews`, { state: { workshopName: ws.companyName } })
+													}
+												}}
+												className="flex items-center gap-1 text-[11px] mt-0.5 -mx-0.5 px-0.5 rounded hover:bg-gray-50"
+											>
 												<Star size={11} className="text-[#FFB800]" fill="#FFB800" />
 												<span className="font-bold text-[#05324f]">{Number(ws.rating).toFixed(1)}</span>
-												{ws.reviewCount != null && <span className="text-gray-400 font-semibold">({ws.reviewCount})</span>}
-											</div>
+												{ws.reviewCount != null && <span className="text-[#38BC54] font-bold underline-offset-2 hover:underline">({ws.reviewCount})</span>}
+											</button>
 										)}
 										{detailsOffer.distance != null && (
 											<div className="flex items-center gap-1 text-[11px] text-gray-500 font-semibold mt-0.5">
