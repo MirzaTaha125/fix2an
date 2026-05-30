@@ -389,7 +389,7 @@ export default function WorkshopProfilePage() {
 			<Navbar />
 
 			{/* Mobile-only menu view (image 10) */}
-			<div className="md:hidden max-w-2xl mx-auto px-4 pt-20 pb-24">
+			<div className={`md:hidden max-w-2xl mx-auto px-4 pt-20 pb-24 ${showInfoOnMobile ? 'hidden' : 'block'}`}>
 				<div className="mb-6">
 					<h1 className="text-3xl font-black text-[#05324f] leading-tight mb-1.5">
 						{t('workshop.profile.title') || 'Profile'}
@@ -403,8 +403,11 @@ export default function WorkshopProfilePage() {
 				<button
 					type="button"
 					onClick={() => {
-						const el = document.getElementById('workshop-info-section')
-						if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+						setShowInfoOnMobile(true)
+						setTimeout(() => {
+							const el = document.getElementById('workshop-info-form')
+							if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+						}, 50)
 					}}
 					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 mb-5 flex items-center gap-3 active:scale-[0.99] transition-transform"
 				>
@@ -488,7 +491,7 @@ export default function WorkshopProfilePage() {
 			</div>
 
 			{/* Profile form (always on desktop; on mobile, only when "Verkstadsinformation" tapped) */}
-			<div id="workshop-info-form" className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 md:pt-32 pb-12 ${showInfoOnMobile ? 'block' : 'hidden md:block'}`} style={{ scrollMarginTop: '5rem' }}>
+			<div id="workshop-info-form" className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-32 pb-12 ${showInfoOnMobile ? 'block' : 'hidden md:block'}`} style={{ scrollMarginTop: '5rem' }}>
 				{/* Mobile back button */}
 				<button
 					type="button"

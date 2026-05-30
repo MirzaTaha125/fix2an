@@ -496,103 +496,98 @@ const [cancellationReason, setCancellationReason] = useState('')
 								return (
 									<div
 										key={offerId}
-										className={`flex flex-col md:grid md:grid-cols-[1.5fr_1fr_1fr] md:items-center py-6 px-5 sm:px-8 gap-5 md:gap-4 md:py-4 md:px-6 bg-white md:bg-transparent rounded-3xl md:rounded-none border border-gray-100 md:border-0 md:border-b last:border-b-0 shadow-sm md:shadow-none transition-all hover:bg-gray-50/30 group animate-fade-in-up`}
+										className="animate-fade-in-up"
 										style={{ animationDelay: `${index * 50}ms` }}
 									>
-										{/* Section 1: Vehicle & Customer Info */}
-										<div className="w-full flex-1 flex flex-col gap-1.5 min-w-0">
-											<div className="flex items-center gap-2 mb-0.5 flex-wrap">
-												<Badge className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tight border-0 transition-none ${
+										{/* Mobile Card Layout */}
+										<div className="md:hidden bg-white border border-gray-100 rounded-3xl p-5 shadow-[0_4px_15px_-10px_rgba(0,0,0,0.1)] flex flex-col gap-4 mb-4">
+											{/* Top Row: Status badge and REF */}
+											<div className="flex justify-between items-center">
+												<Badge className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border-0 transition-none ${
 													booking?.status === 'CANCELLED'
 														? 'bg-red-50 text-red-600'
 														: 'bg-green-50 text-green-600'
 												}`}>
-													{booking?.status || (activeTab === 'current' ? 'Active' : 'Completed')}
+													{booking?.status || (activeTab === 'current' ? 'CONFIRMED' : 'COMPLETED')}
 												</Badge>
-												<span className="text-[10px] text-gray-300 font-bold tracking-widest uppercase">REF: {offerId.slice(-6)}</span>
+												<span className="text-[10px] text-gray-400 font-extrabold tracking-widest">
+													REF: {offerId.slice(-6).toUpperCase()}
+												</span>
 											</div>
 
-											<h3 className="text-base font-bold text-[#05324f] leading-tight mb-1">
-												{vehicle?.make} {vehicle?.model} {vehicle?.year}
-											</h3>
-											
-											<div className="flex flex-col gap-0.5 md:gap-0">
+											{/* Vehicle Name and Price Row */}
+											<div className="flex justify-between items-start">
+												<h3 className="text-base font-bold text-[#05324f] leading-tight flex-1 pr-4">
+													{vehicle?.make} {vehicle?.model} {vehicle?.year}
+												</h3>
+												<div className="text-right shrink-0">
+													<p className="text-lg font-black text-[#34C759] leading-none mb-1">
+														{formatPrice(offer.price)}
+													</p>
+													<p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">inkl. moms</p>
+												</div>
+											</div>
+
+											{/* Customer Details */}
+											<div className="text-xs space-y-1 text-gray-600">
 												{customer?.name && (
-													<p className="text-xs font-bold text-gray-700">{customer.name}</p>
+													<p className="font-extrabold text-[#05324f]">{customer.name}</p>
 												)}
 												{customer?.phone && (
-													<a 
-														href={`tel:${customer.phone}`} 
-														className="text-[11px] text-gray-500 font-medium hover:text-[#34C759] hover:underline flex items-center gap-1 transition-colors w-max"
-													>
+													<a href={`tel:${customer.phone}`} className="block font-medium text-gray-500 hover:text-[#34C759] transition-colors">
 														{customer.phone}
 													</a>
 												)}
 												{customer?.email && (
-													<a 
-														href={`mailto:${customer.email}`} 
-														className="text-[11px] text-gray-400 font-medium hover:text-[#05324f] hover:underline flex items-center gap-1 transition-colors w-max"
-													>
+													<a href={`mailto:${customer.email}`} className="block font-medium text-gray-400 hover:text-[#05324f] transition-colors">
 														{customer.email}
 													</a>
 												)}
 											</div>
-										</div>
 
-										{/* Section 2: Inline Divider Info Row (Mobile Card) / Grid Cell (PC Row) */}
-										<div className="flex flex-row md:flex-col items-center md:justify-center gap-4 md:gap-1 py-3 px-4 md:py-0 md:px-0 bg-gray-50/80 md:bg-transparent rounded-2xl md:rounded-none w-max max-md:w-full border border-gray-100/50 md:border-0">
-											<div className="flex items-center gap-2">
-												<Calendar className="w-3.5 h-3.5 text-[#34C759]" />
-												<span className="text-xs font-bold text-[#05324f]">
-													{booking?.scheduledAt ? formatDate(booking.scheduledAt) : 'No Date'}
-												</span>
-											</div>
-											
-											<div className="w-px h-3.5 bg-gray-300 md:hidden"></div>
-											
-											<div className="flex items-center gap-2 text-gray-400">
-												<Clock className="w-3.5 h-3.5 text-gray-300" />
-												<span className="text-[11px] font-bold">
-													{booking?.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
-												</span>
-											</div>
-											{offer.estimatedDuration && (
-												<>
-													<div className="w-px h-3.5 bg-gray-300 md:hidden"></div>
-													<div className="flex items-center gap-2 text-gray-400">
-														<Timer className="w-3.5 h-3.5 text-gray-300" />
-														<span className="text-[11px] font-bold">
-															{offer.estimatedDuration >= 60
-																? `~${Math.floor(offer.estimatedDuration / 60)}h${offer.estimatedDuration % 60 > 0 ? ` ${offer.estimatedDuration % 60}m` : ''}`
-																: `~${offer.estimatedDuration} min`}
-														</span>
-													</div>
-												</>
-											)}
-										</div>
+											{/* Schedule block */}
+											<div className="flex items-center justify-between p-3.5 bg-[#F8FAFC] border border-gray-50 rounded-2xl text-xs font-bold text-[#05324f]">
+												<div className="flex items-center gap-2">
+													<Calendar className="w-3.5 h-3.5 text-[#34C759]" />
+													<span>{booking?.scheduledAt ? formatDate(booking.scheduledAt) : 'No Date'}</span>
+												</div>
+												
+												<span className="text-gray-300">|</span>
+												
+												<div className="flex items-center gap-2 text-gray-500">
+													<Clock className="w-3.5 h-3.5 text-gray-300" />
+													<span>{booking?.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</span>
+												</div>
 
-										{/* Section 3 & 4 (Combined for Grid on PC) */}
-										<div className="flex flex-row md:flex-col justify-between md:justify-end items-center md:items-end gap-3 w-full md:w-auto pt-3 md:pt-0 max-md:border-t max-md:border-gray-50">
-											<div className="text-right">
-												<p className="text-xl md:text-lg font-black text-[#34C759]">
-													{formatPrice(offer.price)}
-												</p>
-												<p className="text-[10px] text-gray-400 font-medium">inkl. moms</p>
+												{offer.estimatedDuration && (
+													<>
+														<span className="text-gray-300">|</span>
+														<div className="flex items-center gap-2 text-gray-400">
+															<Timer className="w-3.5 h-3.5 text-gray-300" />
+															<span>
+																{offer.estimatedDuration >= 60
+																	? `~${Math.floor(offer.estimatedDuration / 60)}h${offer.estimatedDuration % 60 > 0 ? ` ${offer.estimatedDuration % 60}m` : ''}`
+																	: `~${offer.estimatedDuration} min`}
+															</span>
+														</div>
+													</>
+												)}
 											</div>
 
-											<div className="flex flex-row items-center gap-2 w-full md:w-auto">
+											{/* Action Buttons */}
+											<div className="flex gap-3 mt-1">
 												{activeTab === 'current' ? (
 													<>
 														<Button
 															onClick={() => handleDoneClick(offer)}
-															className="flex-1 h-9 md:h-8 px-4 rounded-xl md:rounded-lg bg-[#34C759] text-white font-black text-[10px] uppercase tracking-widest hover:bg-[#2eb34f] transition-all active:scale-[0.98] shadow-lg shadow-green-100 md:shadow-none"
+															className="flex-1 h-11 bg-[#34C759] hover:bg-[#2eb34f] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all active:scale-[0.98] shadow-sm animate-none"
 														>
 															Done
 														</Button>
 														<Button
 															variant="outline"
 															onClick={() => handleCancelClick(offerId)}
-															className="flex-1 h-9 md:h-8 px-4 rounded-xl md:rounded-lg border-gray-200 text-gray-400 font-black text-[10px] uppercase tracking-widest hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all active:scale-[0.98]"
+															className="flex-1 h-11 border border-gray-200 bg-white text-gray-500 font-black text-xs uppercase tracking-widest rounded-xl hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all active:scale-[0.98]"
 														>
 															Cancel
 														</Button>
@@ -603,11 +598,121 @@ const [cancellationReason, setCancellationReason] = useState('')
 															setSelectedContractForDetails({ offer, booking })
 															setDetailsModalOpen(true)
 														}}
-														className="flex-1 h-9 md:h-8 px-6 rounded-xl md:rounded-lg bg-[#05324f] text-white font-black text-[10px] uppercase tracking-widest hover:bg-[#05324f]/90 transition-all active:scale-[0.98]"
+														className="w-full h-11 bg-[#05324f] hover:bg-[#05324f]/90 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all active:scale-[0.98]"
 													>
 														Details
 													</Button>
 												)}
+											</div>
+										</div>
+
+										{/* Desktop Row Layout */}
+										<div className="hidden md:grid md:grid-cols-[1.5fr_1fr_1fr] md:items-center py-4 px-6 border-b border-gray-100 last:border-b-0 hover:bg-gray-50/30 transition-all">
+											{/* Section 1: Vehicle & Customer Info */}
+											<div className="w-full flex-1 flex flex-col gap-1.5 min-w-0">
+												<div className="flex items-center gap-2 mb-0.5 flex-wrap">
+													<Badge className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tight border-0 transition-none ${
+														booking?.status === 'CANCELLED'
+															? 'bg-red-50 text-red-600'
+															: 'bg-green-50 text-green-600'
+													}`}>
+														{booking?.status || (activeTab === 'current' ? 'Active' : 'Completed')}
+													</Badge>
+													<span className="text-[10px] text-gray-300 font-bold tracking-widest uppercase">REF: {offerId.slice(-6)}</span>
+												</div>
+
+												<h3 className="text-base font-bold text-[#05324f] leading-tight mb-1">
+													{vehicle?.make} {vehicle?.model} {vehicle?.year}
+												</h3>
+												
+												<div className="flex flex-col gap-0.5 md:gap-0">
+													{customer?.name && (
+														<p className="text-xs font-bold text-gray-700">{customer.name}</p>
+													)}
+													{customer?.phone && (
+														<a 
+															href={`tel:${customer.phone}`} 
+															className="text-[11px] text-gray-500 font-medium hover:text-[#34C759] hover:underline flex items-center gap-1 transition-colors w-max"
+														>
+															{customer.phone}
+														</a>
+													)}
+													{customer?.email && (
+														<a 
+															href={`mailto:${customer.email}`} 
+															className="text-[11px] text-gray-400 font-medium hover:text-[#05324f] hover:underline flex items-center gap-1 transition-colors w-max"
+														>
+															{customer.email}
+														</a>
+													)}
+												</div>
+											</div>
+
+											{/* Section 2: Inline Divider Info Row (Mobile Card) / Grid Cell (PC Row) */}
+											<div className="flex flex-col items-center justify-center gap-1">
+												<div className="flex items-center gap-2">
+													<Calendar className="w-3.5 h-3.5 text-[#34C759]" />
+													<span className="text-xs font-bold text-[#05324f]">
+														{booking?.scheduledAt ? formatDate(booking.scheduledAt) : 'No Date'}
+													</span>
+												</div>
+												
+												<div className="flex items-center gap-2 text-gray-400">
+													<Clock className="w-3.5 h-3.5 text-gray-300" />
+													<span className="text-[11px] font-bold">
+														{booking?.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+													</span>
+												</div>
+												{offer.estimatedDuration && (
+													<div className="flex items-center gap-2 text-gray-400">
+														<Timer className="w-3.5 h-3.5 text-gray-300" />
+														<span className="text-[11px] font-bold">
+															{offer.estimatedDuration >= 60
+																? `~${Math.floor(offer.estimatedDuration / 60)}h${offer.estimatedDuration % 60 > 0 ? ` ${offer.estimatedDuration % 60}m` : ''}`
+																: `~${offer.estimatedDuration} min`}
+														</span>
+													</div>
+												)}
+											</div>
+
+											{/* Section 3 & 4 (Combined for Grid on PC) */}
+											<div className="flex flex-col justify-end items-end gap-3">
+												<div className="text-right">
+													<p className="text-lg font-black text-[#34C759]">
+														{formatPrice(offer.price)}
+													</p>
+													<p className="text-[10px] text-gray-400 font-medium">inkl. moms</p>
+												</div>
+
+												<div className="flex flex-row items-center gap-2">
+													{activeTab === 'current' ? (
+														<>
+															<Button
+																onClick={() => handleDoneClick(offer)}
+																className="h-8 px-4 rounded-lg bg-[#34C759] text-white font-black text-[10px] uppercase tracking-widest hover:bg-[#2eb34f] transition-all active:scale-[0.98]"
+															>
+																Done
+															</Button>
+															<Button
+																variant="outline"
+																onClick={() => handleCancelClick(offerId)}
+																className="h-8 px-4 rounded-lg border-gray-200 text-gray-400 font-black text-[10px] uppercase tracking-widest hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all active:scale-[0.98]"
+															>
+																Cancel
+															</Button>
+														</>
+													) : (
+														<Button
+															onClick={() => {
+																setSelectedContractForDetails({ offer, booking })
+																setDetailsModalOpen(true)
+															}}
+															className="h-8 px-6 rounded-lg bg-[#05324f] text-white font-black text-[10px] uppercase tracking-widest hover:bg-[#05324f]/90 transition-all active:scale-[0.98]"
+														>
+															Details
+														</Button>
+													)}
+												</div>
 											</div>
 										</div>
 									</div>

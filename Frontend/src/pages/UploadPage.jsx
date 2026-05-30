@@ -38,6 +38,7 @@ export default function UploadPage() {
 	const [registrationNumber, setRegistrationNumber] = useState('')
 	const [postalCode, setPostalCode] = useState('')
 	const [description, setDescription] = useState('')
+	const [currentStep, setCurrentStep] = useState('upload')
 	const [searchParams] = useSearchParams()
 	const editId = searchParams.get('edit') || searchParams.get('requestId')
 	const [existingRequest, setExistingRequest] = useState(null)
@@ -302,9 +303,26 @@ export default function UploadPage() {
 	]
 
 	const steps = [
-		{ key: 'step1', label: t('upload.form.step1') || 'Upload report', state: files.length > 0 ? 'done' : 'active' },
-		{ key: 'step2', label: t('upload.form.step2') || 'Fill in details', state: files.length > 0 ? 'active' : 'pending' },
+		{
+			key: 'step1',
+			label: t('upload.form.step1') || 'Upload report',
+			state: currentStep === 'upload' ? 'active' : 'done',
+		},
+		{
+			key: 'step2',
+			label: t('upload.form.step2') || 'Fill in details',
+			state: currentStep === 'details' ? 'active' : 'pending',
+		},
 	]
+
+	const handleNextStep = () => {
+		if (files.length === 0) {
+			toast.error(t('errors.file_required') || 'Please upload at least one file')
+			return
+		}
+		setCurrentStep('details')
+		window.scrollTo({ top: 0, behavior: 'smooth' })
+	}
 
 	return (
 		<div className="min-h-screen bg-[#FAFBFC] flex flex-col">
@@ -338,7 +356,8 @@ export default function UploadPage() {
 				</div>
 
 				<form onSubmit={handleSubmit} className="space-y-5">
-					{/* File Upload Card (compact) */}
+					{/* Step 1: File Upload Card */}
+					{currentStep === 'upload' && (
 					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
 						<div className="mb-3">
 							<h2 className="flex items-center gap-2 text-base font-black text-[#05324f]">
@@ -384,9 +403,21 @@ export default function UploadPage() {
 								))}
 							</div>
 						)}
-					</div>
 
-					{/* Form Card */}
+						{/* Next button */}
+						<Button
+							type="button"
+							onClick={handleNextStep}
+							disabled={files.length === 0}
+							className="w-full h-13 mt-5 py-4 text-base font-black bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl shadow-md shadow-green-200/50 transition-all active:scale-[0.99] flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:shadow-none"
+						>
+							{t('common.next') || 'Next'} <ArrowRight className="w-5 h-5" />
+						</Button>
+					</div>
+					)}
+
+					{/* Step 2: Form Card */}
+					{currentStep === 'details' && (
 					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
 						<div className="text-center mb-6">
 							<h1 className="text-2xl sm:text-3xl font-black text-[#05324f] mb-2">
@@ -484,20 +515,32 @@ export default function UploadPage() {
 								</p>
 							</div>
 
-							{/* Submit */}
-							<Button
-								type="submit"
-								disabled={isUploading || files.length === 0}
-								className="w-full h-13 py-4 text-base font-black bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl shadow-md shadow-green-200/50 transition-all active:scale-[0.99] flex items-center justify-center gap-2"
-							>
-								{isUploading ? t('upload.submitting') : (
-									<>
-										{t('upload.form.continue') || 'Continue'} <ArrowRight className="w-5 h-5" />
-									</>
-								)}
-							</Button>
+							{/* Back + Submit */}
+							<div className="flex gap-2">
+								<Button
+									type="button"
+									onClick={() => { setCurrentStep('upload'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+									disabled={isUploading}
+									className="shrink-0 h-13 px-5 py-4 text-sm font-black bg-white hover:bg-gray-50 text-[#05324f] border border-gray-200 rounded-xl transition-all active:scale-[0.99] flex items-center justify-center gap-1.5"
+								>
+									<ArrowRight className="w-5 h-5 rotate-180" />
+									{t('common.back') || 'Back'}
+								</Button>
+								<Button
+									type="submit"
+									disabled={isUploading || files.length === 0}
+									className="flex-1 h-13 py-4 text-base font-black bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl shadow-md shadow-green-200/50 transition-all active:scale-[0.99] flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:shadow-none"
+								>
+									{isUploading ? t('upload.submitting') : (
+										<>
+											{t('upload.form.continue') || 'Continue'} <ArrowRight className="w-5 h-5" />
+										</>
+									)}
+								</Button>
+							</div>
 						</div>
 					</div>
+					)}
 
 					{/* Trust signals */}
 					<div className="grid grid-cols-3 gap-2 sm:gap-3 px-1 pt-2">

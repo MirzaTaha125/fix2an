@@ -23,9 +23,11 @@ import {
 	User,
 	Car,
 	RefreshCw,
+	RotateCw,
 	Building2,
 	ShieldCheck,
 	MessageCircle,
+	ChevronDown,
 } from 'lucide-react'
 import { getFullUrl } from '../config/api.js'
 
@@ -154,7 +156,7 @@ export default function OffersPage() {
 						</div>
 
 						{/* Vehicle card */}
-						<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
+						<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-4">
 							<div className="flex items-start gap-3 mb-3">
 								<Skeleton className="w-16 h-12 rounded-lg" />
 								<div className="flex-1 space-y-2 pt-1">
@@ -180,7 +182,7 @@ export default function OffersPage() {
 						{/* Offer cards */}
 						<div className="space-y-3">
 							{[1, 2, 3].map(i => (
-								<div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+								<div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
 									<div className="flex gap-3 mb-3">
 										<Skeleton className="w-14 h-14 rounded-xl" />
 										<div className="flex-1 space-y-1.5 pt-1">
@@ -268,15 +270,20 @@ export default function OffersPage() {
 
 				{/* Mobile Header - matches image 4 */}
 				<div className="md:hidden mb-5">
-					<div className="flex items-center justify-between mb-1">
-						<h1 className="text-2xl font-black text-[#05324f]">
-							{t('offers_page.your_offers') || 'Your offers'} <span className="text-[#38BC54]">({offerCount})</span>
-						</h1>
+					<div className="flex items-center justify-between mb-2">
+						<div className="flex items-center gap-2">
+							<h1 className="text-2xl font-black text-[#05324f]">
+								{t('offers_page.your_offers') || 'Your offers'}
+							</h1>
+							<span className="flex items-center justify-center bg-[#38BC54] text-white text-xs font-black w-6 h-6 rounded-full shrink-0">
+								{offerCount}
+							</span>
+						</div>
 						<button
 							onClick={fetchOffers}
 							className="flex items-center gap-1 text-[#38BC54] font-bold text-sm active:opacity-70"
 						>
-							<RefreshCw size={14} />
+							<RotateCw size={14} className="stroke-[2.5]" />
 							{t('offers_page.refresh') || 'Refresh'}
 						</button>
 					</div>
@@ -287,7 +294,7 @@ export default function OffersPage() {
 
 				{/* Mobile Vehicle Card */}
 				{vehicle && (
-					<div className="md:hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
+					<div className="md:hidden bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-4">
 						<div className="flex items-start gap-3 mb-3">
 							<div className="w-16 h-12 bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-gray-100">
 								{vehicle.image ? (
@@ -326,17 +333,19 @@ export default function OffersPage() {
 					</div>
 				)}
 
-				{/* Mobile Status Row */}
+				{/* Mobile Status Card (matches green checkmark in gray card layout) */}
 				{offerCount > 0 && (
-					<div className="md:hidden flex items-start gap-2 mb-4 px-1">
-						<CheckCircle size={16} className="text-[#38BC54] mt-0.5 shrink-0" />
+					<div className="md:hidden bg-[#F5F7F8] rounded-xl p-4 mb-4 flex items-start gap-3 border border-gray-100">
+						<div className="w-8 h-8 rounded-full bg-[#E8F8EE] flex items-center justify-center shrink-0">
+							<CheckCircle size={18} className="text-[#38BC54]" />
+						</div>
 						<div className="flex-1">
-							<p className="text-sm font-bold text-[#05324f]">
+							<p className="text-sm font-black text-[#05324f]">
 								{offerCount === 1
 									? t('offers_page.offers_received_one', { count: 1 })
 									: t('offers_page.offers_received', { count: offerCount })}
 							</p>
-							<p className="text-xs text-gray-400 mt-0.5">
+							<p className="text-xs text-gray-400 mt-0.5 leading-snug">
 								{t('offers_page.more_offers_coming') || "You'll get more offers if more come in."}
 							</p>
 						</div>
@@ -389,7 +398,7 @@ export default function OffersPage() {
 								{/* Mobile skeleton — matches new UI */}
 								<div className="md:hidden space-y-3">
 									{[1, 2, 3].map(i => (
-										<div key={`m-${i}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+										<div key={`m-${i}`} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
 											<div className="flex gap-3 mb-3">
 												<Skeleton className="w-14 h-14 rounded-xl" />
 												<div className="flex-1 space-y-1.5 pt-1">
@@ -461,21 +470,26 @@ export default function OffersPage() {
 								return (
 									<div
 										key={offerId}
-										className="bg-white rounded-card border border-gray-100 shadow-card hover:shadow-card-hover transition-shadow duration-200 overflow-hidden max-md:rounded-2xl max-md:border-gray-100 max-md:shadow-sm max-md:border"
+										className={`bg-white rounded-xl border transition-all duration-200 overflow-hidden shadow-sm md:shadow-card md:hover:shadow-card-hover ${
+											isBestMatch 
+												? 'border-2 border-[#38BC54] md:border-gray-100 md:border' 
+												: 'border-gray-100'
+										}`}
 									>
-										{/* Mobile: Best match badge */}
-										{isBestMatch && (
-											<div className="md:hidden bg-[#38BC54] text-white text-[10px] font-black tracking-widest text-center py-1.5">
-												{t('offers_page.best_match') || 'BEST MATCH'}
-											</div>
-										)}
-
 										<div className="p-6 max-md:p-4">
 											{/* Mobile only: image 4 layout */}
 											<div className="flex flex-col md:hidden">
-												<div className="flex gap-3 mb-4">
+												{/* Best Match Badge inside the card */}
+												{isBestMatch && (
+													<div className="inline-flex items-center gap-1.5 bg-[#E8F8EE] text-[#0f9f4a] text-[10px] font-black tracking-wider px-2.5 py-1 rounded-md mb-3 self-start">
+														<span className="text-[10px]">⭐</span>
+														<span>{t('offers_page.best_match') || 'BEST MATCH'}</span>
+													</div>
+												)}
+
+												<div className="flex gap-3 mb-3 items-start">
 													{/* Black logo box */}
-													<div className="w-14 h-14 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0 overflow-hidden">
+													<div className="w-16 h-16 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0 overflow-hidden">
 														{workshop?.image && workshop.image.trim() !== '' ? (
 															<img
 																src={getFullUrl(workshop.image)}
@@ -492,81 +506,90 @@ export default function OffersPage() {
 														</div>
 													</div>
 
-													<div className="flex-1 min-w-0">
-														<div className="flex items-center gap-1.5 mb-0.5">
-															<h3 className="text-[0.95rem] font-black text-[#05324f] truncate">
+													<div className="flex-1 min-w-0 px-1 pt-1">
+														<div className="flex items-center gap-1.5 mb-1 flex-wrap">
+															<h3 className="text-sm font-black text-[#05324f] truncate leading-tight">
 																{workshop?.companyName || 'Workshop'}
 															</h3>
-															{workshop?.isVerified && <ShieldCheck size={14} className="text-[#38BC54] shrink-0" fill="#38BC54" fillOpacity={0.15} />}
+															{workshop?.isVerified && (
+																<ShieldCheck 
+																	size={15} 
+																	className="text-[#38BC54] shrink-0" 
+																	fill="#38BC54" 
+																	fillOpacity={0.15} 
+																/>
+															)}
 														</div>
-														{workshopRating != null ? (
-															<button
-																type="button"
-																onClick={(e) => {
-																	e.stopPropagation()
-																	const wid = workshop?._id || workshop?.id
-																	if (wid) navigate(`/workshop/${wid}/reviews`, { state: { workshopName: workshop.companyName } })
-																}}
-																className="flex items-center gap-1 -mx-0.5 px-0.5 rounded hover:bg-gray-50 active:opacity-70 transition-colors"
-															>
-																<div className="flex gap-0.5">
-																	{[...Array(5)].map((_, i) => (
-																		<Star
-																			key={i}
-																			size={11}
-																			fill={i < Math.floor(workshopRating) ? '#FFB800' : 'none'}
-																			className={i < Math.floor(workshopRating) ? 'text-[#FFB800]' : 'text-gray-200'}
-																		/>
-																	))}
-																</div>
-																<span className="text-[11px] font-bold text-[#05324f] ml-0.5">{workshopRating.toFixed(1)}</span>
-																{reviewCount != null && (
-																	<span className="text-[11px] text-[#38BC54] font-bold underline-offset-2 hover:underline">({reviewCount} {t('offers_page.reviews') || 'reviews'})</span>
-																)}
-															</button>
-														) : (
-															<div className="flex gap-0.5">
+
+														{/* Rating block */}
+														<div className="flex items-center gap-1 flex-wrap">
+															<div className="flex gap-0.5 shrink-0">
 																{[...Array(5)].map((_, i) => (
-																	<Star key={i} size={11} className="text-gray-200" />
+																	<Star
+																		key={i}
+																		size={12}
+																		fill={workshopRating != null && i < Math.floor(workshopRating) ? '#FFB800' : 'none'}
+																		className={workshopRating != null && i < Math.floor(workshopRating) ? 'text-[#FFB800]' : 'text-gray-200'}
+																	/>
 																))}
 															</div>
-														)}
+															{workshopRating != null && (
+																<button
+																	type="button"
+																	onClick={(e) => {
+																		e.stopPropagation()
+																		const wid = workshop?._id || workshop?.id
+																		if (wid) navigate(`/workshop/${wid}/reviews`, { state: { workshopName: workshop.companyName } })
+																	}}
+																	className="flex items-center gap-1 text-[11px] font-bold text-[#05324f] hover:underline"
+																>
+																	<span>{workshopRating.toFixed(1)}</span>
+																	{reviewCount != null && (
+																		<span className="text-gray-400 font-medium">({reviewCount} {t('offers_page.reviews') || 'reviews'})</span>
+																	)}
+																</button>
+															)}
+														</div>
 													</div>
 
 													{/* Price top right */}
-													<div className="text-right shrink-0">
-														<div className="text-base font-black text-[#05324f] leading-none">
+													<div className="text-right shrink-0 pt-1">
+														<div className="text-lg font-black text-[#05324f] leading-none">
 															{formatPrice(offer.price)}
 														</div>
-														<div className="text-[10px] text-gray-400 font-bold mt-0.5">{t('offers_page.incl_vat') || 'incl. VAT'}</div>
+														<div className="text-[10px] text-gray-400 font-bold mt-1">
+															{t('offers_page.incl_vat') || 'incl. VAT'}
+														</div>
 													</div>
 												</div>
 
 												{distance != null && (
-													<div className="text-[11px] text-gray-500 font-semibold mb-3 flex items-center gap-1">
+													<div className="text-[11px] text-gray-400 font-medium mt-1 mb-3 flex items-center gap-1 px-1">
 														<MapPin size={11} className="text-gray-400" />
 														{distance.toFixed(1)} km {t('offers_page.from_you')}
 													</div>
 												)}
 
 												{offer.status !== 'ACCEPTED' ? (
-													<div className="flex gap-2">
-														<button
-															onClick={() => setDetailsOffer(offer)}
-															className="shrink-0 px-4 h-11 border-2 border-[#38BC54] text-[#38BC54] rounded-xl font-black text-sm hover:bg-[#F2F9F4] active:scale-[0.98] transition-all"
-														>
-															{t('offers_page.show_details') || 'Show details'}
-														</button>
+													<>
 														<Button
 															onClick={() => handleAcceptOffer(offer)}
-															className="flex-1 h-11 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-sm"
+															className="w-full h-11 bg-[#12a14b] hover:bg-[#0e8f41] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm mt-2"
 														>
 															{t('offers_page.choose_workshop') || 'Choose workshop'}
 															<ArrowRight size={16} />
 														</Button>
-													</div>
+														
+														<button
+															onClick={() => setDetailsOffer(offer)}
+															className="flex items-center justify-center gap-1 mx-auto mt-3 text-xs font-black text-[#05324f] hover:text-[#12a14b] transition-colors py-1.5 px-3"
+														>
+															<span>{t('offers_page.show_details') || 'Show details'}</span>
+															<ChevronDown size={14} className="text-[#05324f]" />
+														</button>
+													</>
 												) : (
-													<span className="inline-flex w-full justify-center items-center gap-1.5 bg-green-50 text-green-700 font-bold text-xs px-4 py-3 rounded-xl border border-green-200">
+													<span className="inline-flex w-full justify-center items-center gap-1.5 bg-green-50 text-green-700 font-bold text-xs px-4 py-3 rounded-xl border border-green-200 mt-2">
 														<CheckCircle size={14} />
 														{t('offers_page.accepted')}
 													</span>
@@ -679,8 +702,8 @@ export default function OffersPage() {
 
 				{/* Mobile Help Footer */}
 				{sortedOffers.length > 0 && (
-					<div className="md:hidden mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
-						<div className="w-10 h-10 rounded-full bg-[#F2F9F4] flex items-center justify-center shrink-0">
+					<div className="md:hidden mt-6 bg-[#F5F7F8] rounded-xl border border-gray-100 p-4 flex items-center gap-3">
+						<div className="w-10 h-10 rounded-full bg-[#E8F8EE] flex items-center justify-center shrink-0">
 							<MessageCircle className="w-5 h-5 text-[#38BC54]" />
 						</div>
 						<div className="flex-1 min-w-0">
@@ -689,7 +712,7 @@ export default function OffersPage() {
 						</div>
 						<a
 							href="mailto:info@fixa2an.se"
-							className="px-3 py-2 border border-[#38BC54] rounded-lg text-[#38BC54] text-xs font-black active:scale-95 transition-transform"
+							className="px-4 py-2 border border-gray-200 rounded-xl bg-white text-[#05324f] text-xs font-black shadow-sm active:scale-95 transition-transform hover:bg-gray-50 shrink-0"
 						>
 							{t('offers_page.contact_us') || 'Contact us'}
 						</a>
@@ -702,7 +725,7 @@ export default function OffersPage() {
 			<Dialog open={!!detailsOffer} onOpenChange={(o) => !o && setDetailsOffer(null)}>
 				<DialogContent
 					onClose={() => setDetailsOffer(null)}
-					className="w-[92vw] max-w-md p-0 overflow-y-auto max-h-[90vh] bg-white rounded-2xl shadow-2xl"
+					className="w-[92vw] max-w-md p-0 overflow-y-auto max-h-[90vh] bg-white rounded-xl shadow-2xl"
 				>
 					{detailsOffer && (() => {
 						const ws = detailsOffer.workshopId || detailsOffer.workshop || {}

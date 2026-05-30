@@ -35,9 +35,12 @@ import {
 	FileText,
 	X,
 	ChevronDown,
+	ChevronRight,
 	Mail,
 	BarChart2,
 	UserCircle,
+	MoreVertical,
+	Hourglass
 } from 'lucide-react'
 
 export default function WorkshopRequestsPage() {
@@ -57,6 +60,13 @@ export default function WorkshopRequestsPage() {
 	const [selectedReport, setSelectedReport] = useState(null)
 	const [showReportDialog, setShowReportDialog] = useState(false)
 	const [mobileTab, setMobileTab] = useState('new')
+	const [activeMenuId, setActiveMenuId] = useState(null)
+
+	useEffect(() => {
+		const handleDocumentClick = () => setActiveMenuId(null)
+		document.addEventListener('click', handleDocumentClick)
+		return () => document.removeEventListener('click', handleDocumentClick)
+	}, [])
 
 	// Redirect if not authenticated or not workshop
 	useEffect(() => {
@@ -313,41 +323,46 @@ export default function WorkshopRequestsPage() {
 			{/* Mobile-only Header (image 9) */}
 			<div className="md:hidden mb-5">
 				<h1 className="text-3xl font-black text-[#05324f] leading-tight mb-1.5">
-					{t('workshop.requests.page_title') || 'Requests'}
+					{t('workshop.requests.page_title', 'Förfrågningar')}
 				</h1>
 				<p className="text-sm text-gray-500 leading-snug">
-					{t('workshop.requests.page_subtitle') || 'See new requests from customers here.'}
+					{t('workshop.requests.page_subtitle', 'Här ser du nya förfrågningar från kunder.')}
 				</p>
 			</div>
 
 			{/* Mobile-only Tabs (Nya / Alla) */}
-			<div className="md:hidden flex gap-2 mb-5">
+			<div className="md:hidden flex gap-3 mb-5">
 				<button
 					type="button"
 					onClick={() => setMobileTab('new')}
-					className={`flex-1 py-2.5 px-4 rounded-xl font-black text-sm transition-all ${
+					className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
 						mobileTab === 'new'
-							? 'bg-[#38BC54] text-white shadow-sm'
-							: 'bg-gray-100 text-gray-500'
+							? 'bg-[#0F9D58] text-white shadow-sm'
+							: 'bg-[#ECEFF1] text-[#37474F]'
 					}`}
 				>
-					{t('workshop.requests.tab_new') || 'New'} ({filteredRequests.length})
+					<span>{t('workshop.requests.tab_new', 'Nya')}</span>
+					<span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-black ${
+						mobileTab === 'new' ? 'bg-white text-[#0F9D58]' : 'bg-gray-300 text-[#37474F]'
+					}`}>
+						{filteredRequests.length}
+					</span>
 				</button>
 				<button
 					type="button"
 					onClick={() => setMobileTab('all')}
-					className={`flex-1 py-2.5 px-4 rounded-xl font-black text-sm transition-all ${
+					className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
 						mobileTab === 'all'
-							? 'bg-[#38BC54] text-white shadow-sm'
-							: 'bg-gray-100 text-gray-500'
+							? 'bg-[#0F9D58] text-white shadow-sm'
+							: 'bg-[#ECEFF1] text-[#37474F]'
 					}`}
 				>
-					{t('workshop.requests.tab_all') || 'All'} ({allRequests.length})
+					<span>{t('workshop.requests.tab_all', 'Alla')}</span>
 				</button>
 			</div>
 
 			{/* Mobile-only Card List (image 9) */}
-			<div className="md:hidden space-y-3 mb-4">
+			<div className="md:hidden space-y-4 mb-4">
 				{mobileList.length === 0 ? (
 					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
 						<Car className="w-12 h-12 text-gray-200 mx-auto mb-3" />
@@ -359,63 +374,118 @@ export default function WorkshopRequestsPage() {
 						const requestId = request._id || request.id
 						const vehicle = request.vehicleId || request.vehicle
 						const hasOffer = (request.offers || []).length > 0
+						const report = request.reportId || request.report
+						const hasReport = report && report.fileUrl
+
+						// Swedish Date Formatter (e.g. Idag kl. 14:35)
+						const formatSentTime = (dateStr) => {
+							if (!dateStr) return ''
+							try {
+								const d = new Date(dateStr)
+								const now = new Date()
+								const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+								const yesterday = new Date(today.getTime() - 86400000)
+								const time = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
+								if (d >= today) return `Idag kl. ${time}`
+								if (d >= yesterday) return `Igår kl. ${time}`
+								
+								const dayMonth = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }).replace('.', '')
+								return `${dayMonth} kl. ${time}`
+							} catch {
+								return ''
+							}
+						}
+
 						return (
-							<div key={`m-${requestId}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
-								<div className="flex gap-3">
-									<div className="w-20 h-20 rounded-xl bg-gray-50 overflow-hidden flex items-center justify-center shrink-0 border border-gray-100">
-										{vehicle?.image ? (
-											<img src={getFullUrl(vehicle.image)} alt={`${vehicle.make} ${vehicle.model}`} className="w-full h-full object-cover" />
+							<div 
+								key={`m-${requestId}`}
+								onClick={() => {
+									if (!hasOffer) {
+										navigate(`/workshop/requests/${requestId}/offer`)
+									}
+								}}
+								className="bg-white rounded-2xl border border-gray-100 shadow-[0_4px_15px_-10px_rgba(0,0,0,0.1)] p-4 flex gap-4 items-start relative cursor-pointer active:scale-[0.99] transition-transform"
+							>
+								{/* Left side: Car Image */}
+								<div className="w-24 h-24 rounded-xl bg-gray-50 overflow-hidden flex items-center justify-center shrink-0 border border-gray-100">
+									{vehicle?.image ? (
+										<img src={getFullUrl(vehicle.image)} alt={`${vehicle.make} ${vehicle.model}`} className="w-full h-full object-cover" />
+									) : (
+										<Car className="text-gray-300 w-10 h-10" />
+									)}
+								</div>
+
+								{/* Right side: Details */}
+								<div className="flex-1 min-w-0">
+									{/* Title row */}
+									<div className="flex justify-between items-start mb-2 w-full">
+										<h3 className="text-base font-black text-[#05324f] leading-tight truncate pr-2">
+											{vehicle?.make || ''} {vehicle?.model || ''} {vehicle?.year || ''}
+										</h3>
+
+										{hasOffer ? (
+											<span className="shrink-0 text-[10px] font-bold bg-[#E6F4EA] text-[#137333] px-2 py-0.5 rounded-full">
+												{t('workshop.requests.offer_sent', 'Skickat')}
+											</span>
 										) : (
-											<Car className="text-gray-300 w-8 h-8" />
+											<span className="shrink-0 text-[10px] font-bold bg-[#E6F4EA] text-[#137333] px-2 py-0.5 rounded-full">
+												{t('workshop.requests.new_badge', 'Ny')}
+											</span>
 										)}
 									</div>
-									<div className="flex-1 min-w-0">
-										<div className="flex items-start justify-between gap-2 mb-1">
-											<h3 className="text-sm font-black text-[#05324f] truncate">
-												{vehicle?.make} {vehicle?.model} {vehicle?.year}
-											</h3>
-											{hasOffer ? (
-												<span className="shrink-0 text-[10px] font-black bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md border border-gray-200">
-													{t('workshop.requests.offer_sent') || 'Sent'}
-												</span>
-											) : (
-												<span className="shrink-0 text-[10px] font-black bg-[#F2F9F4] text-[#38BC54] px-2 py-0.5 rounded-md border border-[#38BC54]/20">
-													{t('workshop.requests.new_badge') || 'New'}
-												</span>
-											)}
+
+									{/* Metadata Grid */}
+									<div className="space-y-1.5 text-xs text-gray-600 mb-4">
+										<div className="flex">
+											<span className="font-extrabold text-[#05324f] w-16 shrink-0">
+												{t('workshop.requests.problem_label', 'Problem')}:
+											</span>
+											<span className="truncate">
+												{request.description || t('workshop.requests.no_description', 'Ingen beskrivning')}
+											</span>
 										</div>
-										<div className="space-y-0.5">
-											{request.description && (
-												<p className="text-[11px] text-[#05324f]/80 leading-snug">
-													<span className="font-bold">{t('workshop.requests.problem_label') || 'Problem'}:</span> {request.description}
-												</p>
-											)}
-											{request.city && (
-												<p className="text-[11px] text-[#05324f]/80">
-													<span className="font-bold">{t('workshop.requests.location_label') || 'Location'}:</span> {request.city}
-												</p>
-											)}
-											{request.createdAt && (
-												<p className="text-[11px] text-[#05324f]/80">
-													<span className="font-bold">{t('workshop.requests.sent_label') || 'Sent'}:</span> {formatRelativeSent(request.createdAt)}
-												</p>
-											)}
+
+										<div className="flex">
+											<span className="font-extrabold text-[#05324f] w-16 shrink-0">
+												{t('workshop.requests.location_label', 'Plats')}:
+											</span>
+											<span className="truncate">
+												{request.city || t('common.no_data', 'Ej angiven')}
+											</span>
 										</div>
+
+										<div className="flex">
+											<span className="font-extrabold text-[#05324f] w-16 shrink-0">
+												{t('workshop.requests.sent_label', 'Skickad')}:
+											</span>
+											<span className="truncate">
+												{formatSentTime(request.createdAt)}
+											</span>
+										</div>
+									</div>
+
+									{/* Action Button & Chevron row */}
+									<div className="flex items-center justify-between mt-3 w-full">
+										{hasOffer ? (
+											<div className="flex-1 py-2.5 bg-gray-100 text-gray-500 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 mr-2">
+												<CheckCircle className="w-4 h-4 text-gray-400" />
+												{t('workshop.requests.offer_already_submitted', 'Offert skickad')}
+											</div>
+										) : (
+											<button
+												type="button"
+												onClick={(e) => {
+													e.stopPropagation()
+													navigate(`/workshop/requests/${requestId}/offer`)
+												}}
+												className="flex-1 py-2.5 bg-[#0F9D58] hover:bg-[#0b8047] text-white rounded-xl font-black text-sm flex items-center justify-center shadow-sm"
+											>
+												{t('workshop.requests.leave_a_quote', 'Lämna offert')}
+											</button>
+										)}
+										<ChevronRight size={20} className="text-gray-400 ml-2" />
 									</div>
 								</div>
-								{hasOffer ? (
-									<div className="mt-3 w-full h-10 bg-gray-100 text-gray-500 rounded-xl font-black text-xs flex items-center justify-center gap-1.5">
-										<CheckCircle className="w-4 h-4" />
-										{t('workshop.requests.offer_already_submitted') || 'Offer already submitted'}
-									</div>
-								) : (
-									<Link to={`/workshop/requests/${requestId}/offer`} className="block mt-3">
-										<Button className="w-full h-10 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl font-black text-xs flex items-center justify-center gap-1.5 shadow-sm">
-											{t('workshop.requests.leave_a_quote') || 'Submit offer'}
-											<ChevronDown className="w-4 h-4 rotate-[-90deg]" />
-										</Button>
-									</Link>
-								)}
 							</div>
 						)
 					})

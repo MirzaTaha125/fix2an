@@ -396,11 +396,11 @@ export default function BookAppointmentPage() {
 					</div>
 
 					{/* Big check + sparkles */}
-					<div className="relative flex justify-center mb-5">
-						<div className="absolute -top-2 -left-3 text-2xl text-[#38BC54] opacity-60">✦</div>
-						<div className="absolute top-2 -right-2 text-xl text-[#38BC54] opacity-50">✦</div>
-						<div className="absolute -bottom-1 -left-1 text-lg text-[#38BC54] opacity-40">✦</div>
-						<div className="absolute bottom-3 right-0 text-base text-[#38BC54] opacity-30">✦</div>
+					<div className="relative w-20 h-20 mx-auto mb-5">
+						<div className="absolute -top-2 -left-5 text-2xl text-[#38BC54] opacity-60">✦</div>
+						<div className="absolute top-2 -right-6 text-xl text-[#38BC54] opacity-50">✦</div>
+						<div className="absolute -bottom-1 -left-4 text-lg text-[#38BC54] opacity-40">✦</div>
+						<div className="absolute bottom-3 -right-3 text-base text-[#38BC54] opacity-30">✦</div>
 						<div className="w-20 h-20 rounded-full bg-[#F2F9F4] border-4 border-white shadow-lg flex items-center justify-center">
 							<Check className="w-10 h-10 text-[#38BC54]" strokeWidth={3.5} />
 						</div>
@@ -561,7 +561,7 @@ export default function BookAppointmentPage() {
 					</div>
 
 					{/* Workshop Card */}
-					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+					<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
 						<div className="flex gap-3">
 							{/* Black logo box */}
 							<div className="w-14 h-14 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0 overflow-hidden">
@@ -611,7 +611,7 @@ export default function BookAppointmentPage() {
 
 					{/* Inclusions */}
 					{offer.inclusions && (
-						<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+						<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
 							<h4 className="text-sm font-black text-[#05324f] mb-3">{t('offers_page.included_question') || "What's included in the price?"}</h4>
 							<div className="space-y-2">
 								{offer.inclusions.split(/[,;\n]+/).map((item, i) => {
@@ -640,20 +640,20 @@ export default function BookAppointmentPage() {
 					)}
 
 					{/* 100% Safe Choice */}
-					<div className="bg-[#F2F9F4] rounded-2xl border border-[#38BC54]/15 p-4 flex items-start gap-3">
+					<div className="bg-[#F2F9F4] rounded-xl border border-[#38BC54]/15 p-4 flex items-start gap-3">
 						<div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
 							<ShieldCheck className="w-4 h-4 text-[#38BC54]" fill="#38BC54" fillOpacity={0.15} />
 						</div>
 						<div className="flex-1">
-							<p className="text-sm font-black text-[#05324f]">{t('offers_page.safe_choice_title') || '100% safe choice'}</p>
-							<p className="text-[11px] text-[#05324f]/70 font-semibold leading-snug mt-0.5">
-								{t('offers_page.safe_choice_desc') || "Only verified workshops. We don't commit you to anything until you continue."}
+							<p className="text-sm font-black text-[#05324f]">{t('offers_page.safe_choice_title') || '100% secure choice'}</p>
+							<p className="text-[11px] text-[#05324f]/70 font-semibold leading-snug mt-0.5 whitespace-pre-line">
+								{t('offers_page.safe_choice_desc') || "Only verified workshops.\nYou are not committed to anything until you have booked a time with the workshop."}
 							</p>
 						</div>
 					</div>
 
 					{/* Slot picker (functional) */}
-					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
+					<div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 space-y-3">
 						<Label className="text-sm font-bold text-[#05324f] block">
 							{t('offers_page.workshop_available_times') || "Workshop's available times"} *
 						</Label>
@@ -822,7 +822,20 @@ export default function BookAppointmentPage() {
 							</div>
 						</div>
 
-						<div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 space-y-4">
+						{/* 100% Safe Choice */}
+						<div className="bg-[#F2F9F4] rounded-xl border border-[#38BC54]/15 p-5 flex items-start gap-4">
+							<div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
+								<ShieldCheck className="w-5 h-5 text-[#38BC54]" fill="#38BC54" fillOpacity={0.15} />
+							</div>
+							<div className="flex-1">
+								<p className="text-base font-black text-[#05324f]">{t('offers_page.safe_choice_title') || '100% secure choice'}</p>
+								<p className="text-sm text-[#05324f]/70 font-semibold leading-relaxed mt-1 whitespace-pre-line">
+									{t('offers_page.safe_choice_desc') || "Only verified workshops.\nYou are not committed to anything until you have booked a time with the workshop."}
+								</p>
+							</div>
+						</div>
+
+						<div className="bg-amber-50 border border-amber-200 rounded-xl p-6 space-y-4">
 							<div className="flex items-start gap-4">
 								<CheckCircle className="w-6 h-6 text-amber-600 mt-0.5 shrink-0" />
 								<div>
@@ -840,7 +853,7 @@ export default function BookAppointmentPage() {
 									onChange={(e) => setAgreeToTerms(e.target.checked)}
 									className="w-6 h-6 rounded border-gray-300 text-[#34C759] focus:ring-[#34C759] cursor-pointer"
 								/>
-								<label htmlFor="agreeToTerms-d" className="text-lg font-bold text-gray-900 cursor-pointer select-none">
+								<label htmlFor="agreeToTerms-d" className="text-lg font-bold text-[#05324f] cursor-pointer select-none">
 									{t('offers_page.agree_to_terms')} *
 								</label>
 							</div>
@@ -850,7 +863,7 @@ export default function BookAppointmentPage() {
 							<Button 
 								onClick={handleBooking} 
 								disabled={availableSlots.length === 0 || !scheduledAt || !agreeToTerms || isBooking} 
-								className="px-12 py-5 text-lg font-normal rounded-2xl shadow-xl transition-all hover:translate-y-[-2px] active:translate-y-[0px] w-full md:w-auto" 
+								className="px-12 py-5 text-lg font-normal rounded-xl shadow-xl transition-all hover:translate-y-[-2px] active:translate-y-[0px] w-full md:w-auto" 
 								style={{ backgroundColor: agreeToTerms ? '#34C759' : '#9ca3af', color: '#FFFFFF' }}
 							>
 								{isBooking ? (

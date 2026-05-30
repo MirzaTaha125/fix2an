@@ -45,7 +45,7 @@ export default function MyCasesPage() {
 	const [searchParams, setSearchParams] = useSearchParams()
 	const { user, loading: authLoading } = useAuth()
 	const { t } = useTranslation()
-	
+
 	const [requests, setRequests] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [activeTab, setActiveTab] = useState(() => {
@@ -57,34 +57,34 @@ export default function MyCasesPage() {
 		if (t === 'rescheduled') return 'booked'
 		return valid.includes(t) ? t : 'requested'
 	})
-	
+
 	// Modals state
 	const [reviewModalOpen, setReviewModalOpen] = useState(false)
 	const [selectedRequestForReview, setSelectedRequestForReview] = useState(null)
 	const [rating, setRating] = useState(0)
 	const [reviewText, setReviewText] = useState('')
 	const [isSubmittingReview, setIsSubmittingReview] = useState(false)
-	
+
 	const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false)
 	const [selectedBookingForReschedule, setSelectedBookingForReschedule] = useState(null)
 	const [newScheduledDate, setNewScheduledDate] = useState('')
 	const [newScheduledTime, setNewScheduledTime] = useState('')
 	const [isRescheduling, setIsRescheduling] = useState(false)
-	
+
 	const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
 	const [bookingToCancel, setBookingToCancel] = useState(null)
 	const [cancellationReason, setCancellationReason] = useState('')
 	const [isCancelling, setIsCancelling] = useState(false)
-	
+
 	const [completeConfirmOpen, setCompleteConfirmOpen] = useState(false)
 	const [bookingToComplete, setBookingToComplete] = useState(null)
 	const [completeRating, setCompleteRating] = useState(0)
 	const [completeReviewText, setCompleteReviewText] = useState('')
 	const [isCompleting, setIsCompleting] = useState(false)
-	
+
 	const [detailsModalOpen, setDetailsModalOpen] = useState(false)
 	const [selectedBookingForDetails, setSelectedBookingForDetails] = useState(null)
-	
+
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
 	const [requestToDelete, setRequestToDelete] = useState(null)
 	const [isDeleting, setIsDeleting] = useState(false)
@@ -195,12 +195,12 @@ export default function MyCasesPage() {
 
 	const activeList =
 		activeTab === 'current' ? currentRequests :
-		activeTab === 'requested' ? requestedRequests :
-		activeTab === 'booked' ? [...bookedRequests, ...rescheduledRequests] :
-		activeTab === 'previous' ? previousRequests :
-		activeTab === 'completed' ? completedRequests :
-		activeTab === 'drafts' ? draftRequests :
-		currentRequests
+			activeTab === 'requested' ? requestedRequests :
+				activeTab === 'booked' ? [...bookedRequests, ...rescheduledRequests] :
+					activeTab === 'previous' ? previousRequests :
+						activeTab === 'completed' ? completedRequests :
+							activeTab === 'drafts' ? draftRequests :
+								currentRequests
 
 	// Action Handlers
 	const handleCancelJob = async () => {
@@ -261,7 +261,7 @@ export default function MyCasesPage() {
 		try {
 			const bookingId = bookingToComplete._id || bookingToComplete.id
 			await bookingsAPI.complete(bookingId)
-			
+
 			// Optional review submission
 			if (completeReviewText.trim()) {
 				try {
@@ -274,7 +274,7 @@ export default function MyCasesPage() {
 					console.error('Review submission failed', e)
 				}
 			}
-			
+
 			toast.success(t('my_cases.job_completed_success') || 'Job completed')
 			setCompleteConfirmOpen(false)
 			setBookingToComplete(null)
@@ -310,7 +310,7 @@ export default function MyCasesPage() {
 		try {
 			const booking = selectedRequestForReview.bookings?.find(b => b.status === 'DONE' || b.status === 'COMPLETED')
 			if (!booking) throw new Error('No completed booking found')
-			
+
 			await reviewsAPI.create({
 				bookingId: booking._id || booking.id,
 				rating,
@@ -354,7 +354,7 @@ export default function MyCasesPage() {
 	return (
 		<div className="min-h-screen bg-white flex flex-col font-sans">
 			<Navbar />
-			
+
 			<div className="max-w-3xl mx-auto px-4 pt-20 md:pt-28 pb-12 w-full">
 				{/* Top badge */}
 				<div className="flex justify-end mb-4">
@@ -389,11 +389,10 @@ export default function MyCasesPage() {
 						<button
 							key={tab.key}
 							onClick={() => handleTabChange(tab.key)}
-							className={`shrink-0 md:flex-1 py-1.5 px-2.5 md:py-3 md:px-4 rounded-md md:rounded-lg font-bold text-[0.65rem] md:text-sm transition-all duration-200 whitespace-nowrap ${
-								activeTab === tab.key
+							className={`shrink-0 md:flex-1 py-1.5 px-2.5 md:py-3 md:px-4 rounded-md md:rounded-lg font-bold text-[0.65rem] md:text-sm transition-all duration-200 whitespace-nowrap ${activeTab === tab.key
 									? 'bg-[#F2F9F4] text-[#38BC54]'
 									: 'text-gray-400 hover:text-gray-600'
-							}`}
+								}`}
 						>
 							{tab.label}{categoryCounts[tab.key] > 0 ? ` (${categoryCounts[tab.key]})` : ''}
 						</button>
@@ -426,29 +425,29 @@ export default function MyCasesPage() {
 											const booking = activeTab === 'booked'
 												? (request.bookings || []).find(b => b.status === 'CONFIRMED')
 												: activeTab === 'rescheduled'
-												? (request.bookings || []).find(b => b.status === 'RESCHEDULED')
-												: (request.bookings || []).find(b => ['CONFIRMED', 'RESCHEDULED'].includes(b.status))
+													? (request.bookings || []).find(b => b.status === 'RESCHEDULED')
+													: (request.bookings || []).find(b => ['CONFIRMED', 'RESCHEDULED'].includes(b.status))
 											const workshop = booking?.workshopId || booking?.workshop
 											const vehicle = request.vehicleId || request.vehicle
 
 											const offerCount = (request.offers || []).filter(o => o.status === 'SENT' || o.status === 'ACCEPTED').length
 
-										return (
-											<div key={request._id} className="bg-white rounded-[1.25rem] border border-gray-100 shadow-[0_4px_15px_-10px_rgba(0,0,0,0.1)] overflow-hidden mb-5">
-												<div className="p-4 md:p-7">
-													{/* Status Badge */}
-													<div className="flex mb-4 md:mb-6">
-														<div className="bg-[#F2F9F4] text-[#38BC54] px-3 py-1 md:px-3.5 md:py-1.5 rounded-full flex items-center gap-1.5 md:gap-2 text-[0.65rem] md:text-[0.8rem] font-bold">
-															<Clock size={14} className="text-[#38BC54] md:w-4 md:h-4" />
-															{activeTab === 'booked'
-																? t('my_cases.booking_confirmed')
-																: activeTab === 'rescheduled'
-																? (t('my_cases.tabs.rescheduled') || 'Rescheduled')
-																: offerCount > 0
-																? `${offerCount} ${offerCount === 1 ? 'offer' : 'offers'} received`
-																: t('my_cases.status.awaiting_contact')}
+											return (
+												<div key={request._id} className="bg-white rounded-[1.25rem] border border-gray-100 shadow-[0_4px_15px_-10px_rgba(0,0,0,0.1)] overflow-hidden mb-5">
+													<div className="p-4 md:p-7">
+														{/* Status Badge */}
+														<div className="flex mb-4 md:mb-6">
+															<div className="bg-[#F2F9F4] text-[#38BC54] px-3 py-1 md:px-3.5 md:py-1.5 rounded-full flex items-center gap-1.5 md:gap-2 text-[0.65rem] md:text-[0.8rem] font-bold">
+																<Clock size={14} className="text-[#38BC54] md:w-4 md:h-4" />
+																{activeTab === 'booked'
+																	? t('my_cases.booking_confirmed')
+																	: activeTab === 'rescheduled'
+																		? (t('my_cases.tabs.rescheduled') || 'Rescheduled')
+																		: offerCount > 0
+																			? `${offerCount} ${offerCount === 1 ? 'offer' : 'offers'} received`
+																			: t('my_cases.status.awaiting_contact')}
+															</div>
 														</div>
-													</div>
 
 														{/* Workshop & Price Row */}
 														<div className="flex gap-3 md:gap-4 mb-5 md:mb-7 relative">
@@ -460,22 +459,22 @@ export default function MyCasesPage() {
 																	<Building2 className="text-white/20" size={24} />
 																)}
 															</div>
-															
+
 															{/* Workshop Details */}
 															<div className="flex-1 min-w-0 pr-2">
 																<h3 className="text-sm md:text-[1.15rem] font-black text-[#05324f] flex items-center gap-1 mb-0.5 md:mb-1 truncate">
 																	{workshop?.companyName || t('my_cases.status.awaiting_quotes')}
 																	{workshop && <ShieldCheck size={14} fill="#38BC54" fillOpacity={0.1} className="text-[#38BC54] shrink-0 md:w-4 md:h-4" />}
 																</h3>
-																
+
 																<div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-2">
 																	<div className="flex gap-0.5">
 																		{[...Array(5)].map((_, i) => (
-																			<Star 
-																				key={i} 
-																				size={10} 
-																				fill={workshop && i < Math.floor(workshop.averageRating || 5) ? "#FFD700" : "none"} 
-																				className={workshop && i < Math.floor(workshop.averageRating || 5) ? "text-[#FFD700] md:w-3.5 md:h-3.5" : "text-gray-200 md:w-3.5 md:h-3.5"} 
+																			<Star
+																				key={i}
+																				size={10}
+																				fill={workshop && i < Math.floor(workshop.averageRating || 5) ? "#FFD700" : "none"}
+																				className={workshop && i < Math.floor(workshop.averageRating || 5) ? "text-[#FFD700] md:w-3.5 md:h-3.5" : "text-gray-200 md:w-3.5 md:h-3.5"}
 																			/>
 																		))}
 																	</div>
@@ -483,7 +482,7 @@ export default function MyCasesPage() {
 																		{workshop?.averageRating?.toFixed(1) || '0.0'} ({workshop?.reviewCount || 0})
 																	</span>
 																</div>
-																
+
 																<div className="flex items-center gap-1 text-gray-400 text-[0.7rem] md:text-[0.85rem] font-bold">
 																	<MapPin size={12} className="md:w-3.5 md:h-3.5" />
 																	<span>{workshop?.address?.city || 'Workshop city'}</span>
@@ -541,7 +540,7 @@ export default function MyCasesPage() {
 																	{booking?.status === 'CONFIRMED' || booking?.status === 'RESCHEDULED' ? t('my_cases.booking_confirmed') : t('my_cases.workshop_contact_soon')}
 																</h4>
 																<p className="text-[0.75rem] md:text-[0.9rem] text-[#05324f]/70 font-bold leading-snug">
-																	{booking?.scheduledAt 
+																	{booking?.scheduledAt
 																		? `${formatDateTime(new Date(booking.scheduledAt))} at ${workshop?.companyName}`
 																		: t('my_cases.receive_call_sms')
 																	}
@@ -683,7 +682,7 @@ export default function MyCasesPage() {
 
 				</div>
 			</div>
-			
+
 			<Footer />
 
 			{/* Modals */}
@@ -725,7 +724,7 @@ export default function MyCasesPage() {
 								</button>
 							))}
 						</div>
-						<Textarea 
+						<Textarea
 							placeholder="Write your review here..."
 							value={completeReviewText}
 							onChange={e => setCompleteReviewText(e.target.value)}
@@ -753,7 +752,7 @@ export default function MyCasesPage() {
 								</button>
 							))}
 						</div>
-						<Textarea 
+						<Textarea
 							placeholder="Your thoughts..."
 							value={reviewText}
 							onChange={e => setReviewText(e.target.value)}
