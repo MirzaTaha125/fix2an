@@ -9,11 +9,12 @@ import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { workshopAPI } from '../services/api'
+import { formatDateTime } from '../utils/cn'
 
 export default function WorkshopReviewsPage() {
 	const navigate = useNavigate()
 	const { user, loading: authLoading } = useAuth()
-	const { t } = useTranslation()
+	const { t, i18n } = useTranslation()
 	const [reviews, setReviews] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [stats, setStats] = useState({ rating: 0, reviewCount: 0 })
@@ -26,7 +27,7 @@ export default function WorkshopReviewsPage() {
 			}
 			if (user.role !== 'WORKSHOP') {
 				if (user.role === 'ADMIN') navigate('/admin', { replace: true })
-				else navigate('/my-cases', { replace: true })
+				else navigate('/contract', { replace: true })
 				return
 			}
 		}
@@ -151,11 +152,7 @@ export default function WorkshopReviewsPage() {
 						{reviews.map((review) => {
 							const customerName = review.customerId?.name || 'Customer'
 							const createdAt = review.createdAt
-								? new Date(review.createdAt).toLocaleDateString(undefined, {
-										year: 'numeric',
-										month: 'long',
-										day: 'numeric',
-								  })
+								? formatDateTime(new Date(review.createdAt), i18n.language)
 								: ''
 							return (
 								<Card key={review._id || review.id} className="border border-gray-200 bg-white shadow-sm">

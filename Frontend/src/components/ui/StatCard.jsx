@@ -24,9 +24,9 @@ export function StatCard({
 			)}
 		>
 			{/* Top Row: Label & Icon */}
-			<div className="flex items-start justify-between w-full mb-3 gap-2">
+			<div className="flex items-start justify-between w-full mb-2 sm:mb-3 gap-2">
 				{label && (
-					<p className="text-[10px] sm:text-sm font-medium text-gray-500 leading-tight">
+					<p className="text-[10px] sm:text-sm font-medium text-gray-500 leading-tight min-h-[2.4em] sm:min-h-[2.5em]">
 						{label}
 					</p>
 				)}

@@ -10,8 +10,20 @@ export default function BottomNavManager() {
 
 	if (loading) return null
 
-	const workshopPaths = ['/', '/en', '/sv', '/workshop/requests', '/workshop/proposals', '/workshop/contracts', '/workshop/profile', '/workshop/dashboard']
-	const customerPaths = ['/', '/en', '/sv', '/my-cases', '/upload', '/profile']
+	const workshopPaths = ['/', '/en', '/sv', '/workshop', '/workshop/requests', '/workshop/proposals', '/workshop/contracts', '/workshop/profile', '/workshop/dashboard']
+	const customerPaths = [
+		'/',
+		'/en',
+		'/sv',
+		'/dashboard',
+		'/contract',
+		'/upload',
+		'/profile',
+		'/offers',
+		'/book-appointment',
+		'/support',
+		'/how-it-works',
+	]
 	const guestPaths = ['/', '/en', '/sv', '/auth/signin', '/auth/signup', '/auth/forgot-password']
 	const adminPaths = []
 

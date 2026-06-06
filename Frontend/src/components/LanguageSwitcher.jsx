@@ -7,7 +7,7 @@ const languages = [
 	{ code: 'en', name: 'English', flag: '🇺🇸' },
 ]
 
-export function LanguageSwitcher({ isScrolled = false }) {
+export function LanguageSwitcher({ isScrolled = false, iconClassName = 'h-5 w-5' }) {
 	const { i18n } = useTranslation()
 	const [isOpen, setIsOpen] = useState(false)
 	const dropdownRef = useRef(null)
@@ -36,7 +36,7 @@ export function LanguageSwitcher({ isScrolled = false }) {
 				onClick={() => setIsOpen(!isOpen)}
 				className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 transition-colors focus:outline-none"
 			>
-				<Globe className={`h-5 w-5 transition-colors duration-300 ${
+				<Globe className={`${iconClassName} transition-colors duration-300 ${
 					isScrolled ? 'text-gray-600' : 'text-white/90 shadow-sm drop-shadow-sm'
 				}`} />
 			</button>

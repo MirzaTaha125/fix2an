@@ -52,7 +52,7 @@ api.interceptors.response.use(
 			localStorage.removeItem('token')
 			localStorage.removeItem('user')
 			// Don't redirect on login page or if already on a public route - let the component handle it
-			const publicRoutes = ['/auth/signin', '/auth/signup', '/auth/verify-email', '/auth/2fa-verify', '/signin', '/signup', '/', '/how-it-works', '/workshop/signup']
+			const publicRoutes = ['/auth/signin', '/auth/signup', '/auth/verify-email', '/auth/2fa-verify', '/auth/magic-link', '/signin', '/signup', '/upload', '/', '/how-it-works', '/workshop/signup']
 			const isPublicRoute = publicRoutes.some(route => window.location.pathname.includes(route))
 			if (!isPublicRoute) {
 				// Use setTimeout to avoid navigation conflicts during back button navigation
@@ -78,12 +78,17 @@ export const authAPI = {
 	verify2FASetup: (data) => api.post('/api/auth/2fa/verify-setup', data),
 	disable2FA: (data) => api.post('/api/auth/2fa/disable', data),
 	deleteAccount: () => api.delete('/api/auth/self-delete'),
+	sendMagicLink: (data) => api.post('/api/auth/magic-link', data),
+	sendLoginMagicLink: (data) => api.post('/api/auth/login-magic-link', data),
+	verifyMagicLink: (token) => api.get('/api/auth/magic-link/verify', { params: { token } }),
 }
 
 // Vehicles API
 export const vehiclesAPI = {
 	create: (data) => api.post('/api/vehicles', data),
 	getAll: () => api.get('/api/vehicles'),
+	getVehicleImageUrl: (params) => api.get('/api/vehicles/vehicle-image-url', { params }),
+	getCarImageUrl: (params) => api.get('/api/vehicles/vehicle-image-url', { params }),
 }
 
 // Requests API
@@ -114,6 +119,7 @@ export const bookingsAPI = {
 	getByWorkshop: (workshopId) => workshopId ? api.get(`/api/bookings/workshop/${workshopId}`) : api.get('/api/bookings/workshop/me'),
 	getByWorkshopMe: () => api.get('/api/bookings/workshop/me'),
 	update: (bookingId, data) => api.patch(`/api/bookings/${bookingId}`, data),
+	scheduleAppointment: (bookingId, scheduledAt) => api.patch(`/api/bookings/${bookingId}`, { scheduledAt }),
 	cancel: (bookingId, cancellationReason) => api.patch(`/api/bookings/${bookingId}`, { status: 'CANCELLED', cancellationReason }),
 	reschedule: (bookingId, scheduledAt) => api.patch(`/api/bookings/${bookingId}`, { scheduledAt, status: 'RESCHEDULED' }),
 	complete: (bookingId) => api.patch(`/api/bookings/${bookingId}`, { status: 'DONE' }),

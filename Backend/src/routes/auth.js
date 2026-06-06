@@ -1,5 +1,6 @@
 import express from 'express'
 import { register, login, getMe, updateProfile, verifyEmailCode, forgotPassword, verifyPasswordResetCode, resetPassword, selfDelete } from '../controllers/authController.js'
+import { sendMagicLink, sendLoginMagicLink, verifyMagicLink } from '../controllers/magicLinkController.js'
 import {
 	get2FASetup,
 	verify2FASetup,
@@ -14,6 +15,10 @@ const router = express.Router()
 router.post('/register', register)
 router.post('/verify-email', verifyEmailCode)
 router.post('/login', login)
+router.post('/magic-link', sendMagicLink)
+router.post('/login-magic-link', sendLoginMagicLink)
+router.get('/magic-link/verify', verifyMagicLink)
+router.post('/magic-link/verify', verifyMagicLink)
 router.post('/forgot-password', forgotPassword)
 router.post('/verify-reset-code', verifyPasswordResetCode)
 router.post('/reset-password', resetPassword)

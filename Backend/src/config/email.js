@@ -17,7 +17,7 @@ async function getEmailConfigDoc() {
 
 /** SMTP config from doc */
 function getSmtpConfig(doc) {
-	if (doc && doc.provider === 'smtp' && doc.host && doc.user) {
+	if (doc && doc.host && doc.user) {
 		return {
 			host: doc.host,
 			port: doc.port ?? 587,
@@ -29,9 +29,24 @@ function getSmtpConfig(doc) {
 	return null
 }
 
+/** SMTP config from environment variables (fallback) */
+function getEnvSmtpConfig() {
+	const host = process.env.SMTP_HOST
+	const user = process.env.SMTP_USER
+	if (!host || !user) return null
+	return {
+		host,
+		port: Number(process.env.SMTP_PORT || 587),
+		secure: process.env.SMTP_SECURE === 'true',
+		auth: { user, pass: process.env.SMTP_PASS || '' },
+		from: process.env.SMTP_FROM || user,
+	}
+}
+
 /** EmailJS config from doc */
 function getEmailJsConfig(doc) {
-	if (!doc || !doc.emailjsUserId || !doc.emailjsServiceId || !doc.emailjsTemplateId) return null
+	if (!doc || doc.provider !== 'emailjs') return null
+	if (!doc.emailjsUserId || !doc.emailjsServiceId || !doc.emailjsTemplateId) return null
 	return {
 		userId: doc.emailjsUserId,
 		serviceId: doc.emailjsServiceId,
@@ -42,9 +57,10 @@ function getEmailJsConfig(doc) {
 
 export async function isEmailConfigured() {
 	const doc = await getEmailConfigDoc()
+	if (getEnvSmtpConfig()) return true
 	if (!doc) return false
-	if (doc.provider === 'emailjs') return !!getEmailJsConfig(doc)
-	return !!getSmtpConfig(doc)
+	if (doc.provider === 'emailjs') return !!getEmailJsConfig(doc) || !!getSmtpConfig(doc)
+	return !!getSmtpConfig(doc) || !!getEmailJsConfig(doc)
 }
 
 const style = {
@@ -61,6 +77,13 @@ export const emailTemplates = {
 		body: `<p>Klicka på länken nedan för att bekräfta ditt konto:</p>
 <p><a href="${verificationUrl}" style="${style.button}">Bekräfta konto</a></p>
 <p style="${style.footer}">Om länken inte fungerar, kopiera: ${verificationUrl}</p>`,
+	}),
+	magicLinkLogin: (magicLinkUrl) => ({
+		subject: 'Din inloggningslänk – Fixa2an',
+		heading: 'Logga in och skicka din förfrågan',
+		body: `<p>Klicka på länken nedan för att logga in och skicka din förfrågan till verifierade verkstäder:</p>
+<p><a href="${magicLinkUrl}" style="${style.button}">Öppna Fixa2an</a></p>
+<p style="${style.footer}">Länken är giltig i 30 minuter. Om du inte begärde detta kan du ignorera detta mejl.<br/>Om länken inte fungerar, kopiera: ${magicLinkUrl}</p>`,
 	}),
 	emailVerificationCode: (code) => ({
 		subject: 'Din verifieringskod – Fixa2an',
@@ -203,30 +226,97 @@ ${template.body}
 export async function sendEmail(to, template) {
 	const doc = await getEmailConfigDoc()
 	const emailjs = doc ? getEmailJsConfig(doc) : null
-	const smtp = doc ? getSmtpConfig(doc) : null
+	const smtp = (doc ? getSmtpConfig(doc) : null) || getEnvSmtpConfig()
+	const envSmtp = getEnvSmtpConfig()
 
-	if (!doc) {
-		console.log('[Email] Skipped: no config in DB. Add in Admin → Settings → Email.')
+	if (!doc && !envSmtp) {
+		console.log('[Email] Skipped: no config in DB or env. Add in Admin → Settings → Email or set SMTP_* env vars.')
 		return
 	}
-	if (emailjs) {
+
+	const tryEmailJs = async () => {
+		await sendViaEmailJS(to, template, emailjs)
+		console.log('[Email] Sent via EmailJS:', template.subject, 'to', to)
+	}
+
+	const trySmtp = async (cfg = smtp) => {
+		await sendViaSmtp(to, template, cfg)
+		console.log('[Email] Sent via SMTP:', template.subject, 'to', to)
+	}
+
+	const tryEnvSmtpFallback = async (err) => {
+		if (envSmtp && smtp !== envSmtp) {
+			console.log('[Email] Retrying with env SMTP...', err?.message || '')
+			await trySmtp(envSmtp)
+			return true
+		}
+		return false
+	}
+
+	if (doc?.provider === 'smtp') {
+		if (smtp) {
+			try {
+				await trySmtp()
+				return
+			} catch (err) {
+				console.error('[Email] SMTP failed:', err.message)
+				if (emailjs) {
+					try {
+						console.log('[Email] Falling back to EmailJS...')
+						await tryEmailJs()
+						return
+					} catch (emailJsErr) {
+						console.error('[Email] EmailJS failed:', emailJsErr.message)
+						if (await tryEnvSmtpFallback(emailJsErr)) return
+						throw emailJsErr
+					}
+				}
+				if (await tryEnvSmtpFallback(err)) return
+				throw err
+			}
+		}
+		if (emailjs) {
+			try {
+				await tryEmailJs()
+				return
+			} catch (err) {
+				if (await tryEnvSmtpFallback(err)) return
+				throw err
+			}
+		}
+	} else if (emailjs) {
 		try {
-			await sendViaEmailJS(to, template, emailjs)
-			console.log('[Email] Sent via EmailJS:', template.subject, 'to', to)
+			await tryEmailJs()
+			return
 		} catch (err) {
 			console.error('[Email] EmailJS failed:', err.message)
+			if (smtp) {
+				try {
+					console.log('[Email] Falling back to SMTP...')
+					await trySmtp()
+					return
+				} catch (smtpErr) {
+					console.error('[Email] SMTP failed:', smtpErr.message)
+					if (await tryEnvSmtpFallback(smtpErr)) return
+					throw smtpErr
+				}
+			}
+			if (await tryEnvSmtpFallback(err)) return
 			throw err
 		}
-		return
-	}
-	if (smtp) {
+	} else if (smtp) {
 		try {
-			await sendViaSmtp(to, template, smtp)
+			await trySmtp()
 		} catch (err) {
 			console.error('[Email] SMTP failed:', err.message)
+			if (await tryEnvSmtpFallback(err)) return
 			throw err
 		}
 		return
+	} else if (envSmtp) {
+		await trySmtp(envSmtp)
+		return
 	}
-	console.log('[Email] Skipped: set Provider to EmailJS and fill User ID, Service ID, Template ID (and Private Key) in Admin → Settings.')
+
+	console.log('[Email] Skipped: configure SMTP or EmailJS in Admin → Settings → Email.')
 }

@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
+import { CustomerOfferCountProvider } from './context/CustomerOfferCountContext'
 import { Skeleton } from './components/ui/Skeleton'
 import Navbar from './components/Navbar'
 import BottomNavManager from './components/BottomNavManager'
@@ -11,8 +12,10 @@ import VerifyEmailPage from './pages/VerifyEmailPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import MyCasesPage from './pages/MyCasesPage'
 import UploadPage from './pages/UploadPage'
+import MagicLinkVerifyPage from './pages/MagicLinkVerifyPage'
 import CustomerProfilePage from './pages/CustomerProfilePage'
 import WorkshopDashboardPage from './pages/WorkshopDashboardPage'
+import CustomerDashboardPage from './pages/CustomerDashboardPage'
 import WorkshopLandingPage from './pages/WorkshopLandingPage'
 import WorkshopRequestsPage from './pages/WorkshopRequestsPage'
 import WorkshopProfilePage from './pages/WorkshopProfilePage'
@@ -38,9 +41,9 @@ function PrivateRoute({ children, allowedRoles = [] }) {
 
 	if (loading) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex flex-col">
+			<div className="list-page-shell bg-gray-50">
 				<Navbar />
-				<div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
+				<div className="list-page-content max-w-7xl">
 					<div className="space-y-8 animate-pulse">
 						<div className="h-10 w-1/3 bg-gray-200 rounded-lg mx-auto sm:mx-0"></div>
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -64,10 +67,10 @@ function PrivateRoute({ children, allowedRoles = [] }) {
 	if (allowedRoles.length > 0 && !allowedRoles.map(r => r.toUpperCase()).includes(userRole)) {
 		if (userRole === 'ADMIN' && location.pathname !== '/admin') {
 			return <Navigate to="/admin" replace />
-		} else if (userRole === 'WORKSHOP' && location.pathname !== '/workshop/requests') {
-			return <Navigate to="/workshop/requests" replace />
-		} else if (userRole !== 'ADMIN' && userRole !== 'WORKSHOP' && location.pathname !== '/my-cases') {
-			return <Navigate to="/my-cases" replace />
+		} else if (userRole === 'WORKSHOP' && !location.pathname.startsWith('/workshop')) {
+			return <Navigate to="/workshop/dashboard" replace />
+		} else if (userRole !== 'ADMIN' && userRole !== 'WORKSHOP' && !['/dashboard', '/contract', '/offers', '/upload', '/profile', '/book-appointment'].some((p) => location.pathname.startsWith(p))) {
+			return <Navigate to="/dashboard" replace />
 		}
 	}
     
@@ -84,7 +87,7 @@ function PrivateRoute({ children, allowedRoles = [] }) {
             return <Navigate to="/workshop/pending" replace />
         }
         if (verificationStatus === 'APPROVED' && (location.pathname === '/workshop/pending' || location.pathname === '/workshop/rejected')) {
-            return <Navigate to="/workshop/requests" replace />
+            return <Navigate to="/workshop/dashboard" replace />
         }
     }
 
@@ -98,8 +101,9 @@ function RequestRedirect() {
 
 function AppRoutes() {
 	return (
-		<>
-			<Routes>
+		<CustomerOfferCountProvider>
+			<div className="app-layout">
+				<Routes>
 				<Route path="/" element={<HomePage />} />
 				<Route path="/en" element={<HomePage />} />
 				<Route path="/sv" element={<HomePage />} />
@@ -111,11 +115,21 @@ function AppRoutes() {
 				<Route path="/auth/signup" element={<SignUpPage />} />
 				<Route path="/auth/verify-email" element={<VerifyEmailPage />} />
 				<Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+				<Route path="/auth/magic-link" element={<MagicLinkVerifyPage />} />
 				<Route path="/auth/2fa-verify" element={<Auth2FAVerifyPage />} />
 				<Route path="/signin" element={<SignInPage />} />
 				<Route path="/signup" element={<SignUpPage />} />
 				<Route
-					path="/my-cases"
+					path="/dashboard"
+					element={
+						<PrivateRoute allowedRoles={['CUSTOMER']}>
+							<CustomerDashboardPage />
+						</PrivateRoute>
+					}
+				/>
+				<Route path="/my-cases" element={<Navigate to="/contract" replace />} />
+				<Route
+					path="/contract"
 					element={
 						<PrivateRoute allowedRoles={['CUSTOMER']}>
 							<MyCasesPage />
@@ -123,14 +137,7 @@ function AppRoutes() {
 					}
 				/>
 				<Route path="/requests/:id" element={<RequestRedirect />} />
-				<Route
-					path="/upload"
-					element={
-						<PrivateRoute allowedRoles={['CUSTOMER']}>
-							<UploadPage />
-						</PrivateRoute>
-					}
-				/>
+				<Route path="/upload" element={<UploadPage />} />
 				<Route
 					path="/profile"
 					element={
@@ -252,9 +259,10 @@ function AppRoutes() {
 						</PrivateRoute>
 					}
 				/>
-			</Routes>
+				</Routes>
+			</div>
 			<BottomNavManager />
-		</>
+		</CustomerOfferCountProvider>
 	)
 }
 

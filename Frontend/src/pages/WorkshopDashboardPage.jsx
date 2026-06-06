@@ -1,295 +1,239 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { Button } from '../components/ui/Button'
-import { Card, CardContent } from '../components/ui/Card'
-import { StatCard } from '../components/ui/StatCard'
-import { Skeleton } from '../components/ui/Skeleton'
-import toast from 'react-hot-toast'
-import { formatPrice, calculateDistance } from '../utils/cn'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
-	Car,
-	Clock,
-	CheckCircle,
-	XCircle,
-	AlertCircle,
-	Calendar,
+	FileText,
+	Send,
+	FileCheck,
+	User,
 	TrendingUp,
 	Briefcase,
-	DollarSign,
-	Send,
-	Mail,
-	BarChart2,
-	User,
+	Star,
+	ClipboardList,
 } from 'lucide-react'
-import { useAuth } from '../context/AuthContext'
+import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-
-import { requestsAPI, workshopAPI } from '../services/api'
+import { Skeleton } from '../components/ui/Skeleton'
+import StatCard from '../components/ui/StatCard'
+import DashboardQuickAction from '../components/dashboard/DashboardQuickAction'
+import { useAuth } from '../context/AuthContext'
+import { workshopAPI } from '../services/api'
+import { formatPrice } from '../utils/cn'
 
 export default function WorkshopDashboardPage() {
 	const navigate = useNavigate()
+	const { pathname } = useLocation()
 	const { user, loading: authLoading } = useAuth()
 	const { t } = useTranslation()
-	const [requests, setRequests] = useState([])
-	const [stats, setStats] = useState({
-		totalRequests: 0,
-		activeOffers: 0,
-		completedJobs: 0,
-		totalRevenue: 0,
-	})
 	const [loading, setLoading] = useState(true)
+	const [workshopName, setWorkshopName] = useState('')
+	const [stats, setStats] = useState({
+		monthlyRevenue: 0,
+		totalRevenue: 0,
+		completedContracts: 0,
+		proposalsSent: 0,
+		activeOffers: 0,
+		totalRequests: 0,
+		completedJobs: 0,
+		rating: 0,
+		reviewCount: 0,
+	})
 
 	useEffect(() => {
 		if (!authLoading) {
-			const userRole = user?.role?.toUpperCase()
 			if (!user) {
 				navigate('/auth/signin', { replace: true })
 				return
 			}
-			if (userRole !== 'WORKSHOP') {
-				if (userRole === 'ADMIN') navigate('/admin', { replace: true })
-				else navigate('/my-cases', { replace: true })
+			const role = user.role?.toUpperCase()
+			if (role !== 'WORKSHOP') {
+				if (role === 'ADMIN') navigate('/admin', { replace: true })
+				else navigate('/dashboard', { replace: true })
 			}
 		}
 	}, [user, authLoading, navigate])
 
-	const fetchData = async () => {
+	useEffect(() => {
 		if (!user || user.role?.toUpperCase() !== 'WORKSHOP') return
-		try {
-			const workshopId = user.id || user._id
-			const requestsResponse = await requestsAPI.getAvailable({
-				workshopId,
-				latitude: user.latitude || 59.3293,
-				longitude: user.longitude || 18.0686,
-				radius: 50,
-			})
-			if (requestsResponse.data) setRequests(requestsResponse.data)
 
+		const fetchDashboard = async () => {
 			try {
-				const statsResponse = await workshopAPI.getStats()
-				if (statsResponse.data) {
+				const [statsRes, profileRes] = await Promise.all([
+					workshopAPI.getStats(),
+					workshopAPI.getProfile(),
+				])
+
+				if (profileRes.data?.workshop?.companyName) {
+					setWorkshopName(profileRes.data.workshop.companyName)
+				}
+
+				if (statsRes.data) {
 					setStats({
-						totalRequests: statsResponse.data.totalRequests || 0,
-						activeOffers: statsResponse.data.activeOffers || 0,
-						completedJobs: statsResponse.data.completedJobs || 0,
-						totalRevenue: statsResponse.data.totalRevenue || 0,
+						monthlyRevenue: statsRes.data.monthlyRevenue || 0,
+						totalRevenue: statsRes.data.totalRevenue || 0,
+						completedContracts: statsRes.data.completedContracts || 0,
+						proposalsSent: statsRes.data.proposalsSent || 0,
+						activeOffers: statsRes.data.activeOffers || 0,
+						totalRequests: statsRes.data.totalRequests || 0,
+						completedJobs: statsRes.data.completedJobs || 0,
+						rating: statsRes.data.rating || 0,
+						reviewCount: statsRes.data.reviewCount || 0,
 					})
 				}
-			} catch (statsError) {
-				console.error('Stats fetch error:', statsError)
+			} catch (error) {
+				console.error('Failed to fetch workshop dashboard:', error)
+				toast.error(t('dashboard.fetch_error') || 'Failed to load dashboard')
+			} finally {
+				setLoading(false)
 			}
-		} catch (error) {
-			console.error('Failed to fetch data:', error)
-			toast.error(t('errors.fetch_failed'))
-		} finally {
-			setLoading(false)
 		}
-	}
 
-	useEffect(() => {
-		if (user && user.role?.toUpperCase() === 'WORKSHOP') fetchData()
-	}, [user])
+		fetchDashboard()
+	}, [user, t, pathname])
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex flex-col">
+			<div className="list-page-shell bg-[#F4F7F6]">
 				<Navbar />
-				<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24 w-full flex-1">
-					<div className="mb-8 max-md:mb-6">
-						<Skeleton className="h-4 w-32 mb-2 max-md:hidden" />
-						<Skeleton className="h-8 md:h-10 w-48 max-md:w-40" />
+				<div className="list-page-content max-w-5xl mx-auto">
+					<Skeleton className="h-36 w-full rounded-2xl mb-6" />
+					<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+						{[1, 2, 3, 4].map((i) => (
+							<Skeleton key={i} className="h-28 sm:h-32 rounded-2xl" />
+						))}
 					</div>
-					<div className="grid grid-cols-3 gap-2 sm:gap-6 mb-10 max-md:mb-6">
-						<Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
-						<Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
-						<Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
-					</div>
-					<div className="mb-10 max-md:mb-6">
-						<div className="flex items-center justify-between mb-4 max-md:mb-3">
-							<Skeleton className="h-8 w-40" />
-							<Skeleton className="h-8 w-20 max-md:hidden rounded-lg" />
-						</div>
-						<div className="space-y-3 max-md:space-y-2">
-							{[...Array(3)].map((_, i) => (
-								<Card key={`skel-inbox-${i}`} className="max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:border">
-									<CardContent className="p-5 max-md:p-4">
-										<div className="flex items-center justify-between gap-4">
-											<div className="flex-1 w-full space-y-2">
-												<Skeleton className="h-5 w-3/4 max-w-[250px]" />
-												<Skeleton className="h-4 w-1/2 max-w-[150px]" />
-											</div>
-											<Skeleton className="h-8 w-24 rounded-md" />
-										</div>
-									</CardContent>
-								</Card>
-							))}
-						</div>
-					</div>
-					<div>
-						<Skeleton className="h-8 w-32 mb-4" />
-						<Card>
-							<CardContent className="py-12 flex flex-col justify-center items-center">
-								<Skeleton className="h-10 w-10 rounded-full mb-3" />
-								<Skeleton className="h-4 w-24" />
-							</CardContent>
-						</Card>
+					<Skeleton className="h-6 w-32 mb-4" />
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+						{[1, 2, 3, 4].map((i) => (
+							<Skeleton key={i} className="h-20 rounded-2xl" />
+						))}
 					</div>
 				</div>
-				
-				<Footer />
+				<Footer className="max-lg:hidden" />
 			</div>
 		)
 	}
 
-	if (!user || user.role !== 'WORKSHOP') return null
-
-	const getStatusBadge = (status) => {
-		const statusMap = {
-			NEW: { label: t('workshop.dashboard.status.new'), className: 'bg-green-100 text-green-800 border border-green-200' },
-			IN_BIDDING: { label: t('workshop.dashboard.status.in_bidding'), className: 'bg-blue-100 text-blue-800 border border-blue-200' },
-			BIDDING_CLOSED: { label: t('workshop.dashboard.status.bidding_closed'), className: 'bg-yellow-100 text-yellow-800 border border-yellow-200' },
-			BOOKED: { label: t('workshop.dashboard.status.booked'), className: 'bg-purple-100 text-purple-800 border border-purple-200' },
-			COMPLETED: { label: t('workshop.dashboard.status.completed'), className: 'bg-emerald-100 text-emerald-800 border border-emerald-200' },
-			CANCELLED: { label: t('workshop.dashboard.status.cancelled'), className: 'bg-red-100 text-red-800 border border-red-200' },
-		}
-		const s = statusMap[status] || { label: status, className: 'bg-gray-100 text-gray-800 border border-gray-200' }
-		return (
-			<span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${s.className}`}>
-				{s.label}
-			</span>
-		)
-	}
+	if (!user || user.role?.toUpperCase() !== 'WORKSHOP') return null
 
 	return (
-		<div className="min-h-screen bg-gray-50">
+		<div className="list-page-shell bg-[#F4F7F6]">
 			<Navbar />
-			<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24">
 
-				{/* Header - mobile: compact */}
-
-
-				{/* Stats Grid - 3 cards inline on all screens */}
-				<div className="grid grid-cols-3 gap-2 sm:gap-6 mb-8 max-md:mb-6">
-					<StatCard
-						value={stats.totalRequests}
-						label={t('workshop.dashboard.stats.new_inquiries') || t('workshop.dashboard.stats.total_requests') || 'New inquiries'}
-					/>
-					<StatCard
-						value={stats.completedJobs}
-						label={t('workshop.dashboard.stats.won_jobs') || t('workshop.dashboard.stats.completed_jobs') || 'Won jobs'}
-					/>
-					<StatCard
-						value={formatPrice(stats.totalRevenue)}
-						label={t('workshop.dashboard.stats.monthly_revenue') || 'Income'}
-					/>
-				</div>
-
-				{/* Offer Inbox - mobile: reference list style */}
-				<div className="mb-10 max-md:mb-6">
-					<div className="flex items-center justify-between mb-4 max-md:mb-3">
-						<h2 className="text-xl font-bold text-[#05324f] max-md:text-lg">
-							{t('workshop.dashboard.offer_inbox') || 'Offer Inbox'}
-						</h2>
-						<Link to="/workshop/requests" className="max-md:hidden">
-							<Button variant="outline" size="sm">
-								{t('workshop.dashboard.view_all') || 'View all'}
-							</Button>
-						</Link>
-					</div>
-
-					{requests.length === 0 ? (
-						<Card className="max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none">
-							<CardContent className="py-12 text-center text-gray-400 max-md:py-8">
-								<Send className="w-10 h-10 mx-auto mb-3 opacity-30" />
-								<p className="font-medium text-sm">
-									{t('workshop.dashboard.no_requests') || 'No requests available'}
-								</p>
-							</CardContent>
-						</Card>
-					) : (
-						<div className="space-y-3 max-md:space-y-2">
-							{requests.slice(0, 5).map((request) => {
-								const requestId = request._id || request.id
-								const vehicle = request.vehicleId || request.vehicle
-								const hasOffer = (request.offers || []).length > 0
-
-								return (
-									<Card key={requestId} className="hover:shadow-card-hover transition-shadow duration-200 max-md:rounded-xl max-md:border-gray-200 max-md:shadow-none max-md:border">
-										<CardContent className="p-5 max-md:p-4">
-											<div className="flex items-center justify-between gap-4">
-												<div className="flex-1 min-w-0">
-													<div className="flex items-center gap-2 mb-1">
-														<h3 className="font-bold text-[#05324f] truncate max-md:text-sm">
-															{vehicle?.make} {vehicle?.model} {vehicle?.year}
-														</h3>
-														<span className="hidden md:inline">{getStatusBadge(request.status)}</span>
-													</div>
-													{request.description && (
-														<p className="text-small text-gray-500 line-clamp-1 max-md:text-xs">
-															{request.description}
-														</p>
-													)}
-													{/* Location / Date info */}
-													<p className="text-xs text-gray-400 mt-0.5 max-md:block hidden">
-														{(() => {
-															const dist = request.latitude && request.longitude && user?.latitude && user?.longitude
-																? calculateDistance(user.latitude, user.longitude, request.latitude, request.longitude)
-																: null
-															const latestDate = request.createdAt ? new Date(request.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : ''
-															
-															return (
-																<>
-																	{dist != null ? `${Math.round(dist)} ${t('workshop.requests.km_away')}` : (request.city || '')}
-																	{latestDate && <br />}
-																	{latestDate && `${t('workshop.dashboard.latest') || 'Latest'} ${latestDate}`}
-																</>
-															)
-														})()}
-													</p>
-												</div>
-												<div className="shrink-0">
-													{!hasOffer ? (
-														<Link to={`/workshop/requests/${requestId}/offer`}>
-															<Button size="sm" className="max-md:!bg-[#34C759] max-md:!text-white max-md:rounded-xl max-md:text-xs max-md:px-3 max-md:py-2">
-																{t('workshop.dashboard.submit_offer') || 'Submit offer'}
-															</Button>
-														</Link>
-													) : (
-														<span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-200">
-															<CheckCircle size={12} />
-															{t('workshop.dashboard.offer_sent') || 'Offer sent'}
-														</span>
-													)}
-												</div>
-											</div>
-										</CardContent>
-									</Card>
-								)
-							})}
-						</div>
-					)}
-				</div>
-
-				{/* Active Jobs */}
-				<div>
-					<h2 className="text-xl font-bold text-[#05324f] mb-4">
-						{t('workshop.dashboard.my_jobs') || 'My Jobs'}
-					</h2>
-					<Card>
-						<CardContent className="py-12 text-center text-gray-400">
-							<Briefcase className="w-10 h-10 mx-auto mb-3 opacity-30" />
-							<p className="font-medium">
-								{t('workshop.dashboard.no_active_jobs') || 'No active jobs'}
+			<div className="list-page-content max-w-5xl mx-auto">
+				<div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#34C759] via-[#38BC54] to-[#2eb34f] p-5 sm:p-7 md:p-8 mb-6 sm:mb-8 shadow-lg shadow-[#34C759]/20">
+					<div className="absolute top-0 right-0 w-40 h-40 sm:w-56 sm:h-56 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+					<div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+					<div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 z-[1]">
+						<div>
+							<p className="inline-flex items-center bg-white/10 border border-white/15 rounded-full px-3 py-1 mb-3 text-[10px] sm:text-xs font-semibold text-white/90 uppercase tracking-wider">
+								{t('dashboard.workshop.badge') || 'Workshop Dashboard'}
 							</p>
-						</CardContent>
-					</Card>
+							<h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white leading-tight mb-1.5">
+								{workshopName || t('workshop.dashboard.welcome') || 'Welcome back'}
+							</h1>
+							<p className="text-sm sm:text-base text-white/75 max-w-lg leading-relaxed">
+								{t('dashboard.workshop.subtitle') || 'Your sales, jobs and performance at a glance.'}
+							</p>
+						</div>
+						{stats.reviewCount > 0 && (
+							<div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 self-start sm:self-auto">
+								<Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+								<span className="text-white font-bold text-sm">{Number(stats.rating).toFixed(1)}</span>
+								<span className="text-white/60 text-xs">
+									({stats.reviewCount} {t('offers_page.reviews') || 'reviews'})
+								</span>
+							</div>
+						)}
+					</div>
+				</div>
+
+				<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+					<StatCard
+						icon={TrendingUp}
+						value={formatPrice(stats.monthlyRevenue)}
+						label={t('dashboard.workshop.monthly_sales') || 'Monthly sales'}
+						iconColor="#38BC54"
+						iconBg="bg-[#F2F9F4]"
+					/>
+					<StatCard
+						icon={TrendingUp}
+						value={formatPrice(stats.totalRevenue)}
+						label={t('dashboard.workshop.total_sales') || 'Total sales'}
+						iconColor="#38BC54"
+						iconBg="bg-[#F2F9F4]"
+					/>
+					<StatCard
+						icon={FileCheck}
+						value={stats.completedContracts}
+						label={t('dashboard.workshop.active_contracts') || 'Active contracts'}
+						iconColor="#38BC54"
+						iconBg="bg-[#F2F9F4]"
+					/>
+					<StatCard
+						icon={Briefcase}
+						value={stats.completedJobs}
+						label={t('workshop.dashboard.stats.completed_jobs') || 'Completed jobs'}
+						iconColor="#38BC54"
+						iconBg="bg-[#F2F9F4]"
+					/>
+				</div>
+
+				<div className="grid grid-cols-2 gap-3 sm:gap-4 mb-8">
+					<StatCard
+						icon={ClipboardList}
+						value={stats.totalRequests}
+						label={t('dashboard.workshop.new_jobs') || 'New job requests'}
+						iconColor="#38BC54"
+						iconBg="bg-[#F2F9F4]"
+					/>
+					<StatCard
+						icon={Send}
+						value={stats.proposalsSent}
+						label={t('dashboard.workshop.proposals_sent') || 'Proposals sent'}
+						iconColor="#38BC54"
+						iconBg="bg-[#F2F9F4]"
+					/>
+				</div>
+
+				<div>
+					<h2 className="text-sm sm:text-base font-black text-[#05324f] uppercase tracking-wider mb-3 sm:mb-4">
+						{t('dashboard.quick_actions') || 'Quick actions'}
+					</h2>
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+						<DashboardQuickAction
+							to="/workshop/requests"
+							icon={FileText}
+							label={t('navigation.jobs') || 'Jobs'}
+							description={t('dashboard.workshop.action_jobs_desc') || 'Browse new customer requests'}
+							badge={stats.totalRequests}
+						/>
+						<DashboardQuickAction
+							to="/workshop/proposals"
+							icon={Send}
+							label={t('navigation.proposals') || 'Proposals'}
+							description={t('dashboard.workshop.action_proposals_desc') || 'Manage submitted offers'}
+							badge={stats.activeOffers}
+						/>
+						<DashboardQuickAction
+							to="/workshop/contracts"
+							icon={FileCheck}
+							label={t('navigation.contracts') || 'Contracts'}
+							description={t('dashboard.workshop.action_contracts_desc') || 'Active and completed bookings'}
+							badge={stats.completedContracts}
+						/>
+						<DashboardQuickAction
+							to="/workshop/profile"
+							icon={User}
+							label={t('navigation.profile') || 'Profile'}
+							description={t('dashboard.workshop.action_profile_desc') || 'Workshop settings and reviews'}
+						/>
+					</div>
 				</div>
 			</div>
 
-			
-			<Footer />
+			<Footer className="max-lg:hidden" />
 		</div>
 	)
 }

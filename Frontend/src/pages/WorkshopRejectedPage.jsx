@@ -113,26 +113,26 @@ export default function WorkshopRejectedPage() {
 
 			{/* Logout Confirmation Modal */}
 			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
-				<DialogContent className="max-w-[400px] w-[90%] bg-white rounded-2xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
-					<DialogHeader className="text-left items-start">
-						<DialogTitle className="text-2xl font-black text-[#05324f] leading-tight mb-2">
+				<DialogContent className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+					<DialogHeader className="text-center items-center sm:text-center">
+						<DialogTitle className="text-xl sm:text-2xl font-black text-[#05324f] leading-tight mb-2 text-center w-full">
 							{t('navigation.logout_confirm_title')}
 						</DialogTitle>
-						<DialogDescription className="text-gray-500 text-base leading-relaxed">
+						<DialogDescription className="text-gray-500 text-sm sm:text-base leading-relaxed text-center">
 							{t('navigation.logout_confirm_desc')}
 						</DialogDescription>
 					</DialogHeader>
-					<DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row gap-3">
+					<DialogFooter className="mt-5 sm:mt-6 !flex-row gap-2 sm:gap-3 items-stretch">
 						<Button
 							variant="outline"
 							onClick={() => setIsLogoutConfirmOpen(false)}
-							className="flex-1 h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold"
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold text-sm"
 						>
 							{t('common.cancel') || 'Cancel'}
 						</Button>
 						<Button
 							onClick={confirmLogout}
-							className="flex-1 h-11 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold transition-all shadow-md active:scale-95"
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95"
 						>
 							{t('navigation.logout') || 'Log Out'}
 						</Button>

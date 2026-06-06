@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
-import { Card, CardContent } from '../components/ui/Card'
-import { Badge } from '../components/ui/Badge'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
-import { formatPrice, formatDate } from '../utils/cn'
+import { formatPrice, formatDate, formatDateTime } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
-import { FileText, User } from 'lucide-react'
+import { FileText, ChevronRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import VehicleImage from '../components/VehicleImage'
+import ViewOfferModal from '../components/ViewOfferModal'
 
 import { offersAPI } from '../services/api'
 
@@ -21,6 +21,8 @@ export default function WorkshopProposalsPage() {
 	const [offers, setOffers] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [activeTab, setActiveTab] = useState('all') // all, sent, accepted, declined, expired
+	const [viewModalOpen, setViewModalOpen] = useState(false)
+	const [selectedOffer, setSelectedOffer] = useState(null)
 
 	// Redirect if not authenticated or wrong role
 	useEffect(() => {
@@ -33,7 +35,7 @@ export default function WorkshopProposalsPage() {
 				if (user.role === 'ADMIN') {
 					navigate('/admin', { replace: true })
 				} else {
-					navigate('/my-cases', { replace: true })
+					navigate('/contract', { replace: true })
 				}
 			}
 		}
@@ -62,6 +64,7 @@ export default function WorkshopProposalsPage() {
 	}, [user])
 
 	const counts = {
+		all: offers.length,
 		sent: offers.filter(o => o.status === 'SENT').length,
 		accepted: offers.filter(o => o.status === 'ACCEPTED').length,
 		declined: offers.filter(o => o.status === 'DECLINED').length,
@@ -78,45 +81,15 @@ export default function WorkshopProposalsPage() {
 		{ key: 'cancelled', label: t('workshop.proposals.tabs.cancelled') || 'Cancelled' },
 	]
 
-	const visibleTabs = allTabs.filter(tab => tab.key === 'all' || counts[tab.key] > 0)
-
-	// Auto-reset tab if it becomes hidden
-	useEffect(() => {
-		if (activeTab !== 'all' && !visibleTabs.find(t => t.key === activeTab)) {
-			setActiveTab('all')
-		}
-	}, [visibleTabs, activeTab])
-
-	const getStatusBadge = (status) => {
+	const getStatusLabel = (status) => {
 		const statusMap = {
-			SENT: {
-				label: t('workshop.proposals.status.sent') || 'Sent',
-				className: 'bg-blue-50 text-blue-700 border-blue-200',
-			},
-			ACCEPTED: {
-				label: t('workshop.proposals.status.accepted') || 'Accepted',
-				className: 'bg-green-50 text-green-800 border-green-200',
-			},
-			DECLINED: {
-				label: t('workshop.proposals.status.declined') || 'Declined',
-				className: 'bg-gray-100 text-gray-500 border-gray-200',
-			},
-			EXPIRED: {
-				label: t('workshop.proposals.status.expired') || 'Expired',
-				className: 'bg-orange-50 text-orange-700 border-orange-200',
-			},
-			CANCELLED: {
-				label: t('workshop.proposals.status.cancelled') || 'Cancelled',
-				className: 'bg-red-50 text-red-600 border-red-200',
-			},
+			SENT: t('workshop.proposals.status.sent') || 'Sent',
+			ACCEPTED: t('workshop.proposals.status.accepted') || 'Accepted',
+			DECLINED: t('workshop.proposals.status.declined') || 'Declined',
+			EXPIRED: t('workshop.proposals.status.expired') || 'Expired',
+			CANCELLED: t('workshop.proposals.status.cancelled') || 'Cancelled',
 		}
-
-		const statusInfo = statusMap[status] || statusMap.SENT
-		return (
-			<Badge variant="outline" className={`${statusInfo.className} border font-semibold !transition-none`}>
-				{statusInfo.label}
-			</Badge>
-		)
+		return statusMap[status] || statusMap.SENT
 	}
 
 	const filteredOffers = offers.filter((offer) => {
@@ -126,49 +99,37 @@ export default function WorkshopProposalsPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex flex-col">
+			<div className="list-page-shell bg-gray-50">
 				<Navbar />
-				<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
-					{/* Header Skeleton */}
-					<div className="mb-8">
-						<Skeleton className="h-8 md:h-10 w-48" />
+				<div className="list-page-content">
+					<div className="mb-6 md:mb-7">
+						<Skeleton className="h-9 w-40 mb-2" />
+						<Skeleton className="h-4 w-64" />
 					</div>
-					{/* Tabs Skeleton */}
-					<div className="flex flex-wrap gap-2 mb-6">
-						{[...Array(5)].map((_, i) => (
-							<Skeleton key={`tab-${i}`} className="h-9 w-20 rounded-md" />
-						))}
+					<div className="list-tabs-row">
+						<div className="workshop-pill-tabs-skeleton workshop-pill-tabs-skeleton-scroll">
+							{[...Array(6)].map((_, i) => (
+								<Skeleton key={`tab-skel-${i}`} className="h-10 w-24 shrink-0 rounded-lg" />
+							))}
+						</div>
 					</div>
-					{/* Proposals List Skeleton */}
-					<div className="space-y-4">
-						{[...Array(3)].map((_, i) => (
-							<Card key={`skel-prop-${i}`}>
-								<CardContent className="p-4 sm:p-6">
-									<div className="flex flex-col sm:flex-row justify-between gap-4">
-										<div className="space-y-3 flex-1">
-											<div className="flex items-center gap-3">
-												<Skeleton className="h-5 w-48" />
-												<Skeleton className="h-6 w-20 rounded-full hidden sm:block" />
-											</div>
-											<Skeleton className="h-4 w-3/4 max-w-[400px]" />
-											<Skeleton className="h-4 w-1/2 max-w-[300px]" />
-										</div>
-										<div className="hidden sm:flex flex-col items-end gap-2 shrink-0">
-											<Skeleton className="h-6 w-24" />
-											<Skeleton className="h-4 w-20" />
-										</div>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
+						{[...Array(4)].map((_, i) => (
+							<div key={`skel-prop-${i}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 md:p-4">
+								<div className="flex gap-3 md:gap-4">
+									<Skeleton className="w-28 h-16 md:w-32 md:h-20 rounded-xl shrink-0" />
+									<div className="flex-1 space-y-2">
+										<Skeleton className="h-4 w-3/4" />
+										<Skeleton className="h-3 w-full" />
+										<Skeleton className="h-3 w-2/3" />
+										<Skeleton className="h-10 w-full rounded-xl mt-4" />
 									</div>
-									<div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-										<Skeleton className="h-9 w-full sm:w-28 rounded-md" />
-										<Skeleton className="h-9 w-full sm:w-28 rounded-md" />
-									</div>
-								</CardContent>
-							</Card>
+								</div>
+							</div>
 						))}
 					</div>
 				</div>
-				
-				<Footer />
+				<Footer className="max-lg:hidden" />
 			</div>
 		)
 	}
@@ -180,171 +141,132 @@ export default function WorkshopProposalsPage() {
 
 
 	return (
-	<div className="min-h-screen bg-gray-50 flex flex-col">
+	<div className="list-page-shell bg-gray-50">
 		<Navbar />
-		<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
-			{/* Header */}
-			<div className="mb-8">
-				<h1 className="text-xl md:text-xl font-bold text-[#05324f] mb-1">
+		<div className="list-page-content">
+			<div className="mb-6 md:mb-7">
+				<h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#05324f] leading-tight mb-1.5 lg:mb-2">
 					{t('workshop.proposals.title') || 'Proposals'}
 				</h1>
-				<p className="text-sm text-gray-500">
+				<p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
 					{t('workshop.proposals.subtitle') || 'Track and manage your submitted offers'}
 				</p>
 			</div>
 
-			{/* Navigation Tabs - Synchronized & Refined Mobile Styling */}
-			<div className="flex justify-start mb-8 animate-fade-in-up overflow-x-auto no-scrollbar pb-2">
-				<div className="inline-flex items-center bg-white rounded-xl border border-gray-200 shadow-sm p-1 gap-1 max-md:w-full max-md:bg-gray-100 max-md:border-0 max-md:shadow-none max-md:p-0 max-md:gap-2 max-md:rounded-xl">
-					{visibleTabs.map(({ key, label }) => (
+			<div className="list-tabs-row">
+				<div className="workshop-pill-tabs workshop-pill-tabs-multi">
+					{allTabs.map((tab) => (
 						<button
-							key={key}
-							onClick={() => setActiveTab(key)}
-							className={`px-4 py-2 sm:px-6 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition-all duration-300 whitespace-nowrap min-w-[70px] sm:min-w-[100px] max-md:flex-1 max-md:py-2 max-md:rounded-lg max-md:text-[11px] shadow-sm border border-transparent flex items-center justify-center gap-2 ${
-								activeTab === key
-									? 'bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759]'
-									: 'text-gray-500 hover:text-[#05324f] hover:bg-gray-50 bg-white max-md:text-gray-600 max-md:bg-gray-200 max-md:border-0'
-							}`}
+							key={tab.key}
+							type="button"
+							onClick={() => setActiveTab(tab.key)}
+							className={`workshop-pill-tab ${activeTab === tab.key ? 'workshop-pill-tab-active' : 'workshop-pill-tab-inactive'}`}
 						>
-							<span>{label}</span>
+							{tab.label} ({counts[tab.key]})
 						</button>
 					))}
 				</div>
 			</div>
 
-				{/* Proposals List */}
-				<div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-					{filteredOffers.length === 0 ? (
-						<Card className="border-0 shadow-xl overflow-hidden rounded-3xl animate-fade-in-up">
-							<CardContent className="text-center py-20 sm:py-24 px-6 bg-white">
-								<div className="relative inline-block mb-8">
-									<div className="w-24 h-24 bg-[#34C759]/10 rounded-3xl flex items-center justify-center mb-0 rotate-3 transition-transform hover:rotate-0">
-										<FileText className="w-12 h-12 text-[#34C759]" />
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 mb-6 md:mb-8 max-lg:pb-2">
+				{filteredOffers.length === 0 ? (
+					<div className="col-span-full bg-white rounded-2xl border border-gray-100 shadow-sm p-8 md:p-10 text-center">
+						<div className="w-16 h-16 bg-[#34C759]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+							<FileText className="w-8 h-8 text-[#34C759]" />
+						</div>
+						<h3 className="text-base font-black text-[#05324f] mb-2">
+							{t('workshop.proposals.no_proposals.title') || 'No Proposals Found'}
+						</h3>
+						<p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed">
+							{activeTab === 'all'
+								? (t('workshop.proposals.no_proposals.description', { defaultValue: "You haven't submitted any proposals yet. Check the jobs tab to find new opportunities." }))
+								: (t(`workshop.proposals.no_proposals.${activeTab}_description`, { defaultValue: `You don't have any ${activeTab} proposals at the moment.` }))
+							}
+						</p>
+					</div>
+				) : (
+					filteredOffers.map((offer) => {
+						const offerId = offer._id || offer.id
+						const request = offer.requestId || offer.request
+						const vehicle = request?.vehicleId || request?.vehicle
+						const customer = request?.customerId || request?.customer
+						const offerDate = offer.createdAt ? formatDateTime(new Date(offer.createdAt)) : ''
+
+						return (
+							<div
+								key={offerId}
+								className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 md:p-4 flex flex-col h-full"
+							>
+								<div className="flex gap-3 md:gap-4 flex-1 items-start">
+									<div className="w-28 md:w-32 shrink-0 self-start rounded-xl overflow-hidden flex items-start justify-center">
+										<VehicleImage
+											make={vehicle?.make}
+											model={vehicle?.model}
+											year={vehicle?.year}
+											width={400}
+											className="w-full max-h-32 md:max-h-[8rem]"
+											fallbackClassName="w-full h-24 md:h-[7rem]"
+											alt={`${vehicle?.make} ${vehicle?.model}`}
+										/>
+									</div>
+									<div className="flex-1 min-w-0 self-start">
+										<div className="flex items-start justify-between gap-2 mb-1.5 md:mb-2">
+											<h3 className="text-sm font-black text-[#05324f] leading-snug line-clamp-2 flex-1 min-w-0">
+												{vehicle?.make} {vehicle?.model} {vehicle?.year}
+											</h3>
+											<p className="text-base font-black text-[#38BC54] shrink-0 leading-tight">
+												{formatPrice(offer.price)}
+											</p>
+										</div>
+										<div className="space-y-1">
+											{customer?.name && (
+												<p className="text-[11px] text-[#05324f]/80 leading-snug">
+													<span className="font-bold">{t('common.customer') || 'Customer'}:</span> {customer.name}
+												</p>
+											)}
+											<p className="text-[11px] text-[#05324f]/80 leading-snug">
+												<span className="font-bold">{t('workshop.requests.status') || 'Status'}:</span> {getStatusLabel(offer.status)}
+											</p>
+											{offerDate && (
+												<p className="text-[11px] text-[#05324f]/80">
+													<span className="font-bold">{t('workshop.requests.sent_label') || 'Sent'}:</span> {offerDate}
+												</p>
+											)}
+											{offer.expiresAt && (
+												<p className="text-[10px] text-red-500">
+													{t('offers_page.offer_expires') || 'Valid until'}: {formatDate(offer.expiresAt)}
+												</p>
+											)}
+										</div>
+										<div className="mt-4 flex items-center gap-3.5">
+											<Button
+												onClick={() => {
+													setSelectedOffer(offer)
+													setViewModalOpen(true)
+												}}
+												className="flex-1 min-w-0 h-10 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl font-semibold text-xs flex items-center justify-center shadow-sm"
+											>
+												{t('common.view') || 'View'}
+											</Button>
+											<ChevronRight className="w-5 h-5 text-black shrink-0" strokeWidth={2} />
+										</div>
 									</div>
 								</div>
-								<h3 className="text-2xl sm:text-3xl font-bold mb-4" style={{ color: '#05324f' }}>
-									{t('workshop.proposals.no_proposals.title') || 'No Proposals Found'}
-								</h3>
-								<p className="text-lg text-gray-600 max-w-xl mx-auto leading-relaxed" style={{ color: 'inherit' }}>
-									{activeTab === 'all' 
-										? (t('workshop.proposals.no_proposals.description', { defaultValue: "You haven't submitted any proposals yet. Check the jobs tab to find new opportunities." }))
-										: (t(`workshop.proposals.no_proposals.${activeTab}_description`, { defaultValue: `You don't have any ${activeTab} proposals at the moment.` }))
-									}
-								</p>
-							</CardContent>
-						</Card>
-					) : (
-						<div className="space-y-0">
-							{filteredOffers.map((offer, index) => {
-								const offerId = offer._id || offer.id
-								const request = offer.requestId || offer.request
-								const vehicle = request?.vehicleId || request?.vehicle
-								const customer = request?.customerId || request?.customer
-								const offerDate = offer.createdAt ? new Date(offer.createdAt).toLocaleString('en-US', { 
-									month: 'short', 
-									day: 'numeric', 
-									year: 'numeric',
-									hour: 'numeric',
-									minute: '2-digit',
-									hour12: true
-								}) : ''
-
-								return (
-									<div
-										key={offerId}
-										className={`grid grid-cols-1 md:grid-cols-3 items-start py-4 px-4 sm:px-6 gap-3 sm:gap-4 ${index !== filteredOffers.length - 1 ? 'border-b border-gray-200' : ''}`}
-									>
-										<div className="min-w-0 md:col-span-2">
-											{/* Date (Desktop & Mobile) at the top */}
-											{offerDate && (
-												<div className="mb-1">
-													<p className="text-[10px] text-gray-400 font-normal uppercase tracking-widest">{offerDate}</p>
-												</div>
-											)}
-											{/* Title (Vehicle Name) with Status Badge (Mobile) */}
-											<div className="flex items-start justify-between gap-2 mb-1">
-												<h3 className="text-base font-bold flex-1" style={{ color: '#05324f' }}>
-													{vehicle?.make} {vehicle?.model}-{vehicle?.year}
-												</h3>
-												{/* Mobile: Badge next to title */}
-												<div className="flex-shrink-0 md:hidden">
-													{getStatusBadge(offer.status)}
-												</div>
-											</div>
-											<div className="flex items-center gap-2 mb-1 flex-wrap">
-												{customer?.name && (
-													<div className="flex items-center gap-1.5">
-														<User className="w-3 h-3" style={{ color: '#05324f' }} />
-														<p className="text-xs font-semibold" style={{ color: '#05324f' }}>{customer.name}</p>
-													</div>
-												)}
-											</div>
-											{/* Description/Note or Price with Edit Button (Mobile) */}
-											<div className="flex flex-col gap-1">
-												<p className="text-sm" style={{ color: '#05324f' }}>
-													{offer.note}
-												</p>
-												<div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-gray-500 font-medium">
-													<span>{t('offers_page.labor_cost') || 'Labor'}: {formatPrice(offer.laborCost)}</span>
-													<span>{t('offers_page.material_cost') || 'Materials'}: {formatPrice(offer.partsCost)}</span>
-													{offer.inclusions && <span className="text-[#34C759]">{t('offers_page.included_services') || 'Included'}: {offer.inclusions}</span>}
-												</div>
-											</div>
-											
-											<div className="flex items-center justify-between gap-2 mt-2">
-												<div className="flex flex-col">
-													<p className="text-base font-bold text-[#34C759]">
-														{formatPrice(offer.price)}
-													</p>
-													<p className="text-[10px] text-gray-400 font-medium">inkl. moms</p>
-													{offer.expiresAt && (
-														<p className="text-[10px] text-red-500 italic">
-															{t('offers_page.offer_expires') || 'Expires'}: {formatDate(offer.expiresAt)}
-														</p>
-													)}
-												</div>
-
-												{/* Mobile: View button for all, Edit only if draft (if we had drafts) */}
-												<div className="flex-shrink-0 md:hidden flex gap-2">
-													<Link to={`/workshop/requests/${request?._id || request?.id || request}/offer?view=true`}>
-														<Button
-															size="sm"
-															className="px-4 py-1 text-xs font-semibold rounded-lg bg-[#05324f] text-white hover:bg-[#05324f]/90 transition-colors"
-														>
-															{t('common.view') || 'View'}
-														</Button>
-													</Link>
-												</div>
-											</div>
-										</div>
-
-										{/* Right: Status Badge and Action Buttons (Desktop) */}
-										<div className="hidden md:flex flex-col justify-between items-end gap-3 min-h-[60px]">
-											<div className="flex-shrink-0">
-												{getStatusBadge(offer.status)}
-											</div>
-											<div className="flex-shrink-0 flex gap-2">
-												<Link to={`/workshop/requests/${request?._id || request?.id || request}/offer?view=true`}>
-													<Button
-														size="sm"
-														className="px-6 py-1.5 text-xs font-semibold rounded-lg bg-[#05324f] text-white hover:bg-[#05324f]/90 transition-colors"
-													>
-														{t('common.view') || 'View'}
-													</Button>
-												</Link>
-												{/* We can add an 'Duplicate' or 'New Version' button here later if needed */}
-											</div>
-										</div>
-									</div>
-								)
-							})}
-						</div>
-					)}
-				</div>
+							</div>
+						)
+					})
+				)}
 			</div>
-			
-			<Footer />
 		</div>
+
+		<ViewOfferModal
+			open={viewModalOpen}
+			onOpenChange={setViewModalOpen}
+			offer={selectedOffer}
+		/>
+
+		<Footer className="max-lg:hidden" />
+	</div>
 	)
 }
 

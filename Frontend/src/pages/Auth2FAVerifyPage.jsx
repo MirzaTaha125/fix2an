@@ -68,9 +68,9 @@ export default function Auth2FAVerifyPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-50 flex flex-col">
+		<div className="list-page-shell bg-gray-50">
 			<Navbar />
-			<div className="flex-1 flex items-center justify-center px-4 py-20">
+			<div className="list-page-main list-page-main--center">
 				<div className="max-w-md w-full space-y-6">
 					<div className="text-center">
 						<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#34C759' }}>

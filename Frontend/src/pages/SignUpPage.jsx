@@ -6,7 +6,9 @@ import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useTranslation } from 'react-i18next'
+import { getRoleHomePath } from '../utils/roleHome'
 import { Input } from '../components/ui/Input'
+import { PhoneInput } from '../components/ui/PhoneInput'
 import { Label } from '../components/ui/Label'
 
 export default function SignUpPage() {
@@ -31,14 +33,7 @@ export default function SignUpPage() {
 	// Redirect if already logged in
 	useEffect(() => {
 		if (!loading && user) {
-			const role = user.role?.toUpperCase()
-			if (role === 'ADMIN') {
-				navigate('/admin', { replace: true })
-			} else if (role === 'WORKSHOP') {
-				navigate('/workshop/requests', { replace: true })
-			} else {
-				navigate('/my-cases', { replace: true })
-			}
+			navigate(getRoleHomePath(user), { replace: true })
 		}
 	}, [user, loading, navigate])
 
@@ -119,9 +114,9 @@ export default function SignUpPage() {
 	}
 
 	return (
-	<div className="min-h-screen bg-gray-50 flex flex-col">
+	<div className="list-page-shell bg-white">
 		<Navbar />
-		<div className="flex-1 flex items-start sm:items-center justify-center px-4 pt-28 sm:py-20">
+		<div className="list-page-main list-page-main--scroll">
 			<div className="max-w-2xl w-full space-y-8 animate-fade-in-up">
 				<div className="text-center">
 					<h2 className="text-2xl md:text-5xl font-bold mb-6" style={{ color: '#05324f' }}>{t('auth.signup.title')}</h2>
@@ -249,10 +244,9 @@ export default function SignUpPage() {
 										{t('auth.signup.phone')}
 									</div>
 								</Label>
-								<Input
+								<PhoneInput
 									id="phone"
 									name="phone"
-									type="tel"
 									value={formData.phone}
 									onChange={handleChange}
 									placeholder={t('auth.signup.phone')}

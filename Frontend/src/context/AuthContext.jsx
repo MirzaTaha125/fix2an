@@ -152,8 +152,29 @@ export function AuthProvider({ children }) {
 		setUser(null)
 	}
 
+	const setSession = async (newToken, userData) => {
+		if (userData?.role) {
+			userData.role = userData.role.toUpperCase()
+		}
+		localStorage.setItem('token', newToken)
+		localStorage.removeItem('user')
+		setToken(newToken)
+		setUser(userData)
+		try {
+			const response = await authAPI.getMe()
+			const freshUser = response.data
+			if (freshUser?.role) freshUser.role = freshUser.role.toUpperCase()
+			if (freshUser?.image) freshUser.image = getFullUrl(freshUser.image)
+			localStorage.setItem('user', JSON.stringify(freshUser))
+			setUser(freshUser)
+		} catch (error) {
+			console.error('Failed to refresh user after login:', error)
+			localStorage.setItem('user', JSON.stringify(userData))
+		}
+	}
+
 	return (
-		<AuthContext.Provider value={{ user, loading, login, verify2FA, register, logout, fetchUser }}>
+		<AuthContext.Provider value={{ user, loading, login, verify2FA, register, logout, fetchUser, setSession }}>
 			{children}
 		</AuthContext.Provider>
 	)

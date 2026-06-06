@@ -10,13 +10,14 @@ import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { reviewsAPI } from '../services/api'
+import { formatDateTime } from '../utils/cn'
 
 export default function CustomerWorkshopReviewsPage() {
 	const navigate = useNavigate()
 	const { id } = useParams()
 	const location = useLocation()
 	const { user, loading: authLoading } = useAuth()
-	const { t } = useTranslation()
+	const { t, i18n } = useTranslation()
 	const [reviews, setReviews] = useState([])
 	const [loading, setLoading] = useState(true)
 
@@ -31,7 +32,7 @@ export default function CustomerWorkshopReviewsPage() {
 			}
 			if (user.role !== 'CUSTOMER') {
 				if (user.role === 'ADMIN') navigate('/admin', { replace: true })
-				else navigate('/my-cases', { replace: true })
+				else navigate('/contract', { replace: true })
 				return
 			}
 		}
@@ -65,7 +66,7 @@ export default function CustomerWorkshopReviewsPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex flex-col">
+			<div className="list-page-shell bg-gray-50">
 				<Navbar />
 				<div className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full space-y-6">
 					<div className="mb-8">
@@ -182,11 +183,7 @@ export default function CustomerWorkshopReviewsPage() {
 						{reviews.map((review) => {
 							const customerName = review.customerId?.name || t('customer_reviews.anonymous_customer') || 'Customer'
 							const createdAt = review.createdAt
-								? new Date(review.createdAt).toLocaleDateString(undefined, {
-										year: 'numeric',
-										month: 'short',
-										day: 'numeric',
-								  })
+								? formatDateTime(new Date(review.createdAt), i18n.language)
 								: ''
 							return (
 								<Card key={review._id || review.id} className="border border-gray-200 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
+import { PhoneInput } from '../components/ui/PhoneInput'
 import { Label } from '../components/ui/Label'
-import { Skeleton } from '../components/ui/Skeleton'
+import { ProfileMenuSkeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice, formatCompactNumber } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
+import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from '../components/ui/Dialog'
 import {
 	User,
 	Mail,
@@ -24,6 +26,11 @@ import {
 	DollarSign,
 	Star,
 	Camera,
+	ChevronRight,
+	Settings,
+	HelpCircle,
+	LogOut,
+	Trash2,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -32,15 +39,22 @@ import StatCard from '../components/ui/StatCard'
 
 import { authAPI, requestsAPI, bookingsAPI, uploadAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
+import { formatSwedishPhone } from '../utils/swedishPhone'
 
 export default function CustomerProfilePage() {
 	const navigate = useNavigate()
-	const { user, loading: authLoading, fetchUser } = useAuth()
-	const { t } = useTranslation()
+	const [searchParams, setSearchParams] = useSearchParams()
+	const { user, loading: authLoading, fetchUser, logout } = useAuth()
+	const { t, i18n } = useTranslation()
 	const [loading, setLoading] = useState(true)
 	const [isEditing, setIsEditing] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const [isUploadingImage, setIsUploadingImage] = useState(false)
+	const [settingsOpen, setSettingsOpen] = useState(false)
+	const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
+	const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+	const [isDeleting, setIsDeleting] = useState(false)
+	const [showInfoOnMobile, setShowInfoOnMobile] = useState(false)
 	const [stats, setStats] = useState({
 		totalRequests: 0,
 		activeRequests: 0,
@@ -94,7 +108,7 @@ export default function CustomerProfilePage() {
 				const profile = {
 					name: userData?.name || '',
 					email: userData?.email || '',
-					phone: userData?.phone || '',
+					phone: formatSwedishPhone(userData?.phone || ''),
 					address: userData?.address || '',
 					city: userData?.city || '',
 					postalCode: userData?.postalCode || '',
@@ -144,6 +158,24 @@ export default function CustomerProfilePage() {
 			fetchData()
 		}
 	}, [user])
+
+	useEffect(() => {
+		setShowInfoOnMobile(searchParams.get('view') === 'info')
+	}, [searchParams])
+
+	const openProfileInfo = () => {
+		setShowInfoOnMobile(true)
+		setSearchParams({ view: 'info' })
+		setTimeout(() => {
+			const el = document.getElementById('customer-profile-form')
+			if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+		}, 50)
+	}
+
+	const closeProfileInfo = () => {
+		setShowInfoOnMobile(false)
+		setSearchParams({})
+	}
 
 	const handleInputChange = (field, value) => {
 		setProfileData((prev) => ({
@@ -256,81 +288,11 @@ export default function CustomerProfilePage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-white flex flex-col">
+			<div className="list-page-shell bg-[#FAFBFC]">
 				<Navbar />
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 max-md:pb-24 w-full flex-1">
-					{/* Skeleton Header */}
-					<div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-						<div className="flex items-center gap-4">
-							<Skeleton className="w-20 h-20 sm:w-24 sm:h-24 rounded-full" />
-							<Skeleton className="h-8 sm:h-10 w-48 sm:w-64" />
-						</div>
-					</div>
-
-					{/* Skeleton Stats */}
-					<div className="grid grid-cols-3 gap-2 sm:gap-6 mb-8">
-						{[...Array(3)].map((_, i) => (
-							<div key={i} className="bg-white border border-gray-100 rounded-2xl p-3 sm:p-6 shadow-sm">
-								<Skeleton className="h-6 sm:h-8 w-16 mb-2 sm:mb-3 mt-1" />
-								<Skeleton className="h-3 w-20" />
-							</div>
-						))}
-					</div>
-
-					<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-						{/* Profile Details Skeleton */}
-						<div className="lg:col-span-2">
-							<div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-								<div className="border-b border-gray-100 p-5 bg-gray-50/50 flex justify-between items-center">
-									<div className="flex items-center gap-3">
-										<Skeleton className="w-8 h-8 rounded-lg" />
-										<Skeleton className="h-6 w-40" />
-									</div>
-								</div>
-								<div className="p-6 space-y-8">
-									<div>
-										<Skeleton className="h-5 w-32 mb-4" />
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-											{[...Array(3)].map((_, i) => (
-												<div key={`pd-${i}`} className="space-y-2">
-													<Skeleton className="h-4 w-16" />
-													<Skeleton className="h-10 w-full" />
-												</div>
-											))}
-										</div>
-									</div>
-									<div>
-										<Skeleton className="h-5 w-40 mb-4" />
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-											<div className="space-y-2 md:col-span-2">
-												<Skeleton className="h-4 w-16" />
-												<Skeleton className="h-10 w-full" />
-											</div>
-											{[...Array(2)].map((_, i) => (
-												<div key={`ad-${i}`} className="space-y-2">
-													<Skeleton className="h-4 w-16" />
-													<Skeleton className="h-10 w-full" />
-												</div>
-											))}
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-
-						{/* Sidebar Actions Skeleton */}
-						<div className="space-y-6">
-							<div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
-								<Skeleton className="h-5 w-32 mb-6" />
-								<div className="space-y-3">
-									<Skeleton className="h-10 w-full rounded-md" />
-									<Skeleton className="h-10 w-full rounded-md" />
-								</div>
-							</div>
-						</div>
-					</div>
+				<div className="list-page-main">
+					<ProfileMenuSkeleton menuRows={3} />
 				</div>
-				
 				<Footer />
 			</div>
 		)
@@ -340,79 +302,241 @@ export default function CustomerProfilePage() {
 		return null
 	}
 
+	const handleLogout = () => {
+		setIsLogoutConfirmOpen(true)
+	}
+
+	const confirmLogout = () => {
+		setIsLogoutConfirmOpen(false)
+		logout()
+		navigate('/auth/signin', { replace: true })
+	}
+
+	const handleDeleteAccount = () => {
+		setIsDeleteConfirmOpen(true)
+	}
+
+	const confirmDeleteAccount = async () => {
+		setIsDeleting(true)
+		try {
+			await authAPI.deleteAccount()
+			setIsDeleteConfirmOpen(false)
+			logout()
+			toast.success(t('profile.delete_account_success') || 'Account deleted successfully')
+			navigate('/', { replace: true })
+		} catch (error) {
+			console.error('Delete account error:', error)
+			toast.error(error.response?.data?.message || t('errors.generic_error'))
+		} finally {
+			setIsDeleting(false)
+		}
+	}
+
+	const menuItems = [
+		{
+			icon: <User className="w-5 h-5 text-[#05324f]" />,
+			title: t('profile.profile_info_title') || 'Profile information',
+			desc: t('profile.profile_info_desc') || 'Name, contact details and address',
+			onClick: openProfileInfo,
+		},
+		{
+			icon: <FileText className="w-5 h-5 text-[#05324f]" />,
+			title: t('profile.contract_title') || 'Contract',
+			desc: t('profile.contract_desc') || 'View your bookings and active contracts',
+			onClick: () => navigate('/contract'),
+		},
+		{
+			icon: <Settings className="w-5 h-5 text-[#05324f]" />,
+			title: t('profile.settings_title') || 'Settings',
+			desc: t('profile.settings_desc') || 'Notifications, language and other settings',
+			onClick: () => setSettingsOpen(true),
+		},
+		{
+			icon: <HelpCircle className="w-5 h-5 text-[#05324f]" />,
+			title: t('profile.help_title') || 'Help and support',
+			desc: t('profile.help_desc') || 'FAQ and contact support',
+			onClick: () => navigate('/support'),
+		},
+	]
+
 	return (
-		<div className="min-h-screen bg-white">
+		<div className="list-page-shell bg-[#FAFBFC]">
 			<Navbar />
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 max-md:pb-24">
-				{/* Header Section */}
-				<div className="mb-8">
-					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-					<div className="flex items-center gap-4">
-						<div className="relative group">
-							{profileData.image && profileData.image.trim() !== '' ? (
-								<img 
-									src={profileData.image} 
-									alt={profileData.name || 'Profile'} 
-									className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
-									onError={(e) => {
-										// If image fails to load, hide image and show default
-										const parent = e.target.parentElement
-										e.target.style.display = 'none'
-										const fallback = parent.querySelector('.profile-image-fallback')
-										if (fallback) {
-											fallback.style.display = 'flex'
-										}
-									}}
-									onLoad={(e) => {
-										// Hide fallback when image loads successfully
-										const parent = e.target.parentElement
-										const fallback = parent.querySelector('.profile-image-fallback')
-										if (fallback) {
-											fallback.style.display = 'none'
-										}
-									}}
-								/>
-							) : null}
-							<div 
-								className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#F0F2F5] flex items-center justify-center border-4 border-white shadow-lg profile-image-fallback ${profileData.image && profileData.image.trim() !== '' ? 'hidden' : ''}`}
+
+			<div className="list-page-main">
+			{/* Profile menu — all breakpoints */}
+			<div className={`app-page-container max-w-2xl md:max-w-5xl lg:max-w-7xl pt-24 md:pt-32 ${showInfoOnMobile ? 'hidden' : 'block'}`}>
+				<div className="mb-6">
+					<h1 className="text-xl sm:text-2xl font-semibold text-[#05324f] leading-tight mb-1.5">
+						{t('profile.title') || 'Profile'}
+					</h1>
+					<p className="text-xs sm:text-sm text-gray-500 leading-snug">
+						{t('profile.subtitle_mobile') || 'Manage your profile and your settings.'}
+					</p>
+				</div>
+
+				<div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 mb-5 flex items-center gap-3">
+					<div className="relative shrink-0">
+						<div className="w-14 h-14 rounded-full bg-[#F0F2F5] flex items-center justify-center overflow-hidden border border-gray-100">
+							{profileData.image ? (
+								<img src={profileData.image} alt={profileData.name || 'Profile'} className="w-full h-full object-cover" />
+							) : (
+								<User className="text-[#ACB0B4] w-7 h-7" />
+							)}
+						</div>
+						<button
+							type="button"
+							onClick={() => document.getElementById('customer-profile-image-input')?.click()}
+							disabled={isUploadingImage}
+							className="absolute -bottom-0.5 -right-0.5 p-1.5 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-full shadow-md transition-all disabled:opacity-50"
+							title={t('profile.change_photo') || 'Change profile photo'}
+						>
+							{isUploadingImage ? (
+								<div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+							) : (
+								<Camera className="w-3 h-3" />
+							)}
+						</button>
+						<input
+							id="customer-profile-image-input"
+							type="file"
+							accept="image/*"
+							onChange={handleImageChange}
+							className="hidden"
+						/>
+					</div>
+					<button
+						type="button"
+						onClick={openProfileInfo}
+						className="flex-1 min-w-0 flex items-center gap-3 text-left active:scale-[0.99] transition-transform"
+					>
+						<div className="flex-1 min-w-0">
+							<h3 className="text-base font-semibold text-[#05324f] truncate">
+								{profileData.name || t('profile.hi') || 'User'}
+							</h3>
+							{profileData.email && (
+								<p className="text-[11px] text-gray-400 font-medium truncate mt-0.5">{profileData.email}</p>
+							)}
+						</div>
+						<ChevronRight className="text-gray-300 shrink-0" size={20} />
+					</button>
+				</div>
+
+				<div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+					{menuItems.map((item, i) => (
+						<div key={item.title}>
+							<button
+								type="button"
+								onClick={item.onClick}
+								className="w-full p-4 flex items-center gap-3 active:bg-gray-50 transition-colors text-left"
 							>
-								<User className="w-12 h-12 sm:w-14 sm:h-14 text-[#ACB0B4]" />
+								<div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
+									{item.icon}
+								</div>
+								<div className="flex-1 min-w-0">
+									<p className="text-sm font-semibold text-[#05324f]">{item.title}</p>
+									<p className="text-[11px] text-gray-400 font-medium leading-tight mt-0.5">{item.desc}</p>
+								</div>
+								<ChevronRight className="text-gray-300 shrink-0" size={20} />
+							</button>
+							{i < menuItems.length - 1 && <div className="border-b border-gray-100 mx-4" />}
+						</div>
+					))}
+				</div>
+
+				<button
+					type="button"
+					onClick={handleLogout}
+					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-center gap-2 text-[#34C759] font-semibold text-sm active:scale-[0.99] transition-transform mb-3"
+				>
+					<LogOut className="w-5 h-5 text-[#34C759]" />
+					{t('profile.logout') || 'Log out'}
+				</button>
+
+				<button
+					type="button"
+					onClick={handleDeleteAccount}
+					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-center gap-2 text-[#34C759] font-semibold text-sm active:scale-[0.99] transition-transform"
+				>
+					<Trash2 className="w-5 h-5 text-[#34C759]" />
+					{t('profile.delete_account') || 'Delete account'}
+				</button>
+			</div>
+
+			<div
+				id="customer-profile-form"
+				className={`app-page-container max-w-2xl md:max-w-5xl lg:max-w-7xl pt-24 md:pt-32 ${showInfoOnMobile ? 'block' : 'hidden'}`}
+				style={{ scrollMarginTop: '5rem' }}
+			>
+				{/* Profile header with photo upload */}
+				<div className="mb-6">
+					<h1 className="text-xl sm:text-2xl font-semibold text-[#05324f] leading-tight mb-1.5">
+						{t('profile.profile_info_title') || 'Profile information'}
+					</h1>
+					<p className="text-xs sm:text-sm text-gray-500 leading-snug mb-5">
+						{t('profile.profile_info_desc') || 'Name, contact details and address'}
+					</p>
+					<div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex items-center gap-3 mb-5">
+						<div className="relative shrink-0">
+							<div className="w-14 h-14 rounded-full bg-[#F0F2F5] flex items-center justify-center overflow-hidden border border-gray-100">
+								{profileData.image && profileData.image.trim() !== '' ? (
+									<img
+										src={profileData.image}
+										alt={profileData.name || 'Profile'}
+										className="w-full h-full object-cover"
+										onError={(e) => {
+											e.target.style.display = 'none'
+											const fallback = e.target.parentElement?.querySelector('.profile-image-fallback')
+											if (fallback) fallback.style.display = 'flex'
+										}}
+										onLoad={(e) => {
+											const fallback = e.target.parentElement?.querySelector('.profile-image-fallback')
+											if (fallback) fallback.style.display = 'none'
+										}}
+									/>
+								) : null}
+								<div
+									className={`profile-image-fallback w-full h-full items-center justify-center ${profileData.image && profileData.image.trim() !== '' ? 'hidden' : 'flex'}`}
+								>
+									<User className="text-[#ACB0B4] w-7 h-7" />
+								</div>
 							</div>
 							<button
 								type="button"
-								onClick={() => document.getElementById('profile-image-input')?.click()}
+								onClick={() => document.getElementById('customer-profile-form-image-input')?.click()}
 								disabled={isUploadingImage}
-								className="absolute bottom-0 right-0 p-2 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-								title="Change profile image"
+								className="absolute -bottom-0.5 -right-0.5 p-1.5 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-full shadow-md transition-all disabled:opacity-50"
+								title={t('profile.change_photo') || 'Change profile photo'}
 							>
 								{isUploadingImage ? (
-									<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+									<div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
 								) : (
-									<Camera className="w-4 h-4" />
+									<Camera className="w-3 h-3" />
 								)}
 							</button>
 							<input
-								id="profile-image-input"
+								id="customer-profile-form-image-input"
 								type="file"
 								accept="image/*"
 								onChange={handleImageChange}
 								className="hidden"
 							/>
 						</div>
-							<div>
-								<h1 className="text-xl sm:text-xl font-bold text-gray-900 mb-2">
-									{profileData.name || 'User'}
-								</h1>
-							</div>
+						<div className="flex-1 min-w-0 text-left">
+							<h3 className="text-base font-semibold text-[#05324f] truncate">
+								{profileData.name || t('profile.hi') || 'User'}
+							</h3>
+							{profileData.email && (
+								<p className="text-[11px] text-gray-400 font-medium truncate mt-0.5">{profileData.email}</p>
+							)}
 						</div>
 					</div>
 				</div>
 
-				{/* Stats Grid */}
-				<div className="grid grid-cols-3 gap-2 sm:gap-6 mb-8 max-md:mb-6">
+				<div className="hidden grid-cols-3 gap-2 sm:gap-6 mb-8">
 					<StatCard
 						value={stats.totalRequests}
-						label={t('profile.my_cases') || 'Requests'}
+						label={t('profile.contract_title') || t('navigation.contract') || 'Contract'}
 						iconColor="#05324f"
 						iconBg="bg-blue-50"
 					/>
@@ -436,10 +560,10 @@ export default function CustomerProfilePage() {
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 					{/* Profile Information */}
 					<div className="lg:col-span-2">
-						<Card className="bg-white border border-gray-200 shadow-sm relative overflow-hidden">
-							<CardHeader className="border-b border-gray-200 bg-white">
+						<Card className="bg-white border border-gray-100 shadow-sm relative overflow-hidden rounded-2xl">
+							<CardHeader className="border-b border-gray-100 bg-white px-4 py-3">
 								<div className="flex items-center justify-between gap-4">
-									<CardTitle className="text-xl font-bold text-gray-900">
+									<CardTitle className="text-sm font-semibold text-[#05324f]">
 										{t('profile.profile_info')}
 									</CardTitle>
 									
@@ -482,16 +606,16 @@ export default function CustomerProfilePage() {
 									)}
 								</div>
 							</CardHeader>
-							<CardContent className="p-6 space-y-6">
+							<CardContent className="p-4 space-y-5">
 							{/* Personal Details */}
 							<div>
-								<div className="flex items-center gap-2 mb-4">
-									<User className="w-5 h-5 text-gray-600" />
-									<h3 className="text-lg font-semibold text-gray-900">{t('profile.personal_details')}</h3>
+								<div className="flex items-center gap-2 mb-3">
+									<User className="w-4 h-4 text-gray-400" />
+									<h3 className="text-sm font-semibold text-[#05324f]">{t('profile.personal_details')}</h3>
 								</div>
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div className="space-y-2">
-										<Label htmlFor="name" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="name" className="text-[11px] font-semibold text-gray-400">
 											{t('profile.name') || 'Name'}
 										</Label>
 										{isEditing ? (
@@ -503,37 +627,37 @@ export default function CustomerProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.name || 'N/A'}
 											</div>
 										)}
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="email" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="email" className="text-[11px] font-semibold text-gray-400">
 											{t('profile.email') || 'Email'}
 										</Label>
-										<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+										<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 											{profileData.email || 'N/A'}
 										</div>
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="phone" className="text-[11px] font-semibold text-gray-400">
 											{t('profile.phone') || 'Phone'}
 										</Label>
 										{isEditing ? (
-											<Input
+											<PhoneInput
 												id="phone"
-												type="tel"
 												value={profileData.phone}
 												onChange={(e) => handleInputChange('phone', e.target.value)}
 												disabled={isSaving}
 												className="w-full"
+												placeholder={t('profile.phone') || 'Phone number'}
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
-												{profileData.phone || 'N/A'}
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
+												{formatSwedishPhone(profileData.phone) || 'N/A'}
 											</div>
 										)}
 									</div>
@@ -542,13 +666,13 @@ export default function CustomerProfilePage() {
 
 							{/* Address Information */}
 							<div>
-								<div className="flex items-center gap-2 mb-4">
-									<MapPin className="w-5 h-5 text-gray-600" />
-									<h3 className="text-lg font-semibold text-gray-900">{t('profile.address_information')}</h3>
+								<div className="flex items-center gap-2 mb-3">
+									<MapPin className="w-4 h-4 text-gray-400" />
+									<h3 className="text-sm font-semibold text-[#05324f]">{t('profile.address_information')}</h3>
 								</div>
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div className="space-y-2 md:col-span-2">
-										<Label htmlFor="address" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="address" className="text-[11px] font-semibold text-gray-400">
 											{t('profile.address') || 'Address'}
 										</Label>
 										{isEditing ? (
@@ -560,14 +684,14 @@ export default function CustomerProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.address || 'N/A'}
 											</div>
 										)}
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="city" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="city" className="text-[11px] font-semibold text-gray-400">
 											{t('profile.city') || 'City'}
 										</Label>
 										{isEditing ? (
@@ -579,14 +703,14 @@ export default function CustomerProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.city || 'N/A'}
 											</div>
 										)}
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="postalCode" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="postalCode" className="text-[11px] font-semibold text-gray-400">
 											{t('profile.postal_code') || 'Postal Code'}
 										</Label>
 										{isEditing ? (
@@ -598,7 +722,7 @@ export default function CustomerProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.postalCode || 'N/A'}
 											</div>
 										)}
@@ -609,8 +733,7 @@ export default function CustomerProfilePage() {
 					</Card>
 					</div>
 
-					{/* Quick Actions Sidebar */}
-					<div className="space-y-6">
+					<div className="space-y-6 hidden">
 						<Card className="bg-white border border-gray-200 shadow-sm">
 							<CardHeader className="border-b border-gray-200 bg-white">
 								<CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -621,11 +744,11 @@ export default function CustomerProfilePage() {
 							<CardContent className="p-6">
 								<div className="space-y-3">
 									<Button
-										onClick={() => navigate('/my-cases')}
+										onClick={() => navigate('/contract')}
 										className="w-full justify-start bg-green-600 hover:bg-green-700 text-white"
 									>
 										<FileText className="w-4 h-4 mr-2" />
-										{t('profile.view_my_cases')}
+										{t('profile.view_my_cases') || t('profile.contract_title') || 'View Contract'}
 									</Button>
 									<Button
 										onClick={() => navigate('/upload')}
@@ -641,8 +764,106 @@ export default function CustomerProfilePage() {
 					</div>
 				</div>
 			</div>
-			
+			</div>
+
 			<Footer />
+
+			<Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+				<DialogContent
+					onClose={() => setSettingsOpen(false)}
+					className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
+				>
+					<DialogHeader className="text-center items-center sm:text-center">
+						<DialogTitle className="text-xl sm:text-2xl font-black text-[#05324f] leading-tight mb-2 text-center w-full">
+							{t('profile.settings_title') || 'Settings'}
+						</DialogTitle>
+					</DialogHeader>
+
+					<div>
+						<div className="grid grid-cols-2 gap-2 sm:gap-3">
+							{[
+								{ code: 'sv', name: 'Svenska', flag: '🇸🇪' },
+								{ code: 'en', name: 'English', flag: '🇺🇸' },
+							].map((lang) => (
+								<button
+									key={lang.code}
+									type="button"
+									onClick={() => {
+										i18n.changeLanguage(lang.code)
+										localStorage.setItem('language', lang.code)
+									}}
+									className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
+										i18n.language === lang.code
+											? 'border-[#34C759] bg-[#F2F9F4] text-[#34C759]'
+											: 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+									}`}
+								>
+									<span className="text-base">{lang.flag}</span>
+									{lang.name}
+								</button>
+							))}
+						</div>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
+				<DialogContent className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+					<DialogHeader className="text-center items-center sm:text-center">
+						<DialogTitle className="text-xl sm:text-2xl font-black text-[#05324f] leading-tight mb-2 text-center w-full">
+							{t('navigation.logout_confirm_title')}
+						</DialogTitle>
+						<DialogDescription className="text-gray-500 text-sm sm:text-base leading-relaxed text-center">
+							{t('navigation.logout_confirm_desc')}
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="mt-5 sm:mt-6 !flex-row gap-2 sm:gap-3 items-stretch">
+						<Button
+							variant="outline"
+							onClick={() => setIsLogoutConfirmOpen(false)}
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold text-sm"
+						>
+							{t('common.cancel') || 'Cancel'}
+						</Button>
+						<Button
+							onClick={confirmLogout}
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95"
+						>
+							{t('navigation.logout') || 'Log Out'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+				<DialogContent className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+					<DialogHeader className="text-center items-center sm:text-center">
+						<DialogTitle className="text-xl sm:text-2xl font-black text-[#05324f] leading-tight mb-2 text-center w-full">
+							{t('profile.delete_account_confirm_title') || 'Delete account?'}
+						</DialogTitle>
+						<DialogDescription className="text-gray-500 text-sm sm:text-base leading-relaxed text-center">
+							{t('profile.delete_account_confirm_desc') || 'This will permanently delete your account and all associated data. This action cannot be undone.'}
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="mt-5 sm:mt-6 !flex-row gap-2 sm:gap-3 items-stretch">
+						<Button
+							variant="outline"
+							onClick={() => setIsDeleteConfirmOpen(false)}
+							disabled={isDeleting}
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold text-sm"
+						>
+							{t('common.cancel') || 'Cancel'}
+						</Button>
+						<Button
+							onClick={confirmDeleteAccount}
+							disabled={isDeleting}
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95 disabled:opacity-60"
+						>
+							{isDeleting ? (t('profile.deleting_account') || 'Deleting...') : (t('profile.delete_account') || 'Delete account')}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

@@ -5,7 +5,7 @@ import AppRoutes from './AppRoutes'
 
 function App() {
 	return (
-		<BrowserRouter>
+		<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
 			<AuthProvider>
 				<AppRoutes />
 				<Toaster 
@@ -17,7 +17,7 @@ function App() {
 							color: '#1a1a1a',
 							borderRadius: '16px',
 							fontSize: '14px',
-							fontWeight: '600',
+							fontWeight: '500',
 							padding: '12px 24px',
 							border: '1px solid rgba(0, 0, 0, 0.05)',
 							boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
@@ -30,8 +30,9 @@ function App() {
 						},
 						error: {
 							style: {
-								background: '#FEE2E2',
-								color: '#991B1B',
+								background: '#ffffff',
+								color: '#1a1a1a',
+								border: '1px solid rgba(0, 0, 0, 0.05)',
 							},
 							iconTheme: {
 								primary: '#EF4444',

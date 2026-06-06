@@ -7,12 +7,13 @@ import { Label } from '../components/ui/Label'
 import { Textarea } from '../components/ui/Textarea'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
-import { formatDate } from '../utils/cn'
-import { Car, Clock, DollarSign, FileText, Shield, Calendar, User, MessageSquare, CheckCircle, AlertTriangle } from 'lucide-react'
+import { formatPrice, formatDate, parseInclusionItems, serializeInclusionItems } from '../utils/cn'
+import { Car, Clock, DollarSign, FileText, Shield, User, MessageSquare, AlertTriangle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import InclusionChecklistEditor from '../components/InclusionChecklistEditor'
 
 import { requestsAPI, offersAPI } from '../services/api'
 
@@ -37,8 +38,8 @@ export default function CreateOfferPage() {
 		validityDays: '14',
 		inclusions: '',
 		note: '',
-		availableDates: [''],
 	})
+	const [inclusionItems, setInclusionItems] = useState([''])
 
 	// Redirect if not authenticated or not workshop
 	useEffect(() => {
@@ -51,7 +52,7 @@ export default function CreateOfferPage() {
 				if (user.role === 'ADMIN') {
 					navigate('/admin', { replace: true })
 				} else {
-					navigate('/my-cases', { replace: true })
+					navigate('/contract', { replace: true })
 				}
 			}
 		}
@@ -82,18 +83,6 @@ export default function CreateOfferPage() {
 						if (workshopOffer) {
 							setExistingOffer(workshopOffer)
 
-							let parsedDates = ['']
-							if (workshopOffer.availableDates) {
-								try {
-									parsedDates = typeof workshopOffer.availableDates === 'string'
-										? JSON.parse(workshopOffer.availableDates)
-										: workshopOffer.availableDates
-									if (!Array.isArray(parsedDates) || parsedDates.length === 0) parsedDates = ['']
-								} catch {
-									parsedDates = ['']
-								}
-							}
-
 							setFormData({
 								price: workshopOffer.price?.toString() || '',
 								laborCost: workshopOffer.laborCost?.toString() || '',
@@ -103,8 +92,9 @@ export default function CreateOfferPage() {
 								validityDays: workshopOffer.validityDays?.toString() || '14',
 								inclusions: workshopOffer.inclusions || '',
 								note: workshopOffer.note || '',
-								availableDates: parsedDates,
 							})
+							const parsedInclusions = parseInclusionItems(workshopOffer.inclusions)
+							setInclusionItems(parsedInclusions.length > 0 ? parsedInclusions : [''])
 						}
 					}
 				} catch (offerError) {
@@ -128,13 +118,6 @@ export default function CreateOfferPage() {
 			return
 		}
 
-		// Filter out empty dates and validate
-		const validDates = formData.availableDates.filter((date) => date && date.trim() !== '')
-		if (validDates.length === 0) {
-			toast.error(t('errors.at_least_one_date') || 'Please add at least one available time slot')
-			return
-		}
-
 		setSubmitting(true)
 
 		try {
@@ -149,9 +132,9 @@ export default function CreateOfferPage() {
 					estimatedDuration: parseInt(formData.estimatedDuration),
 					warranty: formData.warranty || '',
 					validityDays: parseInt(formData.validityDays),
-					inclusions: formData.inclusions || '',
+					inclusions: serializeInclusionItems(inclusionItems),
 					note: formData.note || '',
-					availableDates: validDates,
+					availableDates: [],
 				})
 			} else {
 				// Create new offer
@@ -163,9 +146,9 @@ export default function CreateOfferPage() {
 					estimatedDuration: parseInt(formData.estimatedDuration),
 					warranty: formData.warranty || '',
 					validityDays: parseInt(formData.validityDays),
-					inclusions: formData.inclusions || '',
+					inclusions: serializeInclusionItems(inclusionItems),
 					note: formData.note || '',
-					availableDates: validDates,
+					availableDates: [],
 				})
 			}
 
@@ -187,7 +170,7 @@ export default function CreateOfferPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex flex-col">
+			<div className="list-page-shell bg-gray-50">
 				<Navbar />
 				<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
 					{/* Header Skeleton */}
@@ -566,105 +549,11 @@ export default function CreateOfferPage() {
 								</p>
 							</div>
 
-							{/* Available Dates */}
-							<div className="space-y-2 sm:space-y-3">
-								<Label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700">
-									<div className="p-1 sm:p-1.5 bg-indigo-50 rounded-md flex-shrink-0">
-										<Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: '#34C759' }} />
-									</div>
-									<span>
-										{t('workshop.offer.available_times') || 'Available Times'} <span className="text-red-500">*</span>
-									</span>
-								</Label>
-								<div className="space-y-2 sm:space-y-3">
-									{formData.availableDates.map((date, index) => {
-										// Convert ISO string to datetime-local format (YYYY-MM-DDTHH:mm)
-										const getLocalDateTime = (isoString) => {
-											if (!isoString) return ''
-											try {
-												const dateObj = new Date(isoString)
-												// Get local date/time in YYYY-MM-DDTHH:mm format
-												const year = dateObj.getFullYear()
-												const month = String(dateObj.getMonth() + 1).padStart(2, '0')
-												const day = String(dateObj.getDate()).padStart(2, '0')
-												const hours = String(dateObj.getHours()).padStart(2, '0')
-												const minutes = String(dateObj.getMinutes()).padStart(2, '0')
-												return `${year}-${month}-${day}T${hours}:${minutes}`
-											} catch {
-												return ''
-											}
-										}
-
-										return (
-											<div key={index} className="flex items-center gap-2">
-												<Input
-													type="datetime-local"
-													value={getLocalDateTime(date)}
-													disabled={viewMode}
-													onChange={(e) => {
-														const newDates = [...formData.availableDates]
-														// Convert datetime-local value to ISO string
-														newDates[index] = e.target.value ? new Date(e.target.value).toISOString() : ''
-														setFormData({ ...formData, availableDates: newDates })
-													}}
-													className="h-10 sm:h-12 text-xs sm:text-sm flex-1"
-													required
-												/>
-												{!viewMode && (
-													<Button
-														type="button"
-														variant="outline"
-														size="sm"
-														onClick={() => {
-															const newDates = formData.availableDates.filter((_, i) => i !== index)
-															setFormData({ ...formData, availableDates: newDates })
-														}}
-														className="px-3 sm:px-4 text-xs sm:text-sm flex-shrink-0"
-													>
-														{t('common.delete') || 'Remove'}
-													</Button>
-												)}
-											</div>
-										)
-									})}
-									{!viewMode && (
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											onClick={() => {
-												setFormData({ ...formData, availableDates: [...formData.availableDates, ''] })
-											}}
-											className="w-full text-xs sm:text-sm"
-										>
-											+ {t('workshop.offer.add_available_time') || 'Add Available Time'}
-										</Button>
-									)}
-								</div>
-								<p className="text-xs text-gray-500 ml-6 sm:ml-7">
-									{t('workshop.offer.add_at_least_one') || 'Add at least one available time slot for the customer to choose from'}
-								</p>
-							</div>
-
-							{/* Inclusions & Highlights */}
-							<div className="space-y-3">
-								<Label htmlFor="inclusions" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-									<CheckCircle className="w-4 h-4 text-[#34C759]" />
-									<span>Included Services</span>
-								</Label>
-								<Textarea
-									id="inclusions"
-									value={formData.inclusions}
-									disabled={viewMode}
-									onChange={(e) => setFormData({ ...formData, inclusions: e.target.value })}
-									placeholder="E.g.: Labor: 2 hours, Parts: Brake pads (OEM), Includes: Free car wash after service"
-									rows={3}
-									className="resize-none text-sm"
-								/>
-								<p className="text-xs text-gray-500 ml-6">
-									List what is covered — labor, materials, parts, and any extras included in the price
-								</p>
-							</div>
+							<InclusionChecklistEditor
+								items={inclusionItems}
+								onChange={setInclusionItems}
+								disabled={viewMode}
+							/>
 
 							{/* Note */}
 							<div className="space-y-3">

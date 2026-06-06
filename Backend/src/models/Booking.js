@@ -5,7 +5,7 @@ const bookingSchema = new mongoose.Schema({
 	offerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Offer', required: true },
 	customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 	workshopId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workshop', required: true },
-	scheduledAt: { type: Date, required: true },
+	scheduledAt: { type: Date },
 	status: { 
 		type: String, 
 		default: 'CONFIRMED', 

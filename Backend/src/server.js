@@ -39,7 +39,7 @@ app.use((req, res, next) => {
 })
 
 // CORS - allow origin with/without trailing slash to fix Hostinger etc.
-const allowedOrigin = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '')
+const allowedOrigin = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '')
 app.use(cors({
 	origin: process.env.NODE_ENV === 'production'
 		? (origin, cb) => {

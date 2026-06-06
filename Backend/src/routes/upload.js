@@ -61,37 +61,26 @@ router.post('/', upload.single('file'), async (req, res) => {
 		// For now, store file locally. In production, upload to S3 or similar
 		const fileUrl = `/uploads/${req.file.filename}`
 
-		// Only create InspectionReport if user is authenticated (for inspection reports)
-		// For workshop registration, just return file info
-		if (req.headers.authorization) {
-			try {
-				const report = await InspectionReport.create({
-					fileName: req.file.originalname,
-					fileUrl,
-					fileSize: req.file.size,
-					mimeType: req.file.mimetype,
-				})
+		try {
+			const report = await InspectionReport.create({
+				fileName: req.file.originalname,
+				fileUrl,
+				fileSize: req.file.size,
+				mimeType: req.file.mimetype,
+			})
 
-				return res.status(201).json({
-					id: report._id,
-					fileName: report.fileName,
-					fileUrl: report.fileUrl,
-					fileSize: report.fileSize,
-					mimeType: report.mimeType,
-				})
-			} catch (dbError) {
-				// If InspectionReport creation fails, still return file info
-				console.error('Failed to create InspectionReport:', dbError)
-			}
+			return res.status(201).json({
+				id: report._id,
+				_id: report._id,
+				fileName: report.fileName,
+				fileUrl: report.fileUrl,
+				fileSize: report.fileSize,
+				mimeType: report.mimeType,
+			})
+		} catch (dbError) {
+			console.error('Failed to create InspectionReport:', dbError)
+			return res.status(500).json({ message: 'Failed to save uploaded file' })
 		}
-
-		// Return file info (for workshop registration or if InspectionReport creation fails)
-		return res.status(200).json({
-			fileName: req.file.originalname,
-			fileUrl: fileUrl,
-			fileSize: req.file.size,
-			mimeType: req.file.mimetype,
-		})
 	} catch (error) {
 		console.error('Upload error:', error)
 		

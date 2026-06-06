@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 import {
 	Mail,
 	Phone,
@@ -6,7 +5,6 @@ import {
 	Clock,
 	MapPin,
 	HelpCircle,
-	ChevronLeft,
 	ChevronDown,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -15,7 +13,6 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
 export default function HelpSupportPage() {
-	const navigate = useNavigate()
 	const { t } = useTranslation()
 	const [openFaq, setOpenFaq] = useState(null)
 
@@ -43,23 +40,12 @@ export default function HelpSupportPage() {
 	]
 
 	return (
-		<div className="min-h-screen bg-[#FAFBFC] flex flex-col">
+		<div className="list-page-shell bg-[#FAFBFC]">
 			<Navbar />
 
-			<div className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 pt-20 md:pt-28 pb-20 max-md:pb-24">
-				{/* Back button */}
-				<button
-					type="button"
-					onClick={() => navigate(-1)}
-					className="mb-4 flex items-center gap-1 text-[#38BC54] font-bold text-sm active:opacity-70"
-				>
-					<ChevronLeft className="w-4 h-4" />
-					{t('common.back') || 'Back'}
-				</button>
-
-				{/* Header */}
+			<div className="list-page-content">
 				<div className="mb-6">
-					<h1 className="text-3xl md:text-4xl font-black text-[#05324f] leading-tight mb-1.5">
+					<h1 className="text-xl sm:text-2xl font-semibold text-[#05324f] leading-tight mb-1.5">
 						{t('help.title') || 'Help and support'}
 					</h1>
 					<p className="text-sm text-gray-500 leading-snug">
@@ -67,7 +53,6 @@ export default function HelpSupportPage() {
 					</p>
 				</div>
 
-				{/* Contact cards */}
 				<div className="space-y-3 mb-8">
 					<a
 						href="mailto:info@fixa2an.se"
@@ -77,8 +62,8 @@ export default function HelpSupportPage() {
 							<Mail className="w-5 h-5 text-[#38BC54]" />
 						</div>
 						<div className="flex-1 min-w-0">
-							<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">{t('help.email_label') || 'Email'}</p>
-							<p className="text-sm font-black text-[#05324f] truncate">info@fixa2an.se</p>
+							<p className="text-[10px] text-gray-400 uppercase font-semibold tracking-widest">{t('help.email_label') || 'Email'}</p>
+							<p className="text-sm font-semibold text-[#05324f] truncate">info@fixa2an.se</p>
 						</div>
 					</a>
 
@@ -90,8 +75,8 @@ export default function HelpSupportPage() {
 							<Phone className="w-5 h-5 text-[#38BC54]" />
 						</div>
 						<div className="flex-1 min-w-0">
-							<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">{t('help.phone_label') || 'Phone'}</p>
-							<p className="text-sm font-black text-[#05324f]">+46 10 123 45 67</p>
+							<p className="text-[10px] text-gray-400 uppercase font-semibold tracking-widest">{t('help.phone_label') || 'Phone'}</p>
+							<p className="text-sm font-semibold text-[#05324f]">+46 10 123 45 67</p>
 						</div>
 					</a>
 
@@ -100,8 +85,8 @@ export default function HelpSupportPage() {
 							<Clock className="w-5 h-5 text-[#38BC54]" />
 						</div>
 						<div className="flex-1 min-w-0">
-							<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">{t('help.hours_label') || 'Support hours'}</p>
-							<p className="text-sm font-black text-[#05324f]">{t('help.hours') || 'Mon–Fri 09:00–17:00'}</p>
+							<p className="text-[10px] text-gray-400 uppercase font-semibold tracking-widest">{t('help.hours_label') || 'Support hours'}</p>
+							<p className="text-sm font-semibold text-[#05324f]">{t('help.hours') || 'Mon–Fri 09:00–17:00'}</p>
 						</div>
 					</div>
 
@@ -110,17 +95,16 @@ export default function HelpSupportPage() {
 							<MapPin className="w-5 h-5 text-[#38BC54]" />
 						</div>
 						<div className="flex-1 min-w-0">
-							<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">{t('help.address_label') || 'Office'}</p>
-							<p className="text-sm font-black text-[#05324f]">Stockholm, Sweden</p>
+							<p className="text-[10px] text-gray-400 uppercase font-semibold tracking-widest">{t('help.address_label') || 'Office'}</p>
+							<p className="text-sm font-semibold text-[#05324f]">Stockholm, Sweden</p>
 						</div>
 					</div>
 				</div>
 
-				{/* FAQ */}
 				<div className="mb-8">
 					<div className="flex items-center gap-2 mb-3">
 						<HelpCircle className="w-4 h-4 text-[#38BC54]" />
-						<h2 className="text-lg font-black text-[#05324f]">
+						<h2 className="text-lg font-semibold text-[#05324f]">
 							{t('help.faq.title') || 'Frequently asked questions'}
 						</h2>
 					</div>
@@ -132,7 +116,7 @@ export default function HelpSupportPage() {
 									onClick={() => setOpenFaq(openFaq === i ? null : i)}
 									className="w-full flex items-center gap-3 p-4 text-left active:bg-gray-50"
 								>
-									<span className="flex-1 text-sm font-bold text-[#05324f]">{faq.q}</span>
+									<span className="flex-1 text-sm font-semibold text-[#05324f]">{faq.q}</span>
 									<ChevronDown
 										className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`}
 									/>
@@ -147,7 +131,6 @@ export default function HelpSupportPage() {
 					</div>
 				</div>
 
-				{/* Contact CTA */}
 				<a
 					href="mailto:info@fixa2an.se"
 					className="bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-2xl shadow-md shadow-green-200/50 p-4 flex items-center gap-3 active:scale-[0.99] transition-all"
@@ -156,8 +139,8 @@ export default function HelpSupportPage() {
 						<MessageCircle className="w-5 h-5 text-white" />
 					</div>
 					<div className="flex-1 min-w-0">
-						<p className="text-sm font-black">{t('help.cta_title') || 'Still need help?'}</p>
-						<p className="text-[11px] text-white/80 font-semibold leading-tight">{t('help.cta_subtitle') || 'Send us an email and we\'ll get back to you.'}</p>
+						<p className="text-sm font-semibold">{t('help.cta_title') || 'Still need help?'}</p>
+						<p className="text-[11px] text-white/80 font-medium leading-tight">{t('help.cta_subtitle') || 'Send us an email and we\'ll get back to you.'}</p>
 					</div>
 				</a>
 			</div>

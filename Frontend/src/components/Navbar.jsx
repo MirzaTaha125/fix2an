@@ -8,9 +8,12 @@ import { User, LogOut, Menu, X, Building2, Users, ChevronDown, ArrowLeft } from 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/Dialog'
 import RegisterTypeModal from './RegisterTypeModal'
 import Logo from './Logo'
+import { useCustomerOfferCount } from '../context/CustomerOfferCountContext'
+import OfferCountBadge from './OfferCountBadge'
 
 function Navbar() {
 	const { user, loading, logout } = useAuth()
+	const customerOfferCount = useCustomerOfferCount()
 	const navigate = useNavigate()
 	const location = useLocation()
 	const { t } = useTranslation()
@@ -36,15 +39,33 @@ function Navbar() {
 		return location.pathname === path || location.pathname?.startsWith(path + '/')
 	}
 
+	const offerRequestId = new URLSearchParams(location.search).get('requestId')
+
 	// Check if navbar should show back button
 	const shouldShowBackButton = (
 		location.pathname === '/upload' ||
-		location.pathname === '/offers' ||
+		location.pathname === '/how-it-works' ||
 		location.pathname === '/book-appointment' ||
-		location.pathname.includes('/offer') ||
+		location.pathname === '/support' ||
+		(location.pathname === '/offers' && Boolean(offerRequestId)) ||
+		(location.pathname.includes('/offer') && location.pathname !== '/offers') ||
 		location.pathname.includes('/workshop/reviews') ||
 		location.pathname.includes('/admin/workshops/')
 	)
+
+	const profileView = new URLSearchParams(location.search).get('view')
+	const isProfileInfoView =
+		profileView === 'info' &&
+		(location.pathname === '/profile' || location.pathname.startsWith('/workshop/profile'))
+	const showLeftBackButton = shouldShowBackButton || isProfileInfoView
+
+	const handleLeftBack = () => {
+		if (isProfileInfoView) {
+			navigate(location.pathname.startsWith('/workshop') ? '/workshop/profile' : '/profile', { replace: true })
+			return
+		}
+		navigate(-1)
+	}
 
 	// Determine if navbar should have white background and black text
 	// Always use white navbar on homepage by default for visibility
@@ -76,8 +97,8 @@ function Navbar() {
 				<div className="md:hidden grid grid-cols-3 items-center py-2 w-full">
 					{/* Left: hamburger / back */}
 					<div className="flex items-center justify-start">
-						{shouldShowBackButton ? (
-							<button onClick={() => navigate(-1)} className="p-2 -ml-2 mt-5 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
+						{showLeftBackButton ? (
+							<button onClick={handleLeftBack} className="p-2 -ml-2 mt-5 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
 								<ArrowLeft className="w-6 h-6 text-[#05324f]" />
 							</button>
 						) : (
@@ -114,8 +135,50 @@ function Navbar() {
 					</div>
 				</div>
 
-				{/* ── Desktop navbar: original flex layout ── */}
-				<div className="hidden md:flex relative justify-between items-center py-2.5 w-full">
+				{/* ── Tablet navbar: logo center + language icon (md–lg, bottom nav pages) ── */}
+				<div className="hidden md:grid lg:hidden grid-cols-3 items-center py-2.5 w-full">
+					<div className="flex items-center justify-start">
+						{showLeftBackButton ? (
+							<button
+								onClick={handleLeftBack}
+								className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
+							>
+								<ArrowLeft className="w-6 h-6 text-[#05324f]" />
+							</button>
+						) : (
+							!user && (
+								<button
+									onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+									className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
+								>
+									{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
+								</button>
+							)
+						)}
+					</div>
+
+					<div className="flex items-center justify-center">
+						{user?.role === 'ADMIN' ? (
+							<Link to="/admin" className="flex flex-col items-center group">
+								<span className="text-sm font-black bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1 group-hover:from-[#34C759] group-hover:to-[#34C759] transition-all duration-300">
+									Admin <span className="text-[#34C759]">Panel</span>
+								</span>
+								<span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">
+									{t('common.admin_tagline')}
+								</span>
+							</Link>
+						) : (
+							<Logo />
+						)}
+					</div>
+
+					<div className="flex items-center justify-end pt-2">
+						<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} iconClassName="h-6 w-6" />
+					</div>
+				</div>
+
+				{/* ── Desktop navbar: lg and up only (tablet uses bottom nav) ── */}
+				<div className="hidden lg:flex relative justify-between items-center py-2.5 w-full">
 					{/* Desktop Logo */}
 					<div className="flex items-center justify-start flex-1 min-w-0">
 						<Logo />
@@ -130,10 +193,10 @@ function Navbar() {
 								<>
 
 									{user.role === 'CUSTOMER' && (
-										<>
+										<div className="hidden md:flex items-center space-x-4 lg:space-x-6">
 											<Link
-												to="/my-cases"
-												className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/my-cases')
+												to="/offers"
+												className={`relative inline-flex items-center gap-1.5 whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/offers')
 														? shouldUseWhiteNavbar
 															? 'text-[#05324f] font-semibold'
 															: 'text-white font-semibold bg-white/25 shadow-md backdrop-blur-sm'
@@ -142,11 +205,12 @@ function Navbar() {
 															: 'text-white/80 hover:text-white hover:bg-white/10'
 													}`}
 											>
-												{t('navigation.my_cases')}
+												<span>{t('navigation.offers')}</span>
+												<OfferCountBadge count={customerOfferCount} className="shrink-0" />
 											</Link>
 											<Link
-												to="/upload"
-												className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/upload')
+												to="/contract"
+												className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/contract')
 														? shouldUseWhiteNavbar
 															? 'text-[#05324f] font-semibold'
 															: 'text-white font-semibold bg-white/25 shadow-md backdrop-blur-sm'
@@ -155,7 +219,7 @@ function Navbar() {
 															: 'text-white/80 hover:text-white hover:bg-white/10'
 													}`}
 											>
-												{t('navigation.upload_cases') || 'Upload Cases'}
+												{t('navigation.contract') || 'Contract'}
 											</Link>
 											<Link
 												to="/profile"
@@ -170,7 +234,7 @@ function Navbar() {
 											>
 												{t('navigation.profile') || 'Profile'}
 											</Link>
-										</>
+										</div>
 									)}
 									{user.role === 'WORKSHOP' && (
 										<>
@@ -262,26 +326,23 @@ function Navbar() {
 													className="fixed inset-0 z-10"
 													onClick={() => setUserDropdownOpen(false)}
 												></div>
-												<div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg border z-20 ${shouldUseWhiteNavbar
+												<div className={`absolute right-0 mt-2 min-w-full rounded-lg shadow-lg border z-20 ${shouldUseWhiteNavbar
 														? 'bg-white border-gray-200'
 														: 'bg-white/95 backdrop-blur-md border-white/20'
 													}`}>
-													<div className="py-1">
-
-														<button
-															onClick={() => {
-																setUserDropdownOpen(false)
-																handleLogout()
-															}}
-															className={`flex items-center gap-3 px-4 py-2.5 text-sm w-full text-left transition-colors duration-200 ${shouldUseWhiteNavbar
-																	? 'text-red-600 hover:bg-red-50'
-																	: 'text-red-600 hover:bg-red-50'
-																}`}
-														>
-															<LogOut className="w-4 h-4" />
-															<span>{t('navigation.logout')}</span>
-														</button>
-													</div>
+													<button
+														onClick={() => {
+															setUserDropdownOpen(false)
+															handleLogout()
+														}}
+														className={`flex items-center justify-start gap-2 px-3 py-2.5 text-sm w-full text-left transition-colors duration-200 ${shouldUseWhiteNavbar
+																? 'text-red-600 hover:bg-red-50'
+																: 'text-red-600 hover:bg-red-50'
+															}`}
+													>
+														<LogOut className="w-4 h-4 shrink-0" />
+														<span>{t('navigation.logout')}</span>
+													</button>
 												</div>
 											</>
 										)}
@@ -289,19 +350,6 @@ function Navbar() {
 								</>
 							) : (
 								<>
-									<Link
-										to="/workshop"
-										className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/workshop')
-												? shouldUseWhiteNavbar
-													? 'text-[#05324f] font-semibold'
-													: 'text-white font-semibold bg-white/25 shadow-md backdrop-blur-sm'
-												: shouldUseWhiteNavbar
-													? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-100'
-													: 'text-white/80 hover:text-white hover:bg-white/10'
-											}`}
-									>
-										{t('navigation.for_workshops') || 'For Workshops'}
-									</Link>
 									<Link
 										to="/auth/signin"
 										className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/auth/signin')
@@ -314,6 +362,19 @@ function Navbar() {
 											}`}
 									>
 										{t('navigation.login')}
+									</Link>
+									<Link
+										to="/workshop"
+										className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/workshop')
+												? shouldUseWhiteNavbar
+													? 'text-[#05324f] font-semibold'
+													: 'text-white font-semibold bg-white/25 shadow-md backdrop-blur-sm'
+												: shouldUseWhiteNavbar
+													? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-100'
+													: 'text-white/80 hover:text-white hover:bg-white/10'
+											}`}
+									>
+										{t('navigation.for_workshops') || 'For Workshops'}
 									</Link>
 									<div className="relative">
 										<button
@@ -334,7 +395,7 @@ function Navbar() {
 													className="fixed inset-0 z-10"
 													onClick={() => setRegisterDropdownOpen(false)}
 												></div>
-												<div className={`absolute right-0 mt-2 w-56 rounded-xl shadow-2xl border z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${shouldUseWhiteNavbar
+												<div className={`absolute left-0 mt-2 w-56 rounded-xl shadow-2xl border z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${shouldUseWhiteNavbar
 														? 'bg-white border-gray-100'
 														: 'bg-white/95 backdrop-blur-md border-white/10'
 													}`}>
@@ -372,9 +433,9 @@ function Navbar() {
 					</div>
 				</div>
 
-				{/* Mobile Navigation */}
+				{/* Mobile & tablet navigation (hidden on lg+ where desktop nav shows) */}
 				{mobileMenuOpen && (
-					<div className="md:hidden mt-4 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
+					<div className="lg:hidden mt-4 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
 						<div className="px-2 py-3 space-y-1">
 							{user ? (
 								<>
@@ -387,33 +448,33 @@ function Navbar() {
 												}`}
 											onClick={() => setMobileMenuOpen(false)}
 										>
-											<div className={`w-2 h-2 rounded-full ${isActive('/admin') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
 											<span>Admin <span className="text-[#34C759]">Panel</span></span>
 										</Link>
 									)}
 									{user.role === 'CUSTOMER' && (
 										<>
 											<Link
-												to="/my-cases"
-												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive('/my-cases')
+												to="/offers"
+												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive('/offers')
 														? 'text-[#05324f] font-semibold'
 														: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
 													}`}
 												onClick={() => setMobileMenuOpen(false)}
 											>
-												<div className={`w-2 h-2 rounded-full ${isActive('/my-cases') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
-												<span>{t('navigation.my_cases')}</span>
+												<span className="inline-flex items-center gap-1.5">
+													{t('navigation.offers')}
+													<OfferCountBadge count={customerOfferCount} />
+												</span>
 											</Link>
 											<Link
-												to="/upload"
-												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive('/upload')
+												to="/contract"
+												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive('/contract')
 														? 'text-[#05324f] font-semibold'
 														: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
 													}`}
 												onClick={() => setMobileMenuOpen(false)}
 											>
-												<div className={`w-2 h-2 rounded-full ${isActive('/upload') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
-												<span>{t('navigation.upload_cases') || 'Upload Cases'}</span>
+												<span>{t('navigation.contract') || 'Contract'}</span>
 											</Link>
 											<Link
 												to="/profile"
@@ -423,7 +484,6 @@ function Navbar() {
 													}`}
 												onClick={() => setMobileMenuOpen(false)}
 											>
-												<div className={`w-2 h-2 rounded-full ${isActive('/profile') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
 												<span>{t('navigation.profile') || 'Profile'}</span>
 											</Link>
 
@@ -439,7 +499,6 @@ function Navbar() {
 													}`}
 												onClick={() => setMobileMenuOpen(false)}
 											>
-												<div className={`w-2 h-2 rounded-full ${isActive('/workshop/requests') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
 												<span>{t('navigation.jobs') || 'Jobs'}</span>
 											</Link>
 											<Link
@@ -450,7 +509,6 @@ function Navbar() {
 													}`}
 												onClick={() => setMobileMenuOpen(false)}
 											>
-												<div className={`w-2 h-2 rounded-full ${isActive('/workshop/proposals') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
 												<span>{t('navigation.proposals') || 'Proposals'}</span>
 											</Link>
 											<Link
@@ -461,7 +519,6 @@ function Navbar() {
 													}`}
 												onClick={() => setMobileMenuOpen(false)}
 											>
-												<div className={`w-2 h-2 rounded-full ${isActive('/workshop/contracts') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
 												<span>{t('navigation.contracts') || 'Contracts'}</span>
 											</Link>
 											<Link
@@ -472,7 +529,6 @@ function Navbar() {
 													}`}
 												onClick={() => setMobileMenuOpen(false)}
 											>
-												<div className={`w-2 h-2 rounded-full ${isActive('/workshop/profile') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
 												<span>{t('navigation.profile') || 'Profile'}</span>
 											</Link>
 										</>
@@ -515,9 +571,9 @@ function Navbar() {
 														setMobileMenuOpen(false)
 														handleLogout()
 													}}
-													className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+													className="w-full flex items-center justify-start gap-2 px-3 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
 												>
-													<LogOut className="w-4 h-4" />
+													<LogOut className="w-4 h-4 shrink-0" />
 													<span>{t('navigation.logout')}</span>
 												</button>
 											</div>
@@ -525,52 +581,48 @@ function Navbar() {
 									</div>
 								</>
 							) : (
-								<>
-									<Link
-										to="/workshop"
-										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive('/workshop')
-												? 'text-[#05324f] font-semibold'
-												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
-											}`}
-										onClick={() => setMobileMenuOpen(false)}
-									>
-										<div className={`w-2 h-2 rounded-full ${isActive('/workshop') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
-										<span>{t('navigation.for_workshops') || 'For Workshops'}</span>
-									</Link>
+								<div className="space-y-0">
 									<Link
 										to="/auth/signin"
-										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive('/auth/signin')
+										className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive('/auth/signin')
 												? 'text-[#05324f] font-semibold'
 												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
 											}`}
 										onClick={() => setMobileMenuOpen(false)}
 									>
-										<div className={`w-2 h-2 rounded-full ${isActive('/auth/signin') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
 										<span>{t('navigation.login')}</span>
 									</Link>
 									<Link
-										to="/auth/signup"
-										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive('/auth/signup')
+										to="/workshop"
+										className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive('/workshop')
 												? 'text-[#05324f] font-semibold'
 												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
 											}`}
 										onClick={() => setMobileMenuOpen(false)}
 									>
-										<div className={`w-2 h-2 rounded-full ${isActive('/auth/signup') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
+										<span>{t('navigation.for_workshops') || 'For Workshops'}</span>
+									</Link>
+									<Link
+										to="/auth/signup"
+										className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive('/auth/signup')
+												? 'text-[#05324f] font-semibold'
+												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
+											}`}
+										onClick={() => setMobileMenuOpen(false)}
+									>
 										<span>{t('common.register_as_customer') || 'Register as Customer'}</span>
 									</Link>
 									<Link
 										to="/workshop/signup"
-										className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive('/workshop/signup')
+										className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive('/workshop/signup')
 												? 'text-[#05324f] font-semibold'
 												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
 											}`}
 										onClick={() => setMobileMenuOpen(false)}
 									>
-										<div className={`w-2 h-2 rounded-full ${isActive('/workshop/signup') ? 'bg-[#05324f]' : 'bg-gray-300'}`}></div>
 										<span>{t('common.register_as_workshop') || 'Register as Workshop'}</span>
 									</Link>
-								</>
+								</div>
 							)}
 						</div>
 					</div>
@@ -585,26 +637,26 @@ function Navbar() {
 
 			{/* Logout Confirmation Modal */}
 			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
-				<DialogContent className="max-w-[400px] w-[90%] bg-white rounded-2xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
-					<DialogHeader className="text-left items-start">
-						<DialogTitle className="text-2xl font-black text-[#05324f] leading-tight mb-2">
+				<DialogContent className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+					<DialogHeader className="text-center items-center sm:text-center">
+						<DialogTitle className="text-xl sm:text-2xl font-black text-[#05324f] leading-tight mb-2 text-center w-full">
 							{t('navigation.logout_confirm_title')}
 						</DialogTitle>
-						<DialogDescription className="text-gray-500 text-base leading-relaxed">
+						<DialogDescription className="text-gray-500 text-sm sm:text-base leading-relaxed text-center">
 							{t('navigation.logout_confirm_desc')}
 						</DialogDescription>
 					</DialogHeader>
-					<DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row gap-3">
+					<DialogFooter className="mt-5 sm:mt-6 !flex-row gap-2 sm:gap-3 items-stretch">
 						<Button
 							variant="outline"
 							onClick={() => setIsLogoutConfirmOpen(false)}
-							className="flex-1 h-11 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold"
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold text-sm"
 						>
 							{t('common.cancel') || 'Cancel'}
 						</Button>
 						<Button
 							onClick={confirmLogout}
-							className="flex-1 h-11 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold transition-all shadow-md active:scale-95"
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95"
 						>
 							{t('navigation.logout') || 'Log Out'}
 						</Button>

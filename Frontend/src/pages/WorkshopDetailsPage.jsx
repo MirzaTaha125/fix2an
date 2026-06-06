@@ -6,6 +6,7 @@ import { Badge } from '../components/ui/Badge'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatDate } from '../utils/cn'
+import { formatSwedishPhone } from '../utils/swedishPhone'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { adminAPI } from '../services/api'
@@ -44,7 +45,7 @@ export default function WorkshopDetailsPage() {
 				if (user.role === 'WORKSHOP') {
 					navigate('/workshop/requests', { replace: true })
 				} else {
-					navigate('/my-cases', { replace: true })
+					navigate('/contract', { replace: true })
 				}
 			}
 		}
@@ -126,7 +127,7 @@ export default function WorkshopDetailsPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-white flex flex-col">
+			<div className="list-page-shell bg-white">
 				<Navbar />
 				<div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12 sm:pb-16 w-full">
 					{/* Header Skeleton */}
@@ -241,7 +242,7 @@ export default function WorkshopDetailsPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-white flex flex-col">
+		<div className="list-page-shell bg-white">
 			<Navbar />
 			<div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12 sm:pb-16 w-full">
 				{/* Header */}
@@ -351,7 +352,7 @@ export default function WorkshopDetailsPage() {
 												<Phone className="w-3.5 h-3.5" />
 												{t('admin.workshops.details.phone')}
 											</p>
-											<p className="text-sm" style={{ color: '#05324f' }}>{workshop.phone || t('common.no_data')}</p>
+											<p className="text-sm" style={{ color: '#05324f' }}>{formatSwedishPhone(workshop.phone) || t('common.no_data')}</p>
 										</div>
 										<div>
 											<p className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5">

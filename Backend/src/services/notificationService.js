@@ -5,8 +5,8 @@ import { sendEmail, emailTemplates, isEmailConfigured } from '../config/email.js
 import User from '../models/User.js'
 import Workshop from '../models/Workshop.js'
 
-const getBaseUrl = () => process.env.FRONTEND_URL || global.dynamicFrontendUrl || 'http://localhost:5173'
-const getMyCasesUrl = () => `${getBaseUrl()}/my-cases`
+const getBaseUrl = () => process.env.FRONTEND_URL || global.dynamicFrontendUrl || 'http://localhost:3000'
+const getMyCasesUrl = () => `${getBaseUrl()}/contract`
 const getRequestsUrl = () => `${getBaseUrl()}/workshop/requests`
 const getAuthUrl = () => `${getBaseUrl()}/auth/signin`
 

@@ -28,15 +28,20 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 			registrationNumber,
 		} = req.body
 
-		if (!vehicleId || !reportIds || !latitude || !longitude || !address || !city || !expiresAt) {
+		if (!vehicleId || !Array.isArray(reportIds) || latitude == null || longitude == null || !address || !city || !expiresAt) {
 			return res.status(400).json({ message: 'Missing required fields' })
+		}
+
+		const trimmedDescription = typeof description === 'string' ? description.trim() : ''
+		if (!trimmedDescription) {
+			return res.status(400).json({ message: 'Description is required' })
 		}
 
 		const request = await Request.create({
 			customerId: req.user._id,
 			vehicleId,
 			reportIds,
-			description,
+			description: trimmedDescription,
 			latitude,
 			longitude,
 			address,
@@ -121,6 +126,10 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 					})),
 					bookings: await Promise.all(bookings.map(async (booking) => {
 						const review = await Review.findOne({ bookingId: booking._id })
+						const workshopImage = booking.workshopId?.userId?.image
+						if (booking.workshopId && workshopImage) {
+							booking.workshopId.image = workshopImage
+						}
 						return {
 							id: booking._id,
 							_id: booking._id,
@@ -132,7 +141,8 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 								companyName: booking.workshopId?.companyName,
 								rating: booking.workshopId?.rating || 0,
 								reviewCount: booking.workshopId?.reviewCount || 0,
-								logo: booking.workshopId?.userId?.image,
+								logo: workshopImage,
+								image: workshopImage,
 								address: {
 									city: booking.workshopId?.city
 								}
@@ -237,7 +247,13 @@ router.patch('/:id', authenticate, async (req, res) => {
 
 		// Update fields
 		if (updateData.vehicleId) request.vehicleId = updateData.vehicleId
-		if (updateData.description !== undefined) request.description = updateData.description
+		if (updateData.description !== undefined) {
+			const trimmedDescription = typeof updateData.description === 'string' ? updateData.description.trim() : ''
+			if (!trimmedDescription) {
+				return res.status(400).json({ message: 'Description is required' })
+			}
+			request.description = trimmedDescription
+		}
 		if (updateData.latitude) request.latitude = updateData.latitude
 		if (updateData.longitude) request.longitude = updateData.longitude
 		if (updateData.address) request.address = updateData.address

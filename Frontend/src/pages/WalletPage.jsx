@@ -7,7 +7,7 @@ import DepositModal from '../components/wallet/DepositModal'
 import WithdrawModal from '../components/wallet/WithdrawModal'
 import { walletAPI } from '../services/api'
 import { toast } from 'react-hot-toast'
-import moment from 'moment'
+import { formatDateTime } from '../utils/cn'
 import { useAuth } from '../context/AuthContext'
 
 
@@ -63,7 +63,7 @@ export default function WalletPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans mb-16 md:mb-0 relative">
+		<div className="list-page-shell bg-[#f8fafc] font-sans relative">
 			<Navbar />
 
 			<main className="flex-grow pt-28 pb-20">
@@ -155,7 +155,7 @@ export default function WalletPage() {
 													</div>
 													<div className="flex flex-col">
 														<span className="font-semibold text-gray-900 text-[15px]">{tx.description}</span>
-														<span className="text-xs text-gray-400 font-medium">{moment(tx.createdAt).format('MMM D, HH:mm')}</span>
+														<span className="text-xs text-gray-400 font-medium">{formatDateTime(tx.createdAt)}</span>
 													</div>
 												</div>
 												<div className="flex flex-col items-end gap-1">
@@ -207,7 +207,7 @@ export default function WalletPage() {
 											transactions.map((tx) => (
 												<tr key={tx._id} className="border-b border-gray-50/50 hover:bg-gray-50/30 transition-colors group cursor-default">
 													<td className="py-5 px-6 md:px-8 whitespace-nowrap text-sm text-gray-500 font-medium group-hover:text-gray-700 transition-colors">
-														{moment(tx.createdAt).format('MMM D, YYYY • HH:mm')}
+														{formatDateTime(tx.createdAt)}
 													</td>
 													<td className="py-5 px-6">
 														<div className="flex items-center gap-3">

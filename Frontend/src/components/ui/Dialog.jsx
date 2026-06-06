@@ -7,7 +7,7 @@ export function Dialog({ open, onOpenChange, children, className = '' }) {
 	if (!open) return null
 
 	const dialogContent = (
-		<div className="fixed inset-0 z-[9999] flex items-center justify-center">
+		<div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4">
 			{/* Backdrop */}
 			<div 
 				className="fixed inset-0 bg-black/50"
@@ -42,17 +42,17 @@ export function DialogContent({ children, onClose, className = '' }) {
 	)
 }
 
-export function DialogTitle({ children }) {
+export function DialogTitle({ children, className = '' }) {
 	return (
-		<h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900">
+		<h2 className={`text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900 ${className}`}>
 			{children}
 		</h2>
 	)
 }
 
-export function DialogDescription({ children }) {
+export function DialogDescription({ children, className = '' }) {
 	return (
-		<p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
+		<p className={`text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6 ${className}`}>
 			{children}
 		</p>
 	)
@@ -68,7 +68,7 @@ export function DialogHeader({ children, className = '' }) {
 
 export function DialogFooter({ children, className = '' }) {
 	return (
-		<div className={`flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 ${className}`}>
+		<div className={`flex w-full min-w-0 flex-col-reverse gap-3 sm:flex-row ${className}`}>
 			{children}
 		</div>
 	)

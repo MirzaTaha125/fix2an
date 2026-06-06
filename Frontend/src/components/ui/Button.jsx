@@ -19,14 +19,25 @@ const buttonSizes = {
 	icon: 'h-10 w-10',
 }
 
-export const Button = React.forwardRef(({ className, variant = 'default', size = 'default', ...props }, ref) => {
+export const Button = React.forwardRef(({ className, variant = 'default', size = 'default', asChild = false, children, ...props }, ref) => {
 	const baseClasses =
 		'inline-flex items-center justify-center whitespace-nowrap rounded-btn text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#34C759] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer'
 	const variantClass = buttonVariants[variant] || buttonVariants.default
 	const sizeClass = buttonSizes[size] || buttonSizes.default
+	const classes = cn(baseClasses, variantClass, sizeClass, className)
+
+	if (asChild && React.isValidElement(children)) {
+		return React.cloneElement(children, {
+			...props,
+			className: cn(classes, children.props.className),
+			ref,
+		})
+	}
 
 	return (
-		<button ref={ref} className={cn(baseClasses, variantClass, sizeClass, className)} {...props} />
+		<button ref={ref} className={classes} {...props}>
+			{children}
+		</button>
 	)
 })
 Button.displayName = 'Button'

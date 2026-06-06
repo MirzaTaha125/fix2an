@@ -2,137 +2,134 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
-import { Camera, Receipt, Calendar } from 'lucide-react'
-import { Button } from '../components/ui/Button'
+import {
+	Upload,
+	MessageCircle,
+	Tag,
+	ShieldCheck,
+	Wrench,
+	Banknote,
+	Sparkles,
+	Hand,
+	ArrowRight,
+	Lightbulb,
+} from 'lucide-react'
+
+const STEPS = [
+	{ icon: Upload, titleKey: 'mobile_step1_title', descKey: 'mobile_step1_desc' },
+	{ icon: MessageCircle, titleKey: 'mobile_step2_title', descKey: 'mobile_step2_desc' },
+	{ icon: Tag, titleKey: 'mobile_step3_title', descKey: 'mobile_step3_desc' },
+]
+
+const BENEFITS = [
+	{ icon: Banknote, labelKey: 'benefit_no_fees' },
+	{ icon: Sparkles, labelKey: 'benefit_free' },
+	{ icon: Hand, labelKey: 'benefit_you_choose' },
+]
 
 export default function HowItWorksPage() {
 	const { t } = useTranslation()
+	const prefix = 'homepage.how_it_works'
 
 	return (
-		<div className="min-h-screen bg-white">
+		<div className="list-page-shell bg-white">
 			<Navbar />
-			<div className="pt-20 pb-16">
-				{/* Header Section */}
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-					<div className="text-center">
-						<h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6" style={{ color: '#05324f' }}>
-							{t('homepage.how_it_works.title')}
-						</h1>
-						<p className="text-base md:text-lg max-w-3xl mx-auto leading-relaxed text-gray-600">
-							{t('homepage.how_it_works.subtitle')}
-						</p>
-					</div>
+
+			<main className="flex-1 max-w-2xl md:max-w-5xl mx-auto w-full px-4 pt-20 md:pt-28 pb-8">
+				<div className="text-center mb-6 mt-4 sm:mt-5">
+					<h1 className="text-xl sm:text-2xl font-semibold text-[#05324f] leading-tight mb-2">
+						{t(`${prefix}.title`)}
+					</h1>
+					<p className="text-sm text-gray-500 leading-relaxed">
+						{t(`${prefix}.intro`)}
+					</p>
 				</div>
 
-				{/* Steps Section */}
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="space-y-16 md:space-y-24">
-						{/* Step 1 */}
-						<div className="flex flex-col-reverse md:flex-row items-center gap-8 md:gap-12">
-							<Card className="w-full md:w-1/2 text-left border-0 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-visible bg-white group mt-4 md:mt-0" style={{ borderRadius: '20px' }}>
-								<div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" style={{ backgroundColor: '#34C759' }}></div>
-								<CardHeader className="relative z-10 pb-4 pt-6">
-									<div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 shadow-2xl group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: '#34C759' }}>
-										<Camera className="w-8 h-8 md:w-10 md:h-10 text-white" />
-									</div>
-									<div className="flex items-center gap-2 mb-2">
-										<span className="text-sm font-semibold text-gray-500">STEP 1</span>
-									</div>
-									<CardTitle className="text-xl md:text-2xl font-bold mb-3" style={{ color: '#333333' }}>
-										{t('homepage.how_it_works.step1.title')}
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="relative z-10 pb-6 px-6">
-									<CardDescription className="text-base md:text-lg leading-relaxed" style={{ color: '#666666', lineHeight: '1.8' }}>
-										{t('homepage.how_it_works.step1.description')}
-									</CardDescription>
-								</CardContent>
-							</Card>
-							<div className="w-full md:w-1/2 flex justify-center md:justify-end">
-								<div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center opacity-60 md:opacity-50">
-									<Camera className="w-24 h-24 md:w-32 md:h-32 text-green-400" />
+				<div className="space-y-0 mb-6">
+					{STEPS.map(({ icon: Icon, titleKey, descKey }, index) => (
+						<div key={titleKey} className="flex gap-3">
+							<div className="flex flex-col items-center shrink-0">
+								<div className="w-10 h-10 rounded-xl bg-[#38BC54] flex items-center justify-center text-white shadow-sm">
+									<Icon className="w-5 h-5" strokeWidth={2} />
 								</div>
+								{index < STEPS.length - 1 && (
+									<div className="w-px flex-1 min-h-[2rem] my-1 border-l border-dashed border-[#38BC54]/40" />
+								)}
+							</div>
+							<div className={`min-w-0 ${index < STEPS.length - 1 ? 'pb-5' : 'pb-1'}`}>
+								<p className="text-sm font-semibold text-[#05324f] leading-snug mb-1">
+									{index + 1}. {t(`${prefix}.${titleKey}`)}
+								</p>
+								<p className="text-xs text-gray-500 leading-relaxed">
+									{t(`${prefix}.${descKey}`)}
+								</p>
 							</div>
 						</div>
+					))}
+				</div>
 
-						{/* Step 2 */}
-						<div className="flex flex-col-reverse md:flex-row-reverse items-center gap-8 md:gap-12">
-							<Card className="w-full md:w-1/2 text-left border-0 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-visible bg-white group mt-4 md:mt-0" style={{ borderRadius: '20px' }}>
-								<div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" style={{ backgroundColor: '#34C759' }}></div>
-								<CardHeader className="relative z-10 pb-4 pt-6">
-									<div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 shadow-2xl group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: '#34C759' }}>
-										<Receipt className="w-8 h-8 md:w-10 md:h-10 text-white" />
-									</div>
-									<div className="flex items-center gap-2 mb-2">
-										<span className="text-sm font-semibold text-gray-500">STEP 2</span>
-									</div>
-									<CardTitle className="text-xl md:text-2xl font-bold mb-3" style={{ color: '#333333' }}>
-										{t('homepage.how_it_works.step2.title')}
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="relative z-10 pb-6 px-6">
-									<CardDescription className="text-base md:text-lg leading-relaxed" style={{ color: '#666666', lineHeight: '1.8' }}>
-										{t('homepage.how_it_works.step2.description')}
-									</CardDescription>
-								</CardContent>
-							</Card>
-							<div className="w-full md:w-1/2 flex justify-center md:justify-start">
-								<div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center opacity-60 md:opacity-50">
-									<Receipt className="w-24 h-24 md:w-32 md:h-32 text-green-400" />
-								</div>
-							</div>
+				<div className="space-y-3 mb-6">
+					<div className="rounded-2xl border border-[#38BC54]/25 bg-[#F8FCF9] p-4 flex items-start gap-3">
+						<div className="w-9 h-9 rounded-xl bg-[#E8F8EE] flex items-center justify-center shrink-0">
+							<ShieldCheck className="w-5 h-5 text-[#38BC54]" />
 						</div>
+						<div className="min-w-0">
+							<p className="text-sm font-semibold text-[#05324f] mb-1">{t(`${prefix}.why_title`)}</p>
+							<p className="text-xs text-gray-500 leading-relaxed">{t(`${prefix}.why_desc`)}</p>
+						</div>
+					</div>
 
-						{/* Step 3 */}
-						<div className="flex flex-col-reverse md:flex-row items-center gap-8 md:gap-12">
-							<Card className="w-full md:w-1/2 text-left border-0 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative overflow-visible bg-white group mt-4 md:mt-0" style={{ borderRadius: '20px' }}>
-								<div className="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" style={{ backgroundColor: '#34C759' }}></div>
-								<CardHeader className="relative z-10 pb-4 pt-6">
-									<div className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-4 shadow-2xl group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: '#34C759' }}>
-										<Calendar className="w-8 h-8 md:w-10 md:h-10 text-white" />
-									</div>
-									<div className="flex items-center gap-2 mb-2">
-										<span className="text-sm font-semibold text-gray-500">STEP 3</span>
-									</div>
-									<CardTitle className="text-xl md:text-2xl font-bold mb-3" style={{ color: '#333333' }}>
-										{t('homepage.how_it_works.step3.title')}
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="relative z-10 pb-6 px-6">
-									<CardDescription className="text-base md:text-lg leading-relaxed" style={{ color: '#666666', lineHeight: '1.8' }}>
-										{t('homepage.how_it_works.step3.description')}
-									</CardDescription>
-								</CardContent>
-							</Card>
-							<div className="w-full md:w-1/2 flex justify-center md:justify-end">
-								<div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center opacity-60 md:opacity-50">
-									<Calendar className="w-24 h-24 md:w-32 md:h-32 text-emerald-400" />
-								</div>
-							</div>
+					<div className="rounded-2xl border border-[#38BC54]/25 bg-[#F8FCF9] p-4 flex items-start gap-3">
+						<div className="w-9 h-9 rounded-xl bg-[#E8F8EE] flex items-center justify-center shrink-0">
+							<Wrench className="w-5 h-5 text-[#38BC54]" />
+						</div>
+						<div className="min-w-0">
+							<p className="text-sm font-semibold text-[#05324f] mb-1">{t(`${prefix}.not_only_title`)}</p>
+							<p className="text-xs text-gray-500 leading-relaxed">{t(`${prefix}.not_only_desc`)}</p>
 						</div>
 					</div>
 				</div>
 
-				{/* CTA Section */}
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
-					<div className="bg-gradient-to-r from-green-600 to-green-800 rounded-2xl p-8 md:p-12 text-center text-white">
-						<h2 className="text-xl md:text-xl font-bold mb-4 text-center">
-							{t('homepage.cta.title') || 'Ready to find your workshop?'}
-						</h2>
-						<p className="text-lg mb-8 opacity-90 text-center">
-							{t('homepage.cta.subtitle') || 'Upload your inspection report and get offers today'}
-						</p>
-						<div className="flex justify-center">
-							<Link to="/upload">
-								<Button size="lg" className="bg-white text-green-600 hover:bg-gray-100 font-semibold px-8 py-6 text-lg">
-									{t('homepage.cta.button') || 'Start now - It\'s free'}
-								</Button>
-							</Link>
+				<div className="grid grid-cols-3 gap-2 mb-8">
+					{BENEFITS.map(({ icon: Icon, labelKey }) => (
+						<div key={labelKey} className="flex flex-col items-center text-center px-1">
+							<div className="w-10 h-10 rounded-xl bg-[#F2F9F4] flex items-center justify-center mb-2">
+								<Icon className="w-5 h-5 text-[#38BC54]" strokeWidth={2} />
+							</div>
+							<p className="text-[10px] sm:text-[11px] font-semibold text-[#05324f] leading-tight">
+								{t(`${prefix}.${labelKey}`)}
+							</p>
 						</div>
-					</div>
+					))}
 				</div>
-			</div>
+
+				<Link
+					to="/upload"
+					className="w-full h-14 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-md shadow-green-100 active:scale-[0.99] transition-all mb-4"
+				>
+					{t(`${prefix}.cta_button`)}
+					<ArrowRight className="w-5 h-5" />
+				</Link>
+
+				<div className="text-center mb-6">
+					<Link
+						to="/"
+						className="text-sm font-semibold text-[#05324f] underline underline-offset-4 hover:opacity-80 active:opacity-70 transition-opacity"
+					>
+						{t(`${prefix}.back_home`)}
+					</Link>
+				</div>
+
+				<div className="rounded-2xl bg-gray-50 border border-gray-100 p-4 flex items-start gap-3">
+					<div className="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center shrink-0">
+						<Lightbulb className="w-4 h-4 text-[#38BC54]" />
+					</div>
+					<p className="text-xs text-gray-500 leading-relaxed">
+						{t(`${prefix}.tip`)}
+					</p>
+				</div>
+			</main>
+
 			<Footer />
 		</div>
 	)

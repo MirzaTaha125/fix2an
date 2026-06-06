@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
+import { PhoneInput } from '../components/ui/PhoneInput'
 import { Label } from '../components/ui/Label'
 import { Textarea } from '../components/ui/Textarea'
-import { Badge } from '../components/ui/Badge'
-import { Skeleton } from '../components/ui/Skeleton'
+import { Badge, VerifiedBadge } from '../components/ui/Badge'
+import { ProfileMenuSkeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
-import { Dialog, DialogContent, DialogTitle } from '../components/ui/Dialog'
+import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from '../components/ui/Dialog'
 import {
 	User,
 	Building2,
@@ -25,6 +26,7 @@ import {
 	Users,
 	DollarSign,
 	CheckCircle,
+	Check,
 	Star,
 	Calendar,
 	Send,
@@ -43,9 +45,11 @@ import Footer from '../components/Footer'
 
 import { workshopAPI, authAPI, uploadAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
+import { formatSwedishPhone } from '../utils/swedishPhone'
 
 export default function WorkshopProfilePage() {
 	const navigate = useNavigate()
+	const [searchParams, setSearchParams] = useSearchParams()
 	const { user, loading: authLoading, fetchUser, logout } = useAuth()
 	const { t } = useTranslation()
 	const [loading, setLoading] = useState(true)
@@ -78,6 +82,7 @@ export default function WorkshopProfilePage() {
 	})
 	const [originalProfileData, setOriginalProfileData] = useState({})
 	const [settingsOpen, setSettingsOpen] = useState(false)
+	const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
 	const [showInfoOnMobile, setShowInfoOnMobile] = useState(false)
 	const { i18n } = useTranslation()
 
@@ -92,7 +97,7 @@ export default function WorkshopProfilePage() {
 				if (user.role === 'ADMIN') {
 					navigate('/admin', { replace: true })
 				} else {
-					navigate('/my-cases', { replace: true })
+					navigate('/contract', { replace: true })
 				}
 			}
 		}
@@ -131,7 +136,7 @@ export default function WorkshopProfilePage() {
 				const profile = {
 					name: userData?.name || '',
 					email: userData?.email || workshopData?.email || '',
-					phone: userData?.phone || workshopData?.phone || '',
+					phone: formatSwedishPhone(userData?.phone || workshopData?.phone || ''),
 					companyName: workshopData?.companyName || '',
 					organizationNumber: workshopData?.organizationNumber || '',
 					address: workshopData?.address || '',
@@ -158,6 +163,24 @@ export default function WorkshopProfilePage() {
 			fetchData()
 		}
 	}, [user])
+
+	useEffect(() => {
+		setShowInfoOnMobile(searchParams.get('view') === 'info')
+	}, [searchParams])
+
+	const openProfileInfo = () => {
+		setShowInfoOnMobile(true)
+		setSearchParams({ view: 'info' })
+		setTimeout(() => {
+			const el = document.getElementById('workshop-info-form')
+			if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+		}, 50)
+	}
+
+	const closeProfileInfo = () => {
+		setShowInfoOnMobile(false)
+		setSearchParams({})
+	}
 
 	const handleInputChange = (field, value) => {
 		setProfileData((prev) => ({
@@ -274,102 +297,11 @@ export default function WorkshopProfilePage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-white">
+			<div className="list-page-shell bg-[#FAFBFC]">
 				<Navbar />
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-32 pb-12">
-					{/* Header Skeleton */}
-					<div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-						<div className="flex items-center gap-4 flex-1">
-							<Skeleton className="w-20 h-20 sm:w-24 sm:h-24 rounded-full" />
-							<div className="space-y-3">
-								<Skeleton className="h-8 sm:h-10 w-48 sm:w-64" />
-							</div>
-						</div>
-						<Skeleton className="h-9 w-24 sm:w-32 rounded-md shrink-0" />
-					</div>
-					<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-						{/* Main Profile Form Box Skeleton */}
-						<Card className="lg:col-span-2 shadow-sm border-gray-200">
-							<CardHeader className="border-b border-gray-100 pb-5">
-								<Skeleton className="h-6 w-48" />
-							</CardHeader>
-							<CardContent className="p-6 space-y-8">
-								<div className="space-y-4">
-									<Skeleton className="h-5 w-32" />
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-										{[...Array(3)].map((_, i) => (
-											<div key={`skel-personal-${i}`} className="space-y-2">
-												<Skeleton className="h-4 w-20" />
-												<Skeleton className="h-10 w-full" />
-											</div>
-										))}
-									</div>
-								</div>
-								<div className="space-y-4">
-									<Skeleton className="h-5 w-40" />
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-										{[...Array(2)].map((_, i) => (
-											<div key={`skel-comp-${i}`} className="space-y-2">
-												<Skeleton className="h-4 w-24" />
-												<Skeleton className="h-10 w-full" />
-											</div>
-										))}
-									</div>
-								</div>
-								<div className="space-y-4">
-									<Skeleton className="h-5 w-44" />
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-										<div className="space-y-2 md:col-span-2">
-											<Skeleton className="h-4 w-16" />
-											<Skeleton className="h-10 w-full" />
-										</div>
-										{[...Array(2)].map((_, i) => (
-											<div key={`skel-loc-${i}`} className="space-y-2">
-												<Skeleton className="h-4 w-20" />
-												<Skeleton className="h-10 w-full" />
-											</div>
-										))}
-									</div>
-								</div>
-								<div className="space-y-4">
-									<Skeleton className="h-5 w-48" />
-									<div className="space-y-4">
-										<div className="space-y-2">
-											<Skeleton className="h-4 w-16" />
-											<Skeleton className="h-10 w-full" />
-										</div>
-										<div className="space-y-2">
-											<Skeleton className="h-4 w-24" />
-											<Skeleton className="h-24 w-full" />
-										</div>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-						{/* Sidebar Extraneous Data Block Skeleton */}
-						<div className="space-y-6">
-							<Card className="shadow-sm border-gray-200">
-								<CardHeader className="border-b border-gray-100 pb-5">
-									<Skeleton className="h-6 w-32" />
-								</CardHeader>
-								<CardContent className="p-6 space-y-6">
-									<div>
-										<div className="flex justify-between items-center mb-2">
-											<Skeleton className="h-4 w-16" />
-											<Skeleton className="h-6 w-12" />
-										</div>
-										<Skeleton className="h-4 w-24" />
-									</div>
-									<div className="pt-4 border-t border-gray-100 flex justify-between items-center">
-										<Skeleton className="h-4 w-20" />
-										<Skeleton className="h-6 w-8" />
-									</div>
-								</CardContent>
-							</Card>
-						</div>
-					</div>
+				<div className="list-page-main">
+					<ProfileMenuSkeleton menuRows={3} avatarClassName="rounded-xl" />
 				</div>
-				
 				<Footer />
 			</div>
 		)
@@ -380,21 +312,27 @@ export default function WorkshopProfilePage() {
 	}
 
 	const handleLogout = () => {
+		setIsLogoutConfirmOpen(true)
+	}
+
+	const confirmLogout = () => {
+		setIsLogoutConfirmOpen(false)
 		logout()
 		navigate('/auth/signin', { replace: true })
 	}
 
 	return (
-		<div className="min-h-screen bg-[#FAFBFC] md:bg-white">
+		<div className="list-page-shell bg-[#FAFBFC]">
 			<Navbar />
 
-			{/* Mobile-only menu view (image 10) */}
-			<div className={`md:hidden max-w-2xl mx-auto px-4 pt-20 pb-24 ${showInfoOnMobile ? 'hidden' : 'block'}`}>
+			<div className="list-page-main">
+			{/* Profile menu — all breakpoints */}
+			<div className={`app-page-container max-w-2xl md:max-w-5xl lg:max-w-7xl pt-24 md:pt-32 ${showInfoOnMobile ? 'hidden' : 'block'}`}>
 				<div className="mb-6">
-					<h1 className="text-3xl font-black text-[#05324f] leading-tight mb-1.5">
+					<h1 className="text-xl sm:text-2xl font-semibold text-[#05324f] leading-tight mb-1.5">
 						{t('workshop.profile.title') || 'Profile'}
 					</h1>
-					<p className="text-sm text-gray-500 leading-snug">
+					<p className="text-xs sm:text-sm text-gray-500 leading-snug">
 						{t('workshop.profile.subtitle_mobile') || 'Manage your workshop and your settings.'}
 					</p>
 				</div>
@@ -402,13 +340,7 @@ export default function WorkshopProfilePage() {
 				{/* Workshop hero card */}
 				<button
 					type="button"
-					onClick={() => {
-						setShowInfoOnMobile(true)
-						setTimeout(() => {
-							const el = document.getElementById('workshop-info-form')
-							if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-						}, 50)
-					}}
+					onClick={openProfileInfo}
 					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 mb-5 flex items-center gap-3 active:scale-[0.99] transition-transform"
 				>
 					<div className="w-14 h-14 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0 overflow-hidden">
@@ -419,33 +351,31 @@ export default function WorkshopProfilePage() {
 						)}
 					</div>
 					<div className="flex-1 min-w-0 text-left">
-						<h3 className="text-base font-black text-[#05324f] truncate">
+						<h3 className="text-base font-semibold text-[#05324f] truncate">
 							{profileData.companyName || profileData.name || t('workshop.profile.workshop')}
 						</h3>
-						{profileData.isVerified && (
-							<div className="inline-flex items-center gap-1 mt-1 text-[10px] font-black bg-[#F2F9F4] text-[#38BC54] px-2 py-0.5 rounded-md border border-[#38BC54]/20">
-								<ShieldCheck size={10} className="shrink-0" />
-								{t('workshop.profile.verified_workshop') || 'Verified workshop'}
-							</div>
+						{profileData.isVerified ? (
+							<VerifiedBadge className="mt-1" />
+						) : (
+							<Badge
+								variant="outline"
+								className="mt-1 bg-gray-100 text-gray-600 border-gray-300"
+							>
+								{t('workshop.profile.unverified') || 'Unverified'}
+							</Badge>
 						)}
 					</div>
 					<ChevronRight className="text-gray-300 shrink-0" size={20} />
 				</button>
 
 				{/* Menu items */}
-				<div className="space-y-3 mb-6">
+				<div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
 					{[
 						{
 							icon: <Building2 className="w-5 h-5 text-[#05324f]" />,
 							title: t('workshop.profile.workshop_info_title') || 'Workshop information',
 							desc: t('workshop.profile.workshop_info_desc') || 'Address, contact details and opening hours',
-							onClick: () => {
-								setShowInfoOnMobile(true)
-								setTimeout(() => {
-									const el = document.getElementById('workshop-info-form')
-									if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-								}, 50)
-							},
+							onClick: openProfileInfo,
 						},
 						{
 							icon: <Settings className="w-5 h-5 text-[#05324f]" />,
@@ -459,22 +389,24 @@ export default function WorkshopProfilePage() {
 							desc: t('workshop.profile.help_desc') || 'FAQ and contact support',
 							onClick: () => navigate('/support'),
 						},
-					].map((item, i) => (
-						<button
-							key={i}
-							type="button"
-							onClick={item.onClick}
-							className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 active:scale-[0.99] transition-transform text-left"
-						>
-							<div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
-								{item.icon}
-							</div>
-							<div className="flex-1 min-w-0">
-								<p className="text-sm font-black text-[#05324f]">{item.title}</p>
-								<p className="text-[11px] text-gray-400 font-semibold leading-tight mt-0.5">{item.desc}</p>
-							</div>
-							<ChevronRight className="text-gray-300 shrink-0" size={20} />
-						</button>
+					].map((item, i, arr) => (
+						<div key={item.title}>
+							<button
+								type="button"
+								onClick={item.onClick}
+								className="w-full p-4 flex items-center gap-3 active:bg-gray-50 transition-colors text-left"
+							>
+								<div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
+									{item.icon}
+								</div>
+								<div className="flex-1 min-w-0">
+									<p className="text-sm font-semibold text-[#05324f]">{item.title}</p>
+									<p className="text-[11px] text-gray-400 font-medium leading-tight mt-0.5">{item.desc}</p>
+								</div>
+								<ChevronRight className="text-gray-300 shrink-0" size={20} />
+							</button>
+							{i < arr.length - 1 && <div className="border-b border-gray-100 mx-4" />}
+						</div>
 					))}
 				</div>
 
@@ -482,7 +414,7 @@ export default function WorkshopProfilePage() {
 				<button
 					type="button"
 					onClick={handleLogout}
-					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-center gap-2 text-red-600 font-black text-sm active:scale-[0.99] transition-transform"
+					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-center gap-2 text-red-600 font-semibold text-sm active:scale-[0.99] transition-transform"
 				>
 					<LogOut className="w-5 h-5" />
 					{t('workshop.profile.logout') || 'Log out'}
@@ -490,63 +422,56 @@ export default function WorkshopProfilePage() {
 
 			</div>
 
-			{/* Profile form (always on desktop; on mobile, only when "Verkstadsinformation" tapped) */}
-			<div id="workshop-info-form" className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-32 pb-12 ${showInfoOnMobile ? 'block' : 'hidden md:block'}`} style={{ scrollMarginTop: '5rem' }}>
-				{/* Mobile back button */}
-				<button
-					type="button"
-					onClick={() => setShowInfoOnMobile(false)}
-					className="md:hidden mb-4 flex items-center gap-1.5 text-[#38BC54] font-bold text-sm active:opacity-70"
-				>
-					<ChevronRight className="w-4 h-4 rotate-180" />
-					{t('common.back') || 'Back'}
-				</button>
+			<div
+				id="workshop-info-form"
+				className={`app-page-container max-w-2xl md:max-w-5xl lg:max-w-7xl pt-24 md:pt-32 ${showInfoOnMobile ? 'block' : 'hidden'}`}
+				style={{ scrollMarginTop: '5rem' }}
+			>
 
 				{/* Header Section */}
-				<div className="mb-8">
-					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-					<div className="flex items-center gap-4 flex-1">
-						<div className="relative group">
-							{profileData.image && profileData.image.trim() !== '' ? (
-								<img 
-									src={profileData.image} 
-									alt={profileData.name || profileData.companyName || 'Profile'} 
-									className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white shadow-lg"
-									onError={(e) => {
-										// If image fails to load, hide image and show default
-										const parent = e.target.parentElement
-										e.target.style.display = 'none'
-										const fallback = parent.querySelector('.profile-image-fallback')
-										if (fallback) {
-											fallback.style.display = 'flex'
-										}
-									}}
-									onLoad={(e) => {
-										// Hide fallback when image loads successfully
-										const parent = e.target.parentElement
-										const fallback = parent.querySelector('.profile-image-fallback')
-										if (fallback) {
-											fallback.style.display = 'none'
-										}
-									}}
-								/>
-							) : null}
-							<div 
-								className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#F0F2F5] flex items-center justify-center border-4 border-white shadow-lg profile-image-fallback ${profileData.image && profileData.image.trim() !== '' ? 'hidden' : ''}`}
-							>
-								<User className="w-12 h-12 sm:w-14 sm:h-14 text-[#ACB0B4]" />
+				<div className="mb-6">
+					<h1 className="text-xl sm:text-2xl font-semibold text-[#05324f] leading-tight mb-1.5">
+						{t('workshop.profile.workshop_info_title') || 'Workshop information'}
+					</h1>
+					<p className="text-xs sm:text-sm text-gray-500 leading-snug mb-5">
+						{t('workshop.profile.workshop_info_desc') || 'Address, contact details and opening hours'}
+					</p>
+					<div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex items-center gap-3">
+						<div className="relative shrink-0">
+							<div className="w-14 h-14 rounded-xl bg-[#1a1a1a] flex items-center justify-center overflow-hidden border border-gray-100">
+								{profileData.image && profileData.image.trim() !== '' ? (
+									<img
+										src={profileData.image}
+										alt={profileData.name || profileData.companyName || 'Profile'}
+										className="w-full h-full object-cover"
+										onError={(e) => {
+											e.target.style.display = 'none'
+											const fallback = e.target.parentElement?.querySelector('.profile-image-fallback')
+											if (fallback) fallback.style.display = 'flex'
+										}}
+										onLoad={(e) => {
+											const fallback = e.target.parentElement?.querySelector('.profile-image-fallback')
+											if (fallback) fallback.style.display = 'none'
+										}}
+									/>
+								) : null}
+								<div
+									className={`profile-image-fallback w-full h-full items-center justify-center ${profileData.image && profileData.image.trim() !== '' ? 'hidden' : 'flex'}`}
+								>
+									<Building2 className="text-white/30 w-6 h-6" />
+								</div>
 							</div>
 							<button
 								type="button"
 								onClick={() => document.getElementById('profile-image-input')?.click()}
 								disabled={isUploadingImage}
-								className="absolute bottom-0 right-0 p-2 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+								className="absolute -bottom-0.5 -right-0.5 p-1.5 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-full shadow-md transition-all disabled:opacity-50"
 								title="Change profile image"
 							>
 								{isUploadingImage ? (
-									<div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+									<div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
 								) : (
-									<Camera className="w-4 h-4" />
+									<Camera className="w-3 h-3" />
 								)}
 							</button>
 							<input
@@ -557,33 +482,28 @@ export default function WorkshopProfilePage() {
 								className="hidden"
 							/>
 						</div>
-						<div>
-							<div className="flex items-center gap-3 flex-wrap">
-								<h1 className="text-xl sm:text-xl font-bold text-gray-900 mb-2">
-									{profileData.companyName || profileData.name || t('workshop.profile.workshop')}
-								</h1>
-								<Badge 
-									variant={profileData.isVerified ? 'default' : 'outline'}
-									className={profileData.isVerified 
-										? 'bg-green-600 text-white border-green-600' 
-										: 'bg-gray-100 text-gray-600 border-gray-300'
-									}
-								>
-									{t(`workshop.profile.${profileData.isVerified ? 'verified' : 'unverified'}`) || (profileData.isVerified ? 'Verified' : 'Unverified')}
+						<div className="flex-1 min-w-0 text-left">
+							<h3 className="text-base font-semibold text-[#05324f] truncate">
+								{profileData.companyName || profileData.name || t('workshop.profile.workshop')}
+							</h3>
+							{profileData.isVerified ? (
+								<VerifiedBadge className="mt-1" />
+							) : (
+								<Badge variant="outline" className="mt-1 bg-gray-100 text-gray-600 border-gray-300">
+									{t('workshop.profile.unverified') || 'Unverified'}
 								</Badge>
-							</div>
+							)}
 						</div>
 					</div>
 				</div>
-			</div>
 				
 			{/* Main Content Grid */}
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 					{/* Profile Information */}
-					<Card className="lg:col-span-2 bg-white border border-gray-200 shadow-sm">
-						<CardHeader className="border-b border-gray-200 bg-white">
+					<Card className="lg:col-span-2 bg-white border border-gray-100 shadow-sm rounded-2xl">
+						<CardHeader className="border-b border-gray-100 bg-white px-4 py-3">
 							<div className="flex items-center justify-between gap-4">
-								<CardTitle className="text-xl font-bold text-gray-900">
+								<CardTitle className="text-sm font-semibold text-[#05324f]">
 									{t('workshop.profile.profile_info') || 'Profile Information'}
 								</CardTitle>
 								
@@ -626,15 +546,15 @@ export default function WorkshopProfilePage() {
 								)}
 							</div>
 						</CardHeader>
-						<CardContent className="p-6 space-y-8">
+						<CardContent className="p-4 space-y-5">
 							{/* Personal Details */}
 							<div>
-								<div className="flex items-center gap-2 mb-4">
-									<h3 className="text-lg font-semibold text-gray-900">{t('workshop.profile.personal_details') || 'Personal Details'}</h3>
+								<div className="flex items-center gap-2 mb-3">
+									<h3 className="text-sm font-semibold text-[#05324f]">{t('workshop.profile.personal_details') || 'Personal Details'}</h3>
 								</div>
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div className="space-y-2">
-										<Label htmlFor="name" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="name" className="text-[11px] font-semibold text-gray-400">
 											{t('workshop.profile.name') || 'Name'}
 										</Label>
 										{isEditing ? (
@@ -646,14 +566,14 @@ export default function WorkshopProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.name || t('workshop.profile.not_available') || 'N/A'}
 											</div>
 										)}
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="email" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="email" className="text-[11px] font-semibold text-gray-400">
 											{t('workshop.profile.email') || 'Email'}
 										</Label>
 										{isEditing ? (
@@ -666,28 +586,28 @@ export default function WorkshopProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.email || t('workshop.profile.not_available') || 'N/A'}
 											</div>
 										)}
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="phone" className="text-[11px] font-semibold text-gray-400">
 											{t('workshop.profile.phone') || 'Phone'}
 										</Label>
 										{isEditing ? (
-											<Input
+											<PhoneInput
 												id="phone"
-												type="tel"
 												value={profileData.phone}
 												onChange={(e) => handleInputChange('phone', e.target.value)}
 												disabled={isSaving}
 												className="w-full"
+												placeholder={t('workshop.profile.phone') || 'Phone number'}
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
-												{profileData.phone || t('workshop.profile.not_available') || 'N/A'}
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
+												{formatSwedishPhone(profileData.phone) || t('workshop.profile.not_available') || 'N/A'}
 											</div>
 										)}
 									</div>
@@ -696,12 +616,12 @@ export default function WorkshopProfilePage() {
 
 							{/* Company Details */}
 							<div>
-								<div className="flex items-center gap-2 mb-4">
-									<h3 className="text-lg font-semibold text-gray-900">{t('workshop.profile.company_details') || 'Company Details'}</h3>
+								<div className="flex items-center gap-2 mb-3">
+									<h3 className="text-sm font-semibold text-[#05324f]">{t('workshop.profile.company_details') || 'Company Details'}</h3>
 								</div>
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div className="space-y-2">
-										<Label htmlFor="companyName" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="companyName" className="text-[11px] font-semibold text-gray-400">
 											{t('workshop.profile.company_name') || 'Company Name'}
 										</Label>
 										{isEditing ? (
@@ -713,14 +633,14 @@ export default function WorkshopProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.companyName || t('workshop.profile.not_available') || 'N/A'}
 											</div>
 										)}
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="organizationNumber" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="organizationNumber" className="text-[11px] font-semibold text-gray-400">
 											{t('workshop.profile.organization_number') || 'Organization Number'}
 										</Label>
 										{isEditing ? (
@@ -732,7 +652,7 @@ export default function WorkshopProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.organizationNumber || t('workshop.profile.not_available') || 'N/A'}
 											</div>
 										)}
@@ -742,13 +662,13 @@ export default function WorkshopProfilePage() {
 
 							{/* Address Information */}
 							<div>
-								<div className="flex items-center gap-2 mb-4">
-									<MapPin className="w-5 h-5 text-gray-600" />
-									<h3 className="text-lg font-semibold text-gray-900">{t('workshop.profile.address_information') || 'Address Information'}</h3>
+								<div className="flex items-center gap-2 mb-3">
+									<MapPin className="w-4 h-4 text-gray-400" />
+									<h3 className="text-sm font-semibold text-[#05324f]">{t('workshop.profile.address_information') || 'Address Information'}</h3>
 								</div>
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div className="space-y-2 md:col-span-2">
-										<Label htmlFor="address" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="address" className="text-[11px] font-semibold text-gray-400">
 											{t('workshop.profile.address') || 'Address'}
 										</Label>
 										{isEditing ? (
@@ -760,14 +680,14 @@ export default function WorkshopProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.address || t('workshop.profile.not_available') || 'N/A'}
 											</div>
 										)}
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="city" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="city" className="text-[11px] font-semibold text-gray-400">
 											{t('workshop.profile.city') || 'City'}
 										</Label>
 										{isEditing ? (
@@ -779,14 +699,14 @@ export default function WorkshopProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.city || t('workshop.profile.not_available') || 'N/A'}
 											</div>
 										)}
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="postalCode" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="postalCode" className="text-[11px] font-semibold text-gray-400">
 											{t('workshop.profile.postal_code') || 'Postal Code'}
 										</Label>
 										{isEditing ? (
@@ -798,7 +718,7 @@ export default function WorkshopProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.postalCode || t('workshop.profile.not_available') || 'N/A'}
 											</div>
 										)}
@@ -808,13 +728,13 @@ export default function WorkshopProfilePage() {
 
 							{/* Additional Information */}
 							<div>
-								<div className="flex items-center gap-2 mb-4">
-									<Globe className="w-5 h-5 text-gray-600" />
-									<h3 className="text-lg font-semibold text-gray-900">{t('workshop.profile.additional_information') || 'Additional Information'}</h3>
+								<div className="flex items-center gap-2 mb-3">
+									<Globe className="w-4 h-4 text-gray-400" />
+									<h3 className="text-sm font-semibold text-[#05324f]">{t('workshop.profile.additional_information') || 'Additional Information'}</h3>
 								</div>
 								<div className="space-y-4">
 									<div className="space-y-2">
-										<Label htmlFor="website" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="website" className="text-[11px] font-semibold text-gray-400">
 											{t('workshop.profile.website') || 'Website'}
 										</Label>
 										{isEditing ? (
@@ -827,14 +747,14 @@ export default function WorkshopProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-900">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
 												{profileData.website || t('workshop.profile.not_available') || 'N/A'}
 											</div>
 										)}
 									</div>
 
 									<div className="space-y-2">
-										<Label htmlFor="description" className="text-sm font-medium text-gray-700">
+										<Label htmlFor="description" className="text-[11px] font-semibold text-gray-400">
 											{t('workshop.profile.description') || 'Description'}
 										</Label>
 										{isEditing ? (
@@ -847,7 +767,7 @@ export default function WorkshopProfilePage() {
 												className="w-full"
 											/>
 										) : (
-											<div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700 whitespace-pre-wrap min-h-[100px]">
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f] whitespace-pre-wrap min-h-[80px]">
 												{profileData.description || t('workshop.profile.not_available') || 'N/A'}
 											</div>
 										)}
@@ -859,19 +779,19 @@ export default function WorkshopProfilePage() {
 
 					{/* Quick Stats Sidebar */}
 					<div className="space-y-6">
-						<Card className="bg-white border border-gray-200 shadow-sm">
-							<CardHeader className="border-b border-gray-200 bg-white">
-								<CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
-									<Star className="w-5 h-5 text-green-500" />
+						<Card className="bg-white border border-gray-100 shadow-sm rounded-2xl">
+							<CardHeader className="border-b border-gray-100 bg-white px-4 py-3">
+								<CardTitle className="text-sm font-semibold text-[#05324f] flex items-center gap-2">
+									<Star className="w-4 h-4 text-green-500" />
 									{t('workshop.profile.quick_stats') || 'Quick Stats'}
 								</CardTitle>
 							</CardHeader>
-							<CardContent className="p-6">
-								<div className="space-y-6">
+							<CardContent className="p-4">
+								<div className="space-y-4">
 									<div>
-										<div className="flex items-center justify-between mb-2">
-											<span className="text-sm font-medium text-gray-600">{t('workshop.profile.rating')}</span>
-											<span className="text-2xl font-bold text-gray-900">
+										<div className="flex items-center justify-between mb-1">
+											<span className="text-[11px] font-semibold text-gray-400">{t('workshop.profile.rating')}</span>
+											<span className="text-base font-semibold text-[#05324f]">
 												{stats.rating > 0 ? stats.rating.toFixed(1) : (t('workshop.profile.not_available') || 'N/A')}
 											</span>
 										</div>
@@ -892,13 +812,13 @@ export default function WorkshopProfilePage() {
 									</div>
 									<Link
 										to="/workshop/reviews"
-										className="block pt-4 border-t border-gray-200 hover:bg-gray-50 -mx-2 -mb-2 px-2 py-2 rounded-lg transition-colors cursor-pointer"
+										className="block pt-3 border-t border-gray-100 hover:bg-gray-50 -mx-1 px-1 py-1.5 rounded-lg transition-colors cursor-pointer"
 									>
 										<div className="flex items-center justify-between">
-											<span className="text-sm font-medium text-gray-600">{t('workshop.profile.reviews')}</span>
-											<span className="text-xl font-bold text-gray-900">{stats.reviewCount}</span>
+											<span className="text-[11px] font-semibold text-gray-400">{t('workshop.profile.reviews')}</span>
+											<span className="text-sm font-semibold text-[#05324f]">{stats.reviewCount}</span>
 										</div>
-										<span className="text-xs text-green-600 font-medium mt-1 block">
+										<span className="text-[11px] text-[#38BC54] font-medium mt-0.5 block">
 											{t('workshop.profile.view_all_reviews') || 'View all reviews →'}
 										</span>
 									</Link>
@@ -908,66 +828,75 @@ export default function WorkshopProfilePage() {
 					</div>
 				</div>
 			</div>
-			
+			</div>
+
 			<Footer />
 
 			{/* Settings Dialog */}
 			<Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
 				<DialogContent
 					onClose={() => setSettingsOpen(false)}
-					className="w-[92vw] max-w-md p-0 bg-white rounded-2xl shadow-2xl"
+					className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
 				>
-					<div className="px-6 pt-6 pb-4 border-b border-gray-100">
-						<DialogTitle>{t('workshop.profile.settings_title') || 'Settings'}</DialogTitle>
-					</div>
+					<DialogHeader className="text-center items-center sm:text-center">
+						<DialogTitle className="text-xl sm:text-2xl font-black text-[#05324f] leading-tight mb-2 text-center w-full">
+							{t('workshop.profile.settings_title') || 'Settings'}
+						</DialogTitle>
+					</DialogHeader>
 
-					<div className="px-6 py-5 space-y-5">
-						<div>
-							<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-2">
-								{t('workshop.profile.language') || 'Language'}
-							</p>
-							<div className="grid grid-cols-2 gap-2">
-								{[
-									{ code: 'sv', name: 'Svenska', flag: '🇸🇪' },
-									{ code: 'en', name: 'English', flag: '🇺🇸' },
-								].map((lang) => (
-									<button
-										key={lang.code}
-										onClick={() => {
-											i18n.changeLanguage(lang.code)
-											localStorage.setItem('language', lang.code)
-										}}
-										className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-bold transition-all ${
-											i18n.language === lang.code
-												? 'border-[#38BC54] bg-[#F2F9F4] text-[#38BC54]'
-												: 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-										}`}
-									>
-										<span className="text-base">{lang.flag}</span>
-										{lang.name}
-									</button>
-								))}
-							</div>
-						</div>
-
-						<div className="border-t border-gray-100 pt-5">
-							<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-2">
-								{t('workshop.profile.notifications') || 'Notifications'}
-							</p>
-							<p className="text-xs text-gray-500">
-								{t('workshop.profile.notifications_managed_by_email') || 'Email notifications are managed by your verified email account.'}
-							</p>
+					<div>
+						<div className="grid grid-cols-2 gap-2 sm:gap-3">
+							{[
+								{ code: 'sv', name: 'Svenska', flag: '🇸🇪' },
+								{ code: 'en', name: 'English', flag: '🇺🇸' },
+							].map((lang) => (
+								<button
+									key={lang.code}
+									type="button"
+									onClick={() => {
+										i18n.changeLanguage(lang.code)
+										localStorage.setItem('language', lang.code)
+									}}
+									className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
+										i18n.language === lang.code
+											? 'border-[#34C759] bg-[#F2F9F4] text-[#34C759]'
+											: 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+									}`}
+								>
+									<span className="text-base">{lang.flag}</span>
+									{lang.name}
+								</button>
+							))}
 						</div>
 					</div>
+				</DialogContent>
+			</Dialog>
 
-					<div className="p-5 border-t border-gray-100">
+			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
+				<DialogContent className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+					<DialogHeader className="text-center items-center sm:text-center">
+						<DialogTitle className="text-xl sm:text-2xl font-black text-[#05324f] leading-tight mb-2 text-center w-full">
+							{t('navigation.logout_confirm_title')}
+						</DialogTitle>
+						<DialogDescription className="text-gray-500 text-sm sm:text-base leading-relaxed text-center">
+							{t('navigation.logout_confirm_desc')}
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="mt-5 sm:mt-6 !flex-row gap-2 sm:gap-3 items-stretch">
 						<Button
-							onClick={() => setSettingsOpen(false)}
-							className="w-full h-11 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl font-black"
+							variant="outline"
+							onClick={() => setIsLogoutConfirmOpen(false)}
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold text-sm"
 						>
-							{t('common.close') || 'Close'}
+							{t('common.cancel') || 'Cancel'}
 						</Button>
-					</div>
+						<Button
+							onClick={confirmLogout}
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95"
+						>
+							{t('navigation.logout') || 'Log Out'}
+						</Button>
+					</DialogFooter>
 				</DialogContent>
 			</Dialog>
 		</div>

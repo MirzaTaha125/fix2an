@@ -12,8 +12,8 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 	try {
 		const { offerId, scheduledAt, notes, isAgreedToTerms } = req.body
 
-		if (!offerId || !scheduledAt || isAgreedToTerms === undefined) {
-			return res.status(400).json({ message: 'Offer ID, scheduled date, and agreement agreement are required' })
+		if (!offerId || isAgreedToTerms === undefined) {
+			return res.status(400).json({ message: 'Offer ID and agreement confirmation are required' })
 		}
 
 		// Get offer and related data
@@ -45,7 +45,7 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 			offerId: offer._id,
 			customerId: req.user._id,
 			workshopId: offer.workshopId._id,
-			scheduledAt: new Date(scheduledAt),
+			...(scheduledAt ? { scheduledAt: new Date(scheduledAt) } : {}),
 			totalAmount,
 			isAgreedToTerms: !!isAgreedToTerms,
 			notes,
@@ -178,8 +178,21 @@ router.patch('/:id', authenticate, async (req, res) => {
 			return res.status(404).json({ message: 'Booking not found' })
 		}
 
-		// Only the customer who made the booking or an admin can update it
-		if (booking.customerId.toString() !== req.user._id.toString() && req.user.role !== 'ADMIN') {
+		const Workshop = (await import('../models/Workshop.js')).default
+		let isWorkshopOwner = false
+		if (req.user.role === 'WORKSHOP') {
+			const workshop = await Workshop.findOne({ userId: req.user._id })
+			if (workshop && booking.workshopId.toString() === workshop._id.toString()) {
+				isWorkshopOwner = true
+			}
+		}
+
+		// Customer, workshop owner, or admin may update the booking
+		if (
+			booking.customerId.toString() !== req.user._id.toString() &&
+			req.user.role !== 'ADMIN' &&
+			!isWorkshopOwner
+		) {
 			return res.status(403).json({ message: 'Forbidden' })
 		}
 
@@ -210,7 +223,7 @@ router.patch('/:id', authenticate, async (req, res) => {
 					updateData.cancelledBy = 'CUSTOMER'
 				}
 			}
-		} else if (scheduledAt) {
+		} else if (scheduledAt && booking.scheduledAt) {
 			updateData.status = 'RESCHEDULED'
 		}
 		if (scheduledAt) {

@@ -8,6 +8,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
+import { PhoneInput } from '../components/ui/PhoneInput'
 import { Label } from '../components/ui/Label'
 import { Textarea } from '../components/ui/Textarea'
 import { Button } from '../components/ui/Button'
@@ -313,13 +314,13 @@ export default function WorkshopSignupPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-white">
+		<div className="list-page-shell bg-white">
 			<Navbar />
 
 			{/* Signup Form */}
-			<section id="signup-form" className="bg-white pt-28 sm:pt-20 md:pt-24 pb-12">
+			<section id="signup-form" className="list-page-main bg-white pt-24 sm:pt-20 md:pt-24 pb-12">
 				<div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-					<div className="text-center mb-8 sm:mb-10">
+					<div className="text-center mb-8 sm:mb-10 mt-0 sm:mt-5">
 						<h1 className="text-2xl md:text-5xl font-bold mb-6" style={{ color: '#05324f' }}>
 							{t('workshop.signup.title')}
 						</h1>
@@ -383,14 +384,13 @@ export default function WorkshopSignupPage() {
 									<Label htmlFor="phone" className="text-sm sm:text-base">
 										{t('workshop.signup.personal_info.phone')}
 									</Label>
-									<Input
+									<PhoneInput
 										id="phone"
 										name="phone"
-										type="tel"
 										value={formData.phone}
 										onChange={handleInputChange}
 										required
-										placeholder={t('workshop.signup.personal_info.phone_placeholder')}
+										placeholder={t('workshop.signup.personal_info.phone')}
 									/>
 								</div>
 								<div>

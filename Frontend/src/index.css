@@ -6,6 +6,7 @@
 
 @layer base {
 	:root {
+		--bottom-nav-height: 4.5rem;
 		--background: 0 0% 100%;
 		--foreground: 222.2 84% 4.9%;
 		--card: 0 0% 100%;
@@ -55,12 +56,29 @@
 	* {
 		border-color: hsl(var(--border));
 	}
+	html {
+		height: auto;
+		overflow-x: hidden;
+		overflow-y: scroll;
+		-webkit-overflow-scrolling: touch;
+	}
+
 	body {
 		@apply bg-background text-foreground;
 		font-family: 'Poppins', 'Inter', sans-serif;
 		font-size: 16px;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
+		overflow-x: hidden;
+		overflow-y: auto;
+		min-height: 100%;
+		width: 100%;
+		position: relative;
+	}
+
+	#root {
+		min-height: 100dvh;
+		overflow: visible;
 	}
 	h1 {
 		font-size: 44px;
@@ -136,4 +154,283 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
 	background: rgba(5, 50, 79, 0.3);
 	background-clip: content-box;
+}
+
+.workshop-placeholder-icon {
+	filter: brightness(0) invert(1);
+}
+
+@layer components {
+	/* Horizontal padding matches navbar (logo alignment on lg+) */
+	.app-page-container {
+		@apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+	}
+
+	/* Root wrapper — full viewport; bottom nav clearance via footer/content padding, not gap below footer */
+	.app-layout {
+		width: 100%;
+		min-height: 100dvh;
+		display: flex;
+		flex-direction: column;
+		overflow-x: hidden;
+		overflow-y: visible;
+	}
+
+	.app-layout > * {
+		flex: 1 1 auto;
+		width: 100%;
+		min-height: 100dvh;
+	}
+
+	/* Fixed bottom tab bar — always pinned to viewport bottom on mobile/tablet */
+	.mobile-bottom-nav {
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		z-index: 200;
+		transform: translateZ(0);
+		-webkit-transform: translateZ(0);
+	}
+
+	/*
+	 * Sticky footer: flex column + margin-top:auto on footer.
+	 * (Navbar is position:fixed — grid row 1 collapses and broke footer order.)
+	 */
+	.list-page-shell {
+		@apply w-full;
+		display: flex;
+		flex-direction: column;
+		min-height: 100dvh;
+		height: auto;
+		overflow: visible;
+	}
+
+	.list-page-shell > footer {
+		margin-top: auto;
+		flex-shrink: 0;
+		width: 100%;
+	}
+
+	/* Main grows with content so the document scrolls; min-height:auto avoids clipping */
+	.list-page-shell > .flex-1,
+	.list-page-shell > .list-page-content,
+	.list-page-shell > .list-page-main,
+	.list-page-shell > main:not(footer) {
+		flex: 1 0 auto;
+		width: 100%;
+		min-height: auto;
+	}
+
+	.list-page-main {
+		@apply w-full;
+		min-height: auto;
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* Short auth pages — centered on desktop; top-aligned + scroll on mobile (avoids navbar clip) */
+	.list-page-main--center {
+		@apply flex flex-col items-center w-full px-4 pt-24 md:pt-28 pb-8 sm:pb-12 md:py-20;
+		min-height: auto;
+		justify-content: flex-start;
+	}
+
+	@media (min-width: 768px) {
+		.list-page-main--center {
+			justify-content: center;
+			padding-top: 3rem;
+		}
+	}
+
+	/* Tall forms (sign-up, workshop signup) — top-aligned, page scrolls normally */
+	.list-page-main--scroll {
+		@apply flex flex-col items-center w-full px-4 pt-24 md:pt-28 pb-8 sm:pb-12;
+		min-height: auto;
+		justify-content: flex-start;
+	}
+
+	.list-page-content,
+	.list-page-shell > .app-page-container,
+	.list-page-main > .app-page-container {
+		@apply mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-2xl md:max-w-5xl lg:max-w-7xl pt-24 md:pt-32;
+		padding-bottom: 2rem;
+		min-height: auto;
+	}
+
+	@media (max-width: 1023px) {
+		.list-page-content,
+		.list-page-shell > .app-page-container,
+		.list-page-main > .app-page-container {
+			padding-bottom: calc(2rem + var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+		}
+
+		/* Footer visible on mobile — nav clearance is on the footer, not extra content gap */
+		.list-page-shell:has(> footer:not(.max-lg\:hidden)) .list-page-content,
+		.list-page-shell:has(> footer:not(.max-lg\:hidden)) > .app-page-container,
+		.list-page-shell:has(> footer:not(.max-lg\:hidden)) .list-page-main > .app-page-container {
+			padding-bottom: 2rem;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.list-page-content,
+		.list-page-shell > .app-page-container,
+		.list-page-main > .app-page-container {
+			padding-bottom: 3rem;
+		}
+	}
+
+	/*
+	 * Horizontal tab strip: overflow-x only on md+ so iOS does not trap vertical page scroll.
+	 */
+	.list-tabs-row {
+		@apply flex justify-start mb-6 md:mb-8 pb-1;
+		overflow: visible;
+	}
+
+	@media (min-width: 768px) {
+		.list-tabs-row {
+			overflow-x: auto;
+			overscroll-behavior-x: contain;
+			-webkit-overflow-scrolling: touch;
+			scrollbar-width: none;
+		}
+
+		.list-tabs-row::-webkit-scrollbar {
+			display: none;
+		}
+	}
+
+	/* Tab shimmer only — no white box (loading states) */
+	.workshop-pill-tabs-skeleton {
+		@apply flex w-full flex-wrap items-stretch gap-1.5;
+	}
+
+	.workshop-pill-tabs-skeleton-scroll {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+
+	.workshop-pill-tabs-skeleton-scroll::-webkit-scrollbar {
+		display: none;
+	}
+
+	/* Jobs / Proposals / Contracts — same pill tabs on mobile + desktop */
+	.workshop-pill-tabs {
+		@apply flex w-full sm:w-auto flex-wrap items-stretch bg-white rounded-xl border border-gray-200 shadow-sm p-1 gap-1;
+	}
+
+	.workshop-pill-tab {
+		@apply flex-1 sm:flex-initial min-w-0 px-3 py-2.5 sm:px-6 sm:py-2 sm:min-w-[88px] rounded-lg text-[11px] sm:text-xs md:text-sm font-semibold transition-all duration-300 whitespace-nowrap shadow-sm border border-transparent flex items-center justify-center;
+	}
+
+	.workshop-pill-tab-active {
+		@apply bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759];
+	}
+
+	.workshop-pill-tab-inactive {
+		@apply text-gray-500 bg-white hover:text-[#05324f] hover:bg-gray-50;
+	}
+
+	/* Proposals: single row + horizontal scroll on mobile & tablet */
+	.workshop-pill-tabs.workshop-pill-tabs-multi {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		max-width: 100%;
+	}
+
+	.workshop-pill-tabs.workshop-pill-tabs-multi::-webkit-scrollbar {
+		display: none;
+	}
+
+	.workshop-pill-tabs-multi .workshop-pill-tab {
+		flex: 0 0 auto;
+		min-width: auto;
+		max-width: none;
+	}
+
+	@media (min-width: 1024px) {
+		.workshop-pill-tabs.workshop-pill-tabs-multi {
+			overflow-x: visible;
+			flex-wrap: wrap;
+		}
+	}
+}
+
+@layer utilities {
+	.safe-area-pb {
+		padding-bottom: env(safe-area-inset-bottom, 0px);
+	}
+
+	.footer-scroll-inset {
+		padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+	}
+}
+
+@media (min-width: 1024px) {
+	html {
+		scroll-padding-bottom: 0;
+	}
+}
+
+@media (max-width: 1023px) {
+	html {
+		scroll-padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+	}
+
+	/*
+	 * iOS Safari: flex + min-height viewport on page shells traps vertical scroll.
+	 * Unlock all customer/workshop pages; admin keeps its own internal scroll.
+	 */
+	div.min-h-screen.flex.flex-col:not(.admin-app-shell):not(.list-page-shell),
+	div.min-h-\[100dvh\].flex.flex-col:not(.admin-app-shell):not(.list-page-shell),
+	div.flex.flex-col.min-h-screen:not(.admin-app-shell):not(.list-page-shell),
+	div.flex.flex-col[class*='100dvh']:not(.admin-app-shell):not(.list-page-shell) {
+		display: block !important;
+		height: auto !important;
+		min-height: 100dvh;
+		max-height: none !important;
+		overflow: visible !important;
+	}
+
+	div.min-h-screen.flex.flex-col:not(.admin-app-shell):not(.list-page-shell) > .flex-1,
+	div.min-h-\[100dvh\].flex.flex-col:not(.admin-app-shell):not(.list-page-shell) > .flex-1,
+	div.flex.flex-col.min-h-screen:not(.admin-app-shell):not(.list-page-shell) > .flex-1,
+	div.flex.flex-col[class*='100dvh']:not(.admin-app-shell):not(.list-page-shell) > .flex-1 {
+		flex: none !important;
+		height: auto !important;
+		min-height: auto !important;
+		overflow: visible !important;
+	}
+
+	.list-page-shell.flex.flex-col {
+		display: flex !important;
+		flex-direction: column !important;
+		height: auto !important;
+		max-height: none !important;
+		overflow: visible !important;
+	}
+
+	.list-page-shell > .list-page-main,
+	.list-page-shell > .list-page-content,
+	.list-page-shell > main:not(footer) {
+		flex: 1 0 auto !important;
+		min-height: auto !important;
+		overflow: visible !important;
+	}
+
+	/* Horizontal overflow on mobile steals vertical pan — except admin tables */
+	.overflow-x-auto {
+		overflow-x: visible !important;
+	}
+
+	.admin-app-shell .overflow-x-auto {
+		overflow-x: auto !important;
+		-webkit-overflow-scrolling: touch;
+	}
 }

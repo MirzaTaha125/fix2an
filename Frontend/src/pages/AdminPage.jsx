@@ -11,6 +11,7 @@ import { Textarea } from '../components/ui/Textarea'
 import { LanguageSwitcher } from '../components/LanguageSwitcher'
 import toast from 'react-hot-toast'
 import { formatPrice, formatDate, formatDateTime } from '../utils/cn'
+import { formatSwedishPhone } from '../utils/swedishPhone'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { adminAPI, authAPI } from '../services/api'
@@ -124,7 +125,7 @@ export default function AdminPage() {
 				if (userRole === 'WORKSHOP') {
 					navigate('/workshop/requests', { replace: true })
 				} else {
-					navigate('/my-cases', { replace: true })
+					navigate('/contract', { replace: true })
 				}
 			}
 		}
@@ -506,7 +507,7 @@ export default function AdminPage() {
 				{customer.phone && (
 					<div className="flex items-center gap-2 text-gray-600">
 						<Phone className="w-3.5 h-3.5 text-gray-300" />
-						<span>{customer.phone}</span>
+						<span>{formatSwedishPhone(customer.phone)}</span>
 					</div>
 				)}
 				<div className="flex items-center gap-2 text-gray-600 font-medium">
@@ -805,7 +806,7 @@ export default function AdminPage() {
 													<Smartphone className="w-3.5 h-3.5" />
 													{t('admin.oversight.phone') || 'Phone'}
 												</p>
-												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedRequest.customer?.phone || 'N/A'}</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{formatSwedishPhone(selectedRequest.customer?.phone) || 'N/A'}</p>
 											</div>
 										</div>
 									</div>
@@ -1058,7 +1059,7 @@ export default function AdminPage() {
 													<Phone className="w-3.5 h-3.5" />
 													{t('admin.oversight.phone') || 'Phone'}
 												</p>
-												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedOffer.workshop?.phone || 'N/A'}</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{formatSwedishPhone(selectedOffer.workshop?.phone) || 'N/A'}</p>
 											</div>
 										</div>
 									</div>
@@ -1327,7 +1328,7 @@ export default function AdminPage() {
 													<Phone className="w-3.5 h-3.5" />
 													{t('admin.oversight.phone') || 'Phone'}
 												</p>
-												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedBooking.customer?.phone || 'N/A'}</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{formatSwedishPhone(selectedBooking.customer?.phone) || 'N/A'}</p>
 											</div>
 										</div>
 									</div>
@@ -1358,7 +1359,7 @@ export default function AdminPage() {
 													<Phone className="w-3.5 h-3.5" />
 													{t('admin.oversight.phone') || 'Phone'}
 												</p>
-												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{selectedBooking.workshop?.phone || 'N/A'}</p>
+												<p className="text-sm font-semibold" style={{ color: '#05324f' }}>{formatSwedishPhone(selectedBooking.workshop?.phone) || 'N/A'}</p>
 											</div>
 										</div>
 									</div>
@@ -1521,7 +1522,7 @@ export default function AdminPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="h-screen flex flex-col overflow-hidden bg-white">
+			<div className="admin-app-shell h-screen flex flex-col overflow-hidden bg-white">
 				{/* Header Skeleton */}
 				<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-100 max-md:border-gray-200">
 					<div className="flex items-center justify-between gap-4 relative">
@@ -1618,7 +1619,7 @@ export default function AdminPage() {
 	const sidebarBgColor = '#05324f' // Dark blue color
 
 	return (
-		<div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#FFFFFF' }}>
+		<div className="admin-app-shell h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#FFFFFF' }}>
 			{/* Header */}
 			<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-100 max-md:border-gray-200">
 				<div className="flex items-center justify-between gap-4 relative">
@@ -2954,11 +2955,11 @@ export default function AdminPage() {
 			{/* Logout Confirmation Modal */}
 			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
 				<DialogContent className="max-w-[400px] w-[90%] bg-white rounded-2xl shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
-					<DialogHeader className="text-left items-start">
-						<DialogTitle className="text-2xl font-black text-[#05324f] leading-tight mb-2">
+					<DialogHeader className="text-center items-center sm:text-center">
+						<DialogTitle className="text-2xl font-black text-[#05324f] leading-tight mb-2 text-center w-full">
 							{t('navigation.logout_confirm_title')}
 						</DialogTitle>
-						<DialogDescription className="text-gray-500 text-base leading-relaxed">
+						<DialogDescription className="text-gray-500 text-base leading-relaxed text-center">
 							{t('navigation.logout_confirm_desc')}
 						</DialogDescription>
 					</DialogHeader>

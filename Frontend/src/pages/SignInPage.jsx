@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Eye, EyeOff, LogIn, Mail, Lock } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import RegisterTypeModal from '../components/RegisterTypeModal'
 import { useTranslation } from 'react-i18next'
+import { getRoleHomePath } from '../utils/roleHome'
 import { Input } from '../components/ui/Input'
 import { Label } from '../components/ui/Label'
+import { authAPI } from '../services/api'
 
 export default function SignInPage() {
 	const { t } = useTranslation()
@@ -17,24 +19,16 @@ export default function SignInPage() {
 	const [isLoading, setIsLoading] = useState(false)
 	const [showPassword, setShowPassword] = useState(false)
 	const [registerModalOpen, setRegisterModalOpen] = useState(false)
+	const [isSendingMagicLink, setIsSendingMagicLink] = useState(false)
+	const [magicLinkSent, setMagicLinkSent] = useState(false)
+	const [devMagicLinkUrl, setDevMagicLinkUrl] = useState('')
 	const { login, user, loading } = useAuth()
 	const navigate = useNavigate()
 
 	// Redirect if already logged in
 	useEffect(() => {
 		if (!loading && user) {
-			const role = user.role?.toUpperCase()
-			if (role === 'ADMIN') {
-				navigate('/admin', { replace: true })
-			} else if (role === 'WORKSHOP') {
-				if (user.isVerified) {
-					navigate('/workshop/requests', { replace: true })
-				} else {
-					navigate('/workshop/pending', { replace: true })
-				}
-			} else {
-				navigate('/my-cases', { replace: true })
-			}
+			navigate(getRoleHomePath(user), { replace: true })
 		}
 	}, [user, loading, navigate])
 
@@ -58,16 +52,7 @@ export default function SignInPage() {
 			
 			if (result.success) {
 				toast.success(t('success.login_successful'))
-				const role = result.user?.role?.toUpperCase()
-				if (role === 'ADMIN') navigate('/admin')
-				else if (role === 'WORKSHOP') {
-					if (result.user?.isVerified) {
-						navigate('/workshop/requests')
-					} else {
-						navigate('/workshop/pending')
-					}
-				}
-				else navigate('/my-cases')
+				navigate(getRoleHomePath(result.user))
 			} else if (result.requiresTwoFactor && result.tempToken) {
 				navigate('/auth/2fa-verify', { state: { tempToken: result.tempToken, email: result.email } })
 				setIsLoading(false)
@@ -79,6 +64,42 @@ export default function SignInPage() {
 			console.error('Login exception:', error)
 			toast.error(error.message || t('errors.generic_error'))
 			setIsLoading(false)
+		}
+	}
+
+	const handleSendMagicLink = async () => {
+		const trimmedEmail = email.trim().toLowerCase()
+
+		if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+			toast.error(t('errors.invalid_email_format') || 'Please enter a valid email address')
+			return
+		}
+
+		setIsSendingMagicLink(true)
+		setDevMagicLinkUrl('')
+		setMagicLinkSent(false)
+
+		try {
+			const response = await authAPI.sendLoginMagicLink({
+				email: trimmedEmail,
+				frontendUrl: window.location.origin,
+			})
+			const data = response.data || {}
+			if (data.magicLinkUrl) {
+				setDevMagicLinkUrl(data.magicLinkUrl)
+			}
+			setMagicLinkSent(true)
+			if (data.emailSent === false) {
+				toast.success(t('auth.signin.magic_link_ready_dev') || 'Login link ready — open it below.')
+			} else {
+				toast.success(t('auth.signin.magic_link_sent') || 'Login link sent! Check your inbox.')
+			}
+		} catch (error) {
+			console.error('Login magic link error:', error)
+			const message = error.response?.data?.message || t('errors.generic_error')
+			toast.error(message)
+		} finally {
+			setIsSendingMagicLink(false)
 		}
 	}
 
@@ -100,9 +121,9 @@ export default function SignInPage() {
 	}
 
 	return (
-	<div className="min-h-screen bg-gray-50 flex flex-col relative overflow-hidden">
+	<div className="list-page-shell bg-white">
 		<Navbar />
-		<div className="flex-1 flex items-start sm:items-center justify-center px-4 pt-28 sm:py-20 relative z-10">
+		<div className="list-page-main list-page-main--scroll relative z-10">
 			<div className="max-w-md w-full space-y-8 animate-fade-in-up">
 				<div className="text-center">
 					<h2 className="text-2xl md:text-5xl font-bold mb-6" style={{ color: '#05324f' }}>{t('auth.signin.title')}</h2>
@@ -197,6 +218,66 @@ export default function SignInPage() {
 									</>
 								)}
 							</button>
+
+							<div className="relative">
+								<div className="absolute inset-0 flex items-center">
+									<div className="w-full border-t border-gray-200" />
+								</div>
+								<div className="relative flex justify-center text-sm">
+									<span className="bg-white px-3 text-gray-500">
+										{t('auth.signin.or_divider') || 'Or'}
+									</span>
+								</div>
+							</div>
+
+							{!magicLinkSent ? (
+								<button
+									type="button"
+									disabled={isSendingMagicLink || isLoading}
+									onClick={handleSendMagicLink}
+									className="w-full flex items-center justify-center gap-2 py-4 px-6 border border-gray-200 rounded-xl text-base font-medium text-[#05324f] bg-white hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-[#34C759]/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+								>
+									{isSendingMagicLink ? (
+										t('auth.signin.magic_link_sending') || 'Sending link...'
+									) : (
+										t('auth.signin.magic_link')
+									)}
+								</button>
+							) : (
+								<div className="space-y-4">
+									<div className="rounded-2xl border border-[#34C759]/20 bg-[#F2F9F4] px-4 py-4 text-center">
+										<p className="text-sm text-[#05324f] leading-relaxed">
+											{devMagicLinkUrl
+												? (t('auth.signin.magic_link_dev_body') || 'Email could not be sent. Use the button below to open your login link.')
+												: (t('auth.signin.magic_link_sent_body') || 'Open the link in your email to sign in. You can close this page.')}
+										</p>
+									</div>
+									{devMagicLinkUrl && (
+										<a
+											href={devMagicLinkUrl}
+											className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-base font-medium text-white bg-[#34C759] hover:bg-[#2db04a] transition-all"
+										>
+											{t('auth.signin.magic_link_open') || 'Open login link'} <ArrowRight className="w-5 h-5" />
+										</a>
+									)}
+									<p className="text-center text-sm text-gray-500">
+										{t('upload.form.email_spam_hint') || "Can't find the email?"}{' '}
+										<span className="text-[#34C759] font-semibold">
+											{t('upload.form.email_spam_action') || 'Check your spam folder.'}
+										</span>
+									</p>
+									<button
+										type="button"
+										onClick={() => {
+											setMagicLinkSent(false)
+											setDevMagicLinkUrl('')
+										}}
+										className="w-full text-sm font-medium text-[#05324f] hover:underline"
+									>
+										{t('auth.signin.magic_link_resend') || 'Send another link'}
+									</button>
+								</div>
+							)}
 						</form>
 					</div>
 				</div>
