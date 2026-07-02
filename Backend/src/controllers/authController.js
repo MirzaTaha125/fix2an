@@ -7,6 +7,19 @@ import { sendEmail, emailTemplates, isEmailConfigured } from '../config/email.js
 
 const JWT_SECRET = process.env.JWT_SECRET
 
+/** Keep only /uploads/... in DB — never persist localhost or full API URLs */
+function normalizeImageUrl(url) {
+	if (!url) return url
+	if (url.startsWith('/uploads/')) return url
+	try {
+		const parsed = new URL(url)
+		if (parsed.pathname.startsWith('/uploads/')) return parsed.pathname
+	} catch {
+		// not a valid absolute URL
+	}
+	return url
+}
+
 /** Register: save to PendingRegistration only, send code. User created only after verify. */
 export const register = async (req, res) => {
 	try {
@@ -266,7 +279,9 @@ export const updateProfile = async (req, res) => {
 		if (city !== undefined) user.city = city
 		if (postalCode !== undefined) user.postalCode = postalCode
 		if (country !== undefined) user.country = country
-		if (image !== undefined) user.image = image
+		if (image !== undefined) {
+			user.image = normalizeImageUrl(image)
+		}
 
 		await user.save()
 

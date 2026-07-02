@@ -44,7 +44,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
 import { workshopAPI, authAPI, uploadAPI } from '../services/api'
-import { getFullUrl } from '../config/api.js'
+import { getFullUrl, toStorageUrl } from '../config/api.js'
 import { formatSwedishPhone } from '../utils/swedishPhone'
 
 export default function WorkshopProfilePage() {
@@ -255,15 +255,13 @@ export default function WorkshopProfilePage() {
 			let imageUrl = response.data?.fileUrl || response.data?.url || response.data?.location
 
 			if (imageUrl) {
-				// Convert relative URL to absolute URL if needed
-				imageUrl = getFullUrl(imageUrl)
+				const storageUrl = toStorageUrl(imageUrl)
 				
-				// Update profile with new image
+				// Store relative path only — getFullUrl resolves it at display time
 				const userId = user._id || user.id
-				const updateResponse = await authAPI.updateProfile(userId, { image: imageUrl })
+				const updateResponse = await authAPI.updateProfile(userId, { image: storageUrl })
 				
-				// Get the updated image URL from response (might be different format)
-				const updatedImageUrl = updateResponse.data?.image || imageUrl
+				const updatedImageUrl = getFullUrl(updateResponse.data?.image || storageUrl)
 				
 				// Update local state immediately
 				setProfileData((prev) => ({ ...prev, image: updatedImageUrl }))
