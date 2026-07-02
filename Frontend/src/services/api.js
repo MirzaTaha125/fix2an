@@ -87,6 +87,8 @@ export const authAPI = {
 export const vehiclesAPI = {
 	create: (data) => api.post('/api/vehicles', data),
 	getAll: () => api.get('/api/vehicles'),
+	getMakes: () => api.get('/api/vehicles/makes'),
+	getModels: (slug) => api.get(`/api/vehicles/makes/${encodeURIComponent(slug)}/models`),
 	getVehicleImageUrl: (params) => api.get('/api/vehicles/vehicle-image-url', { params }),
 	getCarImageUrl: (params) => api.get('/api/vehicles/vehicle-image-url', { params }),
 }

@@ -76,7 +76,6 @@ export default function UploadPage() {
 			})
 			.catch((err) => {
 				console.error('Failed to load car brands:', err)
-				toast.error(t('errors.load_failed') || 'Failed to load car brands')
 			})
 			.finally(() => {
 				if (active) setLoadingMakes(false)
@@ -666,22 +665,35 @@ export default function UploadPage() {
 								</div>
 								<div>
 									<Label htmlFor="model" className="text-xs font-bold text-[#05324f] mb-1.5 block">{t('upload.vehicle_info.model')}</Label>
-									<SearchableSelect
-										value={modelSlug || ''}
-										onValueChange={handleModelChange}
-										options={modelOptions}
-										disabled={!makeSlug || loadingModels}
-										placeholder={
-											!makeSlug
-												? (t('upload.vehicle_info.select_make_first') || 'Select brand first')
-												: loadingModels
-													? (t('common.loading') || 'Loading...')
-													: t('upload.vehicle_info.model_placeholder')
-										}
-										searchPlaceholder={t('common.search')}
-										emptyText={t('common.no_results')}
-										triggerClassName="h-11 text-sm border border-gray-200 rounded-xl bg-white"
-									/>
+									{makeSlug && !loadingModels && carModels.length === 0 ? (
+										<Input
+											id="model"
+											value={vehicleData.model}
+											onChange={(e) => {
+												setModelSlug('')
+												setVehicleData((prev) => ({ ...prev, model: e.target.value }))
+											}}
+											placeholder={t('upload.vehicle_info.model_placeholder')}
+											className="h-11 text-sm border border-gray-200 rounded-xl bg-white"
+										/>
+									) : (
+										<SearchableSelect
+											value={modelSlug || ''}
+											onValueChange={handleModelChange}
+											options={modelOptions}
+											disabled={!makeSlug || loadingModels}
+											placeholder={
+												!makeSlug
+													? (t('upload.vehicle_info.select_make_first') || 'Select brand first')
+													: loadingModels
+														? (t('common.loading') || 'Loading...')
+														: t('upload.vehicle_info.model_placeholder')
+											}
+											searchPlaceholder={t('common.search')}
+											emptyText={t('common.no_results')}
+											triggerClassName="h-11 text-sm border border-gray-200 rounded-xl bg-white"
+										/>
+									)}
 								</div>
 								<div>
 									<Label htmlFor="year" className="text-xs font-bold text-[#05324f] mb-1.5 block">{t('upload.vehicle_info.year_label')}</Label>

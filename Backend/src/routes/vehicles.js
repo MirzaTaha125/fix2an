@@ -2,8 +2,30 @@ import express from 'express'
 import Vehicle from '../models/Vehicle.js'
 import { authenticate } from '../middleware/auth.js'
 import { resolveVehicleImageUrl } from '../utils/wikipediaVehicleImage.js'
+import { getCarMakes, getCarModels } from '../utils/carImagesApi.js'
 
 const router = express.Router()
+
+// Public — used on guest upload flow (no auth required)
+router.get('/makes', async (_req, res) => {
+	try {
+		const result = await getCarMakes()
+		return res.json(result)
+	} catch (error) {
+		console.error('Car makes error:', error)
+		return res.status(500).json({ message: 'Failed to fetch car brands' })
+	}
+})
+
+router.get('/makes/:slug/models', async (req, res) => {
+	try {
+		const result = await getCarModels(req.params.slug)
+		return res.json(result)
+	} catch (error) {
+		console.error('Car models error:', error)
+		return res.status(500).json({ message: 'Failed to fetch car models' })
+	}
+})
 
 // Vehicle photo: Wikipedia first (free, no watermark), then brand logo
 router.get('/vehicle-image-url', authenticate, async (req, res) => {
