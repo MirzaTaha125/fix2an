@@ -3,7 +3,7 @@
 // This is the ONLY place you need to update the backend URL.
 // All other files import from this config file.
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'https://api.fixa2an.se' : 'https://api.fixa2an.se')
+export const API_BASE_URL = 'https://api.fixa2an.se';
 
 // Helper function to get full URL for relative paths (like /uploads/...)
 export const getFullUrl = (relativePath) => {
