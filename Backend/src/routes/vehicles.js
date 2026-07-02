@@ -76,14 +76,10 @@ router.post('/', authenticate, async (req, res) => {
 	try {
 		const { make, model, year, makeSlug, modelSlug } = req.body
 
-		if (!make || !model || !year) {
-			return res.status(400).json({ message: 'Make, model, and year are required' })
-		}
-
 		const vehicle = await Vehicle.create({
-			make,
-			model,
-			year,
+			make: String(make || '').trim() || '—',
+			model: String(model || '').trim() || '—',
+			year: year || new Date().getFullYear(),
 			...(makeSlug && { makeSlug }),
 			...(modelSlug && { modelSlug }),
 		})

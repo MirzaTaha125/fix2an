@@ -40,7 +40,11 @@ export default function SignInPage() {
 		const trimmedEmail = email.trim()
 		const trimmedPassword = password.trim()
 		
-		if (!trimmedEmail || !trimmedPassword) {
+		if (!trimmedEmail) {
+			toast.error(t('errors.email_required') || 'Please enter your email address')
+			return
+		}
+		if (!trimmedPassword) {
 			toast.error(t('errors.fill_all_fields'))
 			return
 		}
@@ -70,7 +74,11 @@ export default function SignInPage() {
 	const handleSendMagicLink = async () => {
 		const trimmedEmail = email.trim().toLowerCase()
 
-		if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+		if (!trimmedEmail) {
+			toast.error(t('errors.email_required') || 'Please enter your email address')
+			return
+		}
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
 			toast.error(t('errors.invalid_email_format') || 'Please enter a valid email address')
 			return
 		}
@@ -234,7 +242,11 @@ export default function SignInPage() {
 								<button
 									type="button"
 									disabled={isSendingMagicLink || isLoading}
-									onClick={handleSendMagicLink}
+									onClick={(e) => {
+										e.preventDefault()
+										e.stopPropagation()
+										handleSendMagicLink()
+									}}
 									className="w-full flex items-center justify-center gap-2 py-4 px-6 border border-gray-200 rounded-xl text-base font-medium text-[#05324f] bg-white hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-[#34C759]/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
 								>
 									{isSendingMagicLink ? (

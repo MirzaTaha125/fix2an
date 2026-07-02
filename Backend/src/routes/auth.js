@@ -1,5 +1,5 @@
 import express from 'express'
-import { register, login, getMe, updateProfile, verifyEmailCode, forgotPassword, verifyPasswordResetCode, resetPassword, selfDelete } from '../controllers/authController.js'
+import { register, login, getMe, updateProfile, updatePassword, verifyEmailCode, forgotPassword, verifyPasswordResetCode, resetPassword, selfDelete } from '../controllers/authController.js'
 import { sendMagicLink, sendLoginMagicLink, verifyMagicLink } from '../controllers/magicLinkController.js'
 import {
 	get2FASetup,
@@ -25,6 +25,7 @@ router.post('/reset-password', resetPassword)
 router.post('/2fa/verify-login', verify2FALogin)
 router.get('/me', authenticate, getMe)
 router.patch('/profile/:id', authenticate, updateProfile)
+router.post('/password', authenticate, updatePassword)
 
 // Admin 2FA (requires auth)
 router.get('/2fa/status', authenticate, get2FAStatus)

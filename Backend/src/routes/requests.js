@@ -32,6 +32,11 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 			return res.status(400).json({ message: 'Missing required fields' })
 		}
 
+		const trimmedRegistration = typeof registrationNumber === 'string' ? registrationNumber.trim() : ''
+		if (!trimmedRegistration) {
+			return res.status(400).json({ message: 'Registration number is required' })
+		}
+
 		const trimmedDescription = typeof description === 'string' ? description.trim() : ''
 		if (!trimmedDescription) {
 			return res.status(400).json({ message: 'Description is required' })
@@ -49,7 +54,7 @@ router.post('/', authenticate, requireRole('CUSTOMER'), async (req, res) => {
 			postalCode,
 			country,
 			expiresAt: new Date(expiresAt),
-			registrationNumber: registrationNumber || '',
+			registrationNumber: trimmedRegistration,
 		})
 
 		const populatedRequest = await Request.findById(request._id)

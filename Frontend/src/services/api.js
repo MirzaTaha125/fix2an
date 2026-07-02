@@ -73,6 +73,7 @@ export const authAPI = {
 	verify2FALogin: (data) => api.post('/api/auth/2fa/verify-login', data),
 	getMe: () => api.get('/api/auth/me'),
 	updateProfile: (userId, data) => api.patch(`/api/auth/profile/${userId}`, data),
+	updatePassword: (data) => api.post('/api/auth/password', data),
 	get2FAStatus: () => api.get('/api/auth/2fa/status'),
 	get2FASetup: () => api.get('/api/auth/2fa/setup'),
 	verify2FASetup: (data) => api.post('/api/auth/2fa/verify-setup', data),

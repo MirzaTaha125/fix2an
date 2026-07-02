@@ -31,6 +31,9 @@ import {
 	HelpCircle,
 	LogOut,
 	Trash2,
+	Lock,
+	Eye,
+	EyeOff,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -72,6 +75,16 @@ export default function CustomerProfilePage() {
 		image: '',
 	})
 	const [originalProfileData, setOriginalProfileData] = useState({})
+	const [hasPassword, setHasPassword] = useState(false)
+	const [isSavingPassword, setIsSavingPassword] = useState(false)
+	const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+	const [showNewPassword, setShowNewPassword] = useState(false)
+	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+	const [passwordData, setPasswordData] = useState({
+		currentPassword: '',
+		newPassword: '',
+		confirmPassword: '',
+	})
 
 	// Redirect if not authenticated or wrong role
 	useEffect(() => {
@@ -116,6 +129,7 @@ export default function CustomerProfilePage() {
 				}
 				setProfileData(profile)
 				setOriginalProfileData(profile)
+				setHasPassword(Boolean(userData?.hasPassword))
 			}
 
 			// Fetch customer stats
@@ -182,6 +196,47 @@ export default function CustomerProfilePage() {
 			...prev,
 			[field]: value,
 		}))
+	}
+
+	const handlePasswordInputChange = (field, value) => {
+		setPasswordData((prev) => ({ ...prev, [field]: value }))
+	}
+
+	const handleSavePassword = async () => {
+		if (passwordData.newPassword.length < 8) {
+			toast.error(t('profile.password_min_length') || 'Password must be at least 8 characters')
+			return
+		}
+		if (passwordData.newPassword !== passwordData.confirmPassword) {
+			toast.error(t('errors.password_mismatch') || 'Passwords do not match')
+			return
+		}
+		if (hasPassword && !passwordData.currentPassword) {
+			toast.error(t('profile.current_password_required') || 'Current password is required')
+			return
+		}
+
+		setIsSavingPassword(true)
+		const isCreatingPassword = !hasPassword
+		try {
+			const payload = { newPassword: passwordData.newPassword }
+			if (hasPassword) payload.currentPassword = passwordData.currentPassword
+
+			await authAPI.updatePassword(payload)
+			setHasPassword(true)
+			setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
+			toast.success(
+				isCreatingPassword
+					? (t('profile.password_create_success') || 'Password created successfully')
+					: (t('profile.password_update_success') || 'Password updated successfully')
+			)
+			if (fetchUser) await fetchUser()
+		} catch (error) {
+			console.error('Failed to update password:', error)
+			toast.error(error.response?.data?.message || t('profile.password_update_error') || 'Failed to update password')
+		} finally {
+			setIsSavingPassword(false)
+		}
 	}
 
 	const handleSave = async () => {
@@ -726,6 +781,116 @@ export default function CustomerProfilePage() {
 									</div>
 								</div>
 							</div>
+						</CardContent>
+					</Card>
+
+					<Card className="bg-white border border-gray-100 shadow-sm relative overflow-hidden rounded-2xl mt-6">
+						<CardHeader className="border-b border-gray-100 bg-white px-4 py-3">
+							<CardTitle className="text-sm font-semibold text-[#05324f] flex items-center gap-2">
+								<Lock className="w-4 h-4" />
+								{hasPassword
+									? (t('profile.change_password_title') || 'Change password')
+									: (t('profile.create_password_title') || 'Create password')}
+							</CardTitle>
+							{!hasPassword && (
+								<p className="text-xs text-gray-500 mt-2 leading-relaxed">
+									{t('profile.create_password_desc') ||
+										'You signed in with a magic link. Create a password to also sign in with email and password.'}
+								</p>
+							)}
+						</CardHeader>
+						<CardContent className="p-4 space-y-4">
+							{hasPassword && (
+								<div className="space-y-2">
+									<Label htmlFor="currentPassword" className="text-[11px] font-semibold text-gray-400">
+										{t('profile.current_password') || 'Current password'}
+									</Label>
+									<div className="relative">
+										<Input
+											id="currentPassword"
+											type={showCurrentPassword ? 'text' : 'password'}
+											value={passwordData.currentPassword}
+											onChange={(e) => handlePasswordInputChange('currentPassword', e.target.value)}
+											disabled={isSavingPassword}
+											className="pr-10"
+											autoComplete="current-password"
+										/>
+										<button
+											type="button"
+											onClick={() => setShowCurrentPassword((prev) => !prev)}
+											className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+											tabIndex={-1}
+										>
+											{showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+										</button>
+									</div>
+								</div>
+							)}
+
+							<div className="space-y-2">
+								<Label htmlFor="newPassword" className="text-[11px] font-semibold text-gray-400">
+									{hasPassword
+										? (t('profile.new_password') || 'New password')
+										: (t('profile.password') || 'Password')}
+								</Label>
+								<div className="relative">
+									<Input
+										id="newPassword"
+										type={showNewPassword ? 'text' : 'password'}
+										value={passwordData.newPassword}
+										onChange={(e) => handlePasswordInputChange('newPassword', e.target.value)}
+										disabled={isSavingPassword}
+										className="pr-10"
+										autoComplete="new-password"
+									/>
+									<button
+										type="button"
+										onClick={() => setShowNewPassword((prev) => !prev)}
+										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+										tabIndex={-1}
+									>
+										{showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+									</button>
+								</div>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="confirmPassword" className="text-[11px] font-semibold text-gray-400">
+									{t('profile.confirm_password') || 'Confirm password'}
+								</Label>
+								<div className="relative">
+									<Input
+										id="confirmPassword"
+										type={showConfirmPassword ? 'text' : 'password'}
+										value={passwordData.confirmPassword}
+										onChange={(e) => handlePasswordInputChange('confirmPassword', e.target.value)}
+										disabled={isSavingPassword}
+										className="pr-10"
+										autoComplete="new-password"
+									/>
+									<button
+										type="button"
+										onClick={() => setShowConfirmPassword((prev) => !prev)}
+										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+										tabIndex={-1}
+									>
+										{showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+									</button>
+								</div>
+							</div>
+
+							<Button
+								type="button"
+								onClick={handleSavePassword}
+								disabled={isSavingPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+								className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+							>
+								{isSavingPassword
+									? (t('profile.saving') || 'Saving...')
+									: hasPassword
+										? (t('profile.save_password') || 'Save password')
+										: (t('profile.create_password_button') || 'Create password')}
+							</Button>
 						</CardContent>
 					</Card>
 					</div>

@@ -116,6 +116,12 @@ export function normalizeSwedishRegistrationNumber(input) {
 	return normalized
 }
 
+/** Swedish plate: ABC 123 or ABC 12A (6 characters after normalization). */
+export function isValidSwedishRegistrationNumber(input) {
+	const normalized = normalizeSwedishRegistrationNumber(input)
+	return /^[A-Z]{3}[0-9]{2}[0-9A-Z]$/.test(normalized)
+}
+
 /** Display Swedish plate with space after the first three characters. */
 export function formatSwedishRegistrationNumber(input) {
 	const normalized = normalizeSwedishRegistrationNumber(input)

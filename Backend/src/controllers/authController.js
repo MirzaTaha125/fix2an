@@ -146,7 +146,10 @@ export const login = async (req, res) => {
 		}
 
 		if (!user.password) {
-			return res.status(401).json({ message: 'Invalid email or password' })
+			return res.status(401).json({
+				message: 'No password set for this account. Use magic link login or create a password in your profile.',
+				noPassword: true,
+			})
 		}
 
 		const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -212,12 +215,14 @@ export const login = async (req, res) => {
 
 export const getMe = async (req, res) => {
 	try {
-		const user = await User.findById(req.user._id).select('-password -twoFactorSecret')
+		const user = await User.findById(req.user._id).select('-twoFactorSecret')
 		if (!user) {
 			return res.status(404).json({ message: 'User not found' })
 		}
 
 		const userData = user.toObject()
+		userData.hasPassword = Boolean(user.password)
+		delete userData.password
 		if (user.role === 'WORKSHOP') {
 			const workshop = await Workshop.findOne({ userId: user._id })
 			if (workshop) {
@@ -348,6 +353,39 @@ export const verifyPasswordResetCode = async (req, res) => {
 	} catch (error) {
 		console.error('Verify reset code error:', error)
 		return res.status(500).json({ message: 'Something went wrong' })
+	}
+}
+
+export const updatePassword = async (req, res) => {
+	try {
+		const { currentPassword, newPassword } = req.body
+
+		if (!newPassword || newPassword.length < 8) {
+			return res.status(400).json({ message: 'Password must be at least 8 characters long' })
+		}
+
+		const user = await User.findById(req.user._id)
+		if (!user) {
+			return res.status(404).json({ message: 'User not found' })
+		}
+
+		if (user.password) {
+			if (!currentPassword) {
+				return res.status(400).json({ message: 'Current password is required' })
+			}
+			const isCurrentValid = await bcrypt.compare(currentPassword, user.password)
+			if (!isCurrentValid) {
+				return res.status(401).json({ message: 'Current password is incorrect' })
+			}
+		}
+
+		user.password = newPassword
+		await user.save()
+
+		return res.json({ message: 'Password updated successfully', hasPassword: true })
+	} catch (error) {
+		console.error('Update password error:', error)
+		return res.status(500).json({ message: 'Failed to update password' })
 	}
 }
 

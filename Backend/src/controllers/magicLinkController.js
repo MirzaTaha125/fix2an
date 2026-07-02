@@ -108,11 +108,11 @@ async function createRequestForUser(user, requestData) {
 	const { vehicle, reportIds = [], description, registrationNumber, latitude, longitude, address, city, postalCode, country, expiresAt } = requestData
 
 	const createdVehicle = await Vehicle.create({
-		make: vehicle.make,
-		model: vehicle.model,
-		year: vehicle.year,
-		...(vehicle.makeSlug && { makeSlug: vehicle.makeSlug }),
-		...(vehicle.modelSlug && { modelSlug: vehicle.modelSlug }),
+		make: String(vehicle?.make || '').trim() || '—',
+		model: String(vehicle?.model || '').trim() || '—',
+		year: vehicle?.year || new Date().getFullYear(),
+		...(vehicle?.makeSlug && { makeSlug: vehicle.makeSlug }),
+		...(vehicle?.modelSlug && { modelSlug: vehicle.modelSlug }),
 	})
 
 	const request = await Request.create({
@@ -244,8 +244,11 @@ export const sendMagicLink = async (req, res) => {
 			return res.status(400).json({ message: 'A valid email address is required' })
 		}
 
-		if (!requestData?.vehicle?.make || !requestData?.vehicle?.model || !requestData?.vehicle?.year) {
-			return res.status(400).json({ message: 'Vehicle information is required' })
+		const trimmedRegistration = typeof requestData.registrationNumber === 'string'
+			? requestData.registrationNumber.trim()
+			: ''
+		if (!trimmedRegistration) {
+			return res.status(400).json({ message: 'Registration number is required' })
 		}
 
 		const trimmedDescription = typeof requestData.description === 'string' ? requestData.description.trim() : ''
@@ -294,7 +297,7 @@ export const sendMagicLink = async (req, res) => {
 			requestData: {
 				reportIds: Array.isArray(requestData.reportIds) ? requestData.reportIds : [],
 				description: trimmedDescription,
-				registrationNumber: requestData.registrationNumber || '',
+				registrationNumber: trimmedRegistration,
 				latitude: requestData.latitude,
 				longitude: requestData.longitude,
 				address: requestData.address,

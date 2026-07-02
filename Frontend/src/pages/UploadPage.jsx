@@ -17,7 +17,7 @@ import SearchableSelect from '../components/ui/SearchableSelect'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { Upload, X, Car, MapPin, MessageSquare, ShieldCheck, Clock as ClockIcon, Lock, Check, ArrowRight, Mail, Link2, Send, Bell } from 'lucide-react'
-import { validateFile, getFileIcon, formatSwedishRegistrationNumber, normalizeSwedishRegistrationNumber } from '../utils/cn'
+import { validateFile, getFileIcon, formatSwedishRegistrationNumber, normalizeSwedishRegistrationNumber, isValidSwedishRegistrationNumber } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
@@ -149,12 +149,15 @@ export default function UploadPage() {
 	)
 
 	const buildVehiclePayload = () => ({
-		make: vehicleData.make,
-		model: vehicleData.model,
-		year: vehicleData.year,
+		make: vehicleData.make?.trim() || '—',
+		model: vehicleData.model?.trim() || '—',
+		year: vehicleData.year || new Date().getFullYear(),
 		...(makeSlug && { makeSlug }),
 		...(modelSlug && { modelSlug }),
 	})
+
+	const isDetailsValid =
+		isValidSwedishRegistrationNumber(registrationNumber) && Boolean(description.trim())
 
 	// Load existing request data if editing
 	useEffect(() => {
@@ -342,8 +345,8 @@ export default function UploadPage() {
 	const handleSubmit = async (e) => {
 		e.preventDefault()
 
-		if (!vehicleData.make || !vehicleData.model) {
-			toast.error(t('errors.vehicle_info_required'))
+		if (!isValidSwedishRegistrationNumber(registrationNumber)) {
+			toast.error(t('errors.registration_required'))
 			return
 		}
 
@@ -433,7 +436,11 @@ export default function UploadPage() {
 		e.preventDefault()
 
 		const trimmedEmail = email.trim().toLowerCase()
-		if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+		if (!trimmedEmail) {
+			toast.error(t('errors.email_required') || 'Please enter your email address')
+			return
+		}
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
 			toast.error(t('errors.invalid_email_format') || 'Please enter a valid email address')
 			return
 		}
@@ -628,7 +635,8 @@ export default function UploadPage() {
 							{/* Registration Number */}
 							<div>
 								<Label htmlFor="regnr" className="text-sm font-bold text-[#05324f] mb-2 block">
-									{t('upload.form.regnr_label') || 'Registration number'}
+									{t('upload.form.regnr_label') || 'Registration number'}{' '}
+									<span className="text-red-500">*</span>
 								</Label>
 								<div className="relative">
 									<Car className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#38BC54]" />
@@ -640,6 +648,7 @@ export default function UploadPage() {
 										maxLength={7}
 										autoComplete="off"
 										spellCheck={false}
+										required
 										className="pl-10 h-12 text-sm border border-gray-200 rounded-xl focus:border-[#38BC54] focus:ring-1 focus:ring-[#38BC54] uppercase tracking-wide"
 									/>
 								</div>
@@ -780,7 +789,7 @@ export default function UploadPage() {
 								</Button>
 								<Button
 									type="submit"
-									disabled={isUploading || !description.trim() || (!skipUpload && files.length === 0)}
+									disabled={isUploading || !isDetailsValid || (!editId && !skipUpload && files.length === 0)}
 									className="flex-1 h-13 py-4 text-base font-medium bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl shadow-md shadow-green-200/50 transition-all active:scale-[0.99] flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:shadow-none"
 								>
 									{isUploading ? t('upload.submitting') : (
