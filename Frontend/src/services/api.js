@@ -3,6 +3,18 @@ import { API_BASE_URL } from '../config/api.js'
 
 const isDev = import.meta.env.DEV
 
+export const AUTH_LOGOUT_EVENT = 'fixa2an:auth-logout'
+
+export function getAuthToken() {
+	return localStorage.getItem('token')
+}
+
+export function clearAuthSession() {
+	localStorage.removeItem('token')
+	localStorage.removeItem('user')
+	window.dispatchEvent(new Event(AUTH_LOGOUT_EVENT))
+}
+
 const api = axios.create({
 	baseURL: API_BASE_URL,
 	headers: {
@@ -14,12 +26,26 @@ const api = axios.create({
 
 // Add token to requests if available
 api.interceptors.request.use((config) => {
-	const token = localStorage.getItem('token')
+	const token = getAuthToken()
 	if (token) {
 		config.headers.Authorization = `Bearer ${token}`
 	}
 	return config
 })
+
+/** Only end the session when the server rejected a token we actually sent. */
+function shouldLogoutOn401(error) {
+	const hadAuthHeader = Boolean(error.config?.headers?.Authorization)
+	if (!hadAuthHeader) return false
+
+	const message = error.response?.data?.message || ''
+	const credentialErrors = new Set([
+		'Invalid email or password',
+		'Current password is incorrect',
+		'No token provided',
+	])
+	return !credentialErrors.has(message)
+}
 
 // Handle auth errors
 api.interceptors.response.use(
@@ -47,15 +73,11 @@ api.interceptors.response.use(
 			})
 		}
 		
-		if (error.response?.status === 401) {
-			console.log('401 Unauthorized - clearing token')
-			localStorage.removeItem('token')
-			localStorage.removeItem('user')
-			// Don't redirect on login page or if already on a public route - let the component handle it
+		if (error.response?.status === 401 && shouldLogoutOn401(error)) {
+			clearAuthSession()
 			const publicRoutes = ['/auth/signin', '/auth/signup', '/auth/verify-email', '/auth/2fa-verify', '/auth/magic-link', '/signin', '/signup', '/upload', '/', '/how-it-works', '/workshop/signup']
 			const isPublicRoute = publicRoutes.some(route => window.location.pathname.includes(route))
 			if (!isPublicRoute) {
-				// Use setTimeout to avoid navigation conflicts during back button navigation
 				setTimeout(() => {
 					window.location.href = '/auth/signin'
 				}, 100)

@@ -38,13 +38,30 @@ app.use((req, res, next) => {
 	next()
 })
 
-// CORS - allow origin with/without trailing slash to fix Hostinger etc.
-const allowedOrigin = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '')
+// CORS - allow origin with/without trailing slash and www variant
+function buildAllowedOrigins() {
+	const base = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '')
+	const origins = new Set([base])
+	try {
+		const url = new URL(base)
+		if (url.hostname.startsWith('www.')) {
+			origins.add(`${url.protocol}//${url.hostname.slice(4)}`)
+		} else {
+			origins.add(`${url.protocol}//www.${url.hostname}`)
+		}
+	} catch {
+		// ignore invalid FRONTEND_URL
+	}
+	return origins
+}
+
+const allowedOrigins = buildAllowedOrigins()
+
 app.use(cors({
 	origin: process.env.NODE_ENV === 'production'
 		? (origin, cb) => {
 				const o = (origin || '').replace(/\/$/, '')
-				cb(null, o === allowedOrigin)
+				cb(null, allowedOrigins.has(o))
 			}
 		: true,
 	credentials: true,

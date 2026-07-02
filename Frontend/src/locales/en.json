@@ -1533,6 +1533,7 @@
 		"fill_all_fields": "Please fill in all fields",
 		"generic_error": "Something went wrong. Please try again.",
 		"email_required": "Please enter your email address",
+		"session_expired": "Your session has expired. Please sign in again.",
 		"invalid_email_format": "Invalid email format",
 		"password_required": "Password is required",
 		"password_mismatch": "Passwords do not match",

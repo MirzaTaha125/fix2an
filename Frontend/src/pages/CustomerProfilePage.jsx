@@ -34,13 +34,14 @@ import {
 	Lock,
 	Eye,
 	EyeOff,
+	ArrowLeft,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import StatCard from '../components/ui/StatCard'
 
-import { authAPI, requestsAPI, bookingsAPI, uploadAPI } from '../services/api'
+import { authAPI, requestsAPI, bookingsAPI, uploadAPI, getAuthToken } from '../services/api'
 import { getFullUrl, toStorageUrl } from '../config/api.js'
 import { formatSwedishPhone } from '../utils/swedishPhone'
 
@@ -174,21 +175,19 @@ export default function CustomerProfilePage() {
 	}, [user])
 
 	useEffect(() => {
-		setShowInfoOnMobile(searchParams.get('view') === 'info')
+		const isInfoView = searchParams.get('view') === 'info'
+		setShowInfoOnMobile(isInfoView)
+		if (isInfoView) setIsEditing(true)
 	}, [searchParams])
 
 	const openProfileInfo = () => {
 		setShowInfoOnMobile(true)
+		setIsEditing(true)
 		setSearchParams({ view: 'info' })
 		setTimeout(() => {
 			const el = document.getElementById('customer-profile-form')
 			if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 		}, 50)
-	}
-
-	const closeProfileInfo = () => {
-		setShowInfoOnMobile(false)
-		setSearchParams({})
 	}
 
 	const handleInputChange = (field, value) => {
@@ -198,11 +197,32 @@ export default function CustomerProfilePage() {
 		}))
 	}
 
+	const handleCancel = () => {
+		setProfileData(originalProfileData)
+		setIsEditing(false)
+	}
+
+	const closeProfileInfo = () => {
+		handleCancel()
+		setShowInfoOnMobile(false)
+		setSearchParams({})
+	}
+
 	const handlePasswordInputChange = (field, value) => {
 		setPasswordData((prev) => ({ ...prev, [field]: value }))
 	}
 
+	const ensureAuthenticated = () => {
+		if (!getAuthToken()) {
+			toast.error(t('errors.session_expired') || t('auth.session_expired') || 'Your session has expired. Please sign in again.')
+			navigate('/auth/signin', { replace: true })
+			return false
+		}
+		return true
+	}
+
 	const handleSavePassword = async () => {
+		if (!ensureAuthenticated()) return
 		if (passwordData.newPassword.length < 8) {
 			toast.error(t('profile.password_min_length') || 'Password must be at least 8 characters')
 			return
@@ -240,11 +260,25 @@ export default function CustomerProfilePage() {
 	}
 
 	const handleSave = async () => {
+		if (!ensureAuthenticated()) return
+
+		const userId = String(user._id || user.id || '')
+		if (!userId) {
+			toast.error(t('errors.generic_error') || 'Something went wrong')
+			return
+		}
+
+		const trimmedEmail = profileData.email?.trim().toLowerCase() || ''
+		if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+			toast.error(t('errors.invalid_email_format') || 'Please enter a valid email address')
+			return
+		}
+
 		setIsSaving(true)
 		try {
-			const userId = user._id || user.id
 			await authAPI.updateProfile(userId, {
 				name: profileData.name,
+				email: trimmedEmail || undefined,
 				phone: profileData.phone,
 				address: profileData.address,
 				city: profileData.city,
@@ -253,7 +287,7 @@ export default function CustomerProfilePage() {
 
 			toast.success(t('profile.update_success') || 'Profile updated successfully')
 			setOriginalProfileData(profileData)
-			setIsEditing(false)
+			setIsEditing(true)
 			
 			// Refresh user data
 			if (fetchUser) {
@@ -268,11 +302,6 @@ export default function CustomerProfilePage() {
 		} finally {
 			setIsSaving(false)
 		}
-	}
-
-	const handleCancel = () => {
-		setProfileData(originalProfileData)
-		setIsEditing(false)
 	}
 
 	const handleImageChange = async (e) => {
@@ -522,6 +551,14 @@ export default function CustomerProfilePage() {
 			>
 				{/* Profile header with photo upload */}
 				<div className="mb-6">
+					<button
+						type="button"
+						onClick={closeProfileInfo}
+						className="md:hidden inline-flex items-center gap-1.5 text-sm font-medium text-[#05324f] mb-3 hover:opacity-80"
+					>
+						<ArrowLeft className="w-4 h-4" />
+						{t('common.back') || 'Back'}
+					</button>
 					<h1 className="text-xl sm:text-2xl font-semibold text-[#05324f] leading-tight mb-1.5">
 						{t('profile.profile_info_title') || 'Profile information'}
 					</h1>
@@ -634,12 +671,12 @@ export default function CustomerProfilePage() {
 											<Button
 												size="sm"
 												variant="ghost"
-												onClick={() => setIsEditing(false)}
+												onClick={handleCancel}
 												disabled={isSaving}
 												className="flex items-center gap-1.5 h-8 px-3 text-xs sm:text-sm text-gray-600 hover:text-gray-900"
 											>
 												<X className="w-3.5 h-3.5" />
-												<span className="hidden sm:inline">{t('profile.cancel')}</span>
+												{t('profile.cancel')}
 											</Button>
 											<Button
 												size="sm"
@@ -648,11 +685,7 @@ export default function CustomerProfilePage() {
 												className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white h-8 px-3 text-xs sm:text-sm shadow-sm"
 											>
 												<Save className="w-3.5 h-3.5" />
-												{isSaving ? (
-													<span className="hidden sm:inline">{t('profile.saving')}</span>
-												) : (
-													<span className="hidden sm:inline">{t('profile.save')}</span>
-												)}
+												{isSaving ? t('profile.saving') : t('profile.save')}
 											</Button>
 										</div>
 									)}
@@ -689,9 +722,21 @@ export default function CustomerProfilePage() {
 										<Label htmlFor="email" className="text-[11px] font-semibold text-gray-400">
 											{t('profile.email') || 'Email'}
 										</Label>
-										<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
-											{profileData.email || 'N/A'}
-										</div>
+										{isEditing ? (
+											<Input
+												id="email"
+												type="email"
+												value={profileData.email}
+												onChange={(e) => handleInputChange('email', e.target.value)}
+												disabled={isSaving}
+												className="w-full"
+												autoComplete="email"
+											/>
+										) : (
+											<div className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-[#05324f]">
+												{profileData.email || 'N/A'}
+											</div>
+										)}
 									</div>
 
 									<div className="space-y-2">

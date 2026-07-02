@@ -1,30 +1,41 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { authAPI } from '../services/api'
+import { authAPI, AUTH_LOGOUT_EVENT, clearAuthSession, getAuthToken } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 
 const AuthContext = createContext(null)
 
+function readStoredUser() {
+	try {
+		const token = getAuthToken()
+		if (!token) return null
+		const storedUser = localStorage.getItem('user')
+		if (!storedUser) return null
+		const userData = JSON.parse(storedUser)
+		if (userData?.role) userData.role = userData.role.toUpperCase()
+		return userData
+	} catch {
+		return null
+	}
+}
+
 export function AuthProvider({ children }) {
-	// Initialize user from localStorage if available
-	const [user, setUser] = useState(() => {
-		try {
-			const storedUser = localStorage.getItem('user')
-			if (!storedUser) return null
-			const userData = JSON.parse(storedUser)
-			if (userData?.role) userData.role = userData.role.toUpperCase()
-			return userData
-		} catch {
-			return null
-		}
-	})
+	const [user, setUser] = useState(readStoredUser)
 	const [loading, setLoading] = useState(true)
-	const [token, setToken] = useState(localStorage.getItem('token'))
+	const [token, setToken] = useState(getAuthToken)
+
+	useEffect(() => {
+		const handleLogout = () => {
+			setToken(null)
+			setUser(null)
+		}
+		window.addEventListener(AUTH_LOGOUT_EVENT, handleLogout)
+		return () => window.removeEventListener(AUTH_LOGOUT_EVENT, handleLogout)
+	}, [])
 
 	useEffect(() => {
 		if (token) {
 			fetchUser()
 		} else {
-			// If no token, clear user and stop loading
 			setUser(null)
 			setLoading(false)
 		}
@@ -47,10 +58,8 @@ export function AuthProvider({ children }) {
 			localStorage.setItem('user', JSON.stringify(userData))
 		} catch (error) {
 			console.error('Failed to fetch user:', error)
-			// Only clear if it's a 401 (unauthorized) error
 			if (error.response?.status === 401) {
-				localStorage.removeItem('token')
-				localStorage.removeItem('user')
+				clearAuthSession()
 				setToken(null)
 				setUser(null)
 			}
@@ -146,18 +155,20 @@ export function AuthProvider({ children }) {
 	}
 
 	const logout = () => {
-		localStorage.removeItem('token')
-		localStorage.removeItem('user')
+		clearAuthSession()
 		setToken(null)
 		setUser(null)
 	}
 
 	const setSession = async (newToken, userData) => {
+		if (!newToken) {
+			throw new Error('Missing auth token')
+		}
 		if (userData?.role) {
 			userData.role = userData.role.toUpperCase()
 		}
 		localStorage.setItem('token', newToken)
-		localStorage.removeItem('user')
+		localStorage.setItem('user', JSON.stringify(userData))
 		setToken(newToken)
 		setUser(userData)
 		try {
@@ -169,7 +180,6 @@ export function AuthProvider({ children }) {
 			setUser(freshUser)
 		} catch (error) {
 			console.error('Failed to refresh user after login:', error)
-			localStorage.setItem('user', JSON.stringify(userData))
 		}
 	}
 

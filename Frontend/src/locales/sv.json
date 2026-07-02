@@ -1527,6 +1527,7 @@
 		"fill_all_fields": "Vänligen fyll i alla fält",
 		"generic_error": "Något gick fel. Försök igen.",
 		"email_required": "Ange din e-postadress",
+		"session_expired": "Din session har gått ut. Logga in igen.",
 		"invalid_email_format": "Ogiltigt e-postformat",
 		"password_required": "Lösenord krävs",
 		"password_mismatch": "Lösenorden matchar inte",
