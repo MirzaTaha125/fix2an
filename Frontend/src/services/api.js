@@ -164,6 +164,7 @@ export const adminAPI = {
 	getOffers: (params) => api.get('/api/admin/offers', { params }),
 	getBookings: (params) => api.get('/api/admin/bookings', { params }),
 	getEmailConfig: () => api.get('/api/admin/email-config'),
+	updateEmailConfig: (data) => api.patch('/api/admin/email-config', data),
 }
 
 export { api }
