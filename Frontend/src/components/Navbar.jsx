@@ -47,6 +47,9 @@ function Navbar() {
 		location.pathname === '/how-it-works' ||
 		location.pathname === '/book-appointment' ||
 		location.pathname === '/support' ||
+		location.pathname === '/privacy' ||
+		location.pathname === '/terms' ||
+		location.pathname === '/cookies' ||
 		(location.pathname === '/offers' && Boolean(offerRequestId)) ||
 		(location.pathname.includes('/offer') && location.pathname !== '/offers') ||
 		location.pathname.includes('/workshop/reviews') ||
@@ -83,6 +86,38 @@ function Navbar() {
 		navigate('/')
 	}
 
+	const showHamburgerMenu = !user && !showLeftBackButton
+	const showCenteredCompactLogo = user?.role !== 'ADMIN' && !showHamburgerMenu
+
+	const renderCompactNavbarLeft = () => {
+		if (showLeftBackButton) {
+			return (
+				<button onClick={handleLeftBack} className="flex items-center justify-center h-12 md:h-16 w-12 md:w-16 -ml-2 translate-y-1.5 text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
+					<ArrowLeft className="w-6 h-6 text-[#05324f]" />
+				</button>
+			)
+		}
+
+		if (user?.role === 'ADMIN') {
+			return (
+				<Link to="/admin" className="flex flex-col items-start group">
+					<span className="text-sm font-black bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1 group-hover:from-[#34C759] group-hover:to-[#34C759] transition-all duration-300">
+						Admin <span className="text-[#34C759]">Panel</span>
+					</span>
+					<span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">
+						{t('common.admin_tagline')}
+					</span>
+				</Link>
+			)
+		}
+
+		if (showHamburgerMenu) {
+			return <Logo />
+		}
+
+		return <div className="w-10" aria-hidden="true" />
+	}
+
 	return (
 		<header
 			className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${shouldUseWhiteNavbar ? 'bg-white' : 'bg-transparent'
@@ -93,87 +128,49 @@ function Navbar() {
 			}}
 		>
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-1 sm:pb-0">
-				{/* ── Mobile navbar: strict 3-col grid ── */}
-				<div className="md:hidden grid grid-cols-3 items-center py-2 w-full">
-					{/* Left: hamburger / back */}
-					<div className="flex items-center justify-start">
-						{showLeftBackButton ? (
-							<button onClick={handleLeftBack} className="p-2 -ml-2 mt-5 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex">
-								<ArrowLeft className="w-6 h-6 text-[#05324f]" />
-							</button>
-						) : (
-							!user && (
-								<button
-									onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-									className="p-2 -ml-2 mt-5 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
-								>
-									{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
-								</button>
-							)
-						)}
+				{/* ── Mobile navbar ── */}
+				<div className="md:hidden grid grid-cols-[1fr_auto_1fr] items-center py-2 w-full min-h-[3rem]">
+					<div className="flex items-center justify-start min-w-0">
+						{renderCompactNavbarLeft()}
 					</div>
 
-					{/* Center: logo or admin identity */}
-					<div className="flex items-center justify-center">
-						{user?.role === 'ADMIN' ? (
-							<Link to="/admin" className="flex flex-col items-center group">
-								<span className="text-sm font-black bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1 group-hover:from-[#34C759] group-hover:to-[#34C759] transition-all duration-300">
-									Admin <span className="text-[#34C759]">Panel</span>
-								</span>
-								<span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">
-									{t('common.admin_tagline')}
-								</span>
-							</Link>
-						) : (
-							<Logo />
-						)}
+					<div className="flex items-center justify-center px-2">
+						{showCenteredCompactLogo && <Logo />}
 					</div>
 
-					{/* Right: language switcher */}
-					<div className="flex items-center justify-end mt-5">
+					<div className="flex items-center justify-end gap-1 shrink-0">
 						<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} />
+						{!user && !showLeftBackButton && (
+							<button
+								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+								className="p-2 -mr-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
+							>
+								{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
+							</button>
+						)}
 					</div>
 				</div>
 
-				{/* ── Tablet navbar: logo center + language icon (md–lg, bottom nav pages) ── */}
-				<div className="hidden md:grid lg:hidden grid-cols-3 items-center py-2.5 w-full">
-					<div className="flex items-center justify-start">
-						{showLeftBackButton ? (
-							<button
-								onClick={handleLeftBack}
-								className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
-							>
-								<ArrowLeft className="w-6 h-6 text-[#05324f]" />
-							</button>
-						) : (
-							!user && (
-								<button
-									onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-									className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
-								>
-									{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
-								</button>
-							)
-						)}
+				{/* ── Tablet navbar (md–lg) ── */}
+				<div className="hidden md:grid lg:hidden grid-cols-[1fr_auto_1fr] items-center py-2.5 w-full min-h-[3.25rem]">
+					<div className="flex items-center justify-start min-w-0">
+						{renderCompactNavbarLeft()}
 					</div>
 
-					<div className="flex items-center justify-center">
-						{user?.role === 'ADMIN' ? (
-							<Link to="/admin" className="flex flex-col items-center group">
-								<span className="text-sm font-black bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1 group-hover:from-[#34C759] group-hover:to-[#34C759] transition-all duration-300">
-									Admin <span className="text-[#34C759]">Panel</span>
-								</span>
-								<span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">
-									{t('common.admin_tagline')}
-								</span>
-							</Link>
-						) : (
-							<Logo />
-						)}
+					<div className="flex items-center justify-center px-2">
+						{showCenteredCompactLogo && <Logo />}
 					</div>
 
-					<div className="flex items-center justify-end pt-2">
+					<div className="flex items-center justify-end gap-1 shrink-0">
 						<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} iconClassName="h-6 w-6" />
+						{!user && !showLeftBackButton && (
+							<button
+								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+								className="p-2 -mr-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
+							>
+								{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
+							</button>
+						)}
 					</div>
 				</div>
 
@@ -362,19 +359,6 @@ function Navbar() {
 											}`}
 									>
 										{t('navigation.login')}
-									</Link>
-									<Link
-										to="/workshop"
-										className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/workshop')
-												? shouldUseWhiteNavbar
-													? 'text-[#05324f] font-semibold'
-													: 'text-white font-semibold bg-white/25 shadow-md backdrop-blur-sm'
-												: shouldUseWhiteNavbar
-													? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-100'
-													: 'text-white/80 hover:text-white hover:bg-white/10'
-											}`}
-									>
-										{t('navigation.for_workshops') || 'For Workshops'}
 									</Link>
 									<div className="relative">
 										<button
@@ -591,16 +575,6 @@ function Navbar() {
 										onClick={() => setMobileMenuOpen(false)}
 									>
 										<span>{t('navigation.login')}</span>
-									</Link>
-									<Link
-										to="/workshop"
-										className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive('/workshop')
-												? 'text-[#05324f] font-semibold'
-												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
-											}`}
-										onClick={() => setMobileMenuOpen(false)}
-									>
-										<span>{t('navigation.for_workshops') || 'For Workshops'}</span>
 									</Link>
 									<Link
 										to="/auth/signup"

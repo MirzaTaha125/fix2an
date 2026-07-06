@@ -107,13 +107,18 @@ async function findOrCreateGuestCustomer(email) {
 async function createRequestForUser(user, requestData) {
 	const { vehicle, reportIds = [], description, registrationNumber, latitude, longitude, address, city, postalCode, country, expiresAt } = requestData
 
-	const createdVehicle = await Vehicle.create({
+	const vehiclePayload = {
 		make: String(vehicle?.make || '').trim() || '—',
 		model: String(vehicle?.model || '').trim() || '—',
-		year: vehicle?.year || new Date().getFullYear(),
 		...(vehicle?.makeSlug && { makeSlug: vehicle.makeSlug }),
 		...(vehicle?.modelSlug && { modelSlug: vehicle.modelSlug }),
-	})
+	}
+	const parsedYear = Number(vehicle?.year)
+	if (Number.isFinite(parsedYear) && parsedYear > 0) {
+		vehiclePayload.year = parsedYear
+	}
+
+	const createdVehicle = await Vehicle.create(vehiclePayload)
 
 	const request = await Request.create({
 		customerId: user._id,
@@ -380,7 +385,7 @@ export const verifyMagicLink = async (req, res) => {
 
 		return res.json({
 			message: 'Login successful',
-			redirectTo: '/contract',
+			redirectTo: '/offers',
 			...buildAuthResponse(user),
 		})
 	} catch (error) {

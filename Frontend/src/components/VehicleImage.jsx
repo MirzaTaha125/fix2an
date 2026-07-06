@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Car } from 'lucide-react'
 import { cn } from '../utils/cn'
 import { vehiclesAPI } from '../services/api'
+import carPlaceholder from '../assets/car-placeholder.png'
 
 const clientCache = new Map()
 
@@ -21,7 +21,6 @@ export default function VehicleImage({
 	const [imageUrl, setImageUrl] = useState(null)
 	const [isLogo, setIsLogo] = useState(false)
 	const [loading, setLoading] = useState(false)
-	const [failed, setFailed] = useState(false)
 
 	const label = alt || [make, model, year].filter(Boolean).join(' ')
 
@@ -37,13 +36,11 @@ export default function VehicleImage({
 		if (cached) {
 			setImageUrl(cached.url)
 			setIsLogo(cached.source === 'logo')
-			setFailed(!cached.url)
 			return
 		}
 
 		let active = true
 		setLoading(true)
-		setFailed(false)
 
 		vehiclesAPI
 			.getVehicleImageUrl({ make, model, year, width })
@@ -54,12 +51,10 @@ export default function VehicleImage({
 				clientCache.set(cacheKey, { url, source })
 				setImageUrl(url)
 				setIsLogo(source === 'logo')
-				if (!url) setFailed(true)
 			})
 			.catch(() => {
 				if (active) {
 					setImageUrl(null)
-					setFailed(true)
 				}
 			})
 			.finally(() => {
@@ -74,7 +69,11 @@ export default function VehicleImage({
 	if (!make) {
 		return (
 			<div className={cn('flex items-center justify-center bg-gray-100', className, fallbackClassName)}>
-				<Car className="text-gray-300" size={20} />
+				<img
+					src={carPlaceholder}
+					alt={label || 'Vehicle'}
+					className={cn('w-[70%] h-[70%] object-contain opacity-80', imgClassName)}
+				/>
 			</div>
 		)
 	}
@@ -88,7 +87,6 @@ export default function VehicleImage({
 					className={cn('block max-w-full max-h-full object-contain object-top rounded-xl', imgClassName)}
 					onError={() => {
 						setImageUrl(null)
-						setFailed(true)
 					}}
 				/>
 			</div>
@@ -103,7 +101,11 @@ export default function VehicleImage({
 
 	return (
 		<div className={cn('flex items-center justify-center bg-gray-100', className, fallbackClassName)}>
-			<Car className={cn('text-gray-300', failed && 'opacity-60')} size={20} />
+			<img
+				src={carPlaceholder}
+				alt={label || 'Vehicle'}
+				className={cn('w-[70%] h-[70%] object-contain opacity-80', imgClassName)}
+			/>
 		</div>
 	)
 }

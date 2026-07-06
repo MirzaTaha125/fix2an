@@ -9,7 +9,7 @@ import { FileText, ChevronRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import VehicleImage from '../components/VehicleImage'
+import VehicleRequestCard from '../components/VehicleRequestCard'
 import ViewOfferModal from '../components/ViewOfferModal'
 
 import { offersAPI } from '../services/api'
@@ -188,7 +188,6 @@ export default function WorkshopProposalsPage() {
 					filteredOffers.map((offer) => {
 						const offerId = offer._id || offer.id
 						const request = offer.requestId || offer.request
-						const vehicle = request?.vehicleId || request?.vehicle
 						const customer = request?.customerId || request?.customer
 						const offerDate = offer.createdAt ? formatDateTime(new Date(offer.createdAt)) : ''
 
@@ -197,47 +196,15 @@ export default function WorkshopProposalsPage() {
 								key={offerId}
 								className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 md:p-4 flex flex-col h-full"
 							>
-								<div className="flex gap-3 md:gap-4 flex-1 items-start">
-									<div className="w-28 md:w-32 shrink-0 self-start rounded-xl overflow-hidden flex items-start justify-center">
-										<VehicleImage
-											make={vehicle?.make}
-											model={vehicle?.model}
-											year={vehicle?.year}
-											width={400}
-											className="w-full max-h-32 md:max-h-[8rem]"
-											fallbackClassName="w-full h-24 md:h-[7rem]"
-											alt={`${vehicle?.make} ${vehicle?.model}`}
-										/>
-									</div>
-									<div className="flex-1 min-w-0 self-start">
-										<div className="flex items-start justify-between gap-2 mb-1.5 md:mb-2">
-											<h3 className="text-sm font-black text-[#05324f] leading-snug line-clamp-2 flex-1 min-w-0">
-												{vehicle?.make} {vehicle?.model} {vehicle?.year}
-											</h3>
-											<p className="text-base font-black text-[#38BC54] shrink-0 leading-tight">
-												{formatPrice(offer.price)}
-											</p>
-										</div>
-										<div className="space-y-1">
-											{customer?.name && (
-												<p className="text-[11px] text-[#05324f]/80 leading-snug">
-													<span className="font-bold">{t('common.customer') || 'Customer'}:</span> {customer.name}
-												</p>
-											)}
-											<p className="text-[11px] text-[#05324f]/80 leading-snug">
-												<span className="font-bold">{t('workshop.requests.status') || 'Status'}:</span> {getStatusLabel(offer.status)}
-											</p>
-											{offerDate && (
-												<p className="text-[11px] text-[#05324f]/80">
-													<span className="font-bold">{t('workshop.requests.sent_label') || 'Sent'}:</span> {offerDate}
-												</p>
-											)}
-											{offer.expiresAt && (
-												<p className="text-[10px] text-red-500">
-													{t('offers_page.offer_expires') || 'Valid until'}: {formatDate(offer.expiresAt)}
-												</p>
-											)}
-										</div>
+								<VehicleRequestCard
+									request={request}
+									className="items-start"
+									headerEnd={
+										<p className="text-base font-black text-[#38BC54] shrink-0 leading-tight">
+											{formatPrice(offer.price)}
+										</p>
+									}
+									footer={
 										<div className="mt-4 flex items-center gap-3.5">
 											<Button
 												onClick={() => {
@@ -250,8 +217,27 @@ export default function WorkshopProposalsPage() {
 											</Button>
 											<ChevronRight className="w-5 h-5 text-black shrink-0" strokeWidth={2} />
 										</div>
-									</div>
-								</div>
+									}
+								>
+									{customer?.name && (
+										<p className="text-[11px] text-[#05324f]/80 leading-snug">
+											<span className="font-bold">{t('common.customer') || 'Customer'}:</span> {customer.name}
+										</p>
+									)}
+									<p className="text-[11px] text-[#05324f]/80 leading-snug">
+										<span className="font-bold">{t('workshop.requests.status') || 'Status'}:</span> {getStatusLabel(offer.status)}
+									</p>
+									{offerDate && (
+										<p className="text-[11px] text-[#05324f]/80">
+											<span className="font-bold">{t('workshop.requests.sent_label') || 'Sent'}:</span> {offerDate}
+										</p>
+									)}
+									{offer.expiresAt && (
+										<p className="text-[10px] text-red-500">
+											{t('offers_page.offer_expires') || 'Valid until'}: {formatDate(offer.expiresAt)}
+										</p>
+									)}
+								</VehicleRequestCard>
 							</div>
 						)
 					})

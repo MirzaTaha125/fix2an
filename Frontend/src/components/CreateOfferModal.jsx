@@ -16,6 +16,7 @@ import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 import { requestsAPI, offersAPI } from '../services/api'
 import InclusionChecklistEditor from './InclusionChecklistEditor'
+import VehicleRequestCard, { formatRequestRegistration } from './VehicleRequestCard'
 import { parseInclusionItems, serializeInclusionItems } from '../utils/cn'
 
 const initialFormData = {
@@ -150,8 +151,7 @@ export default function CreateOfferModal({ open, onOpenChange, requestId, onSucc
 		}
 	}
 
-	const vehicle = request?.vehicleId || request?.vehicle
-	const vehicleLabel = vehicle ? `${vehicle.make} ${vehicle.model} ${vehicle.year || ''}`.trim() : ''
+	const registrationLabel = formatRequestRegistration(request?.registrationNumber)
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -164,8 +164,8 @@ export default function CreateOfferModal({ open, onOpenChange, requestId, onSucc
 						<DialogDescription className="text-gray-500 text-sm sm:text-base leading-relaxed text-center mb-0">
 							{loading
 								? (t('common.loading') || 'Loading...')
-								: vehicleLabel
-									? `${t('workshop.offer.subtitle') || 'Submit your offer for'} ${vehicleLabel}`
+								: registrationLabel !== '—'
+									? `${t('workshop.offer.subtitle') || 'Submit your offer for'} ${registrationLabel}`
 									: (t('workshop.offer.subtitle') || 'Submit your competitive offer for this request')}
 						</DialogDescription>
 					</DialogHeader>
@@ -181,12 +181,9 @@ export default function CreateOfferModal({ open, onOpenChange, requestId, onSucc
 						</div>
 					) : (
 						<form id="create-offer-form" onSubmit={handleSubmit} className="space-y-4 pb-4">
-							{request?.description && (
+							{request && (
 								<div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-									<p className="text-[11px] font-bold text-[#05324f] mb-1">
-										{t('workshop.requests.problem_label') || 'Problem'}
-									</p>
-									<p className="text-xs text-gray-600 leading-relaxed">{request.description}</p>
+									<VehicleRequestCard request={request} className="items-start" />
 								</div>
 							)}
 

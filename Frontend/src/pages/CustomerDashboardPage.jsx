@@ -134,7 +134,7 @@ export default function CustomerDashboardPage() {
 		return (
 			<div className="list-page-shell bg-[#F4F7F6]">
 				<Navbar />
-				<div className="list-page-content max-w-5xl mx-auto">
+				<div className="list-page-content">
 					<Skeleton className="h-36 w-full rounded-2xl mb-6" />
 					<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
 						{[1, 2, 3, 4].map((i) => (
@@ -159,21 +159,17 @@ export default function CustomerDashboardPage() {
 		<div className="list-page-shell bg-[#F4F7F6]">
 			<Navbar />
 
-			<div className="list-page-content max-w-5xl mx-auto">
-				<div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#34C759] via-[#38BC54] to-[#2eb34f] p-5 sm:p-7 md:p-8 mb-6 sm:mb-8 shadow-lg shadow-[#34C759]/20">
-					<div className="absolute top-0 right-0 w-40 h-40 sm:w-56 sm:h-56 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-					<div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
-					<div className="relative z-[1]">
-						<p className="inline-flex items-center bg-white/10 border border-white/15 rounded-full px-3 py-1 mb-3 text-[10px] sm:text-xs font-semibold text-white/90 uppercase tracking-wider">
-							{t('dashboard.customer.badge') || 'Customer Dashboard'}
-						</p>
-						<h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white leading-tight mb-1.5">
-							{t('dashboard.welcome_back', { name: firstName }) || `Welcome back, ${firstName}`}
-						</h1>
-						<p className="text-sm sm:text-base text-white/75 max-w-lg leading-relaxed">
-							{t('dashboard.customer.subtitle') || 'Track your cases, offers and bookings in one place.'}
-						</p>
-					</div>
+			<div className="list-page-content">
+				<div className="mb-6 sm:mb-8">
+					<p className="inline-flex items-center bg-[#F2F9F4] border border-[#38BC54]/15 rounded-full px-3 py-1 mb-3 text-[10px] sm:text-xs font-semibold text-[#38BC54] uppercase tracking-wider">
+						{t('dashboard.customer.badge') || 'Customer Dashboard'}
+					</p>
+					<h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[#05324f] leading-tight mb-1.5">
+						{t('dashboard.welcome_back', { name: firstName }) || `Welcome back, ${firstName}`}
+					</h1>
+					<p className="text-sm sm:text-base text-gray-500 max-w-lg leading-relaxed">
+						{t('dashboard.customer.subtitle') || 'Track your cases, offers and bookings in one place.'}
+					</p>
 				</div>
 
 				<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
@@ -217,7 +213,6 @@ export default function CustomerDashboardPage() {
 							icon={Camera}
 							label={t('dashboard.customer.action_new_request') || 'New request'}
 							description={t('dashboard.customer.action_new_request_desc') || 'Upload inspection report and get quotes'}
-							badge={stats.openRequests}
 						/>
 						<DashboardQuickAction
 							to="/offers"

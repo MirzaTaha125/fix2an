@@ -4,7 +4,7 @@ import {
 	DialogTitle,
 	DialogHeader,
 } from './ui/Dialog'
-import VehicleImage from './VehicleImage'
+import VehicleRequestCard from './VehicleRequestCard'
 import { formatPrice, formatDate, parseInclusionItems } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
 import { Check } from 'lucide-react'
@@ -47,9 +47,7 @@ export default function ViewOfferModal({ open, onOpenChange, offer }) {
 	if (!offer) return null
 
 	const request = offer.requestId || offer.request
-	const vehicle = request?.vehicleId || request?.vehicle
 	const customer = request?.customerId || request?.customer
-	const vehicleLabel = vehicle ? `${vehicle.make} ${vehicle.model} ${vehicle.year || ''}`.trim() : ''
 	const inclusionItems = parseInclusionItems(offer.inclusions)
 
 	const statusLabel =
@@ -81,39 +79,17 @@ export default function ViewOfferModal({ open, onOpenChange, offer }) {
 							</DialogTitle>
 						</DialogHeader>
 
-						<div className="flex items-start gap-2.5 sm:gap-3 md:gap-4 p-3 sm:p-3.5 md:p-4 bg-gray-50 rounded-xl border border-gray-100">
-							<div className="w-28 md:w-32 shrink-0 self-start rounded-xl overflow-hidden flex items-start justify-center">
-								<VehicleImage
-									make={vehicle?.make}
-									model={vehicle?.model}
-									year={vehicle?.year}
-									width={400}
-									className="w-full max-h-32 md:max-h-[8rem]"
-									fallbackClassName="w-full h-24 md:h-[7rem]"
-									alt={vehicleLabel}
-								/>
-							</div>
-							<div className="flex-1 min-w-0 self-start">
-								<h3 className="text-sm sm:text-base font-black text-[#05324f] leading-snug line-clamp-2 mb-1.5">
-									{vehicleLabel || (t('workshop.offer.vehicle') || 'Vehicle')}
-								</h3>
-								<div className="space-y-1">
-									{request?.description && (
-										<p className="text-[11px] sm:text-xs text-[#05324f]/80 leading-snug">
-											<span className="font-bold">{t('workshop.requests.problem_label') || 'Problem'}:</span>{' '}
-											{request.description}
-										</p>
-									)}
-									{customer?.name && (
-										<p className="text-[11px] sm:text-xs text-[#05324f]/80 leading-snug">
-											<span className="font-bold">{t('common.customer') || 'Customer'}:</span> {customer.name}
-										</p>
-									)}
+						<div className="p-3 sm:p-3.5 md:p-4 bg-gray-50 rounded-xl border border-gray-100">
+							<VehicleRequestCard request={request} className="items-start">
+								{customer?.name && (
 									<p className="text-[11px] sm:text-xs text-[#05324f]/80 leading-snug">
-										<span className="font-bold">{t('workshop.requests.status') || 'Status'}:</span> {statusLabel}
+										<span className="font-bold">{t('common.customer') || 'Customer'}:</span> {customer.name}
 									</p>
-								</div>
-							</div>
+								)}
+								<p className="text-[11px] sm:text-xs text-[#05324f]/80 leading-snug">
+									<span className="font-bold">{t('workshop.requests.status') || 'Status'}:</span> {statusLabel}
+								</p>
+							</VehicleRequestCard>
 						</div>
 
 						<div className="space-y-4">

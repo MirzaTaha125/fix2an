@@ -40,7 +40,7 @@ export default function UploadPage() {
 	const [vehicleData, setVehicleData] = useState({
 		make: '',
 		model: '',
-		year: new Date().getFullYear(),
+		year: '',
 	})
 	const [registrationNumber, setRegistrationNumber] = useState('')
 	const [postalCode, setPostalCode] = useState('')
@@ -148,13 +148,18 @@ export default function UploadPage() {
 		[carModels]
 	)
 
-	const buildVehiclePayload = () => ({
-		make: vehicleData.make?.trim() || '—',
-		model: vehicleData.model?.trim() || '—',
-		year: vehicleData.year || new Date().getFullYear(),
-		...(makeSlug && { makeSlug }),
-		...(modelSlug && { modelSlug }),
-	})
+	const buildVehiclePayload = () => {
+		const payload = {
+			make: vehicleData.make?.trim() || '—',
+			model: vehicleData.model?.trim() || '—',
+			...(makeSlug && { makeSlug }),
+			...(modelSlug && { modelSlug }),
+		}
+		if (vehicleData.year) {
+			payload.year = vehicleData.year
+		}
+		return payload
+	}
 
 	const isDetailsValid =
 		isValidSwedishRegistrationNumber(registrationNumber) && Boolean(description.trim())
@@ -172,7 +177,7 @@ export default function UploadPage() {
 						setVehicleData({
 							make: request.vehicleId.make || '',
 							model: request.vehicleId.model || '',
-							year: request.vehicleId.year || new Date().getFullYear(),
+							year: request.vehicleId.year ?? '',
 						})
 						if (request.vehicleId.makeSlug) {
 							setMakeSlug(request.vehicleId.makeSlug)
@@ -403,7 +408,7 @@ export default function UploadPage() {
 
 				await requestsAPI.create(requestBody)
 				toast.success(t('success.request_sent'))
-				navigate('/contract')
+				navigate('/offers')
 				return
 			}
 
@@ -522,7 +527,7 @@ export default function UploadPage() {
 					{steps.map((step, idx) => (
 						<div key={step.key} className="flex items-center">
 							<div className="flex flex-col items-center">
-								<div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+								<div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-normal transition-all ${
 									step.state === 'done' ? 'bg-[#38BC54] text-white' :
 									step.state === 'active' ? 'bg-[#38BC54] text-white shadow-md shadow-green-200' :
 									'bg-gray-200 text-gray-400'
@@ -707,7 +712,7 @@ export default function UploadPage() {
 								<div>
 									<Label htmlFor="year" className="text-xs font-bold text-[#05324f] mb-1.5 block">{t('upload.vehicle_info.year_label')}</Label>
 									<Select
-										value={String(vehicleData.year)}
+										value={vehicleData.year ? String(vehicleData.year) : ''}
 										onValueChange={(value) =>
 											setVehicleData((prev) => ({ ...prev, year: parseInt(value, 10) }))
 										}

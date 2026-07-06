@@ -11,6 +11,7 @@ import { ProfileMenuSkeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
+import { SHOW_PROFILE_LANGUAGE_SETTINGS } from '../config/language.js'
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from '../components/ui/Dialog'
 import {
 	User,
@@ -375,12 +376,16 @@ export default function WorkshopProfilePage() {
 							desc: t('workshop.profile.workshop_info_desc') || 'Address, contact details and opening hours',
 							onClick: openProfileInfo,
 						},
-						{
-							icon: <Settings className="w-5 h-5 text-[#05324f]" />,
-							title: t('workshop.profile.settings_title') || 'Settings',
-							desc: t('workshop.profile.settings_desc') || 'Notifications, language and other settings',
-							onClick: () => setSettingsOpen(true),
-						},
+						...(SHOW_PROFILE_LANGUAGE_SETTINGS
+							? [
+									{
+										icon: <Settings className="w-5 h-5 text-[#05324f]" />,
+										title: t('workshop.profile.settings_title') || 'Settings',
+										desc: t('workshop.profile.settings_desc') || 'Notifications, language and other settings',
+										onClick: () => setSettingsOpen(true),
+									},
+								]
+							: []),
 						{
 							icon: <HelpCircle className="w-5 h-5 text-[#05324f]" />,
 							title: t('workshop.profile.help_title') || 'Help and support',
@@ -412,9 +417,9 @@ export default function WorkshopProfilePage() {
 				<button
 					type="button"
 					onClick={handleLogout}
-					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-center gap-2 text-red-600 font-semibold text-sm active:scale-[0.99] transition-transform"
+					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-center gap-2 text-[#34C759] font-semibold text-sm active:scale-[0.99] transition-transform"
 				>
-					<LogOut className="w-5 h-5" />
+					<LogOut className="w-5 h-5 text-[#34C759]" />
 					{t('workshop.profile.logout') || 'Log out'}
 				</button>
 
@@ -830,7 +835,7 @@ export default function WorkshopProfilePage() {
 
 			<Footer />
 
-			{/* Settings Dialog */}
+			{SHOW_PROFILE_LANGUAGE_SETTINGS && (
 			<Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
 				<DialogContent
 					onClose={() => setSettingsOpen(false)}
@@ -869,6 +874,7 @@ export default function WorkshopProfilePage() {
 					</div>
 				</DialogContent>
 			</Dialog>
+			)}
 
 			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
 				<DialogContent className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">

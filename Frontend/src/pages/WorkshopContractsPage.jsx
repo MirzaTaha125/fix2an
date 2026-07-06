@@ -6,7 +6,7 @@ import { Label } from '../components/ui/Label'
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, DialogFooter } from '../components/ui/Dialog'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
-import { formatPrice, formatDate, formatDateTime, formatTime } from '../utils/cn'
+import { formatPrice, formatDateTime } from '../utils/cn'
 import { formatSwedishPhone, stripSwedishPhoneForTel } from '../utils/swedishPhone'
 import { useTranslation } from 'react-i18next'
 import {
@@ -14,26 +14,36 @@ import {
 	Phone,
 	Calendar,
 	Clock,
+	CheckCircle,
+	XCircle,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import VehicleImage from '../components/VehicleImage'
+import VehicleRequestCard from '../components/VehicleRequestCard'
 
 import { offersAPI, bookingsAPI } from '../services/api'
 
-function CustomerScheduleNotice({ t }) {
+function CustomerScheduleNotice({ t, isScheduled = false }) {
 	return (
 		<div className="bg-[#F8FAF9] rounded-xl border border-[#38BC54]/10 p-3 flex gap-2.5 mt-4">
 			<div className="shrink-0 pt-0.5">
-				<Phone className="w-5 h-5 text-[#38BC54]" strokeWidth={2} />
+				{isScheduled ? (
+					<Calendar className="w-5 h-5 text-[#38BC54]" strokeWidth={2} />
+				) : (
+					<Phone className="w-5 h-5 text-[#38BC54]" strokeWidth={2} />
+				)}
 			</div>
 			<div className="flex-1 min-w-0">
 				<h4 className="text-xs font-black text-[#05324f] leading-snug">
-					{t('workshop.contracts.contact_customer_title')}
+					{isScheduled
+						? t('workshop.contracts.contact_customer_scheduled_title')
+						: t('workshop.contracts.contact_customer_title')}
 				</h4>
 				<p className="text-[11px] text-[#05324f]/70 leading-snug font-medium mt-0.5">
-					{t('workshop.contracts.contact_customer_desc')}
+					{isScheduled
+						? t('workshop.contracts.contact_customer_scheduled_desc')
+						: t('workshop.contracts.contact_customer_desc')}
 				</p>
 			</div>
 		</div>
@@ -63,10 +73,26 @@ function getCustomerContact(customer, booking) {
 	}
 }
 
+function ScheduledAppointmentWidget({ scheduledAt, t, language }) {
+	return (
+		<div className="mt-3 flex items-center gap-2 text-xs text-[#05324f] bg-[#F8FAF9] border border-[#38BC54]/10 rounded-xl px-3 py-2">
+			<Calendar size={14} className="text-[#38BC54] shrink-0" />
+			<div className="min-w-0">
+				<p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+					{t('my_cases.appointment_date') || 'Appointment'}
+				</p>
+				<p className="font-semibold leading-snug">
+					{formatDateTime(new Date(scheduledAt), language)}
+				</p>
+			</div>
+		</div>
+	)
+}
+
 export default function WorkshopContractsPage() {
 	const navigate = useNavigate()
 	const { user, loading: authLoading } = useAuth()
-	const { t } = useTranslation()
+	const { t, i18n } = useTranslation()
 	const [contracts, setContracts] = useState([])
 	const [bookings, setBookings] = useState([])
 	const [loading, setLoading] = useState(true)
@@ -83,6 +109,7 @@ const [showCancelDialog, setShowCancelDialog] = useState(false)
 const [cancellationReason, setCancellationReason] = useState('')
 	const [contactModalOpen, setContactModalOpen] = useState(false)
 	const [selectedCustomerContact, setSelectedCustomerContact] = useState(null)
+	const [scheduleDialogContact, setScheduleDialogContact] = useState(null)
 
 	// Redirect if not authenticated or wrong role
 	useEffect(() => {
@@ -188,9 +215,10 @@ const [cancellationReason, setCancellationReason] = useState('')
 			return String(bOfferId) === String(offerId)
 		})
 
-	const openScheduleDialog = (booking, mode) => {
+	const openScheduleDialog = (booking, mode, customer) => {
 		setBookingToReschedule(booking)
 		setScheduleDialogMode(mode)
+		setScheduleDialogContact(getCustomerContact(customer, booking))
 		if (booking.scheduledAt) {
 			const scheduled = new Date(booking.scheduledAt)
 			setNewScheduledDate(scheduled.toISOString().split('T')[0])
@@ -205,25 +233,29 @@ const [cancellationReason, setCancellationReason] = useState('')
 	const handleConfirmClick = (offer) => {
 		const offerId = offer._id || offer.id
 		const booking = findBookingForOffer(offerId)
+		const request = offer.requestId || offer.request
+		const customer = request?.customerId || request?.customer
 
 		if (!booking) {
 			toast.error(t('workshop.contracts.booking_not_found') || 'No booking found for this contract.')
 			return
 		}
 
-		openScheduleDialog(booking, 'confirm')
+		openScheduleDialog(booking, 'confirm', customer)
 	}
 
 	const handleRescheduleClick = (offer) => {
 		const offerId = offer._id || offer.id
 		const booking = findBookingForOffer(offerId)
+		const request = offer.requestId || offer.request
+		const customer = request?.customerId || request?.customer
 
 		if (!booking) {
 			toast.error(t('workshop.contracts.booking_not_found') || 'No booking found for this contract.')
 			return
 		}
 
-		openScheduleDialog(booking, 'reschedule')
+		openScheduleDialog(booking, 'reschedule', customer)
 	}
 
 	const handleScheduleConfirm = async () => {
@@ -380,7 +412,15 @@ const [cancellationReason, setCancellationReason] = useState('')
 			<Navbar />
 			
 			{/* Reschedule Dialog */}
-			<Dialog open={showRescheduleDialog} onOpenChange={setShowRescheduleDialog}>
+			<Dialog
+				open={showRescheduleDialog}
+				onOpenChange={(open) => {
+					setShowRescheduleDialog(open)
+					if (!open) {
+						setScheduleDialogContact(null)
+					}
+				}}
+			>
 				<DialogContent className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
 					<DialogHeader className="text-center items-center sm:text-center">
 						<DialogTitle className="text-xl sm:text-2xl font-black text-[#05324f] leading-tight mb-2 text-center w-full">
@@ -394,6 +434,23 @@ const [cancellationReason, setCancellationReason] = useState('')
 								: (t('my_cases.reschedule_job_description') || 'Select a new date and time for your appointment')}
 						</DialogDescription>
 					</DialogHeader>
+
+					<CustomerScheduleNotice t={t} isScheduled={scheduleDialogMode === 'reschedule'} />
+					<button
+						type="button"
+						className="w-full mt-2.5 h-10 border border-[#38BC54] rounded-xl text-[#38BC54] font-semibold text-xs flex items-center justify-center gap-1.5 hover:bg-[#F2F9F4] transition-all active:scale-[0.98]"
+						onClick={() => {
+							if (!scheduleDialogContact) {
+								toast.error(t('my_cases.contact_unavailable') || 'Contact details unavailable')
+								return
+							}
+							setSelectedCustomerContact(scheduleDialogContact)
+							setContactModalOpen(true)
+						}}
+					>
+						<ChatBubbleIcon />
+						{t('workshop.contracts.contact_customer')}
+					</button>
 
 					<div className="mt-4 space-y-3 w-full min-w-0">
 						<div className="space-y-2">
@@ -438,7 +495,7 @@ const [cancellationReason, setCancellationReason] = useState('')
 							{isRescheduling ? (
 								<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
 							) : scheduleDialogMode === 'confirm' ? (
-								t('workshop.contracts.schedule_appointment') || 'Schedule appointment'
+								t('workshop.contracts.schedule_button') || 'Schedule'
 							) : (
 								t('my_cases.reschedule_job') || 'Reschedule'
 							)}
@@ -567,7 +624,6 @@ const [cancellationReason, setCancellationReason] = useState('')
 						const offerId = offer._id || offer.id
 						const request = offer.requestId || offer.request
 						const customer = request?.customerId || request?.customer
-						const vehicle = request?.vehicleId || request?.vehicle
 
 						const booking = bookings.find(b => {
 							const bOfferId = b.offerId?._id || b.offerId?.id || b.offerId
@@ -576,92 +632,79 @@ const [cancellationReason, setCancellationReason] = useState('')
 
 						if (!offer || !request) return null
 
-						const scheduledTime = booking?.scheduledAt ? formatTime(booking.scheduledAt) : null
-
 						return (
 							<div
 								key={offerId}
 								className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 md:p-4 flex flex-col h-full"
 							>
-								{activeTab === 'active' && (
-									<div className="mb-2.5">
-										{booking?.scheduledAt ? (
-											<span className="inline-flex items-center gap-1 bg-[#F2F9F4] text-[#38BC54] px-2.5 py-1 rounded-full text-[10px] font-semibold border border-[#38BC54]/15">
-												<Calendar size={12} className="shrink-0" />
-												{t('workshop.contracts.scheduled')}
-											</span>
-										) : (
-											<span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full text-[10px] font-semibold border border-amber-200">
-												<Clock size={12} className="shrink-0" />
-												{t('workshop.contracts.not_scheduled')}
-											</span>
-										)}
-									</div>
-								)}
-								<div className="flex gap-3 md:gap-4 flex-1 items-start">
-									<div className="w-28 md:w-32 shrink-0 self-start rounded-xl overflow-hidden flex items-start justify-center">
-										<VehicleImage
-											make={vehicle?.make}
-											model={vehicle?.model}
-											year={vehicle?.year}
-											width={400}
-											className="w-full max-h-32 md:max-h-[8rem]"
-											fallbackClassName="w-full h-24 md:h-[7rem]"
-											alt={`${vehicle?.make} ${vehicle?.model}`}
-										/>
-									</div>
-									<div className="flex-1 min-w-0 self-start">
-										<div className="flex items-start justify-between gap-2 mb-0.5">
-											<h3 className="text-sm font-semibold text-[#05324f] leading-snug line-clamp-2 flex-1 min-w-0">
-												{vehicle?.make} {vehicle?.model} {vehicle?.year}
-											</h3>
-											<div className="shrink-0 text-right">
-												<p className="text-sm font-semibold text-[#38BC54] leading-tight whitespace-nowrap">
-													{formatPrice(offer.price)}
-												</p>
-												<p className="text-[9px] text-gray-400 font-medium">inkl. moms</p>
-											</div>
-										</div>
-										<div className="space-y-1">
-											{customer?.name && (
-												<p className="text-[11px] text-[#05324f]/80 leading-snug">
-													<span className="font-semibold">{t('common.customer') || 'Customer'}:</span> {customer.name}
-												</p>
-											)}
-											<p className="text-[11px] text-[#05324f]/80 leading-snug line-clamp-2">
-												<span className="font-semibold">{t('workshop.requests.problem_label') || 'Problem'}:</span>{' '}
-												{request.description?.trim() ? request.description.trim() : '—'}
-											</p>
-											{booking?.scheduledAt && (
-												<p className="text-[11px] text-[#05324f]/80">
-													<span className="font-semibold">{t('workshop.contracts.scheduled') || 'Scheduled'}:</span>{' '}
-													{formatDate(booking.scheduledAt)}
-													{scheduledTime ? ` · ${scheduledTime}` : ''}
-												</p>
-											)}
-										</div>
-									</div>
+								<div className="mb-2.5">
+									{activeTab === 'completed' ? (
+										<span className="inline-flex items-center gap-1 bg-[#F2F9F4] text-[#38BC54] px-2.5 py-1 rounded-full text-[10px] font-semibold border border-[#38BC54]/15">
+											<CheckCircle size={12} className="shrink-0" />
+											{t('workshop.contracts.status.completed') || 'Completed'}
+										</span>
+									) : activeTab === 'cancelled' ? (
+										<span className="inline-flex items-center gap-1 bg-red-50 text-red-600 px-2.5 py-1 rounded-full text-[10px] font-semibold border border-red-200">
+											<XCircle size={12} className="shrink-0" />
+											{t('workshop.contracts.status.cancelled') || 'Cancelled'}
+										</span>
+									) : booking?.scheduledAt ? (
+										<span className="inline-flex items-center gap-1 bg-[#F2F9F4] text-[#38BC54] px-2.5 py-1 rounded-full text-[10px] font-semibold border border-[#38BC54]/15">
+											<Calendar size={12} className="shrink-0" />
+											{t('workshop.contracts.scheduled')}
+										</span>
+									) : (
+										<span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full text-[10px] font-semibold border border-amber-200">
+											<Clock size={12} className="shrink-0" />
+											{t('workshop.contracts.not_scheduled')}
+										</span>
+									)}
 								</div>
+								<VehicleRequestCard
+									request={request}
+									titleWeight="semibold"
+									className="items-start"
+									headerEnd={
+										<div className="shrink-0 text-right">
+											<p className="text-sm font-semibold text-[#38BC54] leading-tight whitespace-nowrap">
+												{formatPrice(offer.price)}
+											</p>
+											<p className="text-[9px] text-gray-400 font-medium">inkl. moms</p>
+										</div>
+									}
+								>
+									{customer?.name && (
+										<p className="text-[11px] text-[#05324f]/80 leading-snug">
+											<span className="font-semibold">{t('common.customer') || 'Customer'}:</span> {customer.name}
+										</p>
+									)}
+								</VehicleRequestCard>
+
+								{booking?.scheduledAt && (
+									<ScheduledAppointmentWidget
+										scheduledAt={booking.scheduledAt}
+										t={t}
+										language={i18n.language}
+									/>
+								)}
 
 								{activeTab === 'active' && !booking?.scheduledAt && (
-									<>
-										<CustomerScheduleNotice t={t} />
-										<button
-											type="button"
-											className="w-full mt-2.5 h-10 border border-[#38BC54] rounded-xl text-[#38BC54] font-semibold text-xs flex items-center justify-center gap-1.5 hover:bg-[#F2F9F4] transition-all active:scale-[0.98]"
-											onClick={() => {
-												setSelectedCustomerContact(getCustomerContact(customer, booking))
-												setContactModalOpen(true)
-											}}
-										>
-											<ChatBubbleIcon />
-											{t('workshop.contracts.contact_customer')}
-										</button>
-									</>
+									<CustomerScheduleNotice t={t} />
 								)}
+								<button
+									type="button"
+									className="w-full mt-2.5 h-10 border border-[#38BC54] rounded-xl text-[#38BC54] font-semibold text-xs flex items-center justify-center gap-1.5 hover:bg-[#F2F9F4] transition-all active:scale-[0.98]"
+									onClick={() => {
+										setSelectedCustomerContact(getCustomerContact(customer, booking))
+										setContactModalOpen(true)
+									}}
+								>
+									<ChatBubbleIcon />
+									{t('workshop.contracts.contact_customer')}
+								</button>
 
 								{activeTab === 'active' && (
-									<div className={`flex gap-2 ${booking?.scheduledAt ? 'mt-4' : 'mt-2.5'}`}>
+									<div className="flex gap-2 mt-2.5">
 										{booking?.scheduledAt ? (
 											<>
 												<Button
@@ -684,7 +727,7 @@ const [cancellationReason, setCancellationReason] = useState('')
 													onClick={() => handleConfirmClick(offer)}
 													className="flex-1 h-10 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl font-semibold text-xs shadow-sm"
 												>
-													{t('workshop.contracts.schedule_appointment') || 'Schedule appointment'}
+													{t('workshop.contracts.schedule_button') || 'Schedule'}
 												</Button>
 												<Button
 													variant="secondary"

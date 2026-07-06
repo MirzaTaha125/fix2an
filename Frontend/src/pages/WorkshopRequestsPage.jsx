@@ -13,7 +13,7 @@ import { useAuth } from '../context/AuthContext'
 import StatCard from '../components/ui/StatCard'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import VehicleImage from '../components/VehicleImage'
+import VehicleRequestCard from '../components/VehicleRequestCard'
 import CreateOfferModal from '../components/CreateOfferModal'
 import ViewOfferModal from '../components/ViewOfferModal'
 
@@ -225,6 +225,15 @@ export default function WorkshopRequestsPage() {
 		}
 	}
 
+	const FORTY_EIGHT_HOURS_MS = 48 * 60 * 60 * 1000
+
+	const isRequestWithin48Hours = (request) => {
+		if (!request?.createdAt) return true
+		const createdAt = new Date(request.createdAt).getTime()
+		if (Number.isNaN(createdAt)) return true
+		return Date.now() - createdAt < FORTY_EIGHT_HOURS_MS
+	}
+
 	const matchesSearch = (request) => {
 		if (!searchQuery.trim()) return true
 		const query = searchQuery.toLowerCase()
@@ -237,19 +246,22 @@ export default function WorkshopRequestsPage() {
 			(request.city && request.city.toLowerCase().includes(query)) ||
 			(request.address && request.address.toLowerCase().includes(query)) ||
 			(customer?.name && customer.name.toLowerCase().includes(query)) ||
-			(request.description && request.description.toLowerCase().includes(query))
+			(request.description && request.description.toLowerCase().includes(query)) ||
+			(request.registrationNumber && request.registrationNumber.toLowerCase().includes(query.replace(/\s/g, '')))
 		)
 	}
 
-	// "New" — only requests workshop hasn't applied to (default for desktop + mobile Nya tab)
+	// "New" — requests from the last 48 hours (even if workshop already sent an offer)
 	const filteredRequests = requests.filter((request) => {
-		const offers = request.offers || []
-		if (offers.length > 0) return false
+		if (!isRequestWithin48Hours(request)) return false
 		return matchesSearch(request)
 	})
 
-	// "All" — every request matching search (mobile Alla tab)
-	const allRequests = requests.filter(matchesSearch)
+	// "All" — only requests older than 48 hours
+	const allRequests = requests.filter((request) => {
+		if (isRequestWithin48Hours(request)) return false
+		return matchesSearch(request)
+	})
 
 	const mobileList = mobileTab === 'all' ? allRequests : filteredRequests
 
@@ -394,54 +406,26 @@ export default function WorkshopRequestsPage() {
 				) : (
 					mobileList.map((request) => {
 						const requestId = request._id || request.id
-						const vehicle = request.vehicleId || request.vehicle
 						const hasOffer = (request.offers || []).length > 0
+						const showNewBadge = !hasOffer && isRequestWithin48Hours(request)
 						return (
 							<div key={`m-${requestId}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 md:p-4 flex flex-col h-full">
-								<div className="flex gap-3 md:gap-4 flex-1 items-stretch min-h-0">
-									<div className="w-28 md:w-32 shrink-0 rounded-xl overflow-hidden flex items-start justify-center">
-										<VehicleImage
-											make={vehicle?.make}
-											model={vehicle?.model}
-											year={vehicle?.year}
-											width={400}
-											className="w-full max-h-32 md:max-h-[8rem]"
-											fallbackClassName="w-full h-24 md:h-[7rem]"
-											alt={`${vehicle?.make} ${vehicle?.model}`}
-										/>
-									</div>
-									<div className="flex-1 min-w-0 flex flex-col">
-										<div className="flex items-start justify-between gap-2 mb-1.5 md:mb-2">
-											<h3 className="text-sm font-black text-[#05324f] leading-snug line-clamp-2">
-												{vehicle?.make} {vehicle?.model} {vehicle?.year}
-											</h3>
-											{hasOffer ? (
-												<span className="shrink-0 text-[10px] font-black bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md border border-gray-200">
-													{t('workshop.requests.offer_sent') || 'Sent'}
-												</span>
-											) : (
-												<span className="shrink-0 text-[10px] font-black bg-[#F2F9F4] text-[#38BC54] px-2 py-0.5 rounded-md border border-[#38BC54]/20">
-													{t('workshop.requests.new_badge') || 'New'}
-												</span>
-											)}
-										</div>
-										<div className="space-y-1">
-											<p className="text-[11px] text-[#05324f]/80 leading-snug line-clamp-2">
-												<span className="font-bold">{t('workshop.requests.problem_label') || 'Problem'}:</span>
-												{request.description?.trim() ? ` ${request.description.trim()}` : ' —'}
-											</p>
-											{request.city && (
-												<p className="text-[11px] text-[#05324f]/80">
-													<span className="font-bold">{t('workshop.requests.location_label') || 'Location'}:</span> {request.city}
-												</p>
-											)}
-											{request.createdAt && (
-												<p className="text-[11px] text-[#05324f]/80">
-													<span className="font-bold">{t('workshop.requests.sent_label') || 'Sent'}:</span> {formatRelativeSent(request.createdAt)}
-												</p>
-											)}
-										</div>
-										{hasOffer ? (
+								<VehicleRequestCard
+									request={request}
+									showLocation
+									headerEnd={
+										hasOffer ? (
+											<span className="shrink-0 text-[10px] font-black bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md border border-gray-200">
+												{t('workshop.requests.offer_sent') || 'Sent'}
+											</span>
+										) : showNewBadge ? (
+											<span className="shrink-0 text-[10px] font-black bg-[#F2F9F4] text-[#38BC54] px-2 py-0.5 rounded-md border border-[#38BC54]/20">
+												{t('workshop.requests.new_badge') || 'New'}
+											</span>
+										) : null
+									}
+									footer={
+										hasOffer ? (
 											<div className="mt-auto pt-4 flex items-center gap-3.5 shrink-0">
 												<Button
 													onClick={() => handleViewOffer(request)}
@@ -464,9 +448,15 @@ export default function WorkshopRequestsPage() {
 												</Button>
 												<ChevronRight className="w-5 h-5 text-black shrink-0" strokeWidth={2} />
 											</div>
-										)}
-									</div>
-								</div>
+										)
+									}
+								>
+									{request.createdAt && (
+										<p className="text-[11px] text-[#05324f]/80">
+											<span className="font-bold">{t('workshop.requests.sent_label') || 'Sent'}:</span> {formatRelativeSent(request.createdAt)}
+										</p>
+									)}
+								</VehicleRequestCard>
 							</div>
 						)
 					})

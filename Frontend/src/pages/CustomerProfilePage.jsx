@@ -9,6 +9,7 @@ import { ProfileMenuSkeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { formatPrice, formatCompactNumber } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
+import { SHOW_PROFILE_LANGUAGE_SETTINGS } from '../config/language.js'
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from '../components/ui/Dialog'
 import {
 	User,
@@ -426,12 +427,16 @@ export default function CustomerProfilePage() {
 			desc: t('profile.contract_desc') || 'View your bookings and active contracts',
 			onClick: () => navigate('/contract'),
 		},
-		{
-			icon: <Settings className="w-5 h-5 text-[#05324f]" />,
-			title: t('profile.settings_title') || 'Settings',
-			desc: t('profile.settings_desc') || 'Notifications, language and other settings',
-			onClick: () => setSettingsOpen(true),
-		},
+		...(SHOW_PROFILE_LANGUAGE_SETTINGS
+			? [
+					{
+						icon: <Settings className="w-5 h-5 text-[#05324f]" />,
+						title: t('profile.settings_title') || 'Settings',
+						desc: t('profile.settings_desc') || 'Notifications, language and other settings',
+						onClick: () => setSettingsOpen(true),
+					},
+				]
+			: []),
 		{
 			icon: <HelpCircle className="w-5 h-5 text-[#05324f]" />,
 			title: t('profile.help_title') || 'Help and support',
@@ -975,6 +980,7 @@ export default function CustomerProfilePage() {
 
 			<Footer />
 
+			{SHOW_PROFILE_LANGUAGE_SETTINGS && (
 			<Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
 				<DialogContent
 					onClose={() => setSettingsOpen(false)}
@@ -1013,6 +1019,7 @@ export default function CustomerProfilePage() {
 					</div>
 				</DialogContent>
 			</Dialog>
+			)}
 
 			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
 				<DialogContent className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">

@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import VehicleRequestCard from '../components/VehicleRequestCard'
 import InclusionChecklistEditor from '../components/InclusionChecklistEditor'
 
 import { requestsAPI, offersAPI } from '../services/api'
@@ -269,7 +270,6 @@ export default function CreateOfferPage() {
 		)
 	}
 
-	const vehicle = request.vehicleId || request.vehicle
 	const customer = request.customerId || request.customer
 
 	return (
@@ -348,24 +348,12 @@ export default function CreateOfferPage() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="pt-0 px-5 sm:px-7 pb-5 sm:pb-7">
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
-							<div>
-								<div className="flex items-start gap-3 sm:gap-4">
-									<div className="p-2 sm:p-2.5 bg-green-50 rounded-lg flex-shrink-0">
-										<Car className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#34C759' }} />
-									</div>
-									<div className="min-w-0 flex-1">
-										<p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-											{t('workshop.offer.vehicle') || 'Vehicle'}
-										</p>
-										<p className="text-lg sm:text-xl font-bold text-gray-900 mb-1 truncate">
-											{vehicle?.make} {vehicle?.model}
-										</p>
-										<p className="text-xs sm:text-sm text-gray-600">{t('workshop.offer.year') || 'Year'}: {vehicle?.year}</p>
-									</div>
-								</div>
+						{request && (
+							<div className="mb-6 sm:mb-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
+								<VehicleRequestCard request={request} className="items-start" />
 							</div>
-
+						)}
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
 							<div>
 								<div className="flex items-start gap-3 sm:gap-4">
 									<div className="p-2 sm:p-2.5 bg-green-50 rounded-lg flex-shrink-0">
@@ -381,23 +369,6 @@ export default function CreateOfferPage() {
 							</div>
 						</div>
 
-						{request.description && (
-							<div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-100">
-								<div className="flex items-start gap-3 sm:gap-4">
-									<div className="p-2 sm:p-2.5 bg-green-50 rounded-lg flex-shrink-0">
-										<MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#34C759' }} />
-									</div>
-									<div className="flex-1 min-w-0">
-										<p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 sm:mb-3">
-											{t('workshop.offer.customer_description') || 'Customer\'s Description'}
-										</p>
-										<p className="text-xs sm:text-sm text-gray-700 bg-gray-50 p-3 sm:p-4 rounded-lg leading-relaxed">
-											{request.description}
-										</p>
-									</div>
-								</div>
-							</div>
-						)}
 					</CardContent>
 				</Card>
 

@@ -1,9 +1,10 @@
 // Centralized API Configuration
-// ⚠️ IMPORTANT: Update this URL when your ngrok URL changes!
-// This is the ONLY place you need to update the backend URL.
-// All other files import from this config file.
+// Local dev: leave VITE_API_URL unset (or empty) — Vite proxies /api and /uploads to localhost:4000.
+// Production: set VITE_API_URL=https://api.fixa2an.se in the build environment.
 
-export const API_BASE_URL = 'https://api.fixa2an.se';
+export const API_BASE_URL =
+	import.meta.env.VITE_API_URL ??
+	(import.meta.env.DEV ? '' : 'https://api.fixa2an.se')
 
 // Strip host from stored upload URLs so only /uploads/... is persisted
 export const toStorageUrl = (url) => {

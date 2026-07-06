@@ -125,7 +125,7 @@ router.get('/workshop/me', authenticate, requireRole('WORKSHOP'), async (req, re
 		})
 			.populate({
 				path: 'requestId',
-				select: 'description status createdAt',
+				select: 'description status createdAt registrationNumber city postalCode',
 				populate: { path: 'vehicleId', select: 'make model year' },
 			})
 			.populate({ path: 'offerId', select: 'price estimatedDuration warranty status createdAt' })

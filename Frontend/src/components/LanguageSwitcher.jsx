@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Globe } from 'lucide-react'
+import { SHOW_NAVBAR_LANGUAGE_SWITCHER } from '../config/language.js'
 
 const languages = [
 	{ code: 'sv', name: 'Svenska', flag: '🇸🇪' },
@@ -23,6 +24,10 @@ export function LanguageSwitcher({ isScrolled = false, iconClassName = 'h-5 w-5'
 			document.removeEventListener("mousedown", handleClickOutside)
 		}
 	}, [dropdownRef])
+
+	if (!SHOW_NAVBAR_LANGUAGE_SWITCHER) {
+		return null
+	}
 
 	const handleLanguageChange = (newLocale) => {
 		i18n.changeLanguage(newLocale)

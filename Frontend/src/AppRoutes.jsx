@@ -31,6 +31,7 @@ import WorkshopSignupPage from './pages/WorkshopSignupPage'
 import OffersPage from './pages/OffersPage'
 import BookAppointmentPage from './pages/BookAppointmentPage'
 import HelpSupportPage from './pages/HelpSupportPage'
+import LegalPage from './pages/LegalPage'
 import WorkshopPendingPage from './pages/WorkshopPendingPage'
 import WorkshopRejectedPage from './pages/WorkshopRejectedPage'
 
@@ -110,6 +111,9 @@ function AppRoutes() {
 				<Route path="/workshop" element={<WorkshopLandingPage />} />
 				<Route path="/how-it-works" element={<HowItWorksPage />} />
 				<Route path="/support" element={<HelpSupportPage />} />
+				<Route path="/privacy" element={<LegalPage pageKey="privacy" />} />
+				<Route path="/terms" element={<LegalPage pageKey="terms" />} />
+				<Route path="/cookies" element={<LegalPage pageKey="cookies" />} />
 				<Route path="/workshop/signup" element={<WorkshopSignupPage />} />
 				<Route path="/auth/signin" element={<SignInPage />} />
 				<Route path="/auth/signup" element={<SignUpPage />} />

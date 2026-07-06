@@ -200,22 +200,60 @@
 			"privacy": "Integritetspolicy"
 		},
 		"mobile": {
-			"title": "Få offerter på din tvåa direkt",
-			"subtitle": "Ladda upp ditt besiktningsprotokoll och få offerter från verkstäder nära dig.",
-			"take_photo": "Ta foto av protokoll",
-			"upload_pdf": "Ladda upp PDF / bild",
+			"title_line1": "Fixa din tvåa –",
+			"title_line2": "snabbt, enkelt, tryggt.",
+			"subtitle": "Ladda upp ditt besiktningsprotokoll och få flera offerter från verifierade verkstäder.",
+			"subtitle_line2": "Jämför pris, omdömen och välj själv.",
+			"take_photo": "Fotografera protokollet",
+			"no_protocol_title": "Har du inget protokoll?",
+			"no_protocol_desc": "Beskriv felet istället",
 			"no_image": "Jag har ingen bild",
-			"verified_badge": "Endast verifierade verkstäder",
-			"verified_desc": "Alla verkstäder är kvalitetskontrollerade av Fixa2an för din trygghet.",
-			"trust_prices": "Riktiga priser",
-			"trust_prices_desc": "Inga uppskattningar – få exakt pris",
-			"trust_fast": "Snabbt svar",
-			"trust_fast_desc": "Offerter oftast inom 24 timmar",
-			"trust_secure": "Säkert & tryggt",
-			"trust_secure_desc": "Du väljer vem du bokar",
-			"rating_customers": "Över 10 000 nöjda kunder",
-			"rating_score": "4.8 av 5 i betyg",
-			"how_it_works_link": "Så fungerar det"
+			"trust_verified": "Verifierade verkstäder",
+			"trust_free": "Helt gratis för bilägare",
+			"trust_fast": "Första offerter oftast inom 24 h"
+		},
+		"section_how_it_works": {
+			"title": "Så fungerar det",
+			"subtitle": "Tre enkla steg till flera offerter från verifierade verkstäder nära dig.",
+			"step1_title": "Fotografera protokollet",
+			"step1_desc": "Ta en bild på ditt besiktningsprotokoll eller ladda upp en PDF.",
+			"step2_title": "Vi hittar rätt verkstäder",
+			"step2_desc": "Din förfrågan skickas automatiskt till relevanta och verifierade verkstäder.",
+			"step3_title": "Jämför och välj",
+			"step3_desc": "Jämför pris, omdömen och tillgänglighet – välj den verkstad som passar dig bäst.",
+			"verified_title": "Alltid verifierade verkstäder",
+			"verified_desc": "Kvalitetskontrollerade företag du kan lita på."
+		},
+		"section_why_choose": {
+			"title": "Därför väljer bilägare Fixa2an",
+			"subtitle": "Jämför flera offerter från verifierade verkstäder – på dina villkor.",
+			"feature1_title": "Flera offerter",
+			"feature1_desc": "Ta emot flera offerter och välj den som passar dig bäst.",
+			"feature2_title": "Jämför enkelt",
+			"feature2_desc": "Se pris, omdömen och vad som ingår innan du bestämmer dig.",
+			"feature3_title": "Spara tid",
+			"feature3_desc": "En förfrågan når flera verkstäder samtidigt.",
+			"feature4_title": "Tryggt",
+			"feature4_desc": "Endast verifierade verkstäder kan lämna offerter.",
+			"free_badge": "0 kr",
+			"free_title": "100 % kostnadsfritt för bilägare",
+			"free_desc": "Skapa ett ärende och jämför offerter utan kostnad eller förpliktelser."
+		},
+		"section_faq": {
+			"title": "Vanliga frågor",
+			"subtitle": "Här hittar du svar på vanliga frågor om Fixa2an.",
+			"q1_title": "Måste jag ha ett besiktningsprotokoll?",
+			"q1_desc": "Ja, om du vill få offerter direkt. Ladda upp en bild eller PDF så ser verkstäderna exakt vad som behöver åtgärdas. Har du inget protokoll kan du istället beskriva felet manuellt.",
+			"q2_title": "Är Fixa2an verkligen gratis?",
+			"q2_desc": "Ja. Det kostar ingenting att skapa ett ärende eller ta emot offerter. Du betalar bara om du själv väljer att anlita en verkstad.",
+			"q3_title": "När och hur betalar jag?",
+			"q3_desc": "Du betalar först när du har valt en verkstad och arbetet är utfört. Betalningen sker direkt till verkstaden enligt deras betalningsalternativ. Fixa2an tar aldrig betalt av dig som bilägare.",
+			"q4_title": "Hur snabbt får jag offerter?",
+			"q4_desc": "De flesta användare får sina första offerter inom 24 timmar, ofta betydligt snabbare.",
+			"q5_title": "Måste jag välja någon av offerterna?",
+			"q5_desc": "Nej. Du bestämmer helt själv. Om ingen offert passar dig kan du tacka nej utan kostnad.",
+			"q6_title": "Hur vet jag att verkstäderna är seriösa?",
+			"q6_desc": "Alla verkstäder på Fixa2an genomgår en kontroll innan de får ansluta till plattformen. Du kan dessutom jämföra priser, omdömen och information innan du bestämmer dig."
 		}
 	},
 	"auth": {
@@ -1041,8 +1079,11 @@
 			"duration": "Varaktighet",
 			"contact_customer_title": "Boka tid med kunden",
 			"contact_customer_desc": "Kontakta kunden för att komma överens om datum och tid, och bekräfta sedan tiden nedan.",
+			"contact_customer_scheduled_title": "Tid bokad",
+			"contact_customer_scheduled_desc": "Tiden är bekräftad. Kontakta kunden nedan om du behöver omboka eller dela information inför besöket.",
 			"contact_customer": "Kontakta kund",
 			"schedule_appointment": "Schemalägg tid",
+			"schedule_button": "Schemalägg",
 			"schedule_appointment_title": "Schemalägg tid",
 			"schedule_appointment_description": "Välj datum och tid för kundens besök.",
 			"note": "Anteckning:",
@@ -1120,6 +1161,7 @@
 			"tab_all": "Alla",
 			"new_badge": "Ny",
 			"problem_label": "Bilproblem",
+			"details_label": "Detaljer",
 			"location_label": "Plats",
 			"sent_label": "Skickat",
 			"sent_today": "Idag kl. {{time}}",
@@ -1569,20 +1611,98 @@
 		"offer_updated": "Erbjudande uppdaterat framgångsrikt!",
 		"booking_created": "Bokning skapad framgångsrikt!"
 	},
+	"legal": {
+		"privacy": {
+			"title": "Integritetspolicy",
+			"updated": "Senast uppdaterad: juli 2026",
+			"sections": [
+				{
+					"title": "Vilka vi är",
+					"body": "Fixa2an AB (\"Fixa2an\", \"vi\", \"oss\") driver en marknadsplats som kopplar samman bilägare med verifierade verkstäder i Sverige. Denna policy förklarar hur vi samlar in, använder och skyddar dina personuppgifter."
+				},
+				{
+					"title": "Vilka uppgifter vi samlar in",
+					"body": "Vi kan samla in kontaktuppgifter, kontoinformation, fordonsuppgifter, serviceförfrågningar, besiktningsdokument, meddelanden mellan användare, bokningsinformation och tekniska uppgifter såsom IP-adress och enhetsinformation."
+				},
+				{
+					"title": "Hur vi använder dina uppgifter",
+					"body": "Vi använder personuppgifter för att tillhandahålla tjänsten, matcha förfrågningar med verkstäder, skicka aviseringar, förbättra plattformen, förhindra missbruk och uppfylla rättsliga skyldigheter."
+				},
+				{
+					"title": "Delning av uppgifter",
+					"body": "Relevant förfrågnings- och kontaktinformation delas med verkstäder när du skickar in ett ärende eller accepterar ett erbjudande. Vi kan också använda betrodda leverantörer för hosting, e-post och analys."
+				},
+				{
+					"title": "Dina rättigheter",
+					"body": "Du kan begära tillgång till, rättelse eller radering av dina personuppgifter, samt invända mot viss behandling, enligt tillämplig dataskyddslagstiftning. Kontakta oss på info@fixa2an.se."
+				}
+			]
+		},
+		"terms": {
+			"title": "Användarvillkor",
+			"updated": "Senast uppdaterad: juli 2026",
+			"sections": [
+				{
+					"title": "Om tjänsten",
+					"body": "Fixa2an är en digital marknadsplats där bilägare kan skicka in reparationsförfrågningar och jämföra offerter från verifierade verkstäder. Fixa2an är inte en verkstad och utför inte fordonsreparationer."
+				},
+				{
+					"title": "Konton och användning",
+					"body": "Du ansvarar för att informationen du lämnar är korrekt och för att hålla dina inloggningsuppgifter säkra. Du förbinder dig att inte missbruka plattformen eller skicka in olagligt innehåll."
+				},
+				{
+					"title": "Offerter och bokningar",
+					"body": "Offerter lämnas av verkstäder. När du accepterar ett erbjudande ingår du ett avtal direkt med verkstaden gällande pris, arbete och tid."
+				},
+				{
+					"title": "Betalningar",
+					"body": "Om inget annat anges betalas reparationsarbetet direkt till verkstaden. Fixa2an kan ta ut provision eller serviceavgift från verkstäder enligt separata partnervillkor."
+				},
+				{
+					"title": "Ansvar",
+					"body": "Fixa2an underlättar kontakt mellan användare men ansvarar inte för kvalitet, tid eller resultat av verkstadens tjänster, utom där tvingande lag anger annat."
+				}
+			]
+		},
+		"cookies": {
+			"title": "Cookiepolicy",
+			"updated": "Senast uppdaterad: juli 2026",
+			"sections": [
+				{
+					"title": "Vad är cookies?",
+					"body": "Cookies är små textfiler som lagras på din enhet när du besöker en webbplats. De hjälper webbplatsen att fungera, komma ihåg inställningar och förstå hur tjänsten används."
+				},
+				{
+					"title": "Cookies vi använder",
+					"body": "Vi använder nödvändiga cookies för inloggning, säkerhet och grundläggande funktioner. Vi kan också använda analyscookies för att förstå användning och förbättra upplevelsen."
+				},
+				{
+					"title": "Hantera cookies",
+					"body": "Du kan kontrollera eller radera cookies via din webbläsares inställningar. Observera att vissa cookies kan behövas för att webbplatsen ska fungera korrekt."
+				},
+				{
+					"title": "Kontakt",
+					"body": "Om du har frågor om vår användning av cookies, kontakta oss på info@fixa2an.se."
+				}
+			]
+		}
+	},
 	"footer": {
-		"brand_tagline": "Hitta din verkstad enkelt och säkert.",
-		"for_customers": "För kunder",
+		"description": "Vi hjälper bilägare att enkelt jämföra offerter från verifierade verkstäder efter en underkänd besiktning.",
+		"email": "info@fixa2an.se",
+		"car_owners": "Bilägare",
 		"how_it_works": "Så fungerar det",
 		"faq": "Vanliga frågor",
-		"contact": "Kontakt",
-		"for_workshops": "För verkstäder",
-		"register_workshop": "Registrera verkstad",
-		"benefits": "Fördelar",
-		"legal": "Juridiskt",
+		"tips": "Tips & råd",
+		"workshops": "Verkstäder",
+		"become_partner": "Bli partner",
+		"login": "Logga in",
+		"company": "Företaget",
+		"about": "Om Fixa2an",
 		"terms": "Villkor",
 		"privacy": "Integritet",
 		"cookies": "Cookies",
-		"copyright": "© 2024 Fixa2an. Alla rättigheter förbehållna."
+		"copyright": "© 2026 Fixa2an AB. Alla rättigheter förbehållna."
 	},
 	"customer_reviews": {
 		"title": "Recensioner",

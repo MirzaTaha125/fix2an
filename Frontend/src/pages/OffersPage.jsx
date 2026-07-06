@@ -5,14 +5,14 @@ import { OfferRequestListCardSkeleton, PageHeaderSkeleton, Skeleton } from '../c
 import { VerifiedBadge } from '../components/ui/Badge'
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/Dialog'
 import toast from 'react-hot-toast'
-import { formatPrice, formatDateTime, formatSwedishRegistrationNumber } from '../utils/cn'
+import { formatPrice, formatDateTime } from '../utils/cn'
 import { getFullUrl } from '../config/api.js'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { useRefreshCustomerOfferCount } from '../context/CustomerOfferCountContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import VehicleImage from '../components/VehicleImage'
+import VehicleRequestCard from '../components/VehicleRequestCard'
 import WorkshopImage from '../components/WorkshopImage'
 import { offersAPI, requestsAPI, reviewsAPI } from '../services/api'
 import {
@@ -247,7 +247,10 @@ export default function OffersPage() {
 			<div className="list-page-shell bg-gray-50">
 				<Navbar />
 				<div className="list-page-content">
-					<PageHeaderSkeleton />
+					<div className="mb-6 md:mb-7 flex items-start justify-between gap-3">
+						<PageHeaderSkeleton titleClassName="h-8 w-48 max-w-full" descClassName="h-4 w-64 max-w-full" />
+						<Skeleton className="h-10 w-20 shrink-0 rounded-xl mt-1" />
+					</div>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
 						{[1, 2, 3, 4, 5, 6].map((i) => (
 							<OfferRequestListCardSkeleton key={i} />
@@ -270,21 +273,33 @@ export default function OffersPage() {
 			<div className="list-page-shell bg-gray-50">
 				<Navbar />
 				<div className="list-page-content">
-					<div className="mb-6 md:mb-7">
-						<div className="flex items-center gap-2 mb-2">
-							<h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#05324f] leading-tight">
-								{t('offers_page.your_offers') || 'Your offers'}
-							</h1>
-							{totalOfferCount > 0 && (
-								<span className="flex items-center justify-center bg-[#38BC54] text-white text-xs font-black w-6 h-6 rounded-full shrink-0">
-									{totalOfferCount}
-								</span>
-							)}
+				<div className="mb-6 md:mb-7">
+					<div className="flex items-start justify-between gap-3">
+						<div className="flex-1 min-w-0">
+							<div className="flex items-center gap-2 mb-2">
+								<h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#05324f] leading-tight">
+									{t('offers_page.your_offers') || 'Your offers'}
+								</h1>
+								{totalOfferCount > 0 && (
+									<span className="flex items-center justify-center bg-[#38BC54] text-white text-xs font-black w-6 h-6 rounded-full shrink-0">
+										{totalOfferCount}
+									</span>
+								)}
+							</div>
+							<p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+								{t('offers_page.compare_and_choose_short') || 'Compare and choose the workshop that suits you best.'}
+							</p>
 						</div>
-						<p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
-							{t('offers_page.compare_and_choose_short') || 'Compare and choose the workshop that suits you best.'}
-						</p>
+						<Link
+							to="/upload"
+							className="shrink-0 mt-1 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl px-3 py-2.5 md:px-5 md:py-3 font-semibold text-xs md:text-sm flex items-center gap-1.5 shadow-md shadow-green-100 active:scale-95 transition-all"
+						>
+							<span className="text-base leading-none">+</span>
+							<span className="hidden sm:inline">{t('my_cases.create_new') || 'Create new case'}</span>
+							<span className="sm:hidden">{t('my_cases.create_new_short') || 'New'}</span>
+						</Link>
 					</div>
+				</div>
 
 					{offerRequests.length === 0 ? (
 						<div className="text-center py-20 bg-white rounded-card border border-gray-100 shadow-card">
@@ -302,7 +317,6 @@ export default function OffersPage() {
 					) : (
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 w-full">
 							{offerRequests.map((request) => {
-								const vehicle = request.vehicleId || request.vehicle
 								const sentCount = (request.offers || []).filter((o) => o.status === 'SENT').length
 								const reports = getRequestReports(request)
 
@@ -311,58 +325,9 @@ export default function OffersPage() {
 										key={request._id}
 										className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 md:p-4 flex flex-col h-full"
 									>
-										<div className="flex gap-3 md:gap-4 flex-1 items-stretch min-h-0">
-											<div className="w-28 md:w-32 shrink-0 rounded-xl overflow-hidden flex items-start justify-center">
-												<VehicleImage
-													make={vehicle?.make}
-													model={vehicle?.model}
-													year={vehicle?.year}
-													width={400}
-													className="w-full max-h-32 md:max-h-[8rem]"
-													fallbackClassName="w-full h-24 md:h-[7rem]"
-													alt={`${vehicle?.make} ${vehicle?.model}`}
-												/>
-											</div>
-											<div className="flex-1 min-w-0 flex flex-col">
-												<h3 className="text-sm font-black text-[#05324f] leading-snug line-clamp-2 mb-1.5">
-													{vehicle?.make} {vehicle?.model} {vehicle?.year}
-												</h3>
-												<div className="space-y-1">
-													<p className="text-[11px] text-[#05324f]/80 leading-snug line-clamp-2">
-														<span className="font-bold">{t('workshop.requests.problem_label') || 'Problem'}:</span>
-														{request.description?.trim() ? ` ${request.description.trim()}` : ' —'}
-													</p>
-													{request.createdAt && (
-														<p className="text-[11px] text-[#05324f]/80">
-															<span className="font-bold">{t('offers_page.submitted_at') || 'Submitted'}:</span>
-															{' '}
-															{formatDateTime(new Date(request.createdAt), i18n.language)}
-														</p>
-													)}
-													{reports.length > 0 && (
-														<p className="text-[11px] text-[#05324f]/80 leading-snug">
-															<span className="font-bold">{t('offers_page.reports_label') || 'Reports'}:</span>{' '}
-															{reports.map((report, index) => {
-																const reportId = report._id || report.id || report.fileUrl
-																return (
-																	<span key={reportId}>
-																		{index > 0 && <span className="text-gray-400"> · </span>}
-																		<button
-																			type="button"
-																			onClick={() => {
-																				setSelectedReport(report)
-																				setShowReportDialog(true)
-																			}}
-																			className="text-[#38BC54] hover:underline font-medium"
-																		>
-																			{t('workshop.requests.view_report') || 'View report'}
-																		</button>
-																	</span>
-																)
-															})}
-														</p>
-													)}
-												</div>
+										<VehicleRequestCard
+											request={request}
+											footer={
 												<div className="mt-auto pt-4 flex items-center gap-3.5 shrink-0">
 													<Button
 														onClick={() => navigate(`/offers?requestId=${request._id}`)}
@@ -372,8 +337,39 @@ export default function OffersPage() {
 													</Button>
 													<ChevronRight className="w-5 h-5 text-black shrink-0" strokeWidth={2} />
 												</div>
-											</div>
-										</div>
+											}
+										>
+											{request.createdAt && (
+												<p className="text-[11px] text-[#05324f]/80">
+													<span className="font-bold">{t('offers_page.submitted_at') || 'Submitted'}:</span>
+													{' '}
+													{formatDateTime(new Date(request.createdAt), i18n.language)}
+												</p>
+											)}
+											{reports.length > 0 && (
+												<p className="text-[11px] text-[#05324f]/80 leading-snug">
+													<span className="font-bold">{t('offers_page.reports_label') || 'Reports'}:</span>{' '}
+													{reports.map((report, index) => {
+														const reportId = report._id || report.id || report.fileUrl
+														return (
+															<span key={reportId}>
+																{index > 0 && <span className="text-gray-400"> · </span>}
+																<button
+																	type="button"
+																	onClick={() => {
+																		setSelectedReport(report)
+																		setShowReportDialog(true)
+																	}}
+																	className="text-[#38BC54] hover:underline font-medium"
+																>
+																	{t('workshop.requests.view_report') || 'View report'}
+																</button>
+															</span>
+														)
+													})}
+												</p>
+											)}
+										</VehicleRequestCard>
 									</div>
 								)
 							})}
@@ -493,53 +489,27 @@ export default function OffersPage() {
 				</div>
 
 				{/* Mobile Vehicle Card */}
-				{vehicle && (
+				{vehicle && requestDetails && (
 					<div className="md:hidden bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-4">
-						<div className="flex items-start gap-3 mb-3">
-							<div className="w-20 md:w-24 shrink-0 self-start rounded-xl overflow-hidden flex items-start justify-center">
-								<VehicleImage
-									make={vehicle.make}
-									model={vehicle.model}
-									year={vehicle.year}
-									width={400}
-									className="w-full max-h-20"
-									fallbackClassName="w-full h-16"
-									alt={vehicle.make}
-								/>
-							</div>
-							<div className="flex-1 min-w-0 self-start">
-								<div className="flex items-center gap-2 flex-wrap">
-									<h3 className="text-base font-medium text-[#05324f]">
-										{vehicle.make} {vehicle.model} {vehicle.year}
-									</h3>
-									{requestDetails?.registrationNumber && (
-										<span className="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md tracking-wider">
-											{formatSwedishRegistrationNumber(requestDetails.registrationNumber)}
-										</span>
-									)}
-								</div>
-							</div>
-						</div>
-						<div className="space-y-1.5 pl-1">
-							{requestDetails?.postalCode && (
-								<div className="flex gap-2 text-xs">
-									<span className="text-gray-400 font-medium">{t('offers_page.vehicle_card_postnr') || 'Postal code'}:</span>
-									<span className="text-[#05324f] font-medium">{requestDetails.postalCode}</span>
-								</div>
+						<VehicleRequestCard
+							request={requestDetails}
+							vehicle={vehicle}
+							imageContainerClassName="w-20 md:w-24"
+							imageClassName="w-full max-h-20"
+							imageFallbackClassName="w-full h-16"
+						>
+							{requestDetails.postalCode && (
+								<p className="text-[11px] text-[#05324f]/80">
+									<span className="font-bold">{t('offers_page.vehicle_card_postnr') || 'Postal code'}:</span> {requestDetails.postalCode}
+								</p>
 							)}
-							{requestDetails?.description && (
-								<div className="flex gap-2 text-xs">
-									<span className="text-gray-400 font-medium whitespace-nowrap">{t('offers_page.vehicle_card_description') || 'Description'}:</span>
-									<span className="text-[#05324f] font-normal line-clamp-2">{requestDetails.description}</span>
-								</div>
+							{requestDetails.createdAt && (
+								<p className="text-[11px] text-[#05324f]/80">
+									<span className="font-bold">{t('offers_page.submitted_at') || 'Submitted'}:</span>{' '}
+									{formatDateTime(new Date(requestDetails.createdAt), i18n.language)}
+								</p>
 							)}
-							{requestDetails?.createdAt && (
-								<div className="flex gap-2 text-xs items-center">
-									<span className="text-gray-400 font-medium whitespace-nowrap">{t('offers_page.submitted_at') || 'Submitted'}:</span>
-									<span className="text-[#05324f] font-normal">{formatDateTime(new Date(requestDetails.createdAt), i18n.language)}</span>
-								</div>
-							)}
-						</div>
+						</VehicleRequestCard>
 					</div>
 				)}
 

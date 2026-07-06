@@ -32,7 +32,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import VehicleImage from '../components/VehicleImage'
+import VehicleRequestCard from '../components/VehicleRequestCard'
 import WorkshopImage from '../components/WorkshopImage'
 
 import { requestsAPI, bookingsAPI, reviewsAPI } from '../services/api'
@@ -119,7 +119,7 @@ function getWorkshopLocationLabel(workshop, request, t) {
 
 function WorkshopContactNotice({ t }) {
 	return (
-		<div className="bg-[#F8FAF9] rounded-xl border border-[#38BC54]/10 p-3 flex gap-2.5">
+		<div className="bg-[#F8FAF9] rounded-xl border border-[#38BC54]/10 p-3 flex gap-2.5 mt-3">
 			<div className="shrink-0 pt-0.5">
 				<ChatBubbleIcon className="w-6 h-6" />
 			</div>
@@ -476,9 +476,8 @@ export default function MyCasesPage() {
 			<div className="list-page-shell bg-white">
 				<Navbar />
 				<div className="list-page-content">
-					<div className="mb-6 md:mb-7 flex items-start justify-between gap-3">
+					<div className="mb-6 md:mb-7">
 						<PageHeaderSkeleton titleClassName="h-8 w-48 max-w-full" descClassName="h-4 w-64 max-w-full" />
-						<Skeleton className="h-10 w-20 shrink-0 rounded-xl mt-1" />
 					</div>
 					<Skeleton className="h-11 w-full rounded-[10px] mb-5 lg:mb-8" />
 					<Skeleton className="h-3 w-24 rounded mb-5" />
@@ -498,7 +497,7 @@ export default function MyCasesPage() {
 			<Navbar />
 			
 			<div className="list-page-content">
-				<div className="mb-6 md:mb-7 flex items-start justify-between gap-3">
+				<div className="mb-6 md:mb-7">
 					<div className="flex-1 min-w-0">
 						<h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#05324f] leading-tight mb-1.5 lg:mb-2">
 							{t('navigation.contract') || t('my_cases.title') || 'Contract'}
@@ -507,14 +506,6 @@ export default function MyCasesPage() {
 							{t('my_cases.subtitle_short') || t('my_cases.mobile_subtitle')}
 						</p>
 					</div>
-					<Link
-						to="/upload"
-						className="shrink-0 mt-1 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl px-3 py-2.5 md:px-5 md:py-3 font-semibold text-xs md:text-sm flex items-center gap-1.5 shadow-md shadow-green-100 active:scale-95 transition-all"
-					>
-						<span className="text-base leading-none">+</span>
-						<span className="hidden sm:inline">{t('my_cases.create_new') || 'Create new case'}</span>
-						<span className="sm:hidden">{t('my_cases.create_new_short') || 'New'}</span>
-					</Link>
 				</div>
 
 				{/* Tabs — segmented control */}
@@ -564,7 +555,6 @@ export default function MyCasesPage() {
 											const confirmedBooking = (request.bookings || []).find(b => b.status === 'CONFIRMED')
 											const booking = rescheduledBooking || confirmedBooking
 											const workshop = mergeBookingWorkshop(booking)
-											const vehicle = request.vehicleId || request.vehicle
 											const casePrice = getBookingPrice(request, booking)
 											const bookingId = booking?._id || booking?.id
 											const hasScheduledAppointment = Boolean(booking?.scheduledAt)
@@ -573,14 +563,22 @@ export default function MyCasesPage() {
 											<div key={request._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 md:p-4 flex flex-col h-full">
 												{/* Status badge + actions */}
 												<div className="mb-3 flex items-center justify-between gap-2">
-													<div className="inline-flex items-center gap-1.5 bg-[#F2F9F4] text-[#38BC54] px-2.5 py-1 rounded-full text-[10px] font-semibold">
-														<Clock size={12} className="shrink-0" />
-														{booking?.status === 'RESCHEDULED'
-															? (t('my_cases.tabs.rescheduled') || 'Rescheduled')
-															: hasScheduledAppointment
-																? t('my_cases.booking_confirmed')
-																: t('my_cases.status.awaiting_contact')}
-													</div>
+													{booking?.status === 'RESCHEDULED' ? (
+														<div className="inline-flex items-center gap-1.5 bg-[#F2F9F4] text-[#38BC54] px-2.5 py-1 rounded-full text-[10px] font-semibold border border-[#38BC54]/15">
+															<Clock size={12} className="shrink-0" />
+															{t('my_cases.tabs.rescheduled') || 'Rescheduled'}
+														</div>
+													) : hasScheduledAppointment ? (
+														<div className="inline-flex items-center gap-1.5 bg-[#F2F9F4] text-[#38BC54] px-2.5 py-1 rounded-full text-[10px] font-semibold border border-[#38BC54]/15">
+															<Clock size={12} className="shrink-0" />
+															{t('my_cases.booking_confirmed')}
+														</div>
+													) : (
+														<div className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full text-[10px] font-semibold border border-amber-200">
+															<Clock size={12} className="shrink-0" />
+															{t('workshop.contracts.not_scheduled') || 'Not scheduled'}
+														</div>
+													)}
 													{hasScheduledAppointment && booking && (
 														<div className="relative shrink-0">
 															<button
@@ -684,29 +682,15 @@ export default function MyCasesPage() {
 
 												<div className="h-px bg-gray-100 my-3" />
 
-												{/* Vehicle row */}
-												<div className="flex items-start gap-3">
-													<div className="w-[4.5rem] h-14 md:w-20 md:h-16 rounded-xl overflow-hidden shrink-0 flex items-start justify-center">
-														<VehicleImage
-															make={vehicle?.make}
-															model={vehicle?.model}
-															year={vehicle?.year}
-															width={400}
-															className="w-full h-full"
-															fallbackClassName="w-full h-full"
-															alt={`${vehicle?.make} ${vehicle?.model}`}
-														/>
-													</div>
-													<div className="flex-1 min-w-0 self-start">
-														<div className="text-sm font-semibold text-[#05324f] leading-tight">
-															{vehicle?.make} {vehicle?.model} {vehicle?.year}
-														</div>
-														<div className="text-[11px] text-gray-400 font-medium truncate mt-0.5">
-															{request.description || t('my_cases.no_description') || 'No description provided.'}
-														</div>
-													</div>
-													<ChevronRight className="text-gray-300 shrink-0 mt-2.5" size={18} />
-												</div>
+												<VehicleRequestCard
+													request={request}
+													titleWeight="semibold"
+													imageContainerClassName="w-[4.5rem] md:w-20"
+													imageClassName="w-full h-14 md:h-full"
+													imageFallbackClassName="w-full h-full"
+													className="items-start"
+													headerEnd={<ChevronRight className="text-gray-300 shrink-0" size={18} />}
+												/>
 
 												{hasScheduledAppointment && (
 													<div className="mt-1.5 flex items-center gap-2 text-xs text-[#05324f] bg-[#F8FAF9] border border-[#38BC54]/10 rounded-xl px-3 py-2">
@@ -767,7 +751,6 @@ export default function MyCasesPage() {
 									{completedRequests.map((request) => {
 										const booking = (request.bookings || []).find(b => b.status === 'DONE' || b.status === 'CANCELLED')
 										const workshop = mergeBookingWorkshop(booking)
-										const vehicle = request.vehicleId || request.vehicle
 										const isCancelled = request.status === 'CANCELLED' || booking?.status === 'CANCELLED'
 										const casePrice = getBookingPrice(request, booking)
 										const statusLabel = isCancelled
@@ -776,59 +759,40 @@ export default function MyCasesPage() {
 
 										return (
 											<div key={request._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 md:p-4 flex flex-col h-full">
-												<div className="flex gap-3 md:gap-4 flex-1 items-start">
-													<div className="w-28 md:w-32 shrink-0 self-start rounded-xl overflow-hidden flex items-start justify-center">
-														<VehicleImage
-															make={vehicle?.make}
-															model={vehicle?.model}
-															year={vehicle?.year}
-															width={400}
-															className="w-full max-h-32 md:max-h-[8rem]"
-															fallbackClassName="w-full h-24 md:h-[7rem]"
-															alt={`${vehicle?.make} ${vehicle?.model}`}
-														/>
-													</div>
-													<div className="flex-1 min-w-0 self-start">
-														<div className="flex items-start justify-between gap-2 mb-1.5">
-															<h3 className="text-sm font-semibold text-[#05324f] leading-snug line-clamp-2 flex-1 min-w-0">
-																{vehicle?.make} {vehicle?.model} {vehicle?.year}
-															</h3>
-															<span
-																className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium shrink-0 ${
-																	isCancelled
-																		? 'bg-red-50 text-red-600 border border-red-100'
-																		: 'bg-[#F2F9F4] text-[#38BC54] border border-[#38BC54]/20'
-																}`}
-															>
-																{statusLabel}
-															</span>
-														</div>
-														<div className="space-y-1">
-															{casePrice != null && (
-																<p className="text-[11px] text-[#05324f]/80 leading-snug">
-																	<span className="font-semibold">{t('offers_page.price') || 'Price'}:</span>{' '}
-																	<span className="font-medium text-[#38BC54]">{formatPrice(casePrice)}</span>
-																</p>
-															)}
-															{workshop?.companyName && (
-																<p className="text-[11px] text-[#05324f]/80 leading-snug line-clamp-1">
-																	<span className="font-semibold">{t('offers_page.workshop') || 'Workshop'}:</span> {workshop.companyName}
-																</p>
-															)}
-															{request.description && (
-																<p className="text-[11px] text-[#05324f]/80 leading-snug line-clamp-2">
-																	<span className="font-semibold">{t('workshop.requests.problem_label') || 'Problem'}:</span> {request.description}
-																</p>
-															)}
-															<p className="text-[11px] text-[#05324f]/80">
-																<span className="font-semibold">{t('workshop.contracts.scheduled') || 'Scheduled'}:</span>{' '}
-																{booking?.scheduledAt
-																	? formatDateTime(new Date(booking.scheduledAt))
-																	: formatDate(new Date(request.createdAt))}
-															</p>
-														</div>
-													</div>
-												</div>
+												<VehicleRequestCard
+													request={request}
+													titleWeight="semibold"
+													className="items-start"
+													headerEnd={
+														<span
+															className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-medium shrink-0 ${
+																isCancelled
+																	? 'bg-red-50 text-red-600 border border-red-100'
+																	: 'bg-[#F2F9F4] text-[#38BC54] border border-[#38BC54]/20'
+															}`}
+														>
+															{statusLabel}
+														</span>
+													}
+												>
+													{casePrice != null && (
+														<p className="text-[11px] text-[#05324f]/80 leading-snug">
+															<span className="font-semibold">{t('offers_page.price') || 'Price'}:</span>{' '}
+															<span className="font-medium text-[#38BC54]">{formatPrice(casePrice)}</span>
+														</p>
+													)}
+													{workshop?.companyName && (
+														<p className="text-[11px] text-[#05324f]/80 leading-snug line-clamp-1">
+															<span className="font-semibold">{t('offers_page.workshop') || 'Workshop'}:</span> {workshop.companyName}
+														</p>
+													)}
+													<p className="text-[11px] text-[#05324f]/80">
+														<span className="font-semibold">{t('workshop.contracts.scheduled') || 'Scheduled'}:</span>{' '}
+														{booking?.scheduledAt
+															? formatDateTime(new Date(booking.scheduledAt))
+															: formatDate(new Date(request.createdAt))}
+													</p>
+												</VehicleRequestCard>
 											</div>
 										)
 									})}

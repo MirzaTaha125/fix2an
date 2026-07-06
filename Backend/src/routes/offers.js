@@ -234,7 +234,7 @@ router.get('/workshop/me', authenticate, requireRole('WORKSHOP'), async (req, re
 		const offers = await Offer.find({ workshopId: workshop._id })
 			.populate({
 				path: 'requestId',
-				select: 'description status createdAt',
+				select: 'description status createdAt registrationNumber city postalCode',
 				populate: [
 					{ 
 						path: 'vehicleId', 

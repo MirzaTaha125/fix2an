@@ -200,22 +200,60 @@
 			"privacy": "Privacy Policy"
 		},
 		"mobile": {
-			"title": "Get quotes on your two direct",
-			"subtitle": "Upload your inspection report and get quotes from workshops near you.",
-			"take_photo": "Take photo of report",
-			"upload_pdf": "Upload PDF / image",
+			"title_line1": "Fix your two –",
+			"title_line2": "fast, easy, secure.",
+			"subtitle": "Upload your inspection report and get multiple quotes from verified workshops.",
+			"subtitle_line2": "Compare prices, reviews and choose for yourself.",
+			"take_photo": "Photograph the report",
+			"no_protocol_title": "Don't have a report?",
+			"no_protocol_desc": "Describe the problem instead",
 			"no_image": "I don't have an image",
-			"verified_badge": "Only verified workshops",
-			"verified_desc": "All workshops are quality controlled by Fixa2an for your peace of mind.",
-			"trust_prices": "Real prices",
-			"trust_prices_desc": "No estimates — get exact prices",
-			"trust_fast": "Fast response",
-			"trust_fast_desc": "Quotes usually within 24 hours",
-			"trust_secure": "Safe & secure",
-			"trust_secure_desc": "You choose who to book",
-			"rating_customers": "Over 10,000 satisfied customers",
-			"rating_score": "4.8 out of 5 rating",
-			"how_it_works_link": "How it works"
+			"trust_verified": "Verified workshops",
+			"trust_free": "Completely free for car owners",
+			"trust_fast": "First quotes usually within 24 h"
+		},
+		"section_how_it_works": {
+			"title": "How it works",
+			"subtitle": "Three simple steps to multiple quotes from verified workshops near you.",
+			"step1_title": "Photograph the report",
+			"step1_desc": "Take a photo of your inspection report or upload a PDF.",
+			"step2_title": "We find the right workshops",
+			"step2_desc": "Your request is automatically sent to relevant and verified workshops.",
+			"step3_title": "Compare and choose",
+			"step3_desc": "Compare price, reviews and availability – choose the workshop that suits you best.",
+			"verified_title": "Always verified workshops",
+			"verified_desc": "Quality-controlled companies you can trust."
+		},
+		"section_why_choose": {
+			"title": "Why car owners choose Fixa2an",
+			"subtitle": "Compare multiple quotes from verified workshops – on your terms.",
+			"feature1_title": "Multiple quotes",
+			"feature1_desc": "Receive several quotes and choose the one that suits you best.",
+			"feature2_title": "Easy to compare",
+			"feature2_desc": "See price, reviews and what's included before you decide.",
+			"feature3_title": "Save time",
+			"feature3_desc": "One request reaches multiple workshops at the same time.",
+			"feature4_title": "Safe",
+			"feature4_desc": "Only verified workshops can submit quotes.",
+			"free_badge": "0 kr",
+			"free_title": "100% free for car owners",
+			"free_desc": "Create a case and compare quotes at no cost or obligation."
+		},
+		"section_faq": {
+			"title": "Frequently asked questions",
+			"subtitle": "Here you'll find answers to common questions about Fixa2an.",
+			"q1_title": "Do I need an inspection report?",
+			"q1_desc": "Yes, if you want quotes right away. Upload a photo or PDF so workshops see exactly what needs fixing. If you don't have a report, you can describe the problem manually instead.",
+			"q2_title": "Is Fixa2an really free?",
+			"q2_desc": "Yes. It costs nothing to create a case or receive quotes. You only pay if you choose to hire a workshop.",
+			"q3_title": "When and how do I pay?",
+			"q3_desc": "You pay only after you've chosen a workshop and the work is done. Payment goes directly to the workshop according to their payment options. Fixa2an never charges you as a car owner.",
+			"q4_title": "How quickly will I get quotes?",
+			"q4_desc": "Most users receive their first quotes within 24 hours, often much faster.",
+			"q5_title": "Do I have to accept one of the quotes?",
+			"q5_desc": "No. You decide entirely on your own. If no quote suits you, you can decline at no cost.",
+			"q6_title": "How do I know the workshops are trustworthy?",
+			"q6_desc": "All workshops on Fixa2an are vetted before they can join the platform. You can also compare prices, reviews and information before you decide."
 		}
 	},
 	"auth": {
@@ -1044,8 +1082,11 @@
 			"duration": "Duration",
 			"contact_customer_title": "Schedule the appointment",
 			"contact_customer_desc": "Contact the customer to agree on a date and time, then confirm the appointment below.",
+			"contact_customer_scheduled_title": "Appointment scheduled",
+			"contact_customer_scheduled_desc": "The appointment is confirmed. Contact the customer below if you need to reschedule or share details before the visit.",
 			"contact_customer": "Contact customer",
 			"schedule_appointment": "Schedule appointment",
+			"schedule_button": "Schedule",
 			"schedule_appointment_title": "Schedule appointment",
 			"schedule_appointment_description": "Choose a date and time for the customer's visit.",
 			"note": "Note:",
@@ -1123,6 +1164,7 @@
 			"tab_all": "All",
 			"new_badge": "New",
 			"problem_label": "Problem",
+			"details_label": "Details",
 			"location_label": "Location",
 			"sent_label": "Sent",
 			"sent_today": "Today at {{time}}",
@@ -1575,20 +1617,98 @@
 		"offer_updated": "Offer updated successfully!",
 		"booking_created": "Booking created successfully!"
 	},
+	"legal": {
+		"privacy": {
+			"title": "Privacy Policy",
+			"updated": "Last updated: July 2026",
+			"sections": [
+				{
+					"title": "Who we are",
+					"body": "Fixa2an AB (\"Fixa2an\", \"we\", \"us\") operates a marketplace that connects car owners with verified workshops in Sweden. This policy explains how we collect, use and protect your personal data."
+				},
+				{
+					"title": "What data we collect",
+					"body": "We may collect contact details, account information, vehicle details, service requests, inspection documents, messages between users, booking information and technical data such as IP address and device information."
+				},
+				{
+					"title": "How we use your data",
+					"body": "We use personal data to provide the service, match requests with workshops, send notifications, improve the platform, prevent misuse and comply with legal obligations."
+				},
+				{
+					"title": "Sharing of data",
+					"body": "Relevant request and contact information is shared with workshops when you submit a case or accept an offer. We may also use trusted service providers for hosting, email delivery and analytics."
+				},
+				{
+					"title": "Your rights",
+					"body": "You may request access, correction or deletion of your personal data, and object to certain processing, in accordance with applicable data protection law. Contact us at info@fixa2an.se."
+				}
+			]
+		},
+		"terms": {
+			"title": "Terms of Service",
+			"updated": "Last updated: July 2026",
+			"sections": [
+				{
+					"title": "About the service",
+					"body": "Fixa2an is a digital marketplace where car owners can submit repair requests and compare quotes from verified workshops. Fixa2an is not a workshop and does not perform vehicle repairs."
+				},
+				{
+					"title": "Accounts and use",
+					"body": "You are responsible for the accuracy of the information you provide and for keeping your login details secure. You agree not to misuse the platform or submit unlawful content."
+				},
+				{
+					"title": "Quotes and bookings",
+					"body": "Quotes are provided by workshops. When you accept an offer, you enter into an agreement directly with the workshop regarding price, work and appointment."
+				},
+				{
+					"title": "Payments",
+					"body": "Unless otherwise stated, payment for repair work is made directly to the workshop. Fixa2an may charge workshops a commission or service fee according to separate partner terms."
+				},
+				{
+					"title": "Liability",
+					"body": "Fixa2an facilitates contact between users but is not responsible for the quality, timing or outcome of workshop services, except where mandatory law provides otherwise."
+				}
+			]
+		},
+		"cookies": {
+			"title": "Cookie Policy",
+			"updated": "Last updated: July 2026",
+			"sections": [
+				{
+					"title": "What are cookies?",
+					"body": "Cookies are small text files stored on your device when you visit a website. They help the site function, remember preferences and understand how the service is used."
+				},
+				{
+					"title": "Cookies we use",
+					"body": "We use necessary cookies for login, security and core functionality. We may also use analytics cookies to understand usage and improve the experience."
+				},
+				{
+					"title": "Managing cookies",
+					"body": "You can control or delete cookies through your browser settings. Please note that disabling certain cookies may affect how the website works."
+				},
+				{
+					"title": "Contact",
+					"body": "If you have questions about our use of cookies, contact us at info@fixa2an.se."
+				}
+			]
+		}
+	},
 	"footer": {
-		"brand_tagline": "Find your workshop easily and safely.",
-		"for_customers": "For customers",
+		"description": "We help car owners easily compare quotes from verified workshops after a failed inspection.",
+		"email": "info@fixa2an.se",
+		"car_owners": "Car owners",
 		"how_it_works": "How it works",
 		"faq": "FAQ",
-		"contact": "Contact",
-		"for_workshops": "For workshops",
-		"register_workshop": "Register workshop",
-		"benefits": "Benefits",
-		"legal": "Legal",
+		"tips": "Tips & advice",
+		"workshops": "Workshops",
+		"become_partner": "Become a partner",
+		"login": "Log in",
+		"company": "Company",
+		"about": "About Fixa2an",
 		"terms": "Terms",
 		"privacy": "Privacy",
 		"cookies": "Cookies",
-		"copyright": "© 2024 Fixa2an. All rights reserved."
+		"copyright": "© 2026 Fixa2an AB. All rights reserved."
 	},
 	"customer_reviews": {
 		"title": "Reviews",

@@ -76,13 +76,18 @@ router.post('/', authenticate, async (req, res) => {
 	try {
 		const { make, model, year, makeSlug, modelSlug } = req.body
 
-		const vehicle = await Vehicle.create({
+		const vehiclePayload = {
 			make: String(make || '').trim() || '—',
 			model: String(model || '').trim() || '—',
-			year: year || new Date().getFullYear(),
 			...(makeSlug && { makeSlug }),
 			...(modelSlug && { modelSlug }),
-		})
+		}
+		const parsedYear = Number(year)
+		if (Number.isFinite(parsedYear) && parsedYear > 0) {
+			vehiclePayload.year = parsedYear
+		}
+
+		const vehicle = await Vehicle.create(vehiclePayload)
 		return res.status(201).json(vehicle)
 	} catch (error) {
 		console.error('Vehicle creation error:', error)
