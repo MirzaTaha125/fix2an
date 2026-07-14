@@ -2,8 +2,15 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
 import AppRoutes from './AppRoutes'
+import UnderConstructionPage from './pages/UnderConstructionPage'
+import { shouldShowMaintenancePage } from './utils/maintenance'
 
 function App() {
+	// Public live site gate — no auth/API calls while under construction
+	if (shouldShowMaintenancePage()) {
+		return <UnderConstructionPage />
+	}
+
 	return (
 		<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
 			<AuthProvider>
