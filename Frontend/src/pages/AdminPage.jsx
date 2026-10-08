@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { adminAPI, authAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
-import Logo from '../components/Logo'
+import AdminPanelView from '../components/admin/AdminPanelView'
 import StatCard from '../components/ui/StatCard'
 import {
 	Users,
@@ -60,7 +60,7 @@ import {
 
 export default function AdminPage() {
 	const navigate = useNavigate()
-	const { user, loading: authLoading, logout } = useAuth()
+	const { user, loading: authLoading, logout, fetchUser } = useAuth()
 	const { t } = useTranslation()
 	const [searchParams, setSearchParams] = useSearchParams()
 	const activeTab = searchParams.get('tab') || 'dashboard'
@@ -99,6 +99,10 @@ export default function AdminPage() {
 		emailjsUserId: '', emailjsServiceId: '', emailjsTemplateId: '', emailjsPrivateKey: '',
 	})
 	const [emailConfigSaving, setEmailConfigSaving] = useState(false)
+	const [commissionRate, setCommissionRate] = useState(10)
+	const [vatRate, setVatRate] = useState(15)
+	const [commissionSaving, setCommissionSaving] = useState(false)
+	const [accountSaving, setAccountSaving] = useState(false)
 	const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
 	const [twoFactorSetup, setTwoFactorSetup] = useState({ qrCode: '', secret: '' })
 	const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
@@ -118,7 +122,7 @@ export default function AdminPage() {
 		if (!authLoading) {
 			const userRole = user?.role?.toUpperCase()
 			if (!user) {
-				navigate('/auth/signin', { replace: true })
+				navigate('/workshop/login', { replace: true })
 				return
 			}
 			if (userRole !== 'ADMIN') {
@@ -169,6 +173,7 @@ export default function AdminPage() {
 		if (activeTab === 'settings') {
 			fetchEmailConfig()
 			fetch2FAStatus()
+			fetchPlatformSettings()
 		}
 	}, [user, activeTab])
 
@@ -176,7 +181,7 @@ export default function AdminPage() {
 	useEffect(() => {
 		if (user && user.role?.toUpperCase() === 'ADMIN') {
 			// For customers tab, add a small debounce to avoid too many API calls while typing
-			if (activeTab === 'settings') return
+			if (['settings', 'support', 'content'].includes(activeTab)) return
 			if (activeTab === 'customers') {
 				const timeoutId = setTimeout(() => fetchTabData(), 200)
 				return () => clearTimeout(timeoutId)
@@ -247,6 +252,60 @@ export default function AdminPage() {
 			toast.error(error.response?.data?.message || t('admin.settings.save_error'))
 		} finally {
 			setEmailConfigSaving(false)
+		}
+	}
+
+	const fetchPlatformSettings = async () => {
+		try {
+			const response = await adminAPI.getSettings()
+			if (response.data?.commissionRate != null) setCommissionRate(response.data.commissionRate)
+			if (response.data?.vatRate != null) setVatRate(response.data.vatRate)
+		} catch (error) {
+			console.error('Failed to fetch platform settings:', error)
+		}
+	}
+
+	const handleSaveCommission = async () => {
+		setCommissionSaving(true)
+		try {
+			const response = await adminAPI.updateSettings({
+				commissionRate: Number(commissionRate),
+				vatRate: Number(vatRate),
+			})
+			if (response.data?.commissionRate != null) setCommissionRate(response.data.commissionRate)
+			if (response.data?.vatRate != null) setVatRate(response.data.vatRate)
+			toast.success(t('admin.panel.commission_saved'))
+		} catch (err) {
+			toast.error(err.response?.data?.message || t('admin.settings.save_error'))
+		} finally {
+			setCommissionSaving(false)
+		}
+	}
+
+	const handleSaveAccount = async (form) => {
+		const userId = user?._id || user?.id
+		if (!userId) return false
+		setAccountSaving(true)
+		try {
+			await authAPI.updateProfile(userId, {
+				name: form.name,
+				email: form.email,
+				phone: form.phone,
+			})
+			if (form.newPassword) {
+				await authAPI.updatePassword({
+					currentPassword: form.currentPassword,
+					newPassword: form.newPassword,
+				})
+			}
+			await fetchUser()
+			toast.success(t('admin.panel.account_saved'))
+			return true
+		} catch (err) {
+			toast.error(err.response?.data?.message || t('admin.settings.save_error'))
+			return false
+		} finally {
+			setAccountSaving(false)
 		}
 	}
 
@@ -372,13 +431,25 @@ export default function AdminPage() {
 					}
 					break
 				case 'bookings':
+				case 'commissions':
 					response = await adminAPI.getBookings(params)
 					if (response.data) {
 						setBookings(response.data.bookings || [])
 						setPagination((p) => ({ ...p, total: response.data.total || 0 }))
 					}
 					break
+				case 'dashboard':
+				case 'statistics': {
+					const [reqRes, bookRes, shopRes] = await Promise.all([
+						adminAPI.getRequests({ page: 1, limit: 100 }),
+						adminAPI.getBookings({ page: 1, limit: 100 }),
+						adminAPI.getWorkshops({ page: 1, limit: 100 }),
+					])
+					setRequests(reqRes.data?.requests || [])
+					setBookings(bookRes.data?.bookings || [])
+					if (activeTab === 'statistics') setWorkshops(shopRes.data?.workshops || [])
 					break
+				}
 			}
 		} catch (error) {
 			console.error('Failed to fetch data:', error)
@@ -484,7 +555,7 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
-						<User className="w-5 h-5 text-[#34C759]" />
+						<User className="w-5 h-5 text-[#008037]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{customer.name || 'User'}</h4>
@@ -493,7 +564,7 @@ export default function AdminPage() {
 				</div>
 				<Badge 
 					className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm"
-					style={customer.isActive ? { backgroundColor: '#34C759', color: '#FFFFFF' } : { backgroundColor: '#E5E7EB', color: '#6B7280' }}
+					style={customer.isActive ? { backgroundColor: '#008037', color: '#FFFFFF' } : { backgroundColor: '#E5E7EB', color: '#6B7280' }}
 				>
 					{customer.isActive ? t('admin.customers.active') : t('admin.customers.inactive')}
 				</Badge>
@@ -531,7 +602,7 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
-						<Building2 className="w-5 h-5 text-[#34C759]" />
+						<Building2 className="w-5 h-5 text-[#008037]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
@@ -579,12 +650,12 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
-						<Building2 className="w-5 h-5 text-[#34C759]" />
+						<Building2 className="w-5 h-5 text-[#008037]" />
 					</div>
 					<div className="min-w-0">
 						<div className="flex items-center gap-1.5">
 							<h4 className="font-semibold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
-							{workshop.isVerified && <CheckCircle className="w-3.5 h-3.5 text-[#34C759] flex-shrink-0" />}
+							{workshop.isVerified && <CheckCircle className="w-3.5 h-3.5 text-[#008037] flex-shrink-0" />}
 						</div>
 						<p className="text-[10px] text-gray-400 font-medium tracking-tight uppercase">Org: {workshop.organizationNumber}</p>
 					</div>
@@ -592,7 +663,7 @@ export default function AdminPage() {
 				<div className="flex flex-col items-end gap-1">
 					<Badge 
 						className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider"
-						style={workshop.isActive ? { backgroundColor: '#34C759', color: '#FFFFFF' } : { backgroundColor: '#EF4444', color: '#FFFFFF' }}
+						style={workshop.isActive ? { backgroundColor: '#008037', color: '#FFFFFF' } : { backgroundColor: '#EF4444', color: '#FFFFFF' }}
 					>
 						{workshop.isActive ? t('admin.workshops.active') : t('admin.workshops.blocked')}
 					</Badge>
@@ -638,7 +709,7 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
-						<FileText className="w-5 h-5 text-[#34C759]" />
+						<FileText className="w-5 h-5 text-[#008037]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">
@@ -651,7 +722,7 @@ export default function AdminPage() {
 					<Button 
 						variant="outline" 
 						size="sm" 
-						className="h-8 px-4 text-[10px] font-semibold border-gray-100 uppercase tracking-widest hover:bg-[#34C759] hover:text-white hover:border-[#34C759] transition-all"
+						className="h-8 px-4 text-[10px] font-semibold border-gray-100 uppercase tracking-widest hover:bg-[#008037] hover:text-white hover:border-[#008037] transition-all"
 						onClick={(e) => {
 							e.stopPropagation()
 							setSelectedRequest(request)
@@ -665,7 +736,7 @@ export default function AdminPage() {
 						style={
 							request.status === 'CANCELLED' || request.status === 'EXPIRED'
 								? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-								: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
+								: { backgroundColor: '#F0FDF4', color: '#005c22', borderColor: '#DCFCE7' }
 						}
 					>
 						{request.status === 'NEW' ? t('admin.requests.new') : request.status === 'IN_BIDDING' ? t('admin.requests.in_bidding') : request.status === 'BIDDING_CLOSED' ? t('admin.requests.bidding_closed') : request.status === 'BOOKED' ? t('admin.requests.booked') : request.status === 'COMPLETED' ? t('admin.requests.completed') : request.status === 'CANCELLED' ? t('admin.requests.cancelled') : request.status === 'EXPIRED' ? t('workshop.proposals.status.expired') : request.status}
@@ -720,11 +791,11 @@ export default function AdminPage() {
 
 			<div className="flex items-center justify-between pt-3 border-t border-gray-50">
 				<div className="flex items-center gap-1.5">
-					<div className="w-2 h-2 rounded-full bg-[#34C759]"></div>
-					<span className="text-[10px] font-semibold text-[#34C759] uppercase tracking-widest">{request._count?.offers || 0} {t('admin.requests.offers')}</span>
+					<div className="w-2 h-2 rounded-full bg-[#008037]"></div>
+					<span className="text-[10px] font-semibold text-[#008037] uppercase tracking-widest">{request._count?.offers || 0} {t('admin.requests.offers')}</span>
 				</div>
 				<div 
-					className="flex items-center gap-1.5 text-[9px] font-bold text-[#34C759] uppercase tracking-widest cursor-pointer hover:translate-x-1 transition-transform"
+					className="flex items-center gap-1.5 text-[9px] font-bold text-[#008037] uppercase tracking-widest cursor-pointer hover:translate-x-1 transition-transform"
 					onClick={() => {
 						setSelectedRequest(request)
 						setRequestDetailModalOpen(true)
@@ -767,7 +838,7 @@ export default function AdminPage() {
 										style={
 											selectedRequest.status === 'CANCELLED' || selectedRequest.status === 'EXPIRED'
 												? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-												: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
+												: { backgroundColor: '#F0FDF4', color: '#005c22', borderColor: '#DCFCE7' }
 										}
 									>
 										{selectedRequest.status}
@@ -830,7 +901,7 @@ export default function AdminPage() {
 										</div>
 										<div>
 											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.production_cycle') || 'Production Cycle'}</p>
-											<p className="text-sm font-semibold" style={{ color: '#34C759' }}>{vehicle.year}</p>
+											<p className="text-sm font-semibold" style={{ color: '#008037' }}>{vehicle.year}</p>
 										</div>
 									</div>
 								</CardContent>
@@ -880,7 +951,7 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-8 h-8 rounded-full bg-[#EDFBF1] flex items-center justify-center">
-						<Package className="w-4 h-4 text-[#34C759]" />
+						<Package className="w-4 h-4 text-[#008037]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{offer.workshop?.companyName}</h4>
@@ -907,7 +978,7 @@ export default function AdminPage() {
 						style={
 							['CANCELLED', 'EXPIRED'].includes(offer.status)
 								? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-								: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
+								: { backgroundColor: '#F0FDF4', color: '#005c22', borderColor: '#DCFCE7' }
 						}
 					>
 						{offer.status === 'SENT' ? t('workshop.proposals.status.sent') : offer.status === 'ACCEPTED' ? t('workshop.proposals.status.accepted') : offer.status === 'DECLINED' ? t('workshop.proposals.status.declined') : offer.status === 'EXPIRED' ? t('workshop.proposals.status.expired') : offer.status === 'CANCELLED' ? t('workshop.proposals.status.cancelled') : offer.status}
@@ -950,7 +1021,7 @@ export default function AdminPage() {
 			<div className="space-y-2.5 mb-4">
 				<div className="flex justify-between items-center bg-gray-50/50 p-2 rounded-lg border border-gray-50">
 					<span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('workshop.proposals.total_price')}</span>
-					<span className="text-lg font-black text-[#34C759] tracking-tighter">
+					<span className="text-lg font-black text-[#008037] tracking-tighter">
 						{formatPrice(offer.price)}
 					</span>
 				</div>
@@ -1019,7 +1090,7 @@ export default function AdminPage() {
 										style={
 											selectedOffer.status === 'CANCELLED' || selectedOffer.status === 'EXPIRED'
 												? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-												: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
+												: { backgroundColor: '#F0FDF4', color: '#005c22', borderColor: '#DCFCE7' }
 										}
 									>
 										{selectedOffer.status}
@@ -1084,7 +1155,7 @@ export default function AdminPage() {
 											</div>
 											<div>
 												<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.production_cycle') || 'Production Cycle'}</p>
-												<p className="text-sm font-semibold" style={{ color: '#34C759' }}>{vehicle.year}</p>
+												<p className="text-sm font-semibold" style={{ color: '#008037' }}>{vehicle.year}</p>
 											</div>
 										</div>
 									</CardContent>
@@ -1114,7 +1185,7 @@ export default function AdminPage() {
 									</h2>
 									<div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-50">
 										<span className="text-sm font-bold text-[#05324f]">{t('admin.oversight.total_bid_amount')}</span>
-										<span className="text-3xl font-black text-[#34C759] tracking-tighter">
+										<span className="text-3xl font-black text-[#008037] tracking-tighter">
 											{formatPrice(selectedOffer.price)}
 										</span>
 									</div>
@@ -1178,7 +1249,7 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-8 h-8 rounded-full bg-[#EDFBF1] flex items-center justify-center group-hover:scale-110 transition-transform">
-						<Calendar className="w-4 h-4 text-[#34C759]" />
+						<Calendar className="w-4 h-4 text-[#008037]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{booking.workshop?.companyName}</h4>
@@ -1206,7 +1277,7 @@ export default function AdminPage() {
 						style={
 							['CANCELLED', 'EXPIRED'].includes(booking.status)
 								? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-								: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
+								: { backgroundColor: '#F0FDF4', color: '#005c22', borderColor: '#DCFCE7' }
 						}
 					>
 						{booking.status === 'CONFIRMED' ? t('admin.bookings.confirmed') : booking.status === 'RESCHEDULED' ? t('admin.bookings.rescheduled') : booking.status === 'CANCELLED' ? t('workshop.proposals.status.cancelled') : booking.status === 'DONE' ? t('admin.bookings.done') : booking.status === 'NO_SHOW' ? t('admin.bookings.no_show') : booking.status}
@@ -1288,7 +1359,7 @@ export default function AdminPage() {
 										style={
 											selectedBooking.status === 'CANCELLED' || selectedBooking.status === 'EXPIRED'
 												? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-												: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
+												: { backgroundColor: '#F0FDF4', color: '#005c22', borderColor: '#DCFCE7' }
 										}
 									>
 										{selectedBooking.status}
@@ -1385,7 +1456,7 @@ export default function AdminPage() {
 										</div>
 										<div>
 											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.production_cycle') || 'Production Cycle'}</p>
-											<p className="text-sm font-semibold" style={{ color: '#34C759' }}>{vehicle.year}</p>
+											<p className="text-sm font-semibold" style={{ color: '#008037' }}>{vehicle.year}</p>
 										</div>
 									</div>
 								</CardContent>
@@ -1401,7 +1472,7 @@ export default function AdminPage() {
 								<div className="flex flex-col md:flex-row items-center justify-between gap-10">
 									<div className="flex-1 w-full">
 										<p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">{t('workshop.proposals.total_price')}</p>
-										<p className="text-5xl font-black text-[#34C759] tracking-tighter">
+										<p className="text-5xl font-black text-[#008037] tracking-tighter">
 											{formatPrice(selectedBooking.totalAmount)}
 										</p>
 									</div>
@@ -1522,7 +1593,7 @@ export default function AdminPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="admin-app-shell h-screen flex flex-col overflow-hidden bg-white">
+			<div className="admin-app admin-app-shell h-screen flex flex-col overflow-hidden bg-white">
 				{/* Header Skeleton */}
 				<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-100 max-md:border-gray-200">
 					<div className="flex items-center justify-between gap-4 relative">
@@ -1615,1298 +1686,67 @@ export default function AdminPage() {
 		return null
 	}
 
-	const tabs = ['dashboard', 'customers', 'workshops', 'requests', 'offers', 'bookings', 'settings']
-	const sidebarBgColor = '#05324f' // Dark blue color
-
 	return (
-		<div className="admin-app-shell h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#FFFFFF' }}>
-			{/* Header */}
-			<header className="bg-white px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-100 max-md:border-gray-200">
-				<div className="flex items-center justify-between gap-4 relative">
-					{/* Left: Mobile Menu / Desktop Admin Title */}
-					<div className="flex items-center min-w-0">
-						<button 
-							onClick={() => setMobileMenuOpen(true)}
-							className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors mr-2"
-						>
-							<Menu className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
-						</button>
-						
-						<div className="hidden lg:flex flex-col">
-							<span className="text-lg font-black bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1">
-								Admin Panel
-							</span>
-							<span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">
-								{t('common.admin_tagline')}
-							</span>
-						</div>
-					</div>
-
-					{/* Center: Logo (Absolute Centering) */}
-					<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-						<Logo />
-					</div>
-
-					{/* Right: Language Switcher */}
-					<div className="flex items-center gap-4">
-						<div className="flex items-center">
-							<LanguageSwitcher isScrolled={true} />
-						</div>
-					</div>
-				</div>
-			</header>
-
-
-			{/* Content Area with Sidebar and Main Content */}
-			<div className="flex-1 flex min-h-0 pb-3 sm:pb-6 overflow-hidden">
-				{/* Dark Blue Sidebar Menu - Left Side */}
-				<div 
-					className="hidden lg:flex flex-col w-64 flex-shrink-0 rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-2xl p-4 ml-3 sm:ml-6 mb-3 sm:mb-6"
-					style={{ backgroundColor: sidebarBgColor }}
-				>
-					<nav className="flex-1 space-y-2 overflow-y-auto pr-2 custom-scrollbar">
-						{tabs.map((tab, index) => (
-									<button
-										key={tab}
-										onClick={() => {
-											setSearchParams({ tab })
-											setSearchQuery('')
-											setStatusFilter('all')
-											setPagination({ ...pagination, page: 1 })
-								}}
-								className={`w-full flex items-center justify-between px-4 py-3 transition-all rounded-lg text-sm font-medium ${
-											activeTab === tab
-										? 'bg-white text-gray-900 font-semibold'
-										: 'text-white/80 hover:text-white hover:bg-white/10'
-								}`}
-									>
-										<span>{t(`admin.tabs.${tab}`)}</span>
-										{getTabCount(tab) !== null && (
-											<span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${activeTab === tab ? 'bg-gray-100 text-[#05324f]' : 'bg-white/20 text-white'}`}>
-												{getTabCount(tab)}
-											</span>
-										)}
-									</button>
-								))}
-					</nav>
-					<div className="mt-auto pt-4 space-y-4">
-						<button
-							onClick={() => setIsLogoutConfirmOpen(true)}
-							className="flex items-center gap-3 w-full text-left px-4 py-3 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
-						>
-							<LogOut className="w-4 h-4" />
-							<span>{t('common.logout')}</span>
-						</button>
-						<p className="text-white/60 text-xs px-4">{t('admin.version')}</p>
-					</div>
-								</div>
-
-				{/* Main Content Area - Right Side */}
-				<div className="flex-1 flex flex-col min-w-0">
-				{/* Mobile Sidebar Overlay */}
-				{mobileMenuOpen && (
-					<div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setMobileMenuOpen(false)}></div>
-				)}
-				<div 
-					ref={mobileMenuRef}
-					className={`fixed left-0 top-0 bottom-0 w-64 z-50 flex flex-col transform transition-transform duration-300 lg:hidden ${
-						mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-					}`}
-					style={{ backgroundColor: sidebarBgColor }}
-				>
-					<div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-						<h2 className="text-white font-bold text-xl tracking-tight">
-							Admin <span className="text-[#34C759]">Panel</span>
-						</h2>
-						<button onClick={() => setMobileMenuOpen(false)} className="p-1 hover:bg-white/10 rounded-lg transition-colors text-white">
-							<X className="w-5 h-5" />
-						</button>
-					</div>
-					<nav className="flex-1 p-3 space-y-1.5">
-						{tabs.map((tab, index) => (
-								<button
-									key={tab}
-									onClick={() => {
-										setSearchParams({ tab })
-										setSearchQuery('')
-										setStatusFilter('all')
-										setPagination({ ...pagination, page: 1 })
-									setMobileMenuOpen(false)
-									}}
-								className={`w-full flex items-center justify-between px-3 py-2.5 transition-all rounded-lg text-[15px] font-medium ${
-										activeTab === tab
-										? 'bg-white text-gray-900 font-bold shadow-sm'
-										: 'text-white/80 hover:text-white hover:bg-white/10'
-								}`}
-								>
-									<span>{t(`admin.tabs.${tab}`)}</span>
-									{getTabCount(tab) !== null && (
-										<span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm ${activeTab === tab ? 'bg-[#05324f] text-white' : 'bg-white/20 text-white'}`}>
-											{getTabCount(tab)}
-										</span>
-									)}
-								</button>
-							))}
-					</nav>
-					<div className="p-3 mt-auto space-y-3">
-						<button
-							onClick={() => {
-								setIsLogoutConfirmOpen(true)
-								setMobileMenuOpen(false)
-							}}
-							className="flex items-center gap-2.5 w-full text-left px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all text-[15px] font-medium"
-						>
-							<LogOut className="w-4 h-4" />
-							<span>{t('common.logout')}</span>
-						</button>
-						<p className="text-white/40 text-[10px] px-3">{t('admin.version')}</p>
-					</div>
-				</div>
-
-				{/* Main Content */}
-				<main className="flex-1 overflow-y-auto bg-white p-3 sm:p-4 lg:p-6 max-md:pb-8">
-				{/* Dashboard Tab */}
-				{activeTab === 'dashboard' && (
-						<div className="space-y-6">
-							{/* KPI Cards - only on dashboard */}
-							<div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8 max-md:mb-6">
-								<StatCard
-									value={stats.totalCustomers}
-									label={t('admin.stats.customers')}
-								/>
-								<StatCard
-									value={stats.totalWorkshops}
-									label={t('admin.stats.workshops')}
-								/>
-								<StatCard
-									value={stats.totalRequests}
-									label={t('admin.stats.requests')}
-								/>
-								<StatCard
-									value={stats.totalOffers}
-									label={t('admin.stats.offers') || 'Offers'}
-								/>
-								<StatCard
-									value={stats.totalBookings}
-									label={t('admin.stats.bookings') || 'Bookings'}
-								/>
-							</div>
-						{/* Pending Workshops */}
-									<div>
-								<h2 className="text-lg sm:text-xl font-bold mb-4" style={{ color: '#05324f' }}>
-											{t('admin.workshops.pending_workshops')}
-								</h2>
-								{/* Pending Workshops List */}
-								{workshops.filter((w) => !w.isVerified).length === 0 ? (
-									<div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200">
-										<CheckCircle className="w-12 h-12 mx-auto mb-3 text-gray-200" />
-										<p className="text-gray-500 font-bold">{t('admin.workshops.no_pending')}</p>
-									</div>
-								) : (
-									<>
-										{/* Mobile View: Card Grid */}
-										<div className="md:hidden grid grid-cols-1 gap-4">
-											{workshops
-												.filter((w) => !w.isVerified)
-												.map((workshop) => (
-													<PendingWorkshopCard key={workshop.id} workshop={workshop} />
-												))}
-										</div>
-
-										{/* Desktop View: Table */}
-										<div className="hidden md:block bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-											<div className="overflow-x-auto">
-												<table className="w-full min-w-[600px]">
-													<thead className="bg-gray-50/50">
-														<tr>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.workshops.company_name')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.customers.email')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('common.registered')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.customers.status')}</th>
-															<th className="text-right p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('common.actions')}</th>
-														</tr>
-													</thead>
-													<tbody className="divide-y divide-gray-50">
-														{workshops
-															.filter((w) => !w.isVerified)
-															.map((workshop) => (
-																<tr key={workshop.id} className="hover:bg-gray-50/50 transition-colors">
-																	<td className="p-4">
-																		<div className="font-black text-gray-900 leading-tight">{workshop.companyName}</div>
-																		<div className="text-[10px] text-gray-400 font-medium uppercase tracking-tight mt-0.5">ID: {workshop.id.substring(0, 8)}</div>
-																	</td>
-																	<td className="p-4 text-sm text-gray-600">{workshop.email}</td>
-																	<td className="p-4 text-xs text-gray-500 font-medium">{formatDate(new Date(workshop.createdAt))}</td>
-																	<td className="p-4">
-																		<Badge className="px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm" style={{ backgroundColor: '#FFF3CD', color: '#856404' }}>
-																			{t('common.pending')}
-																		</Badge>
-																	</td>
-																	<td className="p-4 text-right">
-																		<div className="flex justify-end gap-2">
-																			<Button
-																				size="sm"
-																				variant="outline"
-																				onClick={() => navigate(`/admin/workshops/${workshop.id}`)}
-																				className="h-8 text-[10px] font-bold border-gray-100 uppercase tracking-tight"
-																			>
-																				<FileText className="w-3 h-3 mr-1" />
-																				{t('admin.workshops.view_details')}
-																			</Button>
-																			<Button
-																				size="sm"
-																				variant="outline"
-																				onClick={() => confirmWorkshopAction(workshop.id, 'approve', workshop.companyName)}
-																				className="h-8 text-[10px] font-bold border-green-100 text-green-600 hover:bg-green-50 uppercase tracking-tight"
-																			>
-																				<CheckCircle className="w-3 h-3 mr-1" />
-																				{t('admin.workshops.approve')}
-																			</Button>
-																			<Button
-																				size="sm"
-																				variant="outline"
-																				onClick={() => confirmWorkshopAction(workshop.id || workshop._id, 'reject', workshop.companyName)}
-																				className="h-8 text-[10px] font-bold border-red-100 text-red-600 hover:bg-red-50 uppercase tracking-tight"
-																			>
-																				<XCircle className="w-3 h-3 mr-1" />
-																				{t('admin.workshops.reject')}
-																			</Button>
-																		</div>
-																	</td>
-																</tr>
-															))}
-													</tbody>
-												</table>
-											</div>
-										</div>
-									</>
-								)}
-							</div>
-
-							{/* Rejection Reason Dialog */}
-							{/* Rejection Reason Dialog */}
-							<Dialog open={rejectionDialogOpen} onOpenChange={setRejectionDialogOpen}>
-								<DialogContent className="sm:max-w-[425px] rounded-3xl border-none shadow-2xl p-0 overflow-hidden bg-white">
-									<div className="p-8 space-y-6">
-										<div className="space-y-2">
-											<DialogTitle className="text-2xl font-black tracking-tight text-[#05324f]">
-												{t('admin.workshops.reject_title') || 'Reject Workshop'}
-											</DialogTitle>
-											<DialogDescription className="text-gray-500 text-sm font-medium leading-relaxed">
-												{t('admin.workshops.reject_desc', { name: selectedWorkshopForRejection?.name }) || `Are you sure you want to reject ${selectedWorkshopForRejection?.name}?`}
-											</DialogDescription>
-										</div>
-
-										<div className="space-y-3">
-											<label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">
-												{t('admin.workshops.reason_label') || 'Rejection Reason'}
-											</label>
-											<Textarea
-												placeholder={t('admin.workshops.reason_placeholder') || "Please explain why this workshop is being rejected..."}
-												value={rejectionReason}
-												onChange={(e) => setRejectionReason(e.target.value)}
-												className="min-h-[120px] rounded-2xl border-gray-100 bg-gray-50/30 p-4 text-sm focus:bg-white focus:ring-2 focus:ring-red-500/20 focus:border-red-500/50 transition-all resize-none"
-											/>
-										</div>
-
-										<div className="flex gap-3 pt-2">
-											<Button
-												variant="outline"
-												onClick={() => setRejectionDialogOpen(false)}
-												className="flex-1 rounded-2xl h-12 font-bold text-xs border-gray-100 hover:bg-gray-50 text-gray-500 transition-all"
-											>
-												{t('common.cancel')}
-											</Button>
-											<Button
-												onClick={handleRejectWithReason}
-												className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-2xl h-12 font-bold text-xs shadow-md shadow-red-500/10 border-none transition-all"
-											>
-												{t('admin.workshops.confirm_reject') || 'Confirm Reject'}
-											</Button>
-										</div>
-									</div>
-								</DialogContent>
-							</Dialog>
-						</div>
-				)}
-
-				{/* Customers Tab */}
-				{activeTab === 'customers' && (
-						<div className="space-y-6">
-										<div>
-								<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
-									<h2 className="text-lg sm:text-xl font-bold" style={{ color: '#05324f' }}>
-										{t('admin.customers.title')}
-									</h2>
-									<div className="hidden sm:block">
-										<Select
-											value={statusFilter}
-											onValueChange={(value) => {
-												setStatusFilter(value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-										>
-											<SelectTrigger className="w-full sm:w-40 h-9 sm:h-10 text-sm sm:text-base">
-												<SelectValue placeholder={t('admin.filters.all')} />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
-												<SelectItem value="active">{t('admin.customers.active')}</SelectItem>
-												<SelectItem value="inactive">{t('admin.customers.inactive')}</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-										</div>
-							<div className="mb-4">
-								<div className="flex gap-2">
-									<div className="relative flex-1 min-w-0">
-										<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-										<Input
-										placeholder={t('admin.customers.search')}
-											value={searchQuery}
-											onChange={(e) => {
-												setSearchQuery(e.target.value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-										className="pl-10 h-9 sm:h-10 text-sm sm:text-base w-full"
-										/>
-									</div>
-									<div className="sm:hidden flex-shrink-0">
-										<Select
-											value={statusFilter}
-											onValueChange={(value) => {
-												setStatusFilter(value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-										>
-											<SelectTrigger className="w-24 h-9 text-sm">
-												<SelectValue placeholder={t('admin.filters.all')} />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
-												<SelectItem value="active">{t('admin.customers.active')}</SelectItem>
-												<SelectItem value="inactive">{t('admin.customers.inactive')}</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								</div>
-								</div>
-
-								{/* Mobile View: Card Grid */}
-								<div className="md:hidden">
-									{listLoading ? (
-										<div className="grid grid-cols-1 gap-4">
-											{[1, 2, 3].map(i => <LoadingCard key={i} />)}
-										</div>
-									) : customers.length === 0 ? (
-										<div className="bg-white rounded-xl p-10 text-center border border-dashed border-gray-200">
-											<Users className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-											<p className="text-gray-500 font-bold text-sm tracking-tight">{t('admin.customers.no_customers')}</p>
-										</div>
-									) : (
-										<div className="grid grid-cols-1 gap-4">
-											{customers.map(customer => (
-												<CustomerCard key={customer.id} customer={customer} />
-											))}
-										</div>
-									)}
-								</div>
-
-								{/* Desktop View: Table */}
-								<div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
-								{listLoading ? (
-									<TableSkeleton rows={5} cols={5} />
-								) : customers.length === 0 ? (
-										<div className="text-center py-12">
-											<Users className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-											<p className="text-gray-600 font-medium">{t('admin.customers.no_customers')}</p>
-									</div>
-								) : (
-										<div className="overflow-x-auto">
-											<table className="w-full min-w-[500px]">
-												<thead className="bg-gray-50">
-													<tr>
-														<th className="text-left p-4 font-semibold text-sm text-gray-700">{t('admin.customers.name')}</th>
-														<th className="text-left p-4 font-semibold text-sm text-gray-700">{t('admin.customers.email')}</th>
-														<th className="text-left p-4 font-semibold text-sm text-gray-700">{t('admin.customers.requests')}</th>
-														<th className="text-left p-4 font-semibold text-sm text-gray-700">{t('admin.customers.status')}</th>
-														<th className="text-right p-4 font-semibold text-sm text-gray-700">{t('common.actions')}</th>
-												</tr>
-											</thead>
-											<tbody className="divide-y divide-gray-100">
-												{customers.map((customer) => (
-														<tr key={customer.id} className="hover:bg-gray-50/50 transition-colors">
-															<td className="p-4">
-																<div className="font-bold text-gray-900">{customer.name || 'User'}</div>
-																<div className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">ID: {customer.id.substring(0, 8)}</div>
-															</td>
-															<td className="p-4 text-sm text-gray-600">{customer.email}</td>
-															<td className="p-4">
-																<div className="flex items-center gap-1">
-																	<span className="font-bold text-gray-900">{customer._count?.requests || 0}</span>
-																	<span className="text-xs text-gray-400 font-medium tracking-tight h-min">sent</span>
-																</div>
-															</td>
-															<td className="p-4">
-																<Badge 
-																	className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm"
-																	style={customer.isActive ? { backgroundColor: '#34C759', color: '#FFFFFF' } : { backgroundColor: '#E5E7EB', color: '#6B7280' }}
-																>
-																{customer.isActive ? t('admin.customers.active') : t('admin.customers.inactive')}
-															</Badge>
-														</td>
-														<td className="p-4 text-right">
-															<Button
-																variant="outline"
-																size="sm"
-																className="text-[10px] font-bold h-8 border-gray-100 hover:bg-gray-50 uppercase tracking-widest"
-																onClick={() => handleToggleUserStatus(customer)}
-															>
-																{t('admin.customers.toggle_status') || 'Change Status'}
-															</Button>
-														</td>
-													</tr>
-												))}
-											</tbody>
-										</table>
-									</div>
-								)}
-								</div>
-							</div>
-					</div>
-				)}
-
-				{/* Workshops Tab */}
-				{activeTab === 'workshops' && (
-					<div className="space-y-6">
-						<div>
-							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
-								<h2 className="text-lg sm:text-xl font-bold" style={{ color: '#05324f' }}>
-									{t('admin.workshops.title')}
-								</h2>
-									<div className="hidden sm:block">
-										<Select
-											value={statusFilter}
-											onValueChange={(value) => {
-												setStatusFilter(value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-										>
-											<SelectTrigger className="w-full sm:w-40 h-9 sm:h-10 text-sm sm:text-base">
-											<SelectValue placeholder={t('admin.filters.all')} />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
-												<SelectItem value="verified">{t('admin.workshops.verified')}</SelectItem>
-												<SelectItem value="pending">{t('common.pending')}</SelectItem>
-												<SelectItem value="active">{t('admin.workshops.active')}</SelectItem>
-												<SelectItem value="blocked">{t('admin.workshops.blocked')}</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								</div>
-							<div className="mb-4">
-								<div className="flex gap-2">
-									<div className="relative flex-1 min-w-0">
-										<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-										<Input
-											placeholder={t('admin.workshops.search')}
-											value={searchQuery}
-											onChange={(e) => {
-												setSearchQuery(e.target.value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-											className="pl-10 h-9 sm:h-10 text-sm sm:text-base w-full"
-										/>
-									</div>
-									<div className="sm:hidden flex-shrink-0">
-										<Select
-											value={statusFilter}
-											onValueChange={(value) => {
-												setStatusFilter(value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-										>
-											<SelectTrigger className="w-24 h-9 text-sm">
-												<SelectValue placeholder={t('admin.filters.all')} />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
-												<SelectItem value="verified">{t('admin.workshops.verified')}</SelectItem>
-												<SelectItem value="pending">{t('common.pending')}</SelectItem>
-												<SelectItem value="active">{t('admin.workshops.active')}</SelectItem>
-												<SelectItem value="blocked">{t('admin.workshops.blocked')}</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								</div>
-							</div>
-								{listLoading ? (
-									<div className="space-y-6">
-										<div className="md:hidden grid grid-cols-1 gap-4">
-											{[1, 2, 3].map(i => <LoadingCard key={i} />)}
-										</div>
-										<div className="hidden md:block">
-											<TableSkeleton rows={8} cols={5} />
-										</div>
-									</div>
-								) : workshops.length === 0 ? (
-									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100">
-										<Building2 className="w-16 h-16 mx-auto mb-4 text-gray-100" />
-										<p className="text-gray-500 font-bold">{t('admin.workshops.no_workshops')}</p>
-									</div>
-								) : (
-									<div className="space-y-6">
-										{/* Mobile View: Card Grid */}
-										<div className="md:hidden grid grid-cols-1 gap-4">
-											{workshops.map((workshop) => (
-												<WorkshopCard key={workshop.id} workshop={workshop} />
-											))}
-										</div>
-
-										{/* Desktop View: Table */}
-										<div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-											<div className="overflow-x-auto">
-												<table className="w-full min-w-[700px]">
-													<thead className="bg-gray-50/50">
-														<tr>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.workshops.company_name')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.customers.email')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.workshops.organization_number')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.customers.status')}</th>
-															<th className="text-right p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('common.actions')}</th>
-														</tr>
-													</thead>
-													<tbody>
-														{workshops.map((workshop) => (
-															<tr key={workshop.id} className="hover:bg-gray-50/50 transition-colors">
-																<td className="p-4">
-																	<div className="flex items-center gap-2">
-																		<div className="font-bold text-gray-900 leading-tight">{workshop.companyName}</div>
-																		{workshop.isVerified && <CheckCircle className="w-4 h-4 text-[#34C759] flex-shrink-0" />}
-																	</div>
-																	<div className="text-[10px] text-gray-400 font-medium uppercase tracking-tight mt-0.5">ID: {workshop.id.substring(0, 8)}</div>
-																</td>
-																<td className="p-4 text-sm text-gray-600">{workshop.email}</td>
-																<td className="p-4 text-xs text-gray-500 font-medium tracking-tighter uppercase">{workshop.organizationNumber}</td>
-																<td className="p-4">
-																	<div className="flex flex-wrap gap-1.5">
-																		<Badge 
-																			className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm"
-																			style={workshop.isActive ? { backgroundColor: '#34C759', color: '#FFFFFF' } : { backgroundColor: '#EF4444', color: '#FFFFFF' }}
-																		>
-																			{workshop.isActive ? t('admin.workshops.active') : t('admin.workshops.blocked')}
-																		</Badge>
-																	</div>
-																</td>
-																<td className="p-4 text-right">
-																	<div className="flex justify-end gap-2">
-																		<Button
-																			size="sm"
-																			variant="outline"
-																			onClick={() => navigate(`/admin/workshops/${workshop.id}`)}
-																			className="h-8 text-[10px] font-bold border-gray-100 uppercase tracking-tight"
-																		>
-																			<FileText className="w-3 h-3 mr-1" />
-																			{t('admin.workshops.view_details')}
-																		</Button>
-																		{!workshop.isVerified && (
-																			<Button
-																				size="sm"
-																				variant="outline"
-																				onClick={() => confirmWorkshopAction(workshop.id, 'approve', workshop.companyName)}
-																				className="h-8 text-[10px] font-bold border-green-100 text-green-600 hover:bg-green-50 uppercase tracking-tight"
-																			>
-																				<CheckCircle className="w-3 h-3 mr-1" />
-																				{t('admin.workshops.approve')}
-																			</Button>
-																		)}
-																		{workshop.isActive ? (
-																			<Button
-																				size="sm"
-																				variant="outline"
-																				onClick={() => handleWorkshopAction(workshop.id, 'block')}
-																				className="h-8 text-[10px] font-bold border-red-100 text-red-600 hover:bg-red-50 uppercase tracking-tight"
-																			>
-																				<Ban className="w-3 h-3 mr-1" />
-																				{t('admin.workshops.block')}
-																			</Button>
-																		) : (
-																			<Button
-																				size="sm"
-																				variant="outline"
-																				onClick={() => handleWorkshopAction(workshop.id, 'unblock')}
-																				className="h-8 text-[10px] font-bold border-green-100 text-green-600 hover:bg-green-50 uppercase tracking-tight"
-																			>
-																				<Unlock className="w-3 h-3 mr-1" />
-																				{t('admin.workshops.unblock')}
-																			</Button>
-																		)}
-																	</div>
-																</td>
-															</tr>
-														))}
-													</tbody>
-												</table>
-											</div>
-										</div>
-									</div>
-								)}
-						</div>
-					</div>
-				)}
-
-				{/* Requests Tab */}
-				{activeTab === 'requests' && (
-					<div className="space-y-6">
-						<div>
-							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
-								<h2 className="text-lg sm:text-xl font-bold" style={{ color: '#05324f' }}>
-									{t('admin.requests.title')}
-								</h2>
-									<div className="hidden sm:block">
-										<Select
-											value={statusFilter}
-											onValueChange={(value) => {
-												setStatusFilter(value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-										>
-											<SelectTrigger className="w-full sm:w-40 h-9 sm:h-10 text-sm sm:text-base">
-											<SelectValue placeholder={t('admin.filters.all')} />
-											</SelectTrigger>
-											<SelectContent>
-											<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
-											<SelectItem value="NEW">{t('admin.requests.new')}</SelectItem>
-											<SelectItem value="IN_BIDDING">{t('admin.requests.in_bidding')}</SelectItem>
-											<SelectItem value="BOOKED">{t('admin.requests.booked')}</SelectItem>
-											<SelectItem value="COMPLETED">{t('admin.requests.completed')}</SelectItem>
-											<SelectItem value="EXPIRED">Expired</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							</div>
-						<div className="mb-4">
-								<div className="flex gap-2">
-									<div className="relative flex-1 min-w-0">
-										<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-										<Input
-											placeholder={t('admin.requests.search')}
-											value={searchQuery}
-											onChange={(e) => {
-												setSearchQuery(e.target.value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-											className="pl-10 h-9 sm:h-10 text-sm sm:text-base w-full"
-										/>
-									</div>
-									<div className="sm:hidden flex-shrink-0">
-										<Select
-											value={statusFilter}
-											onValueChange={(value) => {
-												setStatusFilter(value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-										>
-											<SelectTrigger className="w-24 h-9 text-sm">
-												<SelectValue placeholder={t('admin.filters.all')} />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
-												<SelectItem value="NEW">{t('admin.requests.new')}</SelectItem>
-												<SelectItem value="IN_BIDDING">{t('admin.requests.in_bidding')}</SelectItem>
-												<SelectItem value="BOOKED">{t('admin.requests.booked')}</SelectItem>
-												<SelectItem value="COMPLETED">{t('admin.requests.completed')}</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								</div>
-							</div>
-								{listLoading ? (
-									<div className="space-y-6">
-										<div className="md:hidden grid grid-cols-1 gap-4">
-											{[1, 2, 3].map(i => <LoadingCard key={i} />)}
-										</div>
-										<div className="hidden md:block">
-											<TableSkeleton rows={8} cols={6} />
-										</div>
-									</div>
-								) : requests.length === 0 ? (
-									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100">
-										<FileText className="w-16 h-16 mx-auto mb-4 text-gray-100" />
-										<p className="text-gray-500 font-bold">{t('admin.requests.no_requests')}</p>
-									</div>
-								) : (
-									<div className="space-y-6">
-										{/* Mobile View: Card Grid */}
-										<div className="md:hidden grid grid-cols-1 gap-4">
-											{requests.map((request) => (
-												<RequestCard key={request.id} request={request} />
-											))}
-										</div>
-
-										{/* Desktop View: Table */}
-										<div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-											<div className="overflow-x-auto">
-												<table className="w-full min-w-[700px]">
-													<thead className="bg-gray-50/50">
-														<tr>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.requests.vehicle')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.requests.customer')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.requests.location')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.requests.created')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.requests.offers')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.customers.status')}</th>
-															<th className="text-right p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">Actions</th>
-														</tr>
-													</thead>
-													<tbody className="divide-y divide-gray-50">
-														{requests.map((request) => (
-															<tr key={request.id} className="hover:bg-gray-50/50 transition-colors">
-																<td className="p-4">
-																	<div className="font-black text-gray-900 leading-tight">
-																		{request.vehicle?.make} {request.vehicle?.model}
-																	</div>
-																	<div className="text-[10px] text-gray-400 font-medium uppercase tracking-tight mt-0.5">Year: {request.vehicle?.year}</div>
-																</td>
-																<td className="p-4">
-																	<div className="text-sm font-bold text-gray-700">{request.customer?.name || 'User'}</div>
-																	<div className="text-[10px] text-gray-500 truncate max-w-[150px]">{request.customer?.email}</div>
-																</td>
-																<td className="p-4 text-xs text-gray-500 font-medium">{request.city}, {request.address}</td>
-																<td className="p-4 text-xs text-gray-400 font-medium">{formatDate(new Date(request.createdAt))}</td>
-																<td className="p-4">
-																	<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-[#EDFBF1] text-[#34C759]">
-																		{request._count?.offers || 0}
-																	</span>
-																</td>
-																<td className="p-4">
-																	<Badge
-																		className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-none"
-																		style={
-																			request.status === 'EXPIRED' || request.status === 'CANCELLED'
-																				? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-																				: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
-																		}
-																	>
-																		{request.status === 'NEW' ? t('admin.requests.new') : request.status === 'IN_BIDDING' ? t('admin.requests.in_bidding') : request.status === 'BIDDING_CLOSED' ? t('admin.requests.bidding_closed') : request.status === 'BOOKED' ? t('admin.requests.booked') : request.status === 'COMPLETED' ? t('admin.requests.completed') : request.status === 'CANCELLED' ? t('admin.requests.cancelled') : request.status === 'EXPIRED' ? t('workshop.proposals.status.expired') : request.status}
-																	</Badge>
-																</td>
-																<td className="p-4 text-right">
-																	<Button 
-																		variant="outline" 
-																		size="sm" 
-																		className="h-8 w-8 p-0 rounded-full border-gray-200 text-gray-400 hover:text-[#34C759] hover:border-[#34C759] hover:bg-[#F0FDF4]/50 transition-all"
-																		onClick={() => {
-																			setSelectedRequest(request)
-																			setRequestDetailModalOpen(true)
-																		}}
-																	>
-																		<Eye className="w-4 h-4" />
-																	</Button>
-																</td>
-															</tr>
-														))}
-													</tbody>
-												</table>
-											</div>
-										</div>
-									</div>
-								)}
-											</div>
-					</div>
-				)}
-
-				{/* Offers Tab */}
-				{activeTab === 'offers' && (
-					<div className="space-y-6">
-						<div>
-							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
-								<h2 className="text-lg sm:text-xl font-bold" style={{ color: '#05324f' }}>
-									{t('admin.offers.title')}
-								</h2>
-								<div className="hidden sm:block">
-									<Select
-										value={statusFilter}
-										onValueChange={(value) => {
-											setStatusFilter(value)
-											setPagination({ ...pagination, page: 1 })
-										}}
-									>
-										<SelectTrigger className="w-full sm:w-40 h-9 sm:h-10 text-sm sm:text-base">
-											<SelectValue placeholder={t('admin.filters.all')} />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
-											<SelectItem value="SENT">{t('admin.offers.sent')}</SelectItem>
-											<SelectItem value="ACCEPTED">{t('admin.offers.accepted')}</SelectItem>
-											<SelectItem value="DECLINED">{t('admin.offers.declined')}</SelectItem>
-											<SelectItem value="EXPIRED">{t('admin.offers.expired')}</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-							</div>
-							<div className="mb-4">
-								<div className="flex gap-2">
-									<div className="relative flex-1 min-w-0">
-										<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-										<Input
-											placeholder={t('admin.offers.search')}
-											value={searchQuery}
-											onChange={(e) => {
-												setSearchQuery(e.target.value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-											className="pl-10 h-9 sm:h-10 text-sm sm:text-base w-full"
-										/>
-									</div>
-									<div className="sm:hidden flex-shrink-0">
-										<Select
-											value={statusFilter}
-											onValueChange={(value) => {
-												setStatusFilter(value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-										>
-											<SelectTrigger className="w-24 h-9 text-sm">
-												<SelectValue placeholder={t('admin.filters.all')} />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
-												<SelectItem value="SENT">{t('admin.offers.sent')}</SelectItem>
-												<SelectItem value="ACCEPTED">{t('admin.offers.accepted')}</SelectItem>
-												<SelectItem value="DECLINED">{t('admin.offers.declined')}</SelectItem>
-												<SelectItem value="EXPIRED">{t('admin.offers.expired')}</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								</div>
-							</div>
-								{listLoading ? (
-									<div className="space-y-6">
-										<div className="md:hidden grid grid-cols-1 gap-4">
-											{[1, 2, 3].map(i => <LoadingCard key={i} />)}
-										</div>
-										<div className="hidden md:block">
-											<TableSkeleton rows={8} cols={5} />
-										</div>
-									</div>
-								) : offers.length === 0 ? (
-									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100">
-										<Package className="w-16 h-16 mx-auto mb-4 text-gray-100" />
-										<p className="text-gray-500 font-bold">{t('admin.offers.no_offers')}</p>
-									</div>
-								) : (
-									<div className="space-y-6">
-										{/* Mobile View: Card Grid */}
-										<div className="md:hidden grid grid-cols-1 gap-4">
-											{offers.map((offer) => (
-												<OfferCard key={offer.id} offer={offer} />
-											))}
-										</div>
-
-										{/* Desktop View: Table */}
-										<div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-											<div className="overflow-x-auto">
-												<table className="w-full min-w-[600px]">
-													<thead className="bg-gray-50/50">
-														<tr>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.offers.workshop')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.offers.vehicle')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.offers.price')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.offers.created')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.customers.status')}</th>
-															<th className="text-right p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">Actions</th>
-														</tr>
-													</thead>
-													<tbody className="divide-y divide-gray-50">
-														{offers.map((offer) => (
-															<tr key={offer.id} className="hover:bg-gray-50/50 transition-colors">
-																<td className="p-4">
-																	<div className="font-black text-gray-900 leading-tight">{offer.workshop?.companyName}</div>
-																	<div className="text-[10px] text-gray-300 font-medium tracking-tighter uppercase mt-0.5">ID: {offer.id.substring(0, 8)}</div>
-																</td>
-																<td className="p-4 text-sm font-bold text-gray-600">
-																	{offer.request?.vehicleId?.make} {offer.request?.vehicleId?.model}
-																</td>
-																<td className="p-4 font-medium text-[#34C759] tracking-tighter">
-																	{formatPrice(offer.price)}
-																</td>
-																<td className="p-4 text-xs text-gray-400 font-medium">
-																	{formatDate(new Date(offer.createdAt))}
-																</td>
-																<td className="p-4">
-																	<Badge
-																		className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-none"
-																		style={
-																			offer.status === 'CANCELLED' || offer.status === 'EXPIRED'
-																				? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-																				: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
-																		}
-																	>
-																		{offer.status === 'SENT' ? t('workshop.proposals.status.sent') : offer.status === 'ACCEPTED' ? t('workshop.proposals.status.accepted') : offer.status === 'DECLINED' ? t('workshop.proposals.status.declined') : offer.status === 'EXPIRED' ? t('workshop.proposals.status.expired') : offer.status}
-																	</Badge>
-																</td>
-																<td className="p-4 text-right">
-																	<Button 
-																		variant="outline" 
-																		size="sm" 
-																		className="h-8 w-8 p-0 rounded-full border-gray-200 text-gray-400 hover:text-[#34C759] hover:border-[#34C759] hover:bg-[#F0FDF4]/50 transition-all"
-																		onClick={() => {
-																			setSelectedOffer(offer)
-																			setOfferDetailModalOpen(true)
-																		}}
-																	>
-																		<Eye className="w-4 h-4" />
-																	</Button>
-																</td>
-															</tr>
-														))}
-													</tbody>
-												</table>
-											</div>
-										</div>
-									</div>
-								)}
-											</div>
-					</div>
-				)}
-
-				{/* Bookings Tab */}
-				{activeTab === 'bookings' && (
-					<div className="space-y-6">
-						<div>
-							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
-								<h2 className="text-lg sm:text-xl font-bold" style={{ color: '#05324f' }}>
-									{t('admin.bookings.title')}
-								</h2>
-									<div className="hidden sm:block">
-										<Select
-											value={statusFilter}
-											onValueChange={(value) => {
-												setStatusFilter(value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-										>
-											<SelectTrigger className="w-full sm:w-40 h-9 sm:h-10 text-sm sm:text-base">
-											<SelectValue placeholder={t('admin.filters.all')} />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
-												<SelectItem value="CONFIRMED">{t('admin.bookings.confirmed')}</SelectItem>
-												<SelectItem value="DONE">{t('admin.bookings.done')}</SelectItem>
-												<SelectItem value="CANCELLED">{t('admin.bookings.cancelled')}</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								</div>
-							<div className="mb-4">
-								<div className="flex gap-2">
-									<div className="relative flex-1 min-w-0">
-										<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-										<Input
-											placeholder={t('admin.bookings.search')}
-											value={searchQuery}
-											onChange={(e) => {
-												setSearchQuery(e.target.value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-											className="pl-10 h-9 sm:h-10 text-sm sm:text-base w-full"
-										/>
-									</div>
-									<div className="sm:hidden flex-shrink-0">
-										<Select
-											value={statusFilter}
-											onValueChange={(value) => {
-												setStatusFilter(value)
-												setPagination({ ...pagination, page: 1 })
-											}}
-										>
-											<SelectTrigger className="w-24 h-9 text-sm">
-												<SelectValue placeholder={t('admin.filters.all')} />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="all">{t('admin.filters.all')}</SelectItem>
-												<SelectItem value="CONFIRMED">{t('admin.bookings.confirmed')}</SelectItem>
-												<SelectItem value="DONE">{t('admin.bookings.done')}</SelectItem>
-												<SelectItem value="CANCELLED">{t('admin.bookings.cancelled')}</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-								</div>
-							</div>
-								{listLoading ? (
-									<div className="space-y-6">
-										<div className="md:hidden grid grid-cols-1 gap-4">
-											{[1, 2, 3].map(i => <LoadingCard key={i} />)}
-										</div>
-										<div className="hidden md:block">
-											<TableSkeleton rows={8} cols={5} />
-										</div>
-									</div>
-								) : bookings.length === 0 ? (
-									<div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-100">
-										<Calendar className="w-16 h-16 mx-auto mb-4 text-gray-100" />
-										<p className="text-gray-500 font-bold">{t('admin.bookings.no_bookings')}</p>
-									</div>
-								) : (
-									<div className="space-y-6">
-										{/* Mobile View: Card Grid */}
-										<div className="md:hidden grid grid-cols-1 gap-4">
-											{bookings.map((booking) => (
-												<BookingCard key={booking.id} booking={booking} />
-											))}
-										</div>
-
-										{/* Desktop View: Table */}
-										<div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-											<div className="overflow-x-auto">
-												<table className="w-full min-w-[700px]">
-													<thead className="bg-gray-50/50">
-														<tr>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.bookings.customer')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.bookings.workshop')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.bookings.scheduled')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.bookings.amount')}</th>
-															<th className="text-left p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">{t('admin.bookings.status')}</th>
-															<th className="text-right p-4 font-bold text-[10px] text-gray-400 uppercase tracking-widest">Actions</th>
-														</tr>
-													</thead>
-													<tbody className="divide-y divide-gray-50">
-														{bookings.map((booking) => (
-															<tr key={booking.id} className="hover:bg-gray-50/50 transition-colors">
-																<td className="p-4">
-																	<div className="text-sm font-bold text-gray-700">{booking.customer?.name || 'User'}</div>
-																	<div className="text-[10px] text-gray-500 truncate max-w-[150px]">{booking.customer?.email}</div>
-																</td>
-																<td className="p-4">
-																	<div className="font-black text-gray-900 leading-tight">{booking.workshop?.companyName}</div>
-																	<div className="text-[10px] text-gray-300 font-medium tracking-tighter uppercase mt-0.5">ID: {booking.id.substring(0, 8)}</div>
-																</td>
-																<td className="p-4 text-xs text-gray-500 font-medium">
-																	{formatDateTime(new Date(booking.scheduledAt))}
-																</td>
-																<td className="p-4 font-medium text-gray-900 tracking-tighter">
-																	{formatPrice(booking.totalAmount)}
-																</td>
-																<td className="p-4 text-left">
-																	<Badge
-																		className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-none"
-																		style={
-																			booking.status === 'CANCELLED' || booking.status === 'EXPIRED'
-																				? { backgroundColor: '#FEF2F2', color: '#B91C1C', borderColor: '#FEE2E2' }
-																				: { backgroundColor: '#F0FDF4', color: '#15803D', borderColor: '#DCFCE7' }
-																		}
-																	>
-																		{booking.status === 'CONFIRMED' ? t('admin.bookings.confirmed') : booking.status === 'RESCHEDULED' ? t('admin.bookings.rescheduled') : booking.status === 'CANCELLED' ? t('workshop.proposals.status.cancelled') : booking.status === 'DONE' ? t('admin.bookings.done') : booking.status === 'NO_SHOW' ? t('admin.bookings.no_show') : booking.status}
-																	</Badge>
-																</td>
-																<td className="p-4 text-right">
-																	<Button 
-																		variant="outline" 
-																		size="sm" 
-																		className="h-8 w-8 p-0 rounded-full border-gray-200 text-gray-400 hover:text-[#34C759] hover:border-[#34C759] hover:bg-[#F0FDF4]/50 transition-all"
-																		onClick={() => {
-																			setSelectedBooking(booking)
-																			setBookingDetailModalOpen(true)
-																		}}
-																	>
-																		<Eye className="w-4 h-4" />
-																	</Button>
-																</td>
-															</tr>
-														))}
-													</tbody>
-												</table>
-											</div>
-										</div>
-									</div>
-								)}
-						</div>
-					</div>
-				)}
-
-
-				{/* Settings Tab - Email Config */}
-				{activeTab === 'settings' && (
-					<div className="space-y-6">
-						<div>
-							<h2 className="text-lg sm:text-xl font-bold mb-1" style={{ color: '#05324f' }}>{t('admin.settings.title')}</h2>
-							<p className="text-sm text-gray-600 mb-4">{t('admin.settings.subtitle')}</p>
-							<Card className="max-w-xl">
-								<CardHeader>
-									<CardTitle className="text-base" style={{ color: '#05324f' }}>{t('admin.settings.email_config')}</CardTitle>
-									<CardDescription>{t('admin.settings.email_desc')}</CardDescription>
-								</CardHeader>
-								<CardContent className="space-y-4">
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.email_provider')}</label>
-										<div className="flex gap-4">
-											<label className="flex items-center gap-2 cursor-pointer">
-												<input type="radio" checked={emailConfig.provider === 'emailjs'} onChange={() => setEmailConfig((c) => ({ ...c, provider: 'emailjs' }))} />
-												<span>EmailJS</span>
-											</label>
-											<label className="flex items-center gap-2 cursor-pointer">
-												<input type="radio" checked={emailConfig.provider === 'smtp'} onChange={() => setEmailConfig((c) => ({ ...c, provider: 'smtp' }))} />
-												<span>SMTP</span>
-											</label>
-										</div>
-									</div>
-									{emailConfig.provider === 'emailjs' ? (
-										<>
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">User ID (Public Key)</label>
-												<Input placeholder="user_xxxxx" value={emailConfig.emailjsUserId} onChange={(e) => setEmailConfig((c) => ({ ...c, emailjsUserId: e.target.value }))} className="h-10" />
-											</div>
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">Service ID</label>
-												<Input placeholder="service_xxxxx" value={emailConfig.emailjsServiceId} onChange={(e) => setEmailConfig((c) => ({ ...c, emailjsServiceId: e.target.value }))} className="h-10" />
-											</div>
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">Template ID</label>
-												<Input placeholder="template_xxxxx" value={emailConfig.emailjsTemplateId} onChange={(e) => setEmailConfig((c) => ({ ...c, emailjsTemplateId: e.target.value }))} className="h-10" />
-											</div>
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">Private Key (Access Token)</label>
-												<Input type="password" placeholder="Required for server-side" value={emailConfig.emailjsPrivateKey} onChange={(e) => setEmailConfig((c) => ({ ...c, emailjsPrivateKey: e.target.value }))} className="h-10" />
-												<p className="text-xs text-gray-500 mt-1">EmailJS Account → Security → Enable API requests, add Private Key</p>
-											</div>
-										</>
-									) : (
-										<>
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_host')}</label>
-												<Input placeholder="smtp.example.com" value={emailConfig.host} onChange={(e) => setEmailConfig((c) => ({ ...c, host: e.target.value }))} className="h-10" />
-											</div>
-											<div className="flex gap-4">
-												<div className="flex-1">
-													<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_port')}</label>
-													<Input type="number" placeholder="587" value={emailConfig.port} onChange={(e) => setEmailConfig((c) => ({ ...c, port: parseInt(e.target.value, 10) || 587 }))} className="h-10" />
-												</div>
-												<div className="flex items-end pb-2">
-													<label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-														<input type="checkbox" checked={emailConfig.secure} onChange={(e) => setEmailConfig((c) => ({ ...c, secure: e.target.checked }))} className="rounded border-gray-300" />
-														{t('admin.settings.secure')}
-													</label>
-												</div>
-											</div>
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_user')}</label>
-												<Input placeholder="user@example.com" value={emailConfig.user} onChange={(e) => setEmailConfig((c) => ({ ...c, user: e.target.value }))} className="h-10" />
-											</div>
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.smtp_password')}</label>
-												<Input type="password" placeholder={t('admin.settings.password_placeholder')} value={emailConfig.password} onChange={(e) => setEmailConfig((c) => ({ ...c, password: e.target.value }))} className="h-10" />
-											</div>
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.from_address')}</label>
-												<Input placeholder="noreply@example.com" value={emailConfig.from} onChange={(e) => setEmailConfig((c) => ({ ...c, from: e.target.value }))} className="h-10" />
-											</div>
-										</>
-									)}
-									<Button
-										onClick={handleUpdateEmailConfig}
-										disabled={emailConfigSaving}
-										className="h-10"
-										style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
-									>
-										{emailConfigSaving ? t('common.loading') : t('common.save')}
-									</Button>
-								</CardContent>
-							</Card>
-
-							{/* 2FA Card - Admin only */}
-							<Card className="max-w-xl mt-6">
-								<CardHeader>
-									<CardTitle className="text-base flex items-center gap-2" style={{ color: '#05324f' }}>
-										<Shield className="w-4 h-4" />
-										{t('admin.settings.twofa_title')}
-									</CardTitle>
-									<CardDescription>{t('admin.settings.twofa_desc')}</CardDescription>
-								</CardHeader>
-								<CardContent className="space-y-4">
-									{twoFactorEnabled ? (
-										<>
-											<Badge className="px-3 py-1" style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}>
-												{t('admin.settings.twofa_enabled')}
-											</Badge>
-											<div className="space-y-3 pt-2 border-t">
-												<label className="block text-sm font-medium text-gray-700">{t('admin.settings.twofa_disable_password')}</label>
-												<Input
-													type="password"
-													value={twoFactorDisablePassword}
-													onChange={(e) => setTwoFactorDisablePassword(e.target.value)}
-													placeholder="••••••••"
-													className="h-10"
-												/>
-												<label className="block text-sm font-medium text-gray-700">{t('admin.settings.twofa_disable_code')}</label>
-												<Input
-													type="text"
-													inputMode="numeric"
-													placeholder="000000"
-													value={twoFactorDisableCode}
-													onChange={(e) => setTwoFactorDisableCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-													className="h-10"
-												/>
-												<Button
-													variant="outline"
-													onClick={handleDisable2FA}
-													disabled={twoFactorLoading || !twoFactorDisablePassword || twoFactorDisableCode.length !== 6}
-													className="h-10 border-red-200 text-red-700 hover:bg-red-50"
-												>
-													{twoFactorLoading ? t('common.loading') : t('admin.settings.twofa_disable')}
-												</Button>
-											</div>
-										</>
-									) : twoFactorSetup.qrCode ? (
-										<>
-											<p className="text-sm text-gray-600">{t('admin.settings.twofa_scan_qr')}</p>
-											<img src={twoFactorSetup.qrCode} alt="2FA QR" className="w-48 h-48 border rounded-lg" />
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.settings.twofa_enter_code')}</label>
-												<Input
-													type="text"
-													inputMode="numeric"
-													placeholder="000000"
-													value={twoFactorCode}
-													onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-													className="h-10 max-w-[140px]"
-												/>
-											</div>
-											<div className="flex gap-2">
-												<Button
-													onClick={handleVerify2FASetup}
-													disabled={twoFactorLoading || twoFactorCode.length !== 6}
-													className="h-10"
-													style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
-												>
-													{twoFactorLoading ? t('common.loading') : t('admin.settings.twofa_enable')}
-												</Button>
-												<Button variant="outline" onClick={() => setTwoFactorSetup({ qrCode: '', secret: '' })} className="h-10">
-													{t('common.cancel')}
-												</Button>
-											</div>
-										</>
-									) : (
-										<Button
-											onClick={handleStart2FASetup}
-											disabled={twoFactorLoading}
-											className="h-10"
-											style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
-										>
-											{twoFactorLoading ? t('common.loading') : t('admin.settings.twofa_enable')}
-										</Button>
-									)}
-								</CardContent>
-							</Card>
-						</div>
-					</div>
-				)}
-				{/* Mobile footer - reference */}
-				<p className="max-md:block hidden text-center text-gray-400 text-xs py-6 border-t border-gray-100 mt-6">Admin panel v1.0</p>
-			</main>
-		</div>
-		{/* Detail Modals */}
+		<>
+			<AdminPanelView
+				activeTab={activeTab}
+				onTab={(tab) => {
+					setSearchParams({ tab })
+					setSearchQuery('')
+					setStatusFilter('all')
+					setPagination((current) => ({ ...current, page: 1 }))
+				}}
+				onLogout={() => setIsLogoutConfirmOpen(true)}
+				stats={stats}
+				requests={requests}
+				bookings={bookings}
+				workshops={workshops}
+				customers={customers}
+				listLoading={listLoading}
+				searchQuery={searchQuery}
+				onSearch={setSearchQuery}
+				statusFilter={statusFilter}
+				onStatus={(value) => {
+					setStatusFilter(value)
+					setPagination((current) => ({ ...current, page: 1 }))
+				}}
+				pagination={pagination}
+				onPage={(page) => setPagination((current) => ({ ...current, page }))}
+				onViewRequest={(request) => {
+					setSelectedRequest(request)
+					setRequestDetailModalOpen(true)
+				}}
+				onViewBooking={(booking) => {
+					setSelectedBooking(booking)
+					setBookingDetailModalOpen(true)
+				}}
+				emailConfig={emailConfig}
+				onEmailChange={setEmailConfig}
+				onSaveEmail={handleUpdateEmailConfig}
+				emailSaving={emailConfigSaving}
+				user={user}
+				commissionRate={commissionRate}
+				onCommissionChange={setCommissionRate}
+				vatRate={vatRate}
+				onVatChange={setVatRate}
+				onSaveCommission={handleSaveCommission}
+				commissionSaving={commissionSaving}
+				onSaveAccount={handleSaveAccount}
+				accountSaving={accountSaving}
+				twoFactorEnabled={twoFactorEnabled}
+				twoFactorSetup={twoFactorSetup}
+				twoFactorCode={twoFactorCode}
+				setTwoFactorCode={setTwoFactorCode}
+				twoFactorDisablePassword={twoFactorDisablePassword}
+				setTwoFactorDisablePassword={setTwoFactorDisablePassword}
+				twoFactorDisableCode={twoFactorDisableCode}
+				setTwoFactorDisableCode={setTwoFactorDisableCode}
+				twoFactorLoading={twoFactorLoading}
+				onStart2FA={handleStart2FASetup}
+				onVerify2FA={handleVerify2FASetup}
+				onDisable2FA={handleDisable2FA}
+			/>
+				{/* Detail Modals */}
 		<BookingDetailDialog />
 		<RequestDetailDialog />
 		<OfferDetailDialog />
@@ -2916,10 +1756,10 @@ export default function AdminPage() {
 			open={workshopActionConfirm.open} 
 			onOpenChange={(open) => !open && setWorkshopActionConfirm({ ...workshopActionConfirm, open: false })}
 		>
-			<DialogContent className="sm:max-w-[425px] rounded-3xl border-none shadow-2xl p-0 overflow-hidden bg-white">
-				<div className="p-8 space-y-6">
+			<DialogContent className="w-[92vw] max-w-[425px] rounded-2xl sm:rounded-3xl border-none shadow-2xl p-0 overflow-hidden bg-white">
+				<div className="p-5 sm:p-8 space-y-5 sm:space-y-6">
 					<div className="space-y-2">
-						<DialogTitle className="text-2xl font-black tracking-tight text-[#05324f]">
+						<DialogTitle className="text-xl sm:text-2xl font-black tracking-tight text-[#05324f]">
 							{workshopActionConfirm.action === 'approve' ? 'Approve Workshop' : 'Confirm Action'}
 						</DialogTitle>
 						<DialogDescription className="text-gray-500 text-sm font-medium leading-relaxed">
@@ -2933,15 +1773,15 @@ export default function AdminPage() {
 						<Button
 							variant="outline"
 							onClick={() => setWorkshopActionConfirm({ open: false, workshopId: null, action: null, workshopName: '' })}
-							className="flex-1 rounded-2xl h-12 font-bold text-xs border-gray-100 hover:bg-gray-50 text-gray-500 transition-all text-center"
+							className="flex-1 rounded-xl h-12 font-semibold text-xs border-gray-100 hover:bg-gray-50 text-gray-500 transition-all text-center"
 						>
 							{t('common.cancel')}
 						</Button>
 						<Button
 							onClick={() => handleWorkshopAction(workshopActionConfirm.workshopId, workshopActionConfirm.action)}
-							className={`flex-1 text-white rounded-2xl h-12 font-bold text-xs shadow-md border-none transition-all ${
+							className={`flex-1 text-white rounded-xl h-12 font-semibold text-xs shadow-md border-none transition-all ${
 								workshopActionConfirm.action === 'approve' 
-									? 'bg-[#34C759] shadow-[#34C759]/10 hover:bg-[#2eb34f]' 
+									? 'bg-brand-btn shadow-[#008037]/10 ' 
 									: 'bg-red-500 shadow-red-500/10 hover:bg-red-600'
 							}`}
 						>
@@ -2973,14 +1813,13 @@ export default function AdminPage() {
 						</Button>
 						<Button
 							onClick={confirmLogout}
-							className="flex-1 h-11 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold transition-all shadow-md active:scale-95"
+							className="flex-1 h-11 rounded-xl bg-brand-btn text-white font-semibold transition-all shadow-md active:scale-95"
 						>
 							{t('navigation.logout') || 'Log Out'}
 						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-		</div>
-	</div>
+	</>
 	)
 }

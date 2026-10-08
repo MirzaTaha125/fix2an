@@ -5,6 +5,7 @@ import Workshop from '../models/Workshop.js'
 import Review from '../models/Review.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import { sendEmail, emailTemplates, isEmailConfigured } from '../config/email.js'
+import { getPlatformRates } from '../utils/platformSettings.js'
 
 const router = express.Router()
 
@@ -43,6 +44,7 @@ router.post('/register', async (req, res) => {
 			sundayClose,
 			brands,
 			documents,
+			image,
 		} = req.body
 
 		const errors = {}
@@ -117,6 +119,7 @@ router.post('/register', async (req, res) => {
 				email: normalizedEmail,
 				password,
 				phone,
+				image: image || '',
 				role: 'WORKSHOP',
 				isActive: true,
 			})
@@ -270,6 +273,38 @@ router.get('/stats', authenticate, requireRole('WORKSHOP'), async (req, res) => 
 	}
 })
 
+// Public directory of approved workshops (customer-facing)
+router.get('/directory', authenticate, async (req, res) => {
+	try {
+		const workshops = await Workshop.find({
+			verificationStatus: 'APPROVED',
+			isActive: { $ne: false },
+		})
+			.populate('userId', 'image')
+			.select('companyName city postalCode address rating reviewCount phone description')
+			.sort({ companyName: 1 })
+			.lean()
+
+		return res.json(
+			workshops.map((workshop) => ({
+				id: workshop._id,
+				companyName: workshop.companyName,
+				city: workshop.city || '',
+				postalCode: workshop.postalCode || '',
+				address: workshop.address || '',
+				phone: workshop.phone || '',
+				description: workshop.description || '',
+				rating: workshop.rating || 0,
+				reviewCount: workshop.reviewCount || 0,
+				logo: workshop.userId?.image || '',
+			}))
+		)
+	} catch (error) {
+		console.error('Workshop directory error:', error)
+		return res.status(500).json({ message: 'Failed to load workshops' })
+	}
+})
+
 // Get reviews for authenticated workshop
 router.get('/reviews', authenticate, requireRole('WORKSHOP'), async (req, res) => {
 	try {
@@ -287,6 +322,17 @@ router.get('/reviews', authenticate, requireRole('WORKSHOP'), async (req, res) =
 	} catch (error) {
 		console.error('Workshop reviews fetch error:', error)
 		return res.status(500).json({ message: 'Failed to fetch reviews' })
+	}
+})
+
+// Platform commission + VAT rates for quote forms
+router.get('/platform-settings', authenticate, requireRole('WORKSHOP'), async (_req, res) => {
+	try {
+		const rates = await getPlatformRates()
+		return res.json(rates)
+	} catch (error) {
+		console.error('Platform settings fetch error:', error)
+		return res.status(500).json({ message: 'Failed to fetch platform settings' })
 	}
 })
 
@@ -308,6 +354,7 @@ router.get('/profile', authenticate, requireRole('WORKSHOP'), async (req, res) =
 				image: user.image,
 			},
 			workshop: {
+				id: workshop._id,
 				companyName: workshop.companyName,
 				organizationNumber: workshop.organizationNumber,
 				address: workshop.address,
@@ -318,6 +365,9 @@ router.get('/profile', authenticate, requireRole('WORKSHOP'), async (req, res) =
 				phone: workshop.phone,
 				email: workshop.email,
 				isVerified: workshop.isVerified,
+				openingHours: workshop.openingHours || '',
+				rating: workshop.rating || 0,
+				reviewCount: workshop.reviewCount || 0,
 			},
 		})
 	} catch (error) {
@@ -347,6 +397,7 @@ router.patch('/profile', authenticate, requireRole('WORKSHOP'), async (req, res)
 			description,
 			latitude,
 			longitude,
+			openingHours,
 		} = req.body
 
 		// Update user if name, phone, or email provided
@@ -382,6 +433,15 @@ router.patch('/profile', authenticate, requireRole('WORKSHOP'), async (req, res)
 		if (email !== undefined && email) workshop.email = email.trim().toLowerCase()
 		if (latitude !== undefined && latitude !== null) workshop.latitude = parseFloat(latitude)
 		if (longitude !== undefined && longitude !== null) workshop.longitude = parseFloat(longitude)
+		if (openingHours !== undefined) {
+			if (typeof openingHours === 'string') {
+				workshop.openingHours = openingHours
+			} else if (openingHours && typeof openingHours === 'object') {
+				workshop.openingHours = JSON.stringify(openingHours)
+			} else {
+				workshop.openingHours = ''
+			}
+		}
 
 		await workshop.save()
 

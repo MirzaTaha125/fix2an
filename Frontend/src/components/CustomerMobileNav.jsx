@@ -1,66 +1,77 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Tag, FileText, User } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useCustomerOfferCount } from '../context/CustomerOfferCountContext'
+import { useCustomerUnreadCount } from '../context/CustomerUnreadCountContext'
 import OfferCountBadge from './OfferCountBadge'
+import {
+	NavCasesIcon,
+	NavHomeIcon,
+	NavMessagesIcon,
+	NavProfileIcon,
+} from './icons/CustomerNavIcons'
 
-const ACTIVE_GREEN = '#438B3E'
-const INACTIVE_COLOR = '#333333'
+const ACTIVE_GREEN = '#018A04'
+const INACTIVE_COLOR = '#05324f'
 
 function NavLinkItem({ to, icon: Icon, label, active, badge }) {
 	return (
 		<Link
 			to={to}
-			className="relative flex flex-1 items-center justify-center gap-2 py-3 min-w-0 transition-colors"
+			className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 min-w-0 transition-colors"
 			style={{ color: active ? ACTIVE_GREEN : INACTIVE_COLOR }}
 		>
-			<Icon
-				className="w-[18px] h-[18px] shrink-0"
-				strokeWidth={1.75}
-				style={{ color: active ? ACTIVE_GREEN : INACTIVE_COLOR }}
-			/>
-			<span className={`text-[13px] sm:text-sm truncate ${active ? 'font-semibold' : 'font-medium'}`}>
+			<span className="relative flex items-center justify-center w-6 h-6">
+				<Icon
+					className="w-6 h-6 shrink-0"
+					strokeWidth={1.85}
+					filled={active}
+					style={{ color: active ? ACTIVE_GREEN : INACTIVE_COLOR }}
+				/>
+				<OfferCountBadge count={badge} className="absolute -top-1.5 -right-2.5" />
+			</span>
+			<span className={`text-[11px] truncate ${active ? 'font-medium' : 'font-normal'}`}>
 				{label}
 			</span>
-			<OfferCountBadge count={badge} className="ml-0.5" />
-			{active && (
-				<span
-					className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full"
-					style={{ backgroundColor: ACTIVE_GREEN }}
-				/>
-			)}
 		</Link>
 	)
 }
 
 export default function CustomerMobileNav() {
-	const { pathname } = useLocation()
+	const { pathname, search } = useLocation()
 	const { t } = useTranslation()
-	const offerCount = useCustomerOfferCount()
+	const unreadCount = useCustomerUnreadCount()
+	const params = new URLSearchParams(search)
+	const isMessagesView = pathname === '/contract' && params.get('view') === 'messages'
 
-	const isOffers = pathname === '/offers' || pathname.startsWith('/offers?') || pathname === '/book-appointment'
-	const isContract = pathname === '/contract' || pathname.startsWith('/contract')
+	const isHome = pathname === '/dashboard'
+	const isCases = pathname === '/contract' && !isMessagesView
+	const isMessages = isMessagesView
 	const isProfile = pathname === '/profile' || pathname.startsWith('/profile')
 
 	return (
-		<div className="flex items-stretch w-full bg-white">
+		<div className="flex items-stretch w-full bg-white min-h-[60px]">
 			<NavLinkItem
-				to="/offers"
-				icon={Tag}
-				label={t('navigation.offers') || 'Offers'}
-				active={isOffers}
-				badge={offerCount}
+				to="/dashboard"
+				icon={NavHomeIcon}
+				label={t('navigation.overview')}
+				active={isHome}
 			/>
 			<NavLinkItem
 				to="/contract"
-				icon={FileText}
-				label={t('navigation.contract') || 'Contract'}
-				active={isContract}
+				icon={NavCasesIcon}
+				label={t('navigation.my_cases')}
+				active={isCases}
+			/>
+			<NavLinkItem
+				to="/contract?view=messages"
+				icon={NavMessagesIcon}
+				label={t('navigation.messages')}
+				active={isMessages}
+				badge={unreadCount}
 			/>
 			<NavLinkItem
 				to="/profile"
-				icon={User}
-				label={t('navigation.profile') || 'Profile'}
+				icon={NavProfileIcon}
+				label={t('navigation.settings')}
 				active={isProfile}
 			/>
 		</div>

@@ -21,7 +21,7 @@ export default function WorkshopRejectedPage() {
 	const confirmLogout = () => {
 		setIsLogoutConfirmOpen(false)
 		logout()
-		navigate('/auth/signin')
+		navigate('/workshop/login')
 	}
 
 	const handleContactSupport = () => {
@@ -83,7 +83,7 @@ export default function WorkshopRejectedPage() {
 				<div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
 					<Button
 						onClick={handleReApply}
-						className="w-full sm:w-auto bg-[#34C759] hover:bg-[#2eb34f] text-white px-8 py-7 rounded-2xl font-bold flex items-center gap-3 shadow-lg shadow-[#34C759]/20 transition-all hover:scale-[1.02]"
+						className="w-full sm:w-auto bg-brand-btn text-white px-8 py-7 rounded-xl font-semibold flex items-center gap-3 shadow-lg shadow-[#008037]/20 transition-all hover:scale-[1.02]"
 					>
 						<RefreshCw className="w-5 h-5" />
 						{t('workshop.rejected.reapply') || 'Re-apply Now'}
@@ -92,7 +92,7 @@ export default function WorkshopRejectedPage() {
 					<Button
 						onClick={handleContactSupport}
 						variant="outline"
-						className="w-full sm:w-auto border-gray-200 text-gray-600 px-8 py-7 rounded-2xl font-bold flex items-center gap-3 hover:bg-gray-50 transition-all"
+						className="w-full sm:w-auto border-gray-200 text-gray-600 px-8 py-7 rounded-xl font-semibold flex items-center gap-3 hover:bg-gray-50 transition-all"
 					>
 						<Mail className="w-5 h-5" />
 						{t('common.contact_support') || 'Contact Support'}
@@ -132,7 +132,7 @@ export default function WorkshopRejectedPage() {
 						</Button>
 						<Button
 							onClick={confirmLogout}
-							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95"
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-brand-btn text-white font-semibold text-sm transition-all shadow-md active:scale-95"
 						>
 							{t('navigation.logout') || 'Log Out'}
 						</Button>

@@ -8,7 +8,7 @@ const languages = [
 	{ code: 'en', name: 'English', flag: '🇺🇸' },
 ]
 
-export function LanguageSwitcher({ isScrolled = false, iconClassName = 'h-5 w-5' }) {
+export function LanguageSwitcher({ isScrolled = false, iconClassName = 'h-5 w-5', align = 'left' }) {
 	const { i18n } = useTranslation()
 	const [isOpen, setIsOpen] = useState(false)
 	const dropdownRef = useRef(null)
@@ -38,17 +38,21 @@ export function LanguageSwitcher({ isScrolled = false, iconClassName = 'h-5 w-5'
 	return (
 		<div className="relative flex items-center" ref={dropdownRef}>
 			<button 
+				type="button"
 				onClick={() => setIsOpen(!isOpen)}
+				aria-label="Change language"
 				className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 transition-colors focus:outline-none"
 			>
 				<Globe className={`${iconClassName} transition-colors duration-300 ${
-					isScrolled ? 'text-gray-600' : 'text-white/90 shadow-sm drop-shadow-sm'
+					isScrolled ? 'text-[#05324f]' : 'text-white/90 shadow-sm drop-shadow-sm'
 				}`} />
 			</button>
 
 			{isOpen && (
 				<div 
-					className="absolute right-0 top-full mt-2 w-36 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2"
+					className={`absolute top-full mt-2 w-36 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 ${
+						align === 'left' ? 'left-0' : 'right-0'
+					}`}
 				>
 					<div className="py-1">
 						{languages.map((language) => (

@@ -38,7 +38,7 @@ export default function WorkshopDetailsPage() {
 	useEffect(() => {
 		if (!authLoading) {
 			if (!user) {
-				navigate('/auth/signin', { replace: true })
+				navigate('/workshop/login', { replace: true })
 				return
 			}
 			if (user.role !== 'ADMIN') {
@@ -260,13 +260,13 @@ export default function WorkshopDetailsPage() {
 								{t('admin.workshops.details.subtitle')}
 							</p>
 						</div>
-						<div className="flex gap-2">
+						<div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
 							{!workshop.isVerified && (
 								<Button
 									onClick={() => handleWorkshopAction('approve')}
 									size="sm"
-									className="font-semibold"
-									style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
+									className="font-semibold w-full sm:w-auto"
+									style={{ backgroundColor: '#008037', color: '#FFFFFF' }}
 								>
 									<CheckCircle className="w-4 h-4 mr-2" />
 									{t('admin.workshops.approve')}
@@ -277,7 +277,7 @@ export default function WorkshopDetailsPage() {
 									onClick={() => handleWorkshopAction('block')}
 									size="sm"
 									variant="destructive"
-									className="font-semibold"
+									className="font-semibold w-full sm:w-auto"
 								>
 									<XCircle className="w-4 h-4 mr-2" />
 									{t('admin.workshops.block')}
@@ -286,8 +286,8 @@ export default function WorkshopDetailsPage() {
 								<Button
 									onClick={() => handleWorkshopAction('unblock')}
 									size="sm"
-									className="font-semibold"
-									style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
+									className="font-semibold w-full sm:w-auto"
+									style={{ backgroundColor: '#008037', color: '#FFFFFF' }}
 								>
 									<CheckCircle className="w-4 h-4 mr-2" />
 									{t('admin.workshops.unblock')}
@@ -299,7 +299,7 @@ export default function WorkshopDetailsPage() {
 					{/* Status Badges */}
 					<div className="flex flex-wrap gap-2">
 						{workshop.isVerified ? (
-							<Badge className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}>
+							<Badge className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#008037', color: '#FFFFFF' }}>
 								{t('admin.workshops.details.verified')}
 							</Badge>
 						) : (
@@ -308,7 +308,7 @@ export default function WorkshopDetailsPage() {
 							</Badge>
 						)}
 						{workshop.isActive ? (
-							<Badge className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}>
+							<Badge className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#008037', color: '#FFFFFF' }}>
 								{t('admin.workshops.details.active')}
 							</Badge>
 						) : (

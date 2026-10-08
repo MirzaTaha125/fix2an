@@ -15,6 +15,8 @@ import uploadRouter from './routes/upload.js'
 import workshopRouter from './routes/workshop.js'
 import adminRouter from './routes/admin.js'
 import reviewsRouter from './routes/reviews.js'
+import messagesRouter from './routes/messages.js'
+import supportRouter from './routes/support.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -124,6 +126,8 @@ app.use('/api/upload', uploadRouter)
 app.use('/api/workshop', workshopRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/reviews', reviewsRouter)
+app.use('/api/messages', messagesRouter)
+app.use('/api/support', supportRouter)
 
 const port = process.env.PORT ? Number(process.env.PORT) : 4000
 app.listen(port, () => {

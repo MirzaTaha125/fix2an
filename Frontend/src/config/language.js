@@ -2,7 +2,7 @@
 export const DEFAULT_LANGUAGE = 'sv'
 
 // Set to true to show the globe language switcher in the navbar.
-export const SHOW_NAVBAR_LANGUAGE_SWITCHER = false
+export const SHOW_NAVBAR_LANGUAGE_SWITCHER = true
 
 // Set to true to show language selection in customer/workshop profile settings.
 export const SHOW_PROFILE_LANGUAGE_SETTINGS = false

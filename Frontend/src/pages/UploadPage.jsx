@@ -1,11 +1,10 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDropzone } from 'react-dropzone'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Label } from '../components/ui/Label'
 import { Textarea } from '../components/ui/Textarea'
-import { Card, CardContent, CardHeader } from '../components/ui/Card'
 import {
 	Select,
 	SelectContent,
@@ -16,40 +15,214 @@ import {
 import SearchableSelect from '../components/ui/SearchableSelect'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
-import { Upload, X, Car, MapPin, MessageSquare, ShieldCheck, Clock as ClockIcon, Lock, Check, ArrowRight, Mail, Link2, Send, Bell } from 'lucide-react'
-import { validateFile, getFileIcon, formatSwedishRegistrationNumber, normalizeSwedishRegistrationNumber, isValidSwedishRegistrationNumber } from '../utils/cn'
+import {
+	X,
+	Car,
+	MapPin,
+	FileDown,
+	Check,
+	ArrowRight,
+	Bell,
+	Camera,
+	Clock,
+	Plus,
+	Image as ImageIcon,
+	Lock,
+	User,
+	Wrench,
+} from 'lucide-react'
+import {
+	validateFile,
+	getFileIcon,
+	formatSwedishRegistrationNumber,
+	normalizeSwedishRegistrationNumber,
+	isValidSwedishRegistrationNumber,
+} from '../utils/cn'
+import { formatSwedishPhone } from '../utils/swedishPhone'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
+import { useRegisterMobileBack } from '../context/MobileBackContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-
+import CreateCaseStart from '../components/CreateCaseStart'
 import { uploadAPI, vehiclesAPI, requestsAPI, authAPI } from '../services/api'
 import { fetchCarMakes, fetchCarModels, findMakeByName, findModelByName } from '../services/carImages'
+
 const MIN_VEHICLE_YEAR = 1990
 const VEHICLE_YEARS = Array.from(
 	{ length: new Date().getFullYear() + 1 - MIN_VEHICLE_YEAR + 1 },
 	(_, index) => new Date().getFullYear() + 1 - index
 )
 
+const PROBLEM_STEPS = new Set(['protocol', 'known', 'unknown'])
+
+function scrollTop() {
+	window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function PhotoThumb({ file, onRemove }) {
+	const [previewUrl, setPreviewUrl] = useState(null)
+
+	useEffect(() => {
+		if (!file?.type?.startsWith('image/')) {
+			setPreviewUrl(null)
+			return undefined
+		}
+		const url = URL.createObjectURL(file)
+		setPreviewUrl(url)
+		return () => URL.revokeObjectURL(url)
+	}, [file])
+
+	return (
+		<div className="relative w-[76px] h-[76px] lg:w-28 lg:h-28 rounded-xl lg:rounded-2xl overflow-hidden bg-[#1a1a1a] shrink-0">
+			{previewUrl ? (
+				<img src={previewUrl} alt="" className="w-full h-full object-cover" />
+			) : (
+				<div className="w-full h-full flex items-center justify-center bg-gray-100">
+					<span className="text-lg">{getFileIcon(file.type)}</span>
+				</div>
+			)}
+			<button
+				type="button"
+				onClick={onRemove}
+				className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white text-brand-navy flex items-center justify-center shadow-sm"
+				aria-label="Remove"
+			>
+				<X className="w-3 h-3" strokeWidth={2.5} />
+			</button>
+		</div>
+	)
+}
+
+function PhotoGrid({ files, onRemove, onAddFiles, addLabel, addFirst = true }) {
+	const inputRef = useRef(null)
+
+	const addTileClass = addFirst
+		? 'w-[76px] h-[76px] lg:w-28 lg:h-28 rounded-xl lg:rounded-2xl border border-brand-navy/35 bg-white text-brand-navy flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-brand-navy hover:bg-slate-50 shrink-0'
+		: 'w-[76px] h-[76px] lg:w-28 lg:h-28 rounded-xl lg:rounded-2xl border border-dashed border-gray-300 bg-white text-gray-400 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-brand-navy/40 hover:text-brand-navy shrink-0'
+
+	const handlePick = () => {
+		inputRef.current?.click()
+	}
+
+	const handleChange = (e) => {
+		const selected = Array.from(e.target.files || [])
+		e.target.value = ''
+		if (selected.length > 0) onAddFiles(selected)
+	}
+
+	const addTile = (
+		<button type="button" onClick={handlePick} className={addTileClass}>
+			{addFirst ? (
+				<Camera className="w-5 h-5 lg:w-7 lg:h-7" strokeWidth={1.75} />
+			) : (
+				<Plus className="w-5 h-5 lg:w-7 lg:h-7" strokeWidth={2} />
+			)}
+			<span className="text-[10px] lg:text-xs leading-tight text-center px-1 font-medium">{addLabel}</span>
+		</button>
+	)
+
+	return (
+		<div className="flex gap-2.5 overflow-x-auto pb-1">
+			<input
+				ref={inputRef}
+				type="file"
+				accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif"
+				multiple
+				className="hidden"
+				onChange={handleChange}
+			/>
+			{addFirst && addTile}
+			{files.map((file, index) => (
+				<PhotoThumb
+					key={`${file.name}-${file.lastModified}-${index}`}
+					file={file}
+					onRemove={() => onRemove(index)}
+				/>
+			))}
+			{!addFirst && addTile}
+		</div>
+	)
+}
+
+function RequestSentMark() {
+	const dots = [
+		'left-3 top-4 w-1.5 h-1.5',
+		'right-5 top-2 w-2 h-2',
+		'right-2 top-10 w-1.5 h-1.5',
+		'left-1 bottom-8 w-2 h-2',
+		'right-4 bottom-4 w-1 h-1',
+		'left-7 top-12 w-1 h-1',
+	]
+
+	return (
+		<div className="relative w-36 h-36 mx-auto mb-2">
+			{dots.map((dot) => (
+				<span key={dot} className={`absolute rounded-full bg-[#008037]/75 ${dot}`} />
+			))}
+			<div className="absolute inset-5 rounded-full bg-[#E7F6EC] flex items-center justify-center">
+				<Check className="w-12 h-12 text-[#008037]" strokeWidth={2.75} />
+			</div>
+		</div>
+	)
+}
+
+function SummaryRow({ icon: Icon, title, children, last }) {
+	return (
+		<div className={`flex gap-3 lg:gap-4 px-4 py-4 lg:px-6 lg:py-5 ${last ? '' : 'border-b border-gray-100'}`}>
+			<div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-[#F3F4F6] flex items-center justify-center shrink-0">
+				<Icon className="w-5 h-5 lg:w-6 lg:h-6 text-[#374151]" strokeWidth={1.75} />
+			</div>
+			<div className="min-w-0 flex-1 pt-0.5">
+				<p className="text-sm lg:text-lg font-bold text-brand-dark leading-snug">{title}</p>
+				{children ? (
+					<div className="text-sm lg:text-base text-[#6B7280] mt-0.5 leading-snug space-y-0.5">{children}</div>
+				) : null}
+			</div>
+		</div>
+	)
+}
+
 export default function UploadPage() {
 	const navigate = useNavigate()
-	const { user, loading: authLoading } = useAuth()
+	const { user, loading: authLoading, fetchUser, setSession } = useAuth()
 	const { t } = useTranslation()
+	const [searchParams, setSearchParams] = useSearchParams()
 
-	const [files, setFiles] = useState([])
-	const [vehicleData, setVehicleData] = useState({
-		make: '',
-		model: '',
-		year: '',
-	})
+	const editId = searchParams.get('edit') || searchParams.get('requestId')
+	const queryPath = searchParams.get('path')
+	const noImageMode = searchParams.get('mode') === 'no-image'
+	const requestSent = searchParams.get('sent') === '1'
+
+	const initialStep = requestSent
+		? 'success'
+		: editId
+		? 'details'
+		: queryPath === 'protocol' || queryPath === 'known' || queryPath === 'unknown'
+			? queryPath
+			: noImageMode
+				? 'known'
+				: 'start'
+
+	const [protocolFiles, setProtocolFiles] = useState([])
+	const [photoFiles, setPhotoFiles] = useState([])
+	const [vehicleData, setVehicleData] = useState({ make: '', model: '', year: '' })
 	const [registrationNumber, setRegistrationNumber] = useState('')
 	const [postalCode, setPostalCode] = useState('')
 	const [description, setDescription] = useState('')
-	const [currentStep, setCurrentStep] = useState('upload')
-	const [searchParams] = useSearchParams()
-	const editId = searchParams.get('edit') || searchParams.get('requestId')
-	const noImageMode = searchParams.get('mode') === 'no-image'
-	const [skipUpload, setSkipUpload] = useState(noImageMode)
+	const [casePath, setCasePath] = useState(
+		queryPath === 'protocol' || queryPath === 'known' || queryPath === 'unknown'
+			? queryPath
+			: noImageMode
+				? 'known'
+				: ''
+	)
+	const [currentStep, setCurrentStep] = useState(initialStep)
+	const [problemStarted, setProblemStarted] = useState('')
+	const [contactName, setContactName] = useState('')
+	const [contactPhone, setContactPhone] = useState('')
+	const [fuelType, setFuelType] = useState('')
+	const [email, setEmail] = useState('')
 	const [existingRequest, setExistingRequest] = useState(null)
 	const [isUploading, setIsUploading] = useState(false)
 	const [carMakes, setCarMakes] = useState([])
@@ -58,14 +231,92 @@ export default function UploadPage() {
 	const [modelSlug, setModelSlug] = useState('')
 	const [loadingMakes, setLoadingMakes] = useState(true)
 	const [loadingModels, setLoadingModels] = useState(false)
-	const [email, setEmail] = useState('')
-	const [linkSent, setLinkSent] = useState(false)
 	const [devMagicLinkUrl, setDevMagicLinkUrl] = useState('')
-	const [pendingRequestData, setPendingRequestData] = useState(null)
-	const [isSendingLink, setIsSendingLink] = useState(false)
+	const [showProtocolRemarks, setShowProtocolRemarks] = useState(false)
+	const protocolPhotoInputRef = useRef(null)
+	const [savedCars, setSavedCars] = useState([])
+	const [savedCarsLoading, setSavedCarsLoading] = useState(false)
+	const [selectedSavedCarKey, setSelectedSavedCarKey] = useState('')
 
 	const userRole = user?.role?.toUpperCase()
 	const isLoggedInCustomer = Boolean(user && userRole === 'CUSTOMER')
+
+	useEffect(() => {
+		if (user) {
+			setContactName((prev) => prev || user.name || '')
+			setContactPhone((prev) => prev || user.phone || '')
+			setEmail((prev) => prev || user.email || '')
+			setPostalCode((prev) => prev || user.postalCode || '')
+		}
+	}, [user])
+
+	// Bare /upload (no path): send logged-in users to My Cases. Back from a path uses history pop instead.
+	useEffect(() => {
+		if (authLoading || !isLoggedInCustomer) return
+		if (currentStep === 'start' && !editId && !requestSent) {
+			navigate('/contract', { replace: true })
+		}
+	}, [authLoading, isLoggedInCustomer, currentStep, editId, requestSent, navigate])
+
+	useEffect(() => {
+		if (!isLoggedInCustomer || !user) {
+			setSavedCars([])
+			setSelectedSavedCarKey('')
+			return undefined
+		}
+		let active = true
+		setSavedCarsLoading(true)
+		requestsAPI.getByCustomer(user.id || user._id)
+			.then((response) => {
+				if (!active) return
+				const seen = new Set()
+				const list = []
+				for (const request of response.data || []) {
+					const vehicle = request.vehicleId || {}
+					const registration = request.registrationNumber || ''
+					const key = `${vehicle.make || ''}|${vehicle.model || ''}|${registration}`
+					if (seen.has(key)) continue
+					seen.add(key)
+					if (!vehicle.make && !registration) continue
+					list.push({
+						key,
+						make: vehicle.make || '',
+						model: vehicle.model || '',
+						year: vehicle.year ?? '',
+						makeSlug: vehicle.makeSlug || '',
+						modelSlug: vehicle.modelSlug || '',
+						registration,
+					})
+				}
+				setSavedCars(list)
+			})
+			.catch(() => {
+				if (active) setSavedCars([])
+			})
+			.finally(() => {
+				if (active) setSavedCarsLoading(false)
+			})
+		return () => {
+			active = false
+		}
+	}, [isLoggedInCustomer, user])
+
+	useEffect(() => {
+		if (requestSent) setCurrentStep('success')
+	}, [requestSent])
+
+	useEffect(() => {
+		if (requestSent || editId) return
+		if (queryPath === 'protocol' || queryPath === 'known' || queryPath === 'unknown') {
+			setCasePath(queryPath)
+			setCurrentStep((prev) => (PROBLEM_STEPS.has(prev) || prev === 'start' ? queryPath : prev))
+			return
+		}
+		if (!queryPath && !noImageMode) {
+			setCasePath('')
+			setCurrentStep((prev) => (PROBLEM_STEPS.has(prev) ? 'start' : prev))
+		}
+	}, [queryPath, editId, requestSent, noImageMode])
 
 	useEffect(() => {
 		let active = true
@@ -83,17 +334,15 @@ export default function UploadPage() {
 		return () => {
 			active = false
 		}
-	}, [t])
+	}, [])
 
 	useEffect(() => {
 		if (!makeSlug) {
 			setCarModels([])
 			return
 		}
-
 		let active = true
 		setLoadingModels(true)
-
 		fetchCarModels(makeSlug)
 			.then((models) => {
 				if (active) setCarModels(models)
@@ -105,44 +354,85 @@ export default function UploadPage() {
 			.finally(() => {
 				if (active) setLoadingModels(false)
 			})
-
 		return () => {
 			active = false
 		}
 	}, [makeSlug])
 
-	useEffect(() => {
-		if (noImageMode && !editId) {
-			setSkipUpload(true)
-			setCurrentStep('details')
-		}
-	}, [noImageMode, editId])
-
-	const handleMakeChange = (slug) => {
-		const selected = carMakes.find((m) => m.slug === slug)
-		setMakeSlug(slug)
+	const handleMakeChange = (slugOrName, label) => {
+		const selected = carMakes.find((m) => m.slug === slugOrName || m.name === slugOrName)
 		setModelSlug('')
+		if (selected) {
+			setMakeSlug(selected.slug)
+			setVehicleData((prev) => ({
+				...prev,
+				make: selected.name,
+				model: '',
+			}))
+			return
+		}
+		const customName = (label || slugOrName || '').trim()
+		const customSlug = customName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+		setMakeSlug(customSlug || customName)
 		setVehicleData((prev) => ({
 			...prev,
-			make: selected?.name || slug,
+			make: customName,
 			model: '',
+		}))
+		setCarModels([])
+	}
+
+	const handleModelChange = (slugOrName, label) => {
+		const selected = carModels.find((m) => m.slug === slugOrName || m.name === slugOrName)
+		if (selected) {
+			setModelSlug(selected.slug)
+			setVehicleData((prev) => ({
+				...prev,
+				model: selected.name,
+			}))
+			return
+		}
+		const customName = (label || slugOrName || '').trim()
+		const customSlug = customName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+		setModelSlug(customSlug || customName)
+		setVehicleData((prev) => ({
+			...prev,
+			model: customName,
 		}))
 	}
 
-	const handleModelChange = (slug) => {
-		const selected = carModels.find((m) => m.slug === slug)
-		setModelSlug(slug)
-		setVehicleData((prev) => ({
-			...prev,
-			model: selected?.name || slug,
-		}))
+	const applySavedCar = (carKey) => {
+		setSelectedSavedCarKey(carKey)
+		if (!carKey) return
+		const car = savedCars.find((item) => item.key === carKey)
+		if (!car) return
+		setRegistrationNumber(formatSwedishRegistrationNumber(car.registration || ''))
+		setVehicleData({
+			make: car.make || '',
+			model: car.model || '',
+			year: car.year || '',
+		})
+		if (car.makeSlug) {
+			setMakeSlug(car.makeSlug)
+		} else if (car.make) {
+			const matched = findMakeByName(carMakes, car.make)
+			setMakeSlug(matched?.slug || car.make.toLowerCase().replace(/\s+/g, '-'))
+		} else {
+			setMakeSlug('')
+		}
+		if (car.modelSlug) {
+			setModelSlug(car.modelSlug)
+		} else if (car.model) {
+			setModelSlug(car.model.toLowerCase().replace(/\s+/g, '-'))
+		} else {
+			setModelSlug('')
+		}
 	}
 
 	const makeOptions = useMemo(
 		() => carMakes.map((make) => ({ value: make.slug, label: make.name })),
 		[carMakes]
 	)
-
 	const modelOptions = useMemo(
 		() => carModels.map((model) => ({ value: model.slug, label: model.name })),
 		[carModels]
@@ -155,167 +445,175 @@ export default function UploadPage() {
 			...(makeSlug && { makeSlug }),
 			...(modelSlug && { modelSlug }),
 		}
-		if (vehicleData.year) {
-			payload.year = vehicleData.year
-		}
+		if (vehicleData.year) payload.year = vehicleData.year
 		return payload
 	}
 
-	const isDetailsValid =
-		isValidSwedishRegistrationNumber(registrationNumber) && Boolean(description.trim())
+	const startedLabel = problemStarted
+		? t(`upload.flow.started_${problemStarted}`)
+		: ''
 
-	// Load existing request data if editing
+	const allFiles = useMemo(() => [...protocolFiles, ...photoFiles], [protocolFiles, photoFiles])
+
+	const problemSummary = useMemo(() => {
+		const text = description.trim()
+		if (text && startedLabel) return `${text}\n\n(${t('upload.flow.started_prefix')}: ${startedLabel})`
+		if (text) return text
+		if (casePath === 'protocol' && protocolFiles.length > 0) return t('upload.flow.protocol_uploaded')
+		return ''
+	}, [description, startedLabel, casePath, protocolFiles.length, t])
+
+	const problemDisplay = useMemo(() => {
+		const text = description.trim()
+		if (text && startedLabel) return `${text}\n\n(${t('upload.flow.started_prefix')}: ${startedLabel})`
+		if (text) return text
+		return ''
+	}, [description, startedLabel, t])
+
 	useEffect(() => {
-		if (editId) {
-			const fetchRequest = async () => {
-				try {
-					const response = await requestsAPI.getById(editId)
-					const request = response.data
-					setExistingRequest(request)
-					
-					if (request.vehicleId) {
-						setVehicleData({
-							make: request.vehicleId.make || '',
-							model: request.vehicleId.model || '',
-							year: request.vehicleId.year ?? '',
-						})
-						if (request.vehicleId.makeSlug) {
-							setMakeSlug(request.vehicleId.makeSlug)
-						}
-						if (request.vehicleId.modelSlug) {
-							setModelSlug(request.vehicleId.modelSlug)
-						}
-					}
-					
-					setDescription(request.description || '')
-					// We don't pre-fill files for now as it's complex with dropzone/blob
-				} catch (error) {
-					console.error('Fetch request for edit error:', error)
-					toast.error('Failed to load request data')
+		if (!editId) return
+		const fetchRequest = async () => {
+			try {
+				const response = await requestsAPI.getById(editId)
+				const request = response.data
+				setExistingRequest(request)
+				if (request.vehicleId) {
+					setVehicleData({
+						make: request.vehicleId.make || '',
+						model: request.vehicleId.model || '',
+						year: request.vehicleId.year ?? '',
+					})
+					if (request.vehicleId.makeSlug) setMakeSlug(request.vehicleId.makeSlug)
+					if (request.vehicleId.modelSlug) setModelSlug(request.vehicleId.modelSlug)
 				}
+				if (request.registrationNumber) {
+					setRegistrationNumber(formatSwedishRegistrationNumber(request.registrationNumber))
+				}
+				setDescription(request.description || '')
+				setCasePath('known')
+			} catch (error) {
+				console.error('Fetch request for edit error:', error)
+				toast.error('Failed to load request data')
 			}
-			fetchRequest()
 		}
+		fetchRequest()
 	}, [editId])
 
 	useEffect(() => {
 		if (!editId || !existingRequest?.vehicleId || carMakes.length === 0 || makeSlug) return
-		const vehicle = existingRequest.vehicleId
-		const matchedMake = findMakeByName(carMakes, vehicle.make)
-		if (matchedMake) {
-			setMakeSlug(matchedMake.slug)
-		}
+		const matchedMake = findMakeByName(carMakes, existingRequest.vehicleId.make)
+		if (matchedMake) setMakeSlug(matchedMake.slug)
 	}, [editId, existingRequest, carMakes, makeSlug])
 
 	useEffect(() => {
 		if (!editId || !existingRequest?.vehicleId || carModels.length === 0 || modelSlug) return
-		const vehicle = existingRequest.vehicleId
-		const matchedModel = findModelByName(carModels, vehicle.model)
-		if (matchedModel) {
-			setModelSlug(matchedModel.slug)
-		}
+		const matchedModel = findModelByName(carModels, existingRequest.vehicleId.model)
+		if (matchedModel) setModelSlug(matchedModel.slug)
 	}, [editId, existingRequest, carModels, modelSlug])
 
-	const onDrop = useCallback(
+	const onProtocolDrop = useCallback(
 		(acceptedFiles) => {
 			const validFiles = []
-
 			acceptedFiles.forEach((file) => {
 				const validation = validateFile(file, t)
-				if (validation.isValid) {
-					validFiles.push(file)
-				} else {
-					toast.error(validation.error)
-				}
+				if (validation.isValid) validFiles.push(file)
+				else toast.error(validation.error)
 			})
-
 			if (validFiles.length > 0) {
-				setFiles((prev) => {
-					const newFiles = [...prev, ...validFiles].slice(0, 5) // Max 5 files
-					return newFiles
-				})
+				setProtocolFiles((prev) => [...prev, ...validFiles].slice(0, 5))
 			}
 		},
 		[t]
 	)
 
-	const { getRootProps, getInputProps, isDragActive } = useDropzone({
-		onDrop,
+	const addPhotoFiles = useCallback(
+		(incoming) => {
+			const validFiles = []
+			incoming.forEach((file) => {
+				const validation = validateFile(file, t)
+				if (validation.isValid) validFiles.push(file)
+				else toast.error(validation.error)
+			})
+			if (validFiles.length > 0) {
+				setPhotoFiles((prev) => [...prev, ...validFiles].slice(0, 5))
+			}
+		},
+		[t]
+	)
+
+	const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+		onDrop: onProtocolDrop,
 		accept: {
 			'image/*': ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'],
 			'application/pdf': ['.pdf'],
 		},
 		maxFiles: 5,
-		maxSize: 10 * 1024 * 1024, // 10MB
+		maxSize: 10 * 1024 * 1024,
+		noClick: false,
+		noDragEventsBubbling: true,
+		multiple: true,
 	})
 
-	// Show loading state while checking auth
+	const handleBackRef = useRef(() => {})
+	useRegisterMobileBack(
+		() => handleBackRef.current?.(),
+		currentStep !== 'start' && currentStep !== 'success'
+	)
+
 	if (authLoading) {
 		return (
-			<div className="min-h-screen bg-gray-50">
+			<div className="min-h-screen bg-white">
 				<Navbar />
-				<div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 max-md:pb-24">
-					<div className="text-center mb-8">
-						<Skeleton className="h-10 sm:h-12 w-64 md:w-80 mx-auto mb-4" />
-						<Skeleton className="h-5 w-48 md:w-64 mx-auto" />
-					</div>
-					<div className="space-y-5 sm:space-y-6 md:space-y-8">
-						{/* Upload Box Skeleton */}
-						<Card>
-							<CardHeader className="pb-3 sm:pb-4">
-								<Skeleton className="h-6 w-40 mb-2" />
-								<Skeleton className="h-4 w-64 max-w-[80%]" />
-							</CardHeader>
-							<CardContent className="px-4 sm:px-6">
-								<Skeleton className="h-32 sm:h-40 md:h-48 w-full rounded-xl" />
-							</CardContent>
-						</Card>
-						{/* Form Box Skeleton */}
-						<Card>
-							<CardHeader className="pb-3 sm:pb-4">
-								<Skeleton className="h-6 w-48 mb-2" />
-								<Skeleton className="h-4 w-72 max-w-[90%]" />
-							</CardHeader>
-							<CardContent className="px-4 sm:px-6 space-y-5">
-								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-									<div className="space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-10 lg:h-11 w-full rounded-md" /></div>
-									<div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-10 lg:h-11 w-full rounded-md" /></div>
-									<div className="space-y-2"><Skeleton className="h-4 w-12" /><Skeleton className="h-10 lg:h-11 w-full rounded-md" /></div>
-									<div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 lg:h-11 w-full rounded-md" /></div>
-									<div className="space-y-2 sm:col-span-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-24 w-full rounded-md" /></div>
-								</div>
-								<div className="pt-4 border-t border-gray-100 flex justify-end">
-									<Skeleton className="h-10 w-full sm:w-32 rounded-md" />
-								</div>
-							</CardContent>
-						</Card>
-					</div>
+				<div className="max-w-md mx-auto px-5 pt-8 pb-20 space-y-4">
+					<Skeleton className="h-10 w-3/4" />
+					<Skeleton className="h-16 w-full rounded-2xl" />
+					<Skeleton className="h-16 w-full rounded-2xl" />
+					<Skeleton className="h-16 w-full rounded-2xl" />
 				</div>
-				
-				<Footer />
 			</div>
 		)
 	}
 
-	// Redirect edit flow if not authenticated
 	if (!authLoading && editId && !isLoggedInCustomer) {
 		navigate('/auth/signin', { replace: true })
 		return null
 	}
 
-	const removeFile = (index) => {
-		setFiles((prev) => prev.filter((_, i) => i !== index))
+	const removeProtocolFile = (index) => {
+		setProtocolFiles((prev) => prev.filter((_, i) => i !== index))
+	}
+
+	const removePhotoFile = (index) => {
+		setPhotoFiles((prev) => prev.filter((_, i) => i !== index))
+	}
+
+	const goTo = (step) => {
+		setCurrentStep(step)
+		scrollTop()
+	}
+
+	const syncUploadPathParam = (path) => {
+		setSearchParams((prev) => {
+			const next = new URLSearchParams(prev)
+			if (path) next.set('path', path)
+			else next.delete('path')
+			return next
+		}, { replace: true })
+	}
+
+	const choosePath = (path) => {
+		setCasePath(path)
+		setProtocolFiles([])
+		setPhotoFiles([])
+		syncUploadPathParam(path)
+		goTo(path)
 	}
 
 	const geocodePostalCode = async (usePostal) => {
 		let geoLat = user?.latitude || 59.3293
 		let geoLng = user?.longitude || 18.0686
 		let geoCity = user?.city || 'Stockholm'
-
-		if (!usePostal) {
-			return { geoLat, geoLng, geoCity }
-		}
-
+		if (!usePostal) return { geoLat, geoLng, geoCity }
 		try {
 			const cleaned = usePostal.replace(/\s+/g, '')
 			const resp = await fetch(
@@ -332,13 +630,12 @@ export default function UploadPage() {
 		} catch (geoErr) {
 			console.warn('Geocoding failed, using defaults:', geoErr)
 		}
-
 		return { geoLat, geoLng, geoCity }
 	}
 
 	const uploadFiles = async () => {
 		const uploadedFiles = []
-		for (const file of files) {
+		for (const file of allFiles) {
 			const formData = new FormData()
 			formData.append('file', file)
 			const response = await uploadAPI.uploadFile(formData)
@@ -347,55 +644,63 @@ export default function UploadPage() {
 		return uploadedFiles.map((file) => file.id || file._id).filter(Boolean)
 	}
 
-	const handleSubmit = async (e) => {
-		e.preventDefault()
+	const persistContactIfLoggedIn = async () => {
+		if (!isLoggedInCustomer || !user?._id && !user?.id) return
+		const userId = user._id || user.id
+		const nextName = contactName.trim()
+		const nextPhone = contactPhone.trim()
+		if (!nextName && !nextPhone) return
+		if (nextName === (user.name || '') && nextPhone === (user.phone || '')) return
+		try {
+			await authAPI.updateProfile(userId, {
+				name: nextName || user.name,
+				phone: nextPhone || user.phone,
+			})
+			await fetchUser?.()
+		} catch (err) {
+			console.warn('Could not update profile contact details:', err)
+		}
+	}
 
+	const handleSend = async () => {
 		if (!isValidSwedishRegistrationNumber(registrationNumber)) {
 			toast.error(t('errors.registration_required'))
 			return
 		}
-
-		if (!description.trim()) {
+		if (!problemSummary) {
 			toast.error(t('errors.description_required'))
 			return
 		}
 
 		setIsUploading(true)
-
 		try {
 			if (editId && existingRequest) {
 				const updateBody = {
-					description: description.trim(),
-					...( (vehicleData.make !== existingRequest.vehicleId?.make || 
-						  vehicleData.model !== existingRequest.vehicleId?.model || 
-						  vehicleData.year !== existingRequest.vehicleId?.year) ? {
-						vehicleId: (await vehiclesAPI.create(buildVehiclePayload())).data._id
-					} : {} )
+					description: problemSummary,
+					...((vehicleData.make !== existingRequest.vehicleId?.make ||
+						vehicleData.model !== existingRequest.vehicleId?.model ||
+						vehicleData.year !== existingRequest.vehicleId?.year)
+						? { vehicleId: (await vehiclesAPI.create(buildVehiclePayload())).data._id }
+						: {}),
 				}
-
 				await requestsAPI.update(editId, updateBody)
 				toast.success(t('success.request_updated') || 'Request updated successfully')
 				navigate('/contract')
 				return
 			}
 
-			if (files.length === 0 && !skipUpload) {
-				toast.error(t('errors.file_required'))
-				return
-			}
-
 			const usePostal = (postalCode || user?.postalCode || '').trim()
 			const { geoLat, geoLng, geoCity } = await geocodePostalCode(usePostal)
+			await persistContactIfLoggedIn()
 
 			if (isLoggedInCustomer) {
-				const reportIds = files.length > 0 ? await uploadFiles() : []
+				const reportIds = allFiles.length > 0 ? await uploadFiles() : []
 				const vehicleResponse = await vehiclesAPI.create(buildVehiclePayload())
 				const vehicleId = vehicleResponse.data._id || vehicleResponse.data.id
-
-				const requestBody = {
+				await requestsAPI.create({
 					vehicleId,
 					reportIds,
-					description: description.trim(),
+					description: problemSummary,
 					registrationNumber: normalizeSwedishRegistrationNumber(registrationNumber) || undefined,
 					latitude: geoLat,
 					longitude: geoLng,
@@ -404,573 +709,732 @@ export default function UploadPage() {
 					postalCode: usePostal || '111 22',
 					country: user?.country || 'SE',
 					expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-				}
-
-				await requestsAPI.create(requestBody)
+				})
 				toast.success(t('success.request_sent'))
-				navigate('/offers')
+				navigate('/upload?sent=1', { replace: true })
+				goTo('success')
 				return
 			}
 
-			const reportIds = files.length > 0 ? await uploadFiles() : []
-			setPendingRequestData({
-				reportIds,
-				description: description.trim(),
-				registrationNumber: normalizeSwedishRegistrationNumber(registrationNumber) || '',
-				latitude: geoLat,
-				longitude: geoLng,
-				address: geoCity,
-				city: geoCity,
-				postalCode: usePostal || '111 22',
-				country: 'SE',
-				expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-				vehicle: buildVehiclePayload(),
+			const trimmedEmail = email.trim().toLowerCase()
+			if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+				toast.error(t('errors.invalid_email_format') || 'Please enter a valid email address')
+				goTo('details')
+				return
+			}
+
+			const reportIds = allFiles.length > 0 ? await uploadFiles() : []
+			const response = await authAPI.sendMagicLink({
+				email: trimmedEmail,
+				requestData: {
+					name: contactName.trim(),
+					phone: contactPhone.trim(),
+					reportIds,
+					description: problemSummary,
+					registrationNumber: normalizeSwedishRegistrationNumber(registrationNumber) || '',
+					latitude: geoLat,
+					longitude: geoLng,
+					address: geoCity,
+					city: geoCity,
+					postalCode: usePostal || '111 22',
+					country: 'SE',
+					expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+					vehicle: buildVehiclePayload(),
+				},
+				frontendUrl: window.location.origin,
 			})
-			setCurrentStep('email')
-			window.scrollTo({ top: 0, behavior: 'smooth' })
+			const data = response.data || {}
+
+			// First-time email → auto-login + success.
+			if (data.token && data.user && !data.existingAccount) {
+				await setSession(data.token, data.user)
+				toast.success(t('success.request_sent'))
+				navigate('/upload?sent=1', { replace: true })
+				goTo('success')
+				return
+			}
+
+			// Registered email → magic link sent; return to upload start with toast.
+			toast.success(t('upload.flow.magic_link_sent') || 'Magic link sent successfully')
+			resetWizard()
+			navigate('/upload', { replace: true })
 		} catch (error) {
 			console.error('Upload error:', error)
-			const errorMessage = error?.message || error.response?.data?.message || t('errors.upload_failed')
+			const errorCode = error.response?.data?.code
+			const errorMessage =
+				(errorCode === 'WORKSHOP_EMAIL' && (t('errors.workshop_email') || 'This is a workshop email. Please use a customer email.')) ||
+				(errorCode === 'ADMIN_EMAIL' && (t('errors.admin_email') || 'This is an admin email. Please use a customer email.')) ||
+				(errorCode === 'NON_CUSTOMER_EMAIL' && (t('errors.non_customer_email') || 'This email belongs to another account type. Please use a customer email.')) ||
+				error.response?.data?.message ||
+				error?.message ||
+				t('errors.upload_failed')
 			toast.error(errorMessage)
+			if (errorCode === 'WORKSHOP_EMAIL' || errorCode === 'ADMIN_EMAIL' || errorCode === 'NON_CUSTOMER_EMAIL') {
+				goTo('details')
+			}
+			if (error.response?.status === 409 || error.response?.data?.requiresSignIn) {
+				setTimeout(() => navigate('/auth/signin'), 1500)
+			}
 		} finally {
 			setIsUploading(false)
 		}
 	}
 
-	const handleSendMagicLink = async (e) => {
-		e.preventDefault()
-
-		const trimmedEmail = email.trim().toLowerCase()
-		if (!trimmedEmail) {
-			toast.error(t('errors.email_required') || 'Please enter your email address')
+	const handleProblemContinue = () => {
+		if (currentStep === 'protocol' && protocolFiles.length === 0) {
+			toast.error(t('errors.file_required'))
 			return
 		}
-		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-			toast.error(t('errors.invalid_email_format') || 'Please enter a valid email address')
+		if ((currentStep === 'known' || currentStep === 'unknown') && !description.trim()) {
+			toast.error(t('errors.description_required'))
 			return
 		}
-
-		if (!pendingRequestData) {
-			toast.error(t('errors.generic_error') || 'Something went wrong. Please go back and try again.')
+		if (currentStep === 'unknown' && !problemStarted) {
+			toast.error(t('errors.required_fields'))
 			return
 		}
+		goTo('details')
+	}
 
-		setIsSendingLink(true)
+	const handleDetailsContinue = () => {
+		if (!isValidSwedishRegistrationNumber(registrationNumber)) {
+			toast.error(t('errors.registration_required'))
+			return
+		}
+		if (!vehicleData.make?.trim() || !vehicleData.model?.trim()) {
+			toast.error(t('errors.vehicle_info_required'))
+			return
+		}
+		if (!problemSummary) {
+			toast.error(t('errors.description_required'))
+			return
+		}
+		if (!isLoggedInCustomer) {
+			if (!contactName.trim()) {
+				toast.error(t('errors.name_required') || 'Please enter your name')
+				return
+			}
+			if (!contactPhone.trim()) {
+				toast.error(t('errors.phone_required') || 'Please enter your phone number')
+				return
+			}
+			const trimmedEmail = email.trim().toLowerCase()
+			if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+				toast.error(t('errors.invalid_email_format') || 'Please enter a valid email address')
+				return
+			}
+		}
+		goTo('confirm')
+	}
+
+	const resetWizard = () => {
+		setProtocolFiles([])
+		setPhotoFiles([])
+		setDescription('')
+		setProblemStarted('')
+		setRegistrationNumber('')
+		setVehicleData({ make: '', model: '', year: '' })
+		setCasePath('')
 		setDevMagicLinkUrl('')
-		try {
-			const response = await authAPI.sendMagicLink({
-				email: trimmedEmail,
-				requestData: pendingRequestData,
-				frontendUrl: window.location.origin,
-			})
-			const data = response.data || {}
-			if (data.magicLinkUrl) {
-				setDevMagicLinkUrl(data.magicLinkUrl)
-			}
-			setLinkSent(true)
-			if (data.emailSent === false) {
-				toast.success(t('upload.form.link_ready_dev') || 'Login link ready — open it below.')
-			} else {
-				toast.success(t('upload.form.link_sent_toast') || 'Login link sent! Check your inbox.')
-			}
-		} catch (error) {
-			console.error('Magic link error:', error)
-			const message = error.response?.data?.message || t('errors.generic_error')
-			toast.error(message)
-			if (error.response?.status === 409 || error.response?.data?.requiresSignIn) {
-				setTimeout(() => navigate('/auth/signin'), 1500)
-			}
-		} finally {
-			setIsSendingLink(false)
-		}
+		syncUploadPathParam(null)
+		setCurrentStep('start')
+		scrollTop()
 	}
 
-	const steps = [
-		{
-			key: 'step1',
-			label: t('upload.form.step1') || 'Upload report',
-			state: skipUpload ? 'done' : currentStep === 'upload' ? 'active' : 'done',
-		},
-		{
-			key: 'step2',
-			label: t('upload.form.step2') || 'Fill in details',
-			state: currentStep === 'details' ? 'active' : currentStep === 'email' ? 'done' : 'pending',
-		},
-		...(isLoggedInCustomer ? [] : [{
-			key: 'step3',
-			label: t('upload.form.step3') || 'Your email',
-			state: currentStep === 'email' ? 'active' : 'pending',
-		}]),
-	]
-
-	const handleNextStep = () => {
-		if (files.length === 0) {
-			toast.error(t('errors.file_required') || 'Please upload at least one file')
+	const handleBack = () => {
+		if (currentStep === 'success') {
+			resetWizard()
 			return
 		}
-		setCurrentStep('details')
-		window.scrollTo({ top: 0, behavior: 'smooth' })
+		if (currentStep === 'inbox') {
+			goTo('confirm')
+			return
+		}
+		if (currentStep === 'confirm') {
+			goTo('details')
+			return
+		}
+		if (currentStep === 'details') {
+			if (casePath) {
+				goTo(casePath)
+				return
+			}
+			if (isLoggedInCustomer) {
+				navigate(-1)
+				return
+			}
+			goTo('start')
+			return
+		}
+		if (PROBLEM_STEPS.has(currentStep)) {
+			if (isLoggedInCustomer) {
+				// History pop — avoids /contract remount flash.
+				navigate(-1)
+				return
+			}
+			syncUploadPathParam(null)
+			setCasePath('')
+			goTo('start')
+			return
+		}
+		navigate(-1)
 	}
+	handleBackRef.current = handleBack
 
-	const handleSkipUpload = () => {
-		setSkipUpload(true)
-		setCurrentStep('details')
-		window.scrollTo({ top: 0, behavior: 'smooth' })
-	}
+	const primaryBtn =
+		'w-full !rounded-2xl lg:!min-h-[64px] lg:!text-lg bg-brand-btn !text-white !font-semibold !shadow-none disabled:!bg-gray-300'
+	const outlineBtn =
+		'w-full !rounded-2xl lg:!min-h-[64px] lg:!text-lg !bg-white hover:!bg-[#E8F5EC] !text-[#008037] !border-[1.5px] !border-[#008037] !font-semibold !shadow-none'
+	const fieldClass =
+		'h-12 lg:h-14 text-sm lg:text-base border border-[#D7DEE8] rounded-xl bg-white text-[#05324f] placeholder:text-[#9CA3AF] focus-visible:ring-[#008037]/30'
+	const selectTriggerClass = `${fieldClass} px-3.5 justify-between [&_svg]:text-[#05324f] [&_svg]:opacity-100`
+
+	const carLine = [vehicleData.make, vehicleData.model, vehicleData.year].filter(Boolean).join(' · ') || '—'
+	const contactEmail = email || user?.email || ''
+	const contactDisplayName = contactName.trim() || user?.name || ''
+	const uploadedCount = protocolFiles.length + photoFiles.length
+	const problemText = problemDisplay || (protocolFiles.length > 0 ? t('upload.flow.protocol_uploaded') : '')
 
 	return (
-		<div className="list-page-shell bg-[#FAFBFC]">
+		<div className={`list-page-shell bg-white${isLoggedInCustomer ? ' customer-upload-page' : ''}`}>
 			<Navbar />
-			<div className="list-page-content">
-				{/* Step Indicator */}
-				<div className="flex items-center justify-center mb-8">
-					{steps.map((step, idx) => (
-						<div key={step.key} className="flex items-center">
-							<div className="flex flex-col items-center">
-								<div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-normal transition-all ${
-									step.state === 'done' ? 'bg-[#38BC54] text-white' :
-									step.state === 'active' ? 'bg-[#38BC54] text-white shadow-md shadow-green-200' :
-									'bg-gray-200 text-gray-400'
-								}`}>
-									{step.state === 'done' ? <Check className="w-5 h-5" strokeWidth={3} /> : idx + 1}
-								</div>
-								<span className={`text-[11px] sm:text-xs font-medium mt-2 whitespace-nowrap ${
-									step.state === 'pending' ? 'text-gray-400' : 'text-[#05324f]'
-								}`}>
-									{step.label}
-								</span>
-							</div>
-							{idx < steps.length - 1 && (
-								<div className={`h-[2px] w-10 sm:w-16 mx-1 sm:mx-2 -mt-6 ${
-									steps[idx + 1].state !== 'pending' ? 'bg-[#38BC54]' : 'bg-gray-200'
-								}`} />
-							)}
-						</div>
-					))}
-				</div>
-
-				<div className="space-y-5">
-					{/* Step 1: File Upload Card */}
-					{currentStep === 'upload' && (
-					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
-						<div className="mb-3">
-							<h2 className="flex items-center gap-2 text-base font-semibold text-[#05324f]">
-								<Upload className="w-5 h-5 text-[#38BC54]" />
-								{t('upload.file_upload.title')}
-							</h2>
-						</div>
-						<div
-							{...getRootProps()}
-							className={`border-2 border-dashed rounded-xl p-5 sm:p-6 text-center cursor-pointer transition-colors ${
-								isDragActive
-									? 'border-[#38BC54] bg-[#F2F9F4]'
-									: 'border-gray-200 hover:border-[#38BC54] hover:bg-[#F2F9F4]/50'
-							}`}
-						>
-							<input {...getInputProps()} />
-							<Upload className="w-9 h-9 mx-auto mb-3 text-gray-300" strokeWidth={1.5} />
-							{isDragActive ? (
-								<p className="text-sm font-semibold text-[#38BC54]">{t('upload.file_upload.drop_here')}</p>
-							) : (
-								<div>
-									<p className="text-sm font-medium text-[#05324f] mb-1">{t('upload.file_upload.drag_drop')}</p>
-									<p className="text-xs text-gray-400">{t('upload.file_upload.file_types')}</p>
-								</div>
-							)}
-						</div>
-
-						{files.length > 0 && (
-							<div className="mt-4 space-y-2">
-								{files.map((file, index) => (
-									<div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
-										<div className="flex items-center gap-3 flex-1 min-w-0">
-											<span className="text-xl flex-shrink-0">{getFileIcon(file.type)}</span>
-											<div className="flex-1 min-w-0">
-												<p className="font-semibold text-xs text-[#05324f] truncate">{file.name}</p>
-												<p className="text-[11px] text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-											</div>
-										</div>
-										<Button type="button" variant="ghost" size="sm" onClick={() => removeFile(index)} className="flex-shrink-0">
-											<X className="w-4 h-4" />
-										</Button>
-									</div>
-								))}
-							</div>
-						)}
-
-						{/* Next button */}
-						<Button
-							type="button"
-							onClick={handleNextStep}
-							disabled={files.length === 0}
-							className="w-full h-13 mt-5 py-4 text-base font-medium bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl shadow-md shadow-green-200/50 transition-all active:scale-[0.99] flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:shadow-none"
-						>
-							{t('common.next') || 'Next'} <ArrowRight className="w-5 h-5" />
-						</Button>
-
-						<div className="flex items-center justify-center gap-4 mt-5">
-							<div className="h-px bg-gray-200 flex-1" />
-							<span className="text-gray-400 font-medium text-sm">{t('common.or')}</span>
-							<div className="h-px bg-gray-200 flex-1" />
-						</div>
-
+			<div className="list-page-content lg:!max-w-7xl">
+				<div className={`w-full ${isLoggedInCustomer && currentStep === 'start' ? 'pb-2' : 'pb-8'} ${currentStep === 'start' ? '' : 'max-w-md mx-auto lg:max-w-none'}`}>
+					{currentStep !== 'start' && currentStep !== 'success' && (
 						<button
 							type="button"
-							onClick={handleSkipUpload}
-							className="w-full mt-4 text-[#05324f] font-medium text-sm underline underline-offset-4 inline-flex items-center justify-center gap-2 active:opacity-70 transition-opacity hover:opacity-80"
+							onClick={handleBack}
+							className="mb-4 lg:mb-6 -ml-1 hidden lg:inline-flex items-center gap-1 text-sm lg:text-base font-medium text-brand-navy hover:opacity-70"
 						>
-							{t('homepage.mobile.no_image')} <ArrowRight className="w-4 h-4" />
+							<ArrowRight className="w-4 h-4 rotate-180" />
+							{t('common.back') || 'Back'}
 						</button>
-					</div>
 					)}
 
-					{/* Step 2: Form Card */}
-					{currentStep === 'details' && (
-					<form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
-						<div className="text-center mb-6">
-							<h1 className="text-2xl sm:text-3xl font-black text-[#05324f] mb-2">
-								{t('upload.form.title') || 'Fill in details'}
-							</h1>
-							<p className="text-sm text-gray-500 leading-relaxed">
-								{t('upload.form.subtitle') || 'We need some information to match you with the right workshops.'}
-							</p>
-						</div>
+					{currentStep === 'start' && !isLoggedInCustomer && (
+						<CreateCaseStart onSelectPath={choosePath} />
+					)}
 
-						<div className="space-y-5">
-							{/* Registration Number */}
-							<div>
-								<Label htmlFor="regnr" className="text-sm font-bold text-[#05324f] mb-2 block">
-									{t('upload.form.regnr_label') || 'Registration number'}{' '}
-									<span className="text-red-500">*</span>
-								</Label>
-								<div className="relative">
-									<Car className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#38BC54]" />
-									<Input
-										id="regnr"
+					{currentStep === 'protocol' && (
+						<div>
+							<h1 className="page-title lg:text-[2.75rem] lg:mb-4">
+								{t('upload.flow.protocol_title')}
+							</h1>
+							<p className="text-sm lg:text-lg text-[#374151] leading-relaxed mb-6 lg:mb-8 max-w-md">
+								{t('upload.flow.protocol_subtitle')}
+							</p>
+
+							<div
+								{...getRootProps()}
+								className={`border-2 border-dashed rounded-xl lg:rounded-2xl px-5 py-7 lg:px-8 lg:py-10 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
+									isDragActive
+										? 'border-[#008037] bg-[#E8F8EC]'
+										: 'border-[#86C59A] hover:border-[#008037] hover:bg-[#F3FBF6]'
+								}`}
+							>
+								<input {...getInputProps()} />
+								<FileDown className="w-14 h-14 lg:w-[4.25rem] lg:h-[4.25rem] mb-3 lg:mb-4 text-[#008037]" strokeWidth={1.5} />
+								<p className="text-sm lg:text-lg font-bold text-brand-dark mb-1">
+									{t('upload.flow.drag_drop')}
+								</p>
+								<p className="text-xs lg:text-sm text-[#6B7280] mb-5">
+									{t('upload.flow.file_types')}
+								</p>
+								<button
+									type="button"
+									onClick={(e) => {
+										e.stopPropagation()
+										open()
+									}}
+									className="w-full max-w-[280px] min-h-[48px] px-6 rounded-xl bg-brand-btn text-white text-sm font-semibold"
+								>
+									{t('upload.flow.choose_file')}
+								</button>
+							</div>
+
+							{protocolFiles.length > 0 && (
+								<div className="mt-4 space-y-2">
+									{protocolFiles.map((file, index) => (
+										<div key={`${file.name}-${index}`} className="flex items-center justify-between p-3 lg:p-4 bg-[#F8FAF9] rounded-xl border border-gray-100">
+											<div className="flex items-center gap-3 min-w-0">
+												<span className="text-xl">{getFileIcon(file.type)}</span>
+												<div className="min-w-0">
+													<p className="font-semibold text-xs lg:text-sm text-brand-navy truncate">{file.name}</p>
+													<p className="text-[11px] text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+												</div>
+											</div>
+											<button
+												type="button"
+												onClick={() => removeProtocolFile(index)}
+												className="p-2 text-gray-400 hover:text-brand-dark"
+												aria-label={t('common.delete')}
+											>
+												<X className="w-4 h-4" />
+											</button>
+										</div>
+									))}
+								</div>
+							)}
+
+							<div className="flex items-center gap-3 my-6">
+								<div className="h-px bg-[#D1D5DB] flex-1" />
+								<span className="text-xs lg:text-sm text-[#6B7280]">{t('common.or')}</span>
+								<div className="h-px bg-[#D1D5DB] flex-1" />
+							</div>
+
+							<button
+								type="button"
+								onClick={() => setShowProtocolRemarks((prev) => !prev)}
+								className="w-full text-center text-sm lg:text-base font-medium text-brand-dark hover:text-[#008037] mb-4"
+							>
+								{t('upload.flow.extra_remarks')}
+							</button>
+
+							{showProtocolRemarks && (
+								<div className="mb-4">
+									<Textarea
+										value={description}
+										onChange={(e) => setDescription(e.target.value)}
+										placeholder={t('upload.flow.known_placeholder')}
+										rows={3}
+										maxLength={500}
+										className="text-sm border border-gray-200 rounded-xl resize-none"
+									/>
+									<p className="text-[11px] text-gray-400 text-right mt-1">{description.length}/500</p>
+								</div>
+							)}
+
+							<input
+								ref={protocolPhotoInputRef}
+								type="file"
+								accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif"
+								multiple
+								className="hidden"
+								onChange={(e) => {
+									const selected = Array.from(e.target.files || [])
+									e.target.value = ''
+									if (selected.length > 0) addPhotoFiles(selected)
+								}}
+							/>
+							<button
+								type="button"
+								onClick={() => protocolPhotoInputRef.current?.click()}
+								className="w-full flex items-center gap-3 rounded-xl bg-[#F3F4F6] px-4 py-3.5 text-left hover:bg-[#ECEEF1] transition-colors"
+							>
+								<div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0">
+									<Camera className="w-5 h-5 text-[#008037]" strokeWidth={1.75} />
+								</div>
+								<div className="min-w-0 flex-1">
+									<p className="text-sm font-bold text-brand-dark leading-snug">
+										{t('upload.flow.photos_optional')}
+									</p>
+									<p className="text-xs text-[#6B7280] mt-0.5">
+										{photoFiles.length}/5
+									</p>
+								</div>
+							</button>
+
+							{photoFiles.length > 0 && (
+								<div className="mt-3">
+									<PhotoGrid
+										files={photoFiles}
+										onRemove={removePhotoFile}
+										onAddFiles={addPhotoFiles}
+										addLabel={t('upload.flow.add_photo')}
+										addFirst={false}
+									/>
+								</div>
+							)}
+
+							<Button
+								type="button"
+								onClick={handleProblemContinue}
+								className={`${primaryBtn} mt-8`}
+							>
+								{t('upload.flow.continue')}
+							</Button>
+						</div>
+					)}
+
+					{currentStep === 'known' && (
+						<div>
+							<h1 className="page-title lg:text-[2.75rem] lg:mb-4">
+								{t('upload.flow.known_page_title')}
+							</h1>
+							<p className="text-sm lg:text-lg text-gray-500 lg:text-[#374151] leading-relaxed mb-5 lg:mb-8">{t('upload.flow.known_page_subtitle')}</p>
+							<Label className="text-sm font-semibold text-brand-navy mb-2 block">
+								{t('upload.flow.what_needs_doing')}
+							</Label>
+							<Textarea
+								value={description}
+								onChange={(e) => setDescription(e.target.value)}
+								placeholder={t('upload.flow.known_placeholder')}
+								rows={4}
+								maxLength={500}
+								className="text-sm lg:text-base lg:min-h-[160px] lg:p-5 border border-gray-200 rounded-xl lg:rounded-2xl resize-none"
+							/>
+							<p className="text-[11px] text-gray-400 text-right mt-1">{description.length}/500</p>
+							<p className="text-sm font-medium text-brand-navy mt-5 mb-3">{t('upload.flow.have_photos')}</p>
+							<PhotoGrid
+								files={photoFiles}
+								onRemove={removePhotoFile}
+								onAddFiles={addPhotoFiles}
+								addLabel={t('upload.flow.add_photo')}
+							/>
+							<Button
+								type="button"
+								onClick={handleProblemContinue}
+								className={`${primaryBtn} mt-8`}
+							>
+								{t('upload.flow.continue')}
+							</Button>
+						</div>
+					)}
+
+					{currentStep === 'unknown' && (
+						<div>
+							<h1 className="page-title lg:text-[2.75rem] lg:mb-4">
+								{t('upload.flow.unknown_page_title')}
+							</h1>
+							<p className="text-sm lg:text-lg text-gray-500 lg:text-[#374151] leading-relaxed mb-5 lg:mb-8">{t('upload.flow.unknown_page_subtitle')}</p>
+							<Label className="text-sm font-semibold text-brand-navy mb-2 block">
+								{t('upload.flow.describe_problem')}
+							</Label>
+							<Textarea
+								value={description}
+								onChange={(e) => setDescription(e.target.value)}
+								placeholder={t('upload.flow.unknown_placeholder')}
+								rows={4}
+								maxLength={500}
+								className="text-sm lg:text-base lg:min-h-[160px] lg:p-5 border border-gray-200 rounded-xl lg:rounded-2xl resize-none"
+							/>
+							<p className="text-[11px] text-gray-400 text-right mt-1">{description.length}/500</p>
+
+							<p className="text-sm font-medium text-brand-navy mt-5 mb-3">{t('upload.flow.when_started')}</p>
+							<div className="space-y-2">
+								{[
+									['recently', t('upload.flow.started_recently')],
+									['weeks', t('upload.flow.started_weeks')],
+									['month', t('upload.flow.started_month')],
+								].map(([value, label]) => (
+									<label key={value} className="flex items-center gap-3 lg:gap-4 rounded-xl lg:rounded-2xl border border-gray-100 px-3 py-2.5 lg:px-5 lg:py-4 lg:min-h-[64px] cursor-pointer">
+										<input
+											type="radio"
+											name="started"
+											checked={problemStarted === value}
+											onChange={() => setProblemStarted(value)}
+											className="accent-brand-green w-4 h-4 lg:w-5 lg:h-5"
+										/>
+										<span className="text-sm lg:text-base text-brand-navy">{label}</span>
+									</label>
+								))}
+							</div>
+
+							<p className="text-sm font-medium text-brand-navy mt-5 mb-3">{t('upload.flow.photos_optional')}</p>
+							<PhotoGrid
+								files={photoFiles}
+								onRemove={removePhotoFile}
+								onAddFiles={addPhotoFiles}
+								addLabel={t('upload.flow.add_photo')}
+							/>
+							<Button
+								type="button"
+								onClick={handleProblemContinue}
+								className={`${primaryBtn} mt-8`}
+							>
+								{t('upload.flow.continue')}
+							</Button>
+						</div>
+					)}
+
+					{currentStep === 'details' && (
+						<div>
+							<h1 className="page-title !font-semibold lg:text-[2.75rem] lg:mb-3 text-[#05324f]">
+								{t('upload.flow.details_title')}
+							</h1>
+							<p className="text-sm lg:text-base text-[#4B5563] leading-relaxed mb-6 lg:mb-8 max-w-md">
+								{t('upload.flow.details_subtitle')}
+							</p>
+
+							<p className="text-[15px] font-semibold text-[#05324f] mb-3">{t('upload.flow.car_details')}</p>
+							<div className="space-y-3 mb-7">
+								{isLoggedInCustomer && (savedCarsLoading || savedCars.length > 0) && (
+									<div>
+										<Select
+											value={selectedSavedCarKey || undefined}
+											onValueChange={applySavedCar}
+											disabled={savedCarsLoading}
+										>
+											<SelectTrigger
+												className={selectTriggerClass}
+												placeholder={t('upload.flow.my_cars_placeholder') || 'Choose from My cars'}
+											>
+												<SelectValue placeholder={t('upload.flow.my_cars_placeholder') || 'Choose from My cars'} />
+											</SelectTrigger>
+											<SelectContent>
+												{savedCars.map((car) => {
+													const label = [car.make, car.model].filter(Boolean).join(' ')
+													const sub = [car.registration, car.year].filter(Boolean).join(' · ')
+													return (
+														<SelectItem key={car.key} value={car.key} className="cursor-pointer text-sm py-2">
+															{label || t('profile.my_cars_title')}
+															{sub ? ` · ${sub}` : ''}
+														</SelectItem>
+													)
+												})}
+											</SelectContent>
+										</Select>
+										<p className="mt-1.5 text-xs text-[#9CA3AF]">{t('upload.flow.my_cars_hint') || 'Or fill in a new car below'}</p>
+									</div>
+								)}
+								<div>
+									<input
 										value={registrationNumber}
-										onChange={(e) => setRegistrationNumber(formatSwedishRegistrationNumber(e.target.value))}
+										onChange={(e) => {
+											setSelectedSavedCarKey('')
+											setRegistrationNumber(formatSwedishRegistrationNumber(e.target.value))
+										}}
 										placeholder={t('upload.form.regnr_placeholder') || 'ABC 123'}
 										maxLength={7}
 										autoComplete="off"
 										spellCheck={false}
-										required
-										className="pl-10 h-12 text-sm border border-gray-200 rounded-xl focus:border-[#38BC54] focus:ring-1 focus:ring-[#38BC54] uppercase tracking-wide"
+										className="w-full h-12 lg:h-14 rounded-xl border border-[#D7DEE8] bg-white px-3.5 text-sm lg:text-base font-normal uppercase tracking-[0.08em] text-[#05324f] outline-none placeholder:font-normal placeholder:tracking-normal placeholder:normal-case placeholder:text-[#9CA3AF] focus:border-[#008037]"
 									/>
+									<p className="mt-1.5 text-xs text-[#9CA3AF]">{t('upload.form.regnr_label')}</p>
 								</div>
-								<p className="text-xs text-gray-400 mt-1.5 ml-1">
-									{t('upload.form.regnr_helper') || "We'll fetch your vehicle info automatically."}
-								</p>
-							</div>
 
-							{/* Vehicle make/model/year */}
-							<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-								<div>
-									<Label htmlFor="make" className="text-xs font-bold text-[#05324f] mb-1.5 block">{t('upload.vehicle_info.make')}</Label>
-									<SearchableSelect
-										value={makeSlug || ''}
-										onValueChange={handleMakeChange}
-										options={makeOptions}
-										disabled={loadingMakes}
-										placeholder={loadingMakes ? (t('common.loading') || 'Loading...') : t('upload.vehicle_info.make_placeholder')}
-										searchPlaceholder={t('common.search')}
-										emptyText={t('common.no_results')}
-										triggerClassName="h-11 text-sm border border-gray-200 rounded-xl bg-white"
-									/>
-								</div>
-								<div>
-									<Label htmlFor="model" className="text-xs font-bold text-[#05324f] mb-1.5 block">{t('upload.vehicle_info.model')}</Label>
-									{makeSlug && !loadingModels && carModels.length === 0 ? (
-										<Input
-											id="model"
-											value={vehicleData.model}
-											onChange={(e) => {
-												setModelSlug('')
-												setVehicleData((prev) => ({ ...prev, model: e.target.value }))
-											}}
-											placeholder={t('upload.vehicle_info.model_placeholder')}
-											className="h-11 text-sm border border-gray-200 rounded-xl bg-white"
-										/>
-									) : (
-										<SearchableSelect
-											value={modelSlug || ''}
-											onValueChange={handleModelChange}
-											options={modelOptions}
-											disabled={!makeSlug || loadingModels}
-											placeholder={
-												!makeSlug
-													? (t('upload.vehicle_info.select_make_first') || 'Select brand first')
-													: loadingModels
-														? (t('common.loading') || 'Loading...')
-														: t('upload.vehicle_info.model_placeholder')
-											}
-											searchPlaceholder={t('common.search')}
-											emptyText={t('common.no_results')}
-											triggerClassName="h-11 text-sm border border-gray-200 rounded-xl bg-white"
-										/>
-									)}
-								</div>
-								<div>
-									<Label htmlFor="year" className="text-xs font-bold text-[#05324f] mb-1.5 block">{t('upload.vehicle_info.year_label')}</Label>
-									<Select
-										value={vehicleData.year ? String(vehicleData.year) : ''}
-										onValueChange={(value) =>
-											setVehicleData((prev) => ({ ...prev, year: parseInt(value, 10) }))
-										}
-									>
-										<SelectTrigger id="year" className="h-11 text-sm border border-gray-200 rounded-xl bg-white">
-											<SelectValue placeholder={t('upload.vehicle_info.year_placeholder') || 'Select year'} />
-										</SelectTrigger>
-										<SelectContent className="max-h-[300px] overflow-y-auto">
-											{VEHICLE_YEARS.map((year) => (
-												<SelectItem key={year} value={String(year)} className="cursor-pointer text-sm py-2">
-													{year}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</div>
-							</div>
-
-							{/* Postal Code */}
-							<div>
-								<Label htmlFor="postnr" className="text-sm font-bold text-[#05324f] mb-2 block">
-									{t('upload.form.postnr_label') || 'Postal code'}
-								</Label>
-								<div className="relative">
-									<MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#38BC54]" />
-									<Input
-										id="postnr"
-										value={postalCode}
-										onChange={(e) => setPostalCode(e.target.value)}
-										placeholder={t('upload.form.postnr_placeholder') || '114 32'}
-										className="pl-10 h-12 text-sm border border-gray-200 rounded-xl focus:border-[#38BC54] focus:ring-1 focus:ring-[#38BC54]"
-									/>
-								</div>
-								<p className="text-xs text-gray-400 mt-1.5 ml-1">
-									{t('upload.form.postnr_helper') || 'To find workshops near you.'}
-								</p>
-							</div>
-
-							{/* Description */}
-							<div>
-								<Label htmlFor="desc" className="text-sm font-bold text-[#05324f] mb-2 block">
-									{t('upload.form.description_label_required')}{' '}
-									<span className="text-red-500">*</span>
-								</Label>
-								<div className="relative">
-									<MessageSquare className="absolute left-3.5 top-3.5 w-4 h-4 text-[#38BC54]" />
-									<Textarea
-										id="desc"
-										value={description}
-										onChange={(e) => setDescription(e.target.value)}
-										placeholder={t('upload.form.description_placeholder') || 'Briefly describe what you need help with...'}
-										rows={4}
-										required
-										className="pl-10 pt-3 text-sm border border-gray-200 rounded-xl focus:border-[#38BC54] focus:ring-1 focus:ring-[#38BC54] resize-none"
-									/>
-								</div>
-								<p className="text-xs text-gray-400 mt-1.5 ml-1">
-									{t('upload.form.description_helper') || 'E.g. brakes squeaking, AC not working, engine warning light on.'}
-								</p>
-							</div>
-
-							{/* Back + Submit */}
-							<div className="flex gap-2">
-								<Button
-									type="button"
-									onClick={() => {
-										if (skipUpload) {
-											setSkipUpload(false)
-											navigate('/upload', { replace: true })
-										}
-										setCurrentStep('upload')
-										window.scrollTo({ top: 0, behavior: 'smooth' })
+								<SearchableSelect
+									value={makeSlug || ''}
+									selectedLabel={vehicleData.make}
+									onValueChange={(value, label) => {
+										setSelectedSavedCarKey('')
+										handleMakeChange(value, label)
 									}}
-									disabled={isUploading}
-									className="shrink-0 h-13 px-5 py-4 text-sm font-medium bg-white hover:bg-gray-50 text-[#05324f] border border-gray-200 rounded-xl transition-all active:scale-[0.99] flex items-center justify-center gap-1.5"
+									options={makeOptions}
+									disabled={loadingMakes}
+									allowCustom
+									placeholder={loadingMakes ? (t('common.loading') || 'Loading...') : t('upload.vehicle_info.make_placeholder')}
+									searchPlaceholder={t('common.search')}
+									emptyText={t('common.no_results')}
+									triggerClassName={selectTriggerClass}
+								/>
+								<SearchableSelect
+									value={modelSlug || ''}
+									selectedLabel={vehicleData.model}
+									onValueChange={handleModelChange}
+									options={modelOptions}
+									disabled={!vehicleData.make || loadingModels}
+									allowCustom
+									placeholder={
+										!vehicleData.make
+											? (t('upload.vehicle_info.select_make_first') || 'Select brand first')
+											: loadingModels
+												? (t('common.loading') || 'Loading...')
+												: t('upload.vehicle_info.model_placeholder')
+									}
+									searchPlaceholder={t('common.search')}
+									emptyText={t('common.no_results')}
+									triggerClassName={selectTriggerClass}
+								/>
+								<Select
+									value={vehicleData.year ? String(vehicleData.year) : ''}
+									onValueChange={(value) => setVehicleData((prev) => ({ ...prev, year: parseInt(value, 10) }))}
 								>
-									<ArrowRight className="w-5 h-5 rotate-180" />
-									{t('common.back') || 'Back'}
-								</Button>
-								<Button
-									type="submit"
-									disabled={isUploading || !isDetailsValid || (!editId && !skipUpload && files.length === 0)}
-									className="flex-1 h-13 py-4 text-base font-medium bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl shadow-md shadow-green-200/50 transition-all active:scale-[0.99] flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:shadow-none"
-								>
-									{isUploading ? t('upload.submitting') : (
-										<>
-											{t('upload.form.continue') || 'Continue'} <ArrowRight className="w-5 h-5" />
-										</>
-									)}
-								</Button>
+									<SelectTrigger
+										className={selectTriggerClass}
+										placeholder={t('upload.vehicle_info.year_placeholder') || 'Select year'}
+									>
+										<SelectValue placeholder={t('upload.vehicle_info.year_placeholder') || 'Select year'} />
+									</SelectTrigger>
+									<SelectContent className="max-h-[300px] overflow-y-auto">
+										{VEHICLE_YEARS.map((year) => (
+											<SelectItem key={year} value={String(year)} className="cursor-pointer text-sm py-2">
+												{year}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<Select value={fuelType} onValueChange={setFuelType}>
+									<SelectTrigger
+										className={selectTriggerClass}
+										placeholder={t('upload.flow.fuel_placeholder') || 'Select fuel type'}
+									>
+										<SelectValue placeholder={t('upload.flow.fuel_placeholder') || 'Select fuel type'} />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="petrol">{t('upload.flow.fuel_petrol')}</SelectItem>
+										<SelectItem value="diesel">{t('upload.flow.fuel_diesel')}</SelectItem>
+										<SelectItem value="hybrid">{t('upload.flow.fuel_hybrid')}</SelectItem>
+										<SelectItem value="electric">{t('upload.flow.fuel_electric')}</SelectItem>
+										<SelectItem value="gas">{t('upload.flow.fuel_gas')}</SelectItem>
+									</SelectContent>
+								</Select>
 							</div>
+
+							<p className="text-[15px] font-semibold text-[#05324f] mb-3">{t('upload.flow.contact_details')}</p>
+							<div className="space-y-3">
+								<Input
+									value={contactName}
+									onChange={(e) => setContactName(e.target.value)}
+									placeholder={t('upload.flow.name_placeholder')}
+									className={fieldClass}
+								/>
+								<Input
+									type="tel"
+									inputMode="tel"
+									autoComplete="tel-national"
+									value={contactPhone}
+									onChange={(e) => setContactPhone(formatSwedishPhone(e.target.value))}
+									placeholder={t('upload.flow.phone_placeholder')}
+									className={fieldClass}
+								/>
+								<Input
+									type="email"
+									value={email}
+									onChange={(e) => setEmail(e.target.value)}
+									placeholder={t('upload.flow.email_placeholder')}
+									autoComplete="email"
+									readOnly={isLoggedInCustomer}
+									className={fieldClass}
+								/>
+							</div>
+
+							<Button
+								type="button"
+								onClick={handleDetailsContinue}
+								className={`${primaryBtn} mt-8 min-h-[52px]`}
+							>
+								{t('upload.flow.continue')}
+							</Button>
 						</div>
-					</form>
 					)}
 
-					{/* Step 3: Email / Magic link */}
-					{currentStep === 'email' && (
-					<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
-						<div className="text-center mb-6">
-							<div className="relative inline-flex mb-5">
-								<div className="w-16 h-16 rounded-full bg-[#F2F9F4] flex items-center justify-center">
-									<Mail className="w-8 h-8 text-[#38BC54]" strokeWidth={2} />
-								</div>
-								<div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#38BC54] flex items-center justify-center border-2 border-white">
-									<Link2 className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
-								</div>
-							</div>
-							<h1 className="text-2xl sm:text-3xl font-black text-[#05324f] mb-2">
-								{linkSent
-									? (t('upload.form.link_sent_title') || 'Check your inbox')
-									: (t('upload.form.email_title') || 'Enter your email address')}
+					{currentStep === 'confirm' && (
+						<div>
+							<h1 className="page-title lg:text-[2.75rem] lg:mb-4">
+								{t('upload.flow.confirm_title')}
 							</h1>
-							<p className="text-sm text-gray-500 leading-relaxed max-w-md mx-auto">
-								{linkSent
-									? (t('upload.form.link_sent_subtitle') || `We sent a login link to ${email}. Click it to submit your request and receive offers.`)
-									: (t('upload.form.email_subtitle') || 'We will send a magic link so you can follow your case and receive offers.')}
+							<p className="text-sm lg:text-lg text-gray-500 lg:text-[#374151] leading-relaxed mb-5 lg:mb-8">
+								{t('upload.flow.confirm_subtitle')}
 							</p>
-						</div>
 
-						{!linkSent ? (
-							<form onSubmit={handleSendMagicLink} className="space-y-5">
-								<div>
-									<Label htmlFor="email" className="text-sm font-bold text-[#05324f] mb-2 block">
-										{t('upload.form.email_label') || 'Email address'}
-									</Label>
-									<div className="relative">
-										<Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#38BC54]" />
-										<Input
-											id="email"
-											type="email"
-											value={email}
-											onChange={(e) => setEmail(e.target.value)}
-											placeholder={t('upload.form.email_placeholder') || 'name@example.com'}
-											autoComplete="email"
-											required
-											className="pl-10 h-12 text-sm border border-gray-200 rounded-xl focus:border-[#38BC54] focus:ring-1 focus:ring-[#38BC54]"
-										/>
-									</div>
-								</div>
-
-								<div className="rounded-2xl border border-gray-100 overflow-hidden">
-									<div className="flex items-center gap-3 px-4 py-3.5">
-										<div className="w-9 h-9 rounded-full bg-[#F2F9F4] flex items-center justify-center shrink-0">
-											<Send className="w-4 h-4 text-[#38BC54]" strokeWidth={2} />
-										</div>
-										<p className="text-sm text-[#05324f]">
-											{t('upload.form.email_hint_inbox') || 'You get a link directly to your inbox'}
-										</p>
-									</div>
-									<div className="h-px bg-gray-100" />
-									<div className="flex items-center gap-3 px-4 py-3.5">
-										<div className="w-9 h-9 rounded-full bg-[#F2F9F4] flex items-center justify-center shrink-0">
-											<Bell className="w-4 h-4 text-[#38BC54]" strokeWidth={2} />
-										</div>
-										<p className="text-sm text-[#05324f]">
-											{t('upload.form.email_hint_offers') || 'We notify you when you receive offers'}
-										</p>
-									</div>
-								</div>
-
-								<div className="flex gap-2">
-									<Button
+							<div className="rounded-2xl lg:rounded-3xl border border-gray-200 bg-white overflow-hidden">
+								<div className="flex items-center justify-between px-4 py-3.5 lg:px-6 lg:py-5 border-b border-gray-100">
+									<p className="text-sm lg:text-lg font-bold text-brand-dark">{t('upload.flow.summary')}</p>
+									<button
 										type="button"
-										onClick={() => {
-											setCurrentStep('details')
-											window.scrollTo({ top: 0, behavior: 'smooth' })
-										}}
-										disabled={isSendingLink}
-										className="shrink-0 h-13 px-5 py-4 text-sm font-medium bg-white hover:bg-gray-50 text-[#05324f] border border-gray-200 rounded-xl transition-all active:scale-[0.99] flex items-center justify-center gap-1.5"
+										onClick={() => goTo('details')}
+										className="text-sm lg:text-base font-semibold text-[#008037] hover:brightness-95"
 									>
-										<ArrowRight className="w-5 h-5 rotate-180" />
-										{t('common.back') || 'Back'}
-									</Button>
-									<Button
-										type="submit"
-										disabled={isSendingLink || !email.trim()}
-										className="flex-1 h-13 py-4 text-base font-medium bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl shadow-md shadow-green-200/50 transition-all active:scale-[0.99] flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:shadow-none"
-									>
-										{isSendingLink
-											? (t('upload.form.sending_link') || 'Sending...')
-											: (
-												<>
-													{t('upload.form.send_link') || 'Send link'} <ArrowRight className="w-5 h-5" />
-												</>
-											)}
-									</Button>
+										{t('upload.flow.edit')}
+									</button>
 								</div>
 
-								<p className="text-center text-sm text-gray-500">
-									{t('upload.form.email_spam_hint') || "Can't find the email?"}{' '}
-									<span className="text-[#38BC54] font-semibold">
-										{t('upload.form.email_spam_action') || 'Check your spam folder.'}
-									</span>
-								</p>
-							</form>
-						) : (
-							<div className="space-y-5">
-								<div className="rounded-2xl border border-[#38BC54]/20 bg-[#F2F9F4] px-4 py-4 text-center">
-									<p className="text-sm text-[#05324f] leading-relaxed">
-										{devMagicLinkUrl
-											? (t('upload.form.link_dev_body') || 'Email could not be sent. Use the button below to open your login link.')
-											: (t('upload.form.link_sent_body') || 'Open the link in your email to log in and submit your request. You can close this page.')}
-									</p>
-								</div>
-								{devMagicLinkUrl && (
-									<a
-										href={devMagicLinkUrl}
-										className="w-full h-13 py-4 text-base font-medium bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl shadow-md shadow-green-200/50 transition-all active:scale-[0.99] flex items-center justify-center gap-2"
-									>
-										{t('upload.form.open_magic_link') || 'Open login link'} <ArrowRight className="w-5 h-5" />
-									</a>
+								{problemText ? (
+									<SummaryRow icon={Wrench} title={t('upload.flow.problem')}>
+										<p className="whitespace-pre-line">{problemText}</p>
+									</SummaryRow>
+								) : null}
+
+								<SummaryRow icon={Car} title={t('upload.flow.car')}>
+									{carLine !== '—' ? <p>{carLine}</p> : null}
+									{registrationNumber ? <p>{registrationNumber}</p> : null}
+								</SummaryRow>
+
+								<SummaryRow icon={User} title={t('upload.flow.contact')} last={uploadedCount === 0}>
+									{contactDisplayName ? <p>{contactDisplayName}</p> : null}
+									{contactPhone ? <p>{contactPhone}</p> : null}
+									{contactEmail ? <p>{contactEmail}</p> : null}
+								</SummaryRow>
+
+								{uploadedCount > 0 && (
+									<SummaryRow icon={ImageIcon} title={t('upload.flow.photos')} last>
+										<p>{t('upload.flow.photos_count', { count: uploadedCount })}</p>
+									</SummaryRow>
 								)}
-								<p className="text-center text-sm text-gray-500">
-									{t('upload.form.email_spam_hint') || "Can't find the email?"}{' '}
-									<span className="text-[#38BC54] font-semibold">
-										{t('upload.form.email_spam_action') || 'Check your spam folder.'}
-									</span>
-								</p>
 							</div>
-						)}
-					</div>
+
+							<div className="mt-4 lg:mt-6 mb-5 lg:mb-6 flex items-start gap-2.5 lg:gap-3 rounded-2xl bg-[#E8F8EC] px-3.5 py-3 lg:px-5 lg:py-4">
+								<Lock className="w-4 h-4 lg:w-5 lg:h-5 text-[#008037] shrink-0 mt-0.5" strokeWidth={2} />
+								<p className="text-xs lg:text-base text-[#05324f] leading-relaxed">{t('upload.flow.consent')}</p>
+							</div>
+
+							<Button type="button" onClick={handleSend} disabled={isUploading} className={primaryBtn}>
+								{isUploading ? t('upload.submitting') : t('upload.flow.send_request')}
+							</Button>
+						</div>
 					)}
 
-					{/* Trust signals */}
-					<div className="rounded-2xl bg-[#F2F9F4] border border-[#38BC54]/10 flex items-stretch overflow-hidden mt-2">
-						{[
-							{
-								icon: ShieldCheck,
-								line1: t('upload.form.trust_verified_line1') || 'Only verified',
-								line2: t('upload.form.trust_verified_line2') || 'workshops',
-							},
-							{
-								icon: ClockIcon,
-								line1: t('upload.form.trust_fast_line1') || 'Fast and',
-								line2: t('upload.form.trust_fast_line2') || 'easy',
-							},
-							{
-								icon: Lock,
-								line1: t('upload.form.trust_secure_line1') || 'Your data',
-								line2: t('upload.form.trust_secure_line2') || 'is secure',
-							},
-						].map(({ icon: Icon, line1, line2 }, index, arr) => (
-							<div key={line1} className="flex flex-1 min-w-0 items-stretch">
-								<div className="flex flex-1 items-center gap-2 px-2.5 sm:px-3 py-3 min-w-0">
-									<Icon className="w-5 h-5 text-[#38BC54] shrink-0" strokeWidth={1.75} />
-									<div className="min-w-0">
-										<p className="text-[10px] sm:text-[11px] text-gray-600 leading-tight">{line1}</p>
-										<p className="text-[10px] sm:text-[11px] text-gray-600 leading-tight">{line2}</p>
+					{currentStep === 'inbox' && (
+						<div className="max-w-md mx-auto text-center pt-8">
+							<h1 className="page-title !mb-3">
+								{t('upload.flow.guest_success_title')}
+							</h1>
+							<p className="text-sm text-gray-500 leading-relaxed mb-4">
+								{t('upload.flow.guest_success_subtitle')}
+							</p>
+							<p className="text-sm text-[#05324f] leading-relaxed mb-8">
+								{t('upload.flow.guest_success_body')}
+							</p>
+							{devMagicLinkUrl && (
+								<a href={devMagicLinkUrl} className={`${primaryBtn} mb-3`}>
+									{t('upload.form.open_magic_link') || 'Open login link'}
+								</a>
+							)}
+						</div>
+					)}
+
+					{currentStep === 'success' && (
+						<div className="max-w-md mx-auto text-center pt-4 lg:pt-10">
+							<RequestSentMark />
+							<h1 className="page-title lg:text-[2.75rem] !mb-3">
+								{t('upload.flow.success_title')}
+							</h1>
+							<p className="text-sm lg:text-lg text-gray-500 leading-relaxed mb-6">
+								{t('upload.flow.success_subtitle')}
+							</p>
+							<div className="rounded-2xl bg-[#F3FBF6] px-4 py-4 text-left space-y-4 mb-8">
+								{[
+									{ icon: Clock, text: t('upload.flow.success_time') },
+									{ icon: Bell, text: t('upload.flow.success_notify') },
+									{ icon: MapPin, text: t('upload.flow.success_follow') },
+								].map(({ icon: Icon, text }) => (
+									<div key={text} className="flex items-start gap-3">
+										<Icon className="w-5 h-5 text-[#008037] shrink-0 mt-0.5" strokeWidth={1.75} />
+										<p className="text-sm lg:text-base text-[#374151] leading-snug">{text}</p>
 									</div>
-								</div>
-								{index < arr.length - 1 && <div className="w-px bg-[#38BC54]/15 shrink-0 my-2.5" aria-hidden />}
+								))}
 							</div>
-						))}
-					</div>
+							<Button
+								type="button"
+								onClick={() => {
+									const hasSession = Boolean(isLoggedInCustomer || localStorage.getItem('token'))
+									navigate(hasSession ? '/contract' : '/auth/signin')
+								}}
+								className={`${primaryBtn} mb-3`}
+							>
+								{t('upload.flow.to_my_cases')}
+							</Button>
+							{devMagicLinkUrl && (
+								<a href={devMagicLinkUrl} className={`${outlineBtn} mb-3`}>
+									{t('upload.form.open_magic_link') || 'Open login link'}
+								</a>
+							)}
+							<Button
+								type="button"
+								onClick={() => {
+									resetWizard()
+									navigate('/upload', { replace: true })
+								}}
+								className={outlineBtn}
+							>
+								{t('upload.flow.new_case')}
+							</Button>
+						</div>
+					)}
 				</div>
 			</div>
-
-			<Footer />
+			<Footer className={isLoggedInCustomer ? 'customer-upload-footer' : ''} />
 		</div>
 	)
 }

@@ -19,14 +19,14 @@ export default function WorkshopPendingPage() {
 	const confirmLogout = () => {
 		setIsLogoutConfirmOpen(false)
 		logout()
-		navigate('/auth/signin')
+		navigate('/workshop/login')
 	}
 
 	return (
 		<div className="min-h-screen bg-white flex items-center justify-center p-6 relative overflow-hidden">
 			{/* Immersive Background Elements */}
 			<div className="absolute inset-0 z-0 pointer-events-none scale-110">
-				<div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#34C759]/5 rounded-full blur-[120px] animate-pulse duration-[10000ms]"></div>
+				<div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#008037]/5 rounded-full blur-[120px] animate-pulse duration-[10000ms]"></div>
 				<div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#05324f]/5 rounded-full blur-[120px] animate-pulse duration-[8000ms]"></div>
 				
 				{/* Grid Pattern */}
@@ -36,10 +36,10 @@ export default function WorkshopPendingPage() {
 			<div className="max-w-2xl w-full relative z-10 text-center space-y-12 animate-fade-in-up">
 				{/* Success-like Icon Branding */}
 				<div className="relative inline-flex items-center justify-center">
-					<div className="absolute inset-0 bg-[#34C759]/10 rounded-full blur-2xl animate-ping duration-[4000ms]"></div>
+					<div className="absolute inset-0 bg-[#008037]/10 rounded-full blur-2xl animate-ping duration-[4000ms]"></div>
 					<div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-white border border-gray-100 shadow-xl flex items-center justify-center relative overflow-hidden group">
-						<div className="absolute inset-0 bg-gradient-to-tr from-[#34C759]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-						<ShieldCheck className="w-12 h-12 sm:w-16 sm:h-16 text-[#34C759]" strokeWidth={1.5} />
+						<div className="absolute inset-0 bg-gradient-to-tr from-[#008037]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+						<ShieldCheck className="w-12 h-12 sm:w-16 sm:h-16 text-[#008037]" strokeWidth={1.5} />
 					</div>
 				</div>
 
@@ -54,7 +54,7 @@ export default function WorkshopPendingPage() {
 
 				<div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
 					<div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full border border-gray-100 mb-4 sm:mb-0">
-						<Clock className="w-4 h-4 text-[#34C759]" />
+						<Clock className="w-4 h-4 text-[#008037]" />
 						<span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Estimated: 24-48 Hours</span>
 					</div>
 				</div>
@@ -92,7 +92,7 @@ export default function WorkshopPendingPage() {
 						</Button>
 						<Button
 							onClick={confirmLogout}
-							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95"
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-brand-btn text-white font-semibold text-sm transition-all shadow-md active:scale-95"
 						>
 							{t('navigation.logout') || 'Log Out'}
 						</Button>

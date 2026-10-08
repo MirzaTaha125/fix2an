@@ -1,0 +1,68 @@
+# DigitalOcean App Platform — Fixa2an monorepo
+# Deploy: doctl apps create --spec .do/app.yaml
+# Or: Control Panel → Apps → Create → GitHub → use this as reference
+#
+# After first deploy, set secrets in the UI (or doctl):
+#   MONGODB_URI, JWT_SECRET
+# Then rebuild frontend so VITE_* pick up the API URL.
+
+name: fixa2an
+region: fra
+alerts:
+  - rule: DEPLOYMENT_FAILED
+
+services:
+  - name: api
+    github:
+      repo: MirzaTaha125/fix2an
+      branch: main
+      deploy_on_push: true
+    source_dir: Backend
+    environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    http_port: 8080
+    run_command: npm start
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 20
+      period_seconds: 20
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+    envs:
+      - key: NODE_ENV
+        scope: RUN_TIME
+        value: production
+      - key: COMMISSION_RATE
+        scope: RUN_TIME
+        value: "0.1"
+      - key: FRONTEND_URL
+        scope: RUN_TIME
+        value: ${frontend.PUBLIC_URL}
+      - key: MONGODB_URI
+        scope: RUN_TIME
+        type: SECRET
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+
+static_sites:
+  - name: frontend
+    github:
+      repo: MirzaTaha125/fix2an
+      branch: main
+      deploy_on_push: true
+    source_dir: Frontend
+    environment_slug: node-js
+    build_command: npm ci && npm run build
+    output_dir: dist
+    index_document: index.html
+    catchall_document: index.html
+    envs:
+      - key: VITE_API_URL
+        scope: BUILD_TIME
+        value: ${api.PUBLIC_URL}
+      - key: VITE_FRONTEND_URL
+        scope: BUILD_TIME
+        value: ${frontend.PUBLIC_URL}

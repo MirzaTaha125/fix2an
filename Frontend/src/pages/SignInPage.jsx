@@ -1,79 +1,34 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Shield, ShieldCheck, Headphones, Star } from 'lucide-react'
+import loginEmail from '../assets/login-email-clear.png'
 import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import RegisterTypeModal from '../components/RegisterTypeModal'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../context/AuthContext'
 import { getRoleHomePath } from '../utils/roleHome'
-import { Input } from '../components/ui/Input'
-import { Label } from '../components/ui/Label'
 import { authAPI } from '../services/api'
+import { AuthPageSkeleton } from '../components/ui/Skeleton'
 
 export default function SignInPage() {
 	const { t } = useTranslation()
 	const [email, setEmail] = useState('')
-	const [password, setPassword] = useState('')
-	const [isLoading, setIsLoading] = useState(false)
-	const [showPassword, setShowPassword] = useState(false)
-	const [registerModalOpen, setRegisterModalOpen] = useState(false)
-	const [isSendingMagicLink, setIsSendingMagicLink] = useState(false)
-	const [magicLinkSent, setMagicLinkSent] = useState(false)
+	const [isSending, setIsSending] = useState(false)
+	const [sentEmail, setSentEmail] = useState('')
 	const [devMagicLinkUrl, setDevMagicLinkUrl] = useState('')
-	const { login, user, loading } = useAuth()
+	const { user, loading } = useAuth()
 	const navigate = useNavigate()
 
-	// Redirect if already logged in
 	useEffect(() => {
 		if (!loading && user) {
 			navigate(getRoleHomePath(user), { replace: true })
 		}
 	}, [user, loading, navigate])
 
-	const handleSubmit = async (e) => {
-		e.preventDefault()
-		e.stopPropagation()
-		
-		// Trim email and password
-		const trimmedEmail = email.trim()
-		const trimmedPassword = password.trim()
-		
-		if (!trimmedEmail) {
-			toast.error(t('errors.email_required') || 'Please enter your email address')
-			return
-		}
-		if (!trimmedPassword) {
-			toast.error(t('errors.fill_all_fields'))
-			return
-		}
-		
-		setIsLoading(true)
-
-		try {
-			const result = await login(trimmedEmail, trimmedPassword)
-			
-			if (result.success) {
-				toast.success(t('success.login_successful'))
-				navigate(getRoleHomePath(result.user))
-			} else if (result.requiresTwoFactor && result.tempToken) {
-				navigate('/auth/2fa-verify', { state: { tempToken: result.tempToken, email: result.email } })
-				setIsLoading(false)
-			} else {
-				toast.error(result.message || t('errors.invalid_credentials'))
-				setIsLoading(false)
-			}
-		} catch (error) {
-			console.error('Login exception:', error)
-			toast.error(error.message || t('errors.generic_error'))
-			setIsLoading(false)
-		}
-	}
-
-	const handleSendMagicLink = async () => {
+	const handleSend = async (event) => {
+		event.preventDefault()
 		const trimmedEmail = email.trim().toLowerCase()
-
 		if (!trimmedEmail) {
 			toast.error(t('errors.email_required') || 'Please enter your email address')
 			return
@@ -82,223 +37,84 @@ export default function SignInPage() {
 			toast.error(t('errors.invalid_email_format') || 'Please enter a valid email address')
 			return
 		}
-
-		setIsSendingMagicLink(true)
+		setIsSending(true)
 		setDevMagicLinkUrl('')
-		setMagicLinkSent(false)
-
 		try {
 			const response = await authAPI.sendLoginMagicLink({
 				email: trimmedEmail,
 				frontendUrl: window.location.origin,
 			})
 			const data = response.data || {}
-			if (data.magicLinkUrl) {
-				setDevMagicLinkUrl(data.magicLinkUrl)
-			}
-			setMagicLinkSent(true)
+			setSentEmail(trimmedEmail)
+			if (data.magicLinkUrl) setDevMagicLinkUrl(data.magicLinkUrl)
 			if (data.emailSent === false) {
-				toast.success(t('auth.signin.magic_link_ready_dev') || 'Login link ready — open it below.')
+				toast.success(t('auth.signin.magic_link_ready_dev'))
 			} else {
-				toast.success(t('auth.signin.magic_link_sent') || 'Login link sent! Check your inbox.')
+				toast.success(t('auth.signin.magic_link_sent'))
 			}
 		} catch (error) {
-			console.error('Login magic link error:', error)
-			const message = error.response?.data?.message || t('errors.generic_error')
-			toast.error(message)
+			toast.error(error.response?.data?.message || t('errors.generic_error'))
 		} finally {
-			setIsSendingMagicLink(false)
+			setIsSending(false)
 		}
 	}
 
-	// Show loading while checking auth
 	if (loading) {
-		return (
-			<div className="min-h-screen bg-white flex items-center justify-center">
-				<div className="text-center">
-					<div className="w-20 h-20 border-4 border-[#34C759]/20 border-t-[#34C759] rounded-full animate-spin mx-auto mb-4"></div>
-					<p className="text-gray-600">{t('common.loading')}</p>
-				</div>
-			</div>
-		)
+		return <AuthPageSkeleton />
 	}
-
-	// Don't render if user is logged in (will redirect)
-	if (user) {
-		return null
-	}
+	if (user) return null
 
 	return (
-	<div className="list-page-shell bg-white">
-		<Navbar />
-		<div className="list-page-main list-page-main--scroll relative z-10">
-			<div className="max-w-md w-full space-y-8 animate-fade-in-up">
-				<div className="text-center">
-					<h2 className="text-2xl md:text-5xl font-bold mb-6" style={{ color: '#05324f' }}>{t('auth.signin.title')}</h2>
-						<p style={{ color: '#05324f' }}>
-							{t('auth.signin.subtitle')}{' '}
-							<button onClick={() => setRegisterModalOpen(true)} className="font-semibold hover:opacity-80 transition-colors underline-offset-4 hover:underline" style={{ color: '#05324f' }}>
-								{t('navigation.register')}
-							</button>
-						</p>
-					</div>
-
-					<div className="bg-white rounded-card shadow-card p-8 border border-gray-100" style={{ position: 'relative', zIndex: 1 }}>
-						<form 
-							onSubmit={handleSubmit} 
-							className="space-y-6"
-							noValidate
+		<div className="list-page-shell bg-[#F3F5F8]">
+			<Navbar />
+			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-28 pb-12">
+				<div className="grid gap-4 lg:gap-8 lg:grid-cols-2 lg:items-center">
+					<form onSubmit={handleSend} className="bg-white rounded-2xl lg:rounded-3xl border border-[#EEF1F4] shadow-[0_8px_30px_rgba(15,23,42,0.04)] px-5 py-6 sm:p-6 lg:px-8 lg:py-9 flex flex-col justify-center w-full">
+						<h1 className="page-title !mt-0 lg:text-[2.75rem] text-left">{t('auth.signin.magic_title')}</h1>
+						<p className="text-[0.95rem] lg:text-lg text-[#374151] leading-relaxed mt-2 lg:mt-3 mb-5 lg:mb-6 text-left">{t('auth.signin.magic_subtitle')}</p>
+						<label htmlFor="email" className="block text-sm lg:text-base font-medium text-[#111827] mb-2.5 leading-normal">{t('auth.signin.email')}</label>
+						<input
+							id="email"
+							type="email"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
+							placeholder={t('auth.signin.email_placeholder')}
+							className="w-full h-12 lg:h-16 !rounded-md border border-gray-200 bg-white px-4 text-sm lg:text-base outline-none focus:border-[#008037] placeholder:text-[#C4C9D1]"
+						/>
+						<button
+							type="submit"
+							disabled={isSending}
+							className="w-full min-h-[52px] lg:min-h-[64px] mt-5 lg:mt-6 !rounded-md bg-brand-btn text-white font-semibold text-base lg:text-lg leading-normal disabled:opacity-60"
 						>
-							<div>
-								<Label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-									<div className="flex items-center gap-2">
-										<Mail className="w-4 h-4 text-gray-500" />
-										{t('auth.signin.email')}
-									</div>
-								</Label>
-								<Input
-									id="email"
-									type="email"
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
-									required
-									placeholder={t('auth.signin.email')}
-								/>
-							</div>
-							<div>
-								<Label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-									<div className="flex items-center gap-2">
-										<Lock className="w-4 h-4 text-gray-500" />
-										{t('auth.signin.password')}
-									</div>
-								</Label>
-								<div className="relative">
-									<Input
-										id="password"
-										type={showPassword ? 'text' : 'password'}
-										value={password}
-										onChange={(e) => setPassword(e.target.value)}
-										required
-										className="pr-12"
-										placeholder={t('auth.signin.password')}
-									/>
-									<button
-										type="button"
-										onClick={() => setShowPassword(!showPassword)}
-										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
-									>
-										{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-									</button>
-								</div>
-								<div className="flex justify-end mt-2">
-									<Link tabIndex="-1" to="/auth/forgot-password" className="text-sm font-medium hover:underline text-[#05324f]" style={{ color: '#05324f' }}>
-										{t('auth.signin.forgot_password', 'Forgot your password?')}
-									</Link>
-								</div>
-							</div>
-							<button
-								type="submit"
-								disabled={isLoading}
-								style={{ 
-									cursor: isLoading ? 'not-allowed' : 'pointer',
-									zIndex: 10,
-									position: 'relative',
-									backgroundColor: '#34C759',
-									backgroundImage: 'none',
-								}}
-								className="w-full flex items-center justify-center gap-2 py-4 px-6 border border-transparent rounded-xl shadow-lg text-base font-normal text-white focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
-								onMouseEnter={(e) => e.target.style.backgroundColor = '#2db04a'}
-								onMouseLeave={(e) => e.target.style.backgroundColor = '#34C759'}
-								onFocus={(e) => e.target.style.boxShadow = '0 0 0 4px rgba(52, 199, 89, 0.3)'}
-								onBlur={(e) => e.target.style.boxShadow = ''}
-							>
-								{isLoading ? (
-									<>
-										<svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-											<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-											<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-										</svg>
-										{t('auth.signin.submitting') || 'Signing in...'}
-									</>
-								) : (
-									<>
-										{t('auth.signin.submit')}
-									</>
-								)}
-							</button>
+							{isSending ? t('auth.signin.magic_link_sending') : t('auth.signin.send_login_link')}
+						</button>
+						<p className="mt-5 lg:mt-6 w-full inline-flex items-center justify-start gap-2 text-xs lg:text-sm leading-relaxed text-[#9CA3AF]">
+							<ShieldCheck className="w-4 h-4 shrink-0 text-[#9CA3AF]" strokeWidth={1.75} />
+							{t('auth.signin.no_password')}
+						</p>
+					</form>
 
-							<div className="relative">
-								<div className="absolute inset-0 flex items-center">
-									<div className="w-full border-t border-gray-200" />
-								</div>
-								<div className="relative flex justify-center text-sm">
-									<span className="bg-white px-3 text-gray-500">
-										{t('auth.signin.or_divider') || 'Or'}
-									</span>
-								</div>
-							</div>
-
-							{!magicLinkSent ? (
-								<button
-									type="button"
-									disabled={isSendingMagicLink || isLoading}
-									onClick={(e) => {
-										e.preventDefault()
-										e.stopPropagation()
-										handleSendMagicLink()
-									}}
-									className="w-full flex items-center justify-center gap-2 py-4 px-6 border border-gray-200 rounded-xl text-base font-medium text-[#05324f] bg-white hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-[#34C759]/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-								>
-									{isSendingMagicLink ? (
-										t('auth.signin.magic_link_sending') || 'Sending link...'
-									) : (
-										t('auth.signin.magic_link')
-									)}
-								</button>
-							) : (
-								<div className="space-y-4">
-									<div className="rounded-2xl border border-[#34C759]/20 bg-[#F2F9F4] px-4 py-4 text-center">
-										<p className="text-sm text-[#05324f] leading-relaxed">
-											{devMagicLinkUrl
-												? (t('auth.signin.magic_link_dev_body') || 'Email could not be sent. Use the button below to open your login link.')
-												: (t('auth.signin.magic_link_sent_body') || 'Open the link in your email to sign in. You can close this page.')}
-										</p>
-									</div>
-									{devMagicLinkUrl && (
-										<a
-											href={devMagicLinkUrl}
-											className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-base font-medium text-white bg-[#34C759] hover:bg-[#2db04a] transition-all"
-										>
-											{t('auth.signin.magic_link_open') || 'Open login link'} <ArrowRight className="w-5 h-5" />
-										</a>
-									)}
-									<p className="text-center text-sm text-gray-500">
-										{t('upload.form.email_spam_hint') || "Can't find the email?"}{' '}
-										<span className="text-[#34C759] font-semibold">
-											{t('upload.form.email_spam_action') || 'Check your spam folder.'}
-										</span>
-									</p>
-									<button
-										type="button"
-										onClick={() => {
-											setMagicLinkSent(false)
-											setDevMagicLinkUrl('')
-										}}
-										className="w-full text-sm font-medium text-[#05324f] hover:underline"
-									>
-										{t('auth.signin.magic_link_resend') || 'Send another link'}
-									</button>
-								</div>
-							)}
-						</form>
+					<div className="hidden lg:flex px-8 h-full text-center flex-col items-center justify-end pt-0 pb-16">
+						<img src={loginEmail} alt="" className="w-[32rem] h-[32rem] object-contain -mb-20" />
+						<h2 className="text-[2rem] font-bold text-brand-dark">{t('auth.signin.check_email')}</h2>
+						<p className="text-lg text-[#6B7280] mt-7 leading-relaxed">{t('auth.signin.link_sent_to')}</p>
+						<p className="text-lg text-[#008037] font-semibold mt-1">{sentEmail || email || t('auth.signin.email_placeholder')}</p>
+						<p className="text-base text-[#9CA3AF] mt-4">{t('auth.signin.link_valid')}</p>
+						{devMagicLinkUrl && (
+							<a href={devMagicLinkUrl} className="mt-5 inline-flex min-h-[40px] items-center px-5 rounded-lg bg-brand-btn text-white text-sm font-semibold">
+								{t('auth.signin.magic_link_open')}
+							</a>
+						)}
 					</div>
+				</div>
+
+				<div className="flex flex-wrap items-center justify-center gap-x-14 gap-y-4 mt-14 text-base leading-relaxed text-[#6B7280]">
+					<span className="inline-flex items-center gap-2.5"><Shield className="w-5 h-5 text-[#6B7280]" strokeWidth={1.75} />{t('auth.signin.safe_secure')}</span>
+					<Link to="/support" className="inline-flex items-center gap-2.5 hover:text-[#0B2540]"><Headphones className="w-5 h-5 text-[#6B7280]" strokeWidth={1.75} />{t('auth.signin.customer_support')}</Link>
+					<span className="inline-flex items-center gap-2.5"><Star className="w-5 h-5 text-[#6B7280]" strokeWidth={1.75} />{t('auth.signin.verified_workshops')}</span>
 				</div>
 			</div>
 			<Footer />
-			<RegisterTypeModal 
-				isOpen={registerModalOpen} 
-				onClose={() => setRegisterModalOpen(false)} 
-			/>
 		</div>
 	)
 }

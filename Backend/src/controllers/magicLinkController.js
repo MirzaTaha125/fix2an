@@ -67,7 +67,25 @@ function buildAuthResponse(user) {
 	}
 }
 
-async function findOrCreateGuestCustomer(email) {
+async function applyGuestContactDetails(user, { name, phone }, { overwrite = false } = {}) {
+	const trimmedName = typeof name === 'string' ? name.trim() : ''
+	const trimmedPhone = typeof phone === 'string' ? phone.trim() : ''
+	let changed = false
+
+	if (trimmedName && (overwrite || !String(user.name || '').trim())) {
+		user.name = trimmedName
+		changed = true
+	}
+	if (trimmedPhone && (overwrite || !String(user.phone || '').trim())) {
+		user.phone = trimmedPhone
+		changed = true
+	}
+
+	if (changed) await user.save()
+	return user
+}
+
+async function findOrCreateGuestCustomer(email, contact = {}) {
 	const existing = await User.findOne({
 		email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
 	})
@@ -83,25 +101,23 @@ async function findOrCreateGuestCustomer(email) {
 			err.status = 403
 			throw err
 		}
-		if (existing.password) {
-			const err = new Error('An account with this email already exists. Please sign in with your password instead.')
-			err.status = 409
-			err.code = 'ACCOUNT_EXISTS'
-			throw err
-		}
 		if (!existing.emailVerified) {
 			existing.emailVerified = new Date()
 			await existing.save()
 		}
-		return existing
+		// Returning customer: only fill missing profile fields from this case form.
+		return applyGuestContactDetails(existing, contact, { overwrite: false })
 	}
 
-	return User.create({
+	const created = await User.create({
 		email,
 		role: 'CUSTOMER',
 		emailVerified: new Date(),
 		isActive: true,
+		name: typeof contact.name === 'string' ? contact.name.trim() : '',
+		phone: typeof contact.phone === 'string' ? contact.phone.trim() : '',
 	})
+	return created
 }
 
 async function createRequestForUser(user, requestData) {
@@ -144,7 +160,6 @@ async function createRequestForUser(user, requestData) {
 		await user.save()
 	}
 
-	notifyUploadReceived(user._id).catch(() => {})
 	notifyWorkshopsNewRequest().catch(() => {})
 
 	return request
@@ -221,7 +236,7 @@ export const sendLoginMagicLink = async (req, res) => {
 		}
 
 		const token = crypto.randomBytes(32).toString('hex')
-		const expiresAt = new Date(Date.now() + 30 * 60 * 1000)
+		const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
 
 		await PendingMagicLogin.deleteMany({ email: normalizedEmail })
 		await PendingMagicLogin.create({ email: normalizedEmail, token, expiresAt })
@@ -278,51 +293,86 @@ export const sendMagicLink = async (req, res) => {
 		})
 
 		if (existingUser && existingUser.role !== 'CUSTOMER') {
+			const role = String(existingUser.role || '').toUpperCase()
+			if (role === 'WORKSHOP') {
+				return res.status(400).json({
+					code: 'WORKSHOP_EMAIL',
+					message: 'This email belongs to a workshop account. Please use a customer email to submit a case.',
+				})
+			}
+			if (role === 'ADMIN') {
+				return res.status(400).json({
+					code: 'ADMIN_EMAIL',
+					message: 'This email belongs to an admin account. Please use a customer email to submit a case.',
+				})
+			}
 			return res.status(400).json({
-				message: 'This email is registered with a different account type. Please sign in or use another email.',
+				code: 'NON_CUSTOMER_EMAIL',
+				message: 'This email is registered with a different account type. Please use a customer email.',
 			})
 		}
 
-		if (existingUser?.password) {
-			return res.status(409).json({
-				message: 'An account with this email already exists. Please sign in with your password instead.',
-				requiresSignIn: true,
-			})
+		const contactName = typeof requestData.name === 'string' ? requestData.name.trim() : ''
+		const contactPhone = typeof requestData.phone === 'string' ? requestData.phone.trim() : ''
+		if (!contactName) {
+			return res.status(400).json({ message: 'Name is required' })
+		}
+
+		const user = await findOrCreateGuestCustomer(normalizedEmail, {
+			name: contactName,
+			phone: contactPhone,
+		})
+		const request = await createRequestForUser(user, {
+			vehicle: requestData.vehicle,
+			reportIds: Array.isArray(requestData.reportIds) ? requestData.reportIds : [],
+			description: trimmedDescription,
+			registrationNumber: trimmedRegistration,
+			latitude: requestData.latitude,
+			longitude: requestData.longitude,
+			address: requestData.address,
+			city: requestData.city,
+			postalCode: requestData.postalCode || '',
+			country: requestData.country || 'SE',
+			expiresAt: requestData.expiresAt,
+		})
+
+		const isExistingCustomer = Boolean(existingUser)
+		const allowDevLink = process.env.NODE_ENV !== 'production' || process.env.ALLOW_DEV_MAGIC_LINK === 'true'
+		const payload = {
+			message: 'Request submitted',
+			email: normalizedEmail,
+			emailSent: false,
+			requestId: request._id,
+			existingAccount: isExistingCustomer,
+		}
+
+		// First-time email: create case + auto-login (no magic link required).
+		// Returning/registered email: send magic link; do not return a session token.
+		if (!isExistingCustomer) {
+			Object.assign(payload, buildAuthResponse(user))
+			return res.status(201).json(payload)
 		}
 
 		const token = crypto.randomBytes(32).toString('hex')
-		const expiresAt = new Date(Date.now() + 30 * 60 * 1000)
-
-		await PendingGuestRequest.deleteMany({ email: normalizedEmail })
-
-		await PendingGuestRequest.create({
-			email: normalizedEmail,
-			token,
-			expiresAt,
-			requestData: {
-				reportIds: Array.isArray(requestData.reportIds) ? requestData.reportIds : [],
-				description: trimmedDescription,
-				registrationNumber: trimmedRegistration,
-				latitude: requestData.latitude,
-				longitude: requestData.longitude,
-				address: requestData.address,
-				city: requestData.city,
-				postalCode: requestData.postalCode || '',
-				country: requestData.country || 'SE',
-				expiresAt: new Date(requestData.expiresAt),
-				vehicle: requestData.vehicle,
-			},
-		})
-
+		const linkExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+		await PendingMagicLogin.deleteMany({ email: normalizedEmail })
+		await PendingMagicLogin.create({ email: normalizedEmail, token, expiresAt: linkExpires })
 		const magicLinkUrl = `${resolveFrontendUrl(req)}/auth/magic-link?token=${token}`
 
-		return sendMagicLinkEmail(
-			req,
-			res,
-			normalizedEmail,
-			magicLinkUrl,
-			() => PendingGuestRequest.deleteMany({ email: normalizedEmail })
-		)
+		try {
+			if (await isEmailConfigured()) {
+				await sendEmail(normalizedEmail, emailTemplates.caseAccessLink(magicLinkUrl))
+				payload.emailSent = true
+			}
+		} catch (emailError) {
+			console.error('Failed to send case access email:', emailError)
+		}
+
+		if (!payload.emailSent && allowDevLink) {
+			payload.magicLinkUrl = magicLinkUrl
+		}
+
+		return res.status(201).json(payload)
 	} catch (error) {
 		console.error('Send magic link error:', error)
 		return res.status(500).json({ message: 'Something went wrong. Please try again.' })
@@ -379,13 +429,17 @@ export const verifyMagicLink = async (req, res) => {
 			return res.status(400).json({ message: 'This link has expired. Please request a new one.' })
 		}
 
-		const user = await findOrCreateGuestCustomer(pending.email)
+		const user = await findOrCreateGuestCustomer(pending.email, {
+			name: pending.requestData?.name,
+			phone: pending.requestData?.phone,
+		})
 		await createRequestForUser(user, pending.requestData)
+		notifyUploadReceived(user._id).catch(() => {})
 		await PendingGuestRequest.findByIdAndDelete(pending._id)
 
 		return res.json({
 			message: 'Login successful',
-			redirectTo: '/offers',
+			redirectTo: '/upload?sent=1',
 			...buildAuthResponse(user),
 		})
 	} catch (error) {

@@ -10,6 +10,7 @@ import { getRoleHomePath } from '../utils/roleHome'
 import { Input } from '../components/ui/Input'
 import { PhoneInput } from '../components/ui/PhoneInput'
 import { Label } from '../components/ui/Label'
+import { AuthPageSkeleton } from '../components/ui/Skeleton'
 
 export default function SignUpPage() {
 	const { t } = useTranslation()
@@ -98,14 +99,7 @@ export default function SignUpPage() {
 
 	// Show loading while checking auth
 	if (loading) {
-		return (
-			<div className="min-h-screen bg-white flex items-center justify-center">
-				<div className="text-center">
-					<div className="w-20 h-20 border-4 border-[#34C759]/20 border-t-[#34C759] rounded-full animate-spin mx-auto mb-4"></div>
-					<p className="text-gray-600">{t('common.loading')}</p>
-				</div>
-			</div>
-		)
+		return <AuthPageSkeleton />
 	}
 
 	// Don't render if user is logged in (will redirect)
@@ -310,11 +304,11 @@ export default function SignUpPage() {
 								disabled={isLoading}
 								className="w-full flex items-center justify-center gap-2 py-4 px-6 border border-transparent rounded-xl shadow-lg text-base font-normal text-white focus:outline-none focus:ring-4 disabled:opacity-50 transition-all transform hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
 								style={{ 
-									backgroundColor: '#34C759',
+									backgroundColor: '#008037',
 									backgroundImage: 'none',
 								}}
 								onMouseEnter={(e) => e.target.style.backgroundColor = '#2db04a'}
-								onMouseLeave={(e) => e.target.style.backgroundColor = '#34C759'}
+								onMouseLeave={(e) => e.target.style.backgroundColor = '#008037'}
 								onFocus={(e) => e.target.style.boxShadow = '0 0 0 4px rgba(52, 199, 89, 0.3)'}
 								onBlur={(e) => e.target.style.boxShadow = ''}
 							>

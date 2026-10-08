@@ -95,7 +95,9 @@ export default function VehicleImage({
 
 	if (loading) {
 		return (
-			<div className={cn('animate-pulse bg-gray-100', className, fallbackClassName)} />
+			<div className={cn('overflow-hidden bg-gray-100', className, fallbackClassName)}>
+				<div className="w-full h-full animate-shimmer bg-gradient-to-r from-gray-200 via-gray-50 to-gray-200 bg-[length:1000px_100%]" />
+			</div>
 		)
 	}
 

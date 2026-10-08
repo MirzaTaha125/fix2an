@@ -89,12 +89,27 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 		}
 
 		const bookings = await Booking.find({ customerId })
-			.populate('requestId')
+			.populate({ path: 'requestId', populate: { path: 'vehicleId', select: 'make model year registrationNumber' } })
 			.populate('offerId')
-			.populate('workshopId', 'companyName rating email phone')
+			.populate('customerId', 'name email phone')
+			.populate({
+				path: 'workshopId',
+				select: 'companyName rating reviewCount email phone address city postalCode userId',
+				populate: { path: 'userId', select: 'name image' },
+			})
 			.sort({ createdAt: -1 })
 
-		return res.json(bookings)
+		const withImages = bookings.map((booking) => {
+			const row = booking.toObject()
+			const workshopImage = row.workshopId?.userId?.image || ''
+			if (row.workshopId && workshopImage) {
+				row.workshopId.image = workshopImage
+				row.workshopId.logo = workshopImage
+			}
+			return row
+		})
+
+		return res.json(withImages)
 	} catch (error) {
 		console.error('Fetch bookings error:', error)
 		return res.status(500).json({ message: 'Failed to fetch bookings' })
@@ -196,13 +211,23 @@ router.patch('/:id', authenticate, async (req, res) => {
 			return res.status(403).json({ message: 'Forbidden' })
 		}
 
-		// Whitelist allowed status transitions to prevent customers setting arbitrary statuses
-		const ALLOWED_STATUSES = ['CANCELLED', 'RESCHEDULED', 'DONE']
+		// Whitelist allowed status transitions
+		const isCustomerOwner = booking.customerId.toString() === req.user._id.toString()
+		const CUSTOMER_STATUSES = ['CANCELLED', 'RESCHEDULED', 'DONE']
+		const WORKSHOP_STATUSES = ['CANCELLED', 'RESCHEDULED', 'DONE', 'RECEIVED', 'IN_PROGRESS', 'READY_PICKUP']
+		const ALLOWED_STATUSES = isWorkshopOwner || req.user.role === 'ADMIN' ? WORKSHOP_STATUSES : CUSTOMER_STATUSES
 		if (status && !ALLOWED_STATUSES.includes(status)) {
 			return res.status(400).json({ message: `Invalid status. Allowed values: ${ALLOWED_STATUSES.join(', ')}` })
 		}
-		
-		const { cancellationReason } = req.body
+
+		// Customer may only mark DONE after workshop sets READY_PICKUP (picked up the car)
+		if (status === 'DONE' && isCustomerOwner && !isWorkshopOwner && req.user.role !== 'ADMIN') {
+			if (booking.status !== 'READY_PICKUP') {
+				return res.status(400).json({ message: 'You can only close the case when the car is ready for pickup' })
+			}
+		}
+
+		const { cancellationReason, extraApprovals, extraApprovalIndex, extraApprovalStatus } = req.body
 
 		const updateData = {}
 		if (status) {
@@ -231,6 +256,53 @@ router.patch('/:id', authenticate, async (req, res) => {
 			updateData.reminder24hSentAt = null
 		}
 		if (notes !== undefined) updateData.notes = notes
+		// Workshop can lock in final amount while car is ready for pickup (before customer closes)
+		if (
+			req.body.finalAmount != null &&
+			(isWorkshopOwner || req.user.role === 'ADMIN') &&
+			status !== 'DONE'
+		) {
+			const lockedAmount = Number(req.body.finalAmount)
+			if (Number.isFinite(lockedAmount) && lockedAmount > 0) {
+				updateData.finalAmount = Math.round(lockedAmount)
+			}
+		}
+		if (status === 'DONE' && booking.status !== 'DONE') {
+			const { getPlatformRates } = await import('../utils/platformSettings.js')
+			const { commissionRate } = await getPlatformRates()
+			let finalAmount = Number(req.body.finalAmount)
+			if ((!Number.isFinite(finalAmount) || finalAmount <= 0) && Number(booking.finalAmount) > 0) {
+				finalAmount = Number(booking.finalAmount)
+			}
+			if ((!Number.isFinite(finalAmount) || finalAmount <= 0) && isCustomerOwner && !isWorkshopOwner) {
+				const extrasSum = (booking.extraApprovals || [])
+					.filter((e) => e.status === 'APPROVED')
+					.reduce((sum, e) => sum + (Number(e.price) || 0), 0)
+				finalAmount = (Number(booking.totalAmount) || 0) + extrasSum
+			}
+			if (!Number.isFinite(finalAmount) || finalAmount <= 0) {
+				return res.status(400).json({ message: 'A final job value is required to complete the job' })
+			}
+			updateData.finalAmount = Math.round(finalAmount)
+			updateData.commissionRate = commissionRate
+			updateData.commissionAmount = Math.round(finalAmount * commissionRate) / 100
+			updateData.paymentStatus = 'PAID'
+			updateData.paidAt = new Date()
+		}
+		if (Array.isArray(extraApprovals) && (isWorkshopOwner || req.user.role === 'ADMIN')) {
+			updateData.extraApprovals = extraApprovals
+		}
+		if (
+			typeof extraApprovalIndex === 'number' &&
+			['APPROVED', 'DECLINED'].includes(extraApprovalStatus) &&
+			booking.customerId.toString() === req.user._id.toString()
+		) {
+			const extras = Array.isArray(booking.extraApprovals) ? [...booking.extraApprovals.map((e) => e.toObject?.() || e)] : []
+			if (extras[extraApprovalIndex]) {
+				extras[extraApprovalIndex] = { ...extras[extraApprovalIndex], status: extraApprovalStatus }
+				updateData.extraApprovals = extras
+			}
+		}
 		
 		if (updateData.status === 'CANCELLED') {
 			if (booking.offerId) {

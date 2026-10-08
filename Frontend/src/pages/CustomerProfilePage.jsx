@@ -5,13 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { PhoneInput } from '../components/ui/PhoneInput'
 import { Label } from '../components/ui/Label'
-import { ProfileMenuSkeleton } from '../components/ui/Skeleton'
+import { ProfileMenuSkeleton, Skeleton } from '../components/ui/Skeleton'
+import EmptyState from '../components/ui/EmptyState'
+import VehicleImage from '../components/VehicleImage'
 import toast from 'react-hot-toast'
 import { formatPrice, formatCompactNumber } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
-import { SHOW_PROFILE_LANGUAGE_SETTINGS } from '../config/language.js'
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from '../components/ui/Dialog'
 import {
+	Car,
 	User,
 	Mail,
 	Phone,
@@ -28,23 +30,26 @@ import {
 	Star,
 	Camera,
 	ChevronRight,
-	Settings,
 	HelpCircle,
 	LogOut,
 	Trash2,
 	Lock,
 	Eye,
 	EyeOff,
-	ArrowLeft,
+	Bell,
+	Globe,
+	MessageCircle,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useRegisterMobileBack } from '../context/MobileBackContext'
 import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
 import StatCard from '../components/ui/StatCard'
 
 import { authAPI, requestsAPI, bookingsAPI, uploadAPI, getAuthToken } from '../services/api'
 import { getFullUrl, toStorageUrl } from '../config/api.js'
 import { formatSwedishPhone } from '../utils/swedishPhone'
+import { FaqPanel, ContactPanel, PolicyPanel } from './HelpSupportPage'
+import { LegalContent } from './LegalPage'
 
 export default function CustomerProfilePage() {
 	const navigate = useNavigate()
@@ -55,7 +60,12 @@ export default function CustomerProfilePage() {
 	const [isEditing, setIsEditing] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const [isUploadingImage, setIsUploadingImage] = useState(false)
-	const [settingsOpen, setSettingsOpen] = useState(false)
+	const [languageOpen, setLanguageOpen] = useState(false)
+	const [notificationsOpen, setNotificationsOpen] = useState(false)
+	const [carsOpen, setCarsOpen] = useState(false)
+	const [supportView, setSupportView] = useState(null)
+	const [cars, setCars] = useState([])
+	const [carsLoading, setCarsLoading] = useState(false)
 	const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
 	const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
 	const [isDeleting, setIsDeleting] = useState(false)
@@ -182,6 +192,8 @@ export default function CustomerProfilePage() {
 	}, [searchParams])
 
 	const openProfileInfo = () => {
+		setCarsOpen(false)
+		setSupportView(null)
 		setShowInfoOnMobile(true)
 		setIsEditing(true)
 		setSearchParams({ view: 'info' })
@@ -208,6 +220,40 @@ export default function CustomerProfilePage() {
 		setShowInfoOnMobile(false)
 		setSearchParams({})
 	}
+
+	const closeCars = () => {
+		setCarsOpen(false)
+	}
+
+	const openSupportView = (view) => {
+		setCarsOpen(false)
+		setShowInfoOnMobile(false)
+		setIsEditing(false)
+		setSearchParams({})
+		setSupportView(view)
+	}
+
+	const closeSupportView = () => {
+		setSupportView(null)
+	}
+
+	const handleProfileBack = () => {
+		if (supportView === 'privacy' || supportView === 'terms' || supportView === 'cookies') {
+			setSupportView('policy')
+			return
+		}
+		if (supportView) {
+			closeSupportView()
+			return
+		}
+		if (carsOpen) {
+			closeCars()
+			return
+		}
+		closeProfileInfo()
+	}
+
+	useRegisterMobileBack(handleProfileBack, showInfoOnMobile || carsOpen || Boolean(supportView))
 
 	const handlePasswordInputChange = (field, value) => {
 		setPasswordData((prev) => ({ ...prev, [field]: value }))
@@ -375,7 +421,6 @@ export default function CustomerProfilePage() {
 				<div className="list-page-main">
 					<ProfileMenuSkeleton menuRows={3} />
 				</div>
-				<Footer />
 			</div>
 		)
 	}
@@ -414,160 +459,268 @@ export default function CustomerProfilePage() {
 		}
 	}
 
+	const openCars = async () => {
+		setSupportView(null)
+		setShowInfoOnMobile(false)
+		setIsEditing(false)
+		setSearchParams({})
+		setCarsOpen(true)
+		if (!user) return
+		setCarsLoading(true)
+		try {
+			const response = await requestsAPI.getByCustomer(user.id || user._id)
+			const seen = new Set()
+			const list = []
+			for (const request of response.data || []) {
+				const vehicle = request.vehicleId || {}
+				const registration = request.registrationNumber || ''
+				const key = `${vehicle.make || ''}|${vehicle.model || ''}|${registration}`
+				if (seen.has(key)) continue
+				seen.add(key)
+				if (!vehicle.make && !registration) continue
+				list.push({
+					make: vehicle.make,
+					model: vehicle.model,
+					year: vehicle.year,
+					registration,
+				})
+			}
+			setCars(list)
+		} catch (error) {
+			toast.error(error.response?.data?.message || t('errors.fetch_failed'))
+		} finally {
+			setCarsLoading(false)
+		}
+	}
+
+	const languageLabel = i18n.language?.startsWith('sv') ? 'Svenska' : 'English'
+
 	const menuItems = [
 		{
 			icon: <User className="w-5 h-5 text-[#05324f]" />,
-			title: t('profile.profile_info_title') || 'Profile information',
-			desc: t('profile.profile_info_desc') || 'Name, contact details and address',
+			title: t('profile.menu_profile') || 'Profile',
+			desc: t('profile.menu_profile_desc') || 'Manage your preferences',
 			onClick: openProfileInfo,
 		},
 		{
-			icon: <FileText className="w-5 h-5 text-[#05324f]" />,
-			title: t('profile.contract_title') || 'Contract',
-			desc: t('profile.contract_desc') || 'View your bookings and active contracts',
-			onClick: () => navigate('/contract'),
+			icon: <Car className="w-5 h-5 text-[#05324f]" />,
+			title: t('profile.my_cars_title'),
+			desc: t('profile.my_cars_desc'),
+			onClick: openCars,
 		},
-		...(SHOW_PROFILE_LANGUAGE_SETTINGS
-			? [
-					{
-						icon: <Settings className="w-5 h-5 text-[#05324f]" />,
-						title: t('profile.settings_title') || 'Settings',
-						desc: t('profile.settings_desc') || 'Notifications, language and other settings',
-						onClick: () => setSettingsOpen(true),
-					},
-				]
-			: []),
+		{
+			icon: <Globe className="w-5 h-5 text-[#05324f]" />,
+			title: t('profile.language') || 'Language',
+			desc: languageLabel,
+			onClick: () => setLanguageOpen(true),
+		},
 		{
 			icon: <HelpCircle className="w-5 h-5 text-[#05324f]" />,
-			title: t('profile.help_title') || 'Help and support',
-			desc: t('profile.help_desc') || 'FAQ and contact support',
-			onClick: () => navigate('/support'),
+			title: t('profile.faq_title') || 'Frequently asked questions',
+			desc: t('profile.faq_desc') || 'Answers to common questions',
+			onClick: () => openSupportView('faq'),
+		},
+		{
+			icon: <MessageCircle className="w-5 h-5 text-[#05324f]" />,
+			title: t('profile.help_contact_title') || 'Help and contact',
+			desc: t('profile.help_contact_desc') || 'Send a query to support',
+			onClick: () => openSupportView('contact'),
+		},
+		{
+			icon: <FileText className="w-5 h-5 text-[#05324f]" />,
+			title: t('profile.policy_title') || 'Policy and terms',
+			desc: t('profile.policy_desc') || 'Privacy, terms and cookies',
+			onClick: () => openSupportView('policy'),
+		},
+		{
+			icon: <Trash2 className="w-5 h-5 text-[#05324f]" />,
+			title: t('profile.delete_account') || 'Delete account',
+			desc: t('profile.delete_account_menu_desc') || 'Delete account',
+			onClick: handleDeleteAccount,
 		},
 	]
+
+	const showSettingsHome = !showInfoOnMobile && !carsOpen && !supportView
+
+	const isLegalView = supportView === 'privacy' || supportView === 'terms' || supportView === 'cookies'
+
+	const supportTitle =
+		supportView === 'faq'
+			? (t('help.faq_page_title') || 'Frequently asked questions')
+			: supportView === 'contact'
+				? (t('help.contact_page_title') || 'Help & contact')
+				: supportView === 'policy'
+					? (t('help.policy_page_title') || 'Policy & terms')
+					: ''
+
+	const supportSubtitle =
+		supportView === 'faq'
+			? (t('help.faq_page_subtitle') || 'Answers to common questions.')
+			: supportView === 'contact'
+				? (t('help.contact_page_subtitle') || 'We are here if you need help.')
+				: supportView === 'policy'
+					? (t('help.policy_page_subtitle') || 'Important information about your data and rights.')
+					: ''
 
 	return (
 		<div className="list-page-shell bg-[#FAFBFC]">
 			<Navbar />
 
 			<div className="list-page-main">
-			{/* Profile menu — all breakpoints */}
-			<div className={`app-page-container max-w-2xl md:max-w-5xl lg:max-w-7xl pt-24 md:pt-32 ${showInfoOnMobile ? 'hidden' : 'block'}`}>
-				<div className="mb-6">
-					<h1 className="text-xl sm:text-2xl font-semibold text-[#05324f] leading-tight mb-1.5">
-						{t('profile.title') || 'Profile'}
-					</h1>
-					<p className="text-xs sm:text-sm text-gray-500 leading-snug">
-						{t('profile.subtitle_mobile') || 'Manage your profile and your settings.'}
-					</p>
-				</div>
-
-				<div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 mb-5 flex items-center gap-3">
-					<div className="relative shrink-0">
-						<div className="w-14 h-14 rounded-full bg-[#F0F2F5] flex items-center justify-center overflow-hidden border border-gray-100">
-							{profileData.image ? (
-								<img src={profileData.image} alt={profileData.name || 'Profile'} className="w-full h-full object-cover" />
-							) : (
-								<User className="text-[#ACB0B4] w-7 h-7" />
-							)}
-						</div>
-						<button
-							type="button"
-							onClick={() => document.getElementById('customer-profile-image-input')?.click()}
-							disabled={isUploadingImage}
-							className="absolute -bottom-0.5 -right-0.5 p-1.5 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-full shadow-md transition-all disabled:opacity-50"
-							title={t('profile.change_photo') || 'Change profile photo'}
-						>
-							{isUploadingImage ? (
-								<div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-							) : (
-								<Camera className="w-3 h-3" />
-							)}
-						</button>
-						<input
-							id="customer-profile-image-input"
-							type="file"
-							accept="image/*"
-							onChange={handleImageChange}
-							className="hidden"
-						/>
+			{/* Settings menu — list scrolls, logout at end of list */}
+			{showSettingsHome && (
+				<div className="list-page-content settings-home-panel max-w-none">
+					<div className="mb-5">
+						<h1 className="page-title">
+							{t('navigation.settings') || 'Settings'}
+						</h1>
+						<p className="text-sm sm:text-base text-[#6B7280] leading-relaxed">
+							{t('profile.settings_page_subtitle') || 'Manage your preferences and account.'}
+						</p>
 					</div>
-					<button
-						type="button"
-						onClick={openProfileInfo}
-						className="flex-1 min-w-0 flex items-center gap-3 text-left active:scale-[0.99] transition-transform"
-					>
-						<div className="flex-1 min-w-0">
-							<h3 className="text-base font-semibold text-[#05324f] truncate">
-								{profileData.name || t('profile.hi') || 'User'}
-							</h3>
-							{profileData.email && (
-								<p className="text-[11px] text-gray-400 font-medium truncate mt-0.5">{profileData.email}</p>
-							)}
-						</div>
-						<ChevronRight className="text-gray-300 shrink-0" size={20} />
-					</button>
-				</div>
 
-				<div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
-					{menuItems.map((item, i) => (
-						<div key={item.title}>
+					<div className="space-y-3 mb-5">
+						{menuItems.map((item) => (
 							<button
+								key={item.title}
 								type="button"
 								onClick={item.onClick}
-								className="w-full p-4 flex items-center gap-3 active:bg-gray-50 transition-colors text-left"
+								className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 active:bg-gray-50 transition-colors text-left"
 							>
-								<div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
+								<div className="w-11 h-11 rounded-full bg-gray-50 flex items-center justify-center shrink-0">
 									{item.icon}
 								</div>
 								<div className="flex-1 min-w-0">
-									<p className="text-sm font-semibold text-[#05324f]">{item.title}</p>
-									<p className="text-[11px] text-gray-400 font-medium leading-tight mt-0.5">{item.desc}</p>
+									<p className="text-[15px] font-semibold text-[#05324f]">{item.title}</p>
+									<p className="text-sm text-[#9CA3AF] font-medium leading-tight mt-0.5">{item.desc}</p>
 								</div>
 								<ChevronRight className="text-gray-300 shrink-0" size={20} />
 							</button>
-							{i < menuItems.length - 1 && <div className="border-b border-gray-100 mx-4" />}
-						</div>
-					))}
+						))}
+					</div>
+
+					<Button
+						type="button"
+						onClick={handleLogout}
+						className="w-full !rounded-xl lg:!min-h-[52px] gap-2 mb-2"
+					>
+						<LogOut className="w-5 h-5" />
+						{t('profile.logout') || 'Log out'}
+					</Button>
+				</div>
+			)}
+
+			{supportView && (
+				<div className="list-page-content max-w-none">
+					{isLegalView ? (
+						<LegalContent pageKey={supportView} />
+					) : (
+						<>
+							<div className="mb-5">
+								<h1 className="page-title">{supportTitle}</h1>
+								<p className="text-sm text-[#6B7280] leading-relaxed">{supportSubtitle}</p>
+							</div>
+							{supportView === 'faq' && <FaqPanel />}
+							{supportView === 'contact' && <ContactPanel />}
+							{supportView === 'policy' && <PolicyPanel onSelect={setSupportView} />}
+						</>
+					)}
+				</div>
+			)}
+
+			{/* My cars — full page (mock layout) */}
+			{carsOpen && (
+			<div className="list-page-content max-w-none">
+				<div className="mb-5">
+					<h1 className="page-title">
+						{t('profile.my_cars_title')}
+					</h1>
+					<p className="text-sm text-[#6B7280] leading-relaxed">
+						{t('profile.my_cars_desc')}
+					</p>
 				</div>
 
-				<button
-					type="button"
-					onClick={handleLogout}
-					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-center gap-2 text-[#34C759] font-semibold text-sm active:scale-[0.99] transition-transform mb-3"
-				>
-					<LogOut className="w-5 h-5 text-[#34C759]" />
-					{t('profile.logout') || 'Log out'}
-				</button>
+				<div className="space-y-3 mb-6">
+					{carsLoading ? (
+						<div className="space-y-3">
+							{[1, 2].map((i) => (
+								<div key={i} className="rounded-2xl border border-gray-100 p-4 flex gap-3">
+									<Skeleton className="w-16 h-12 rounded-xl shrink-0" />
+									<div className="flex-1 space-y-2">
+										<Skeleton className="h-4 w-40" />
+										<Skeleton className="h-3 w-28" />
+									</div>
+								</div>
+							))}
+						</div>
+					) : cars.length === 0 ? (
+						<EmptyState
+							compact
+							title={t('common.empty.cars_title')}
+							description={t('common.empty.cars_desc')}
+							actionLabel={t('navigation.create_case')}
+							actionTo="/upload"
+						/>
+					) : (
+						cars.map((car) => {
+							const title = [car.make, car.model].filter((part) => part && part !== '—').join(' ') || t('profile.my_cars_title')
+							return (
+								<button
+									key={`${car.make}-${car.model}-${car.registration}`}
+									type="button"
+									onClick={() => navigate('/upload')}
+									className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3.5 flex items-center gap-3 text-left active:scale-[0.99] transition-transform"
+								>
+									<div className="w-12 h-12 rounded-full bg-[#F3F4F6] flex items-center justify-center overflow-hidden shrink-0">
+										<VehicleImage
+											make={car.make}
+											model={car.model}
+											year={car.year}
+											width={120}
+											className="w-10 h-10"
+											imgClassName="rounded-full"
+										/>
+									</div>
+									<div className="min-w-0 flex-1">
+										<p className="text-body font-semibold text-[#05324f] truncate leading-snug">{title}</p>
+										<p className="text-sm text-[#9CA3AF] mt-0.5 truncate">
+											{car.registration || '—'}
+											{car.year ? ` · ${car.year}` : ''}
+										</p>
+									</div>
+									<ChevronRight className="text-gray-300 shrink-0" size={20} />
+								</button>
+							)
+						})
+					)}
+				</div>
 
-				<button
-					type="button"
-					onClick={handleDeleteAccount}
-					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-center gap-2 text-[#34C759] font-semibold text-sm active:scale-[0.99] transition-transform"
-				>
-					<Trash2 className="w-5 h-5 text-[#34C759]" />
-					{t('profile.delete_account') || 'Delete account'}
-				</button>
+				<div className="rounded-2xl bg-[#E8F5EC] px-5 py-4 flex items-center gap-4">
+					<div className="min-w-0 flex-1">
+						<p className="text-[15px] font-bold text-[#05324f] leading-snug">
+							{t('profile.why_save_cars_title') || 'Why save your cars?'}
+						</p>
+						<p className="text-sm text-[#374151] mt-1 leading-snug">
+							{t('profile.why_save_cars_desc') || 'It makes it easier to create new cases.'}
+						</p>
+					</div>
+					<Car className="w-10 h-10 text-[#008037] shrink-0" strokeWidth={1.5} />
+				</div>
 			</div>
+			)}
 
+			{showInfoOnMobile && (
 			<div
 				id="customer-profile-form"
-				className={`app-page-container max-w-2xl md:max-w-5xl lg:max-w-7xl pt-24 md:pt-32 ${showInfoOnMobile ? 'block' : 'hidden'}`}
+				className="list-page-content max-w-none"
 				style={{ scrollMarginTop: '5rem' }}
 			>
 				{/* Profile header with photo upload */}
 				<div className="mb-6">
-					<button
-						type="button"
-						onClick={closeProfileInfo}
-						className="md:hidden inline-flex items-center gap-1.5 text-sm font-medium text-[#05324f] mb-3 hover:opacity-80"
-					>
-						<ArrowLeft className="w-4 h-4" />
-						{t('common.back') || 'Back'}
-					</button>
-					<h1 className="text-xl sm:text-2xl font-semibold text-[#05324f] leading-tight mb-1.5">
+					<h1 className="page-title">
 						{t('profile.profile_info_title') || 'Profile information'}
 					</h1>
-					<p className="text-xs sm:text-sm text-gray-500 leading-snug mb-5">
+					<p className="text-sm sm:text-base text-[#6B7280] leading-relaxed mb-5">
 						{t('profile.profile_info_desc') || 'Name, contact details and address'}
 					</p>
 					<div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex items-center gap-3 mb-5">
@@ -599,7 +752,7 @@ export default function CustomerProfilePage() {
 								type="button"
 								onClick={() => document.getElementById('customer-profile-form-image-input')?.click()}
 								disabled={isUploadingImage}
-								className="absolute -bottom-0.5 -right-0.5 p-1.5 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-full shadow-md transition-all disabled:opacity-50"
+								className="absolute -bottom-0.5 -right-0.5 p-1.5 bg-brand-btn text-white rounded-full shadow-md transition-all disabled:opacity-50"
 								title={t('profile.change_photo') || 'Change profile photo'}
 							>
 								{isUploadingImage ? (
@@ -638,7 +791,7 @@ export default function CustomerProfilePage() {
 					<StatCard
 						value={stats.completedBookings}
 						label={t('profile.completed_cases') || 'Finished'}
-						iconColor="#34C759"
+						iconColor="#008037"
 						iconBg="bg-green-50"
 					/>
 
@@ -662,36 +815,34 @@ export default function CustomerProfilePage() {
 									</CardTitle>
 									
 									{!isEditing ? (
-										<Button
-											size="sm"
-											variant="outline"
+										<button
+											type="button"
 											onClick={() => setIsEditing(true)}
-											className="flex items-center gap-1.5 h-8 px-3 text-xs sm:text-sm border-gray-200 hover:bg-gray-50 text-gray-700 shadow-sm transition-all"
+											className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg border border-gray-200 bg-white text-[11px] font-medium text-gray-700 hover:bg-gray-50"
 										>
-											<Edit className="w-3.5 h-3.5" />
+											<Edit className="w-3 h-3" />
 											{t('profile.edit')}
-										</Button>
+										</button>
 									) : (
-										<div className="flex items-center gap-2">
-											<Button
-												size="sm"
-												variant="ghost"
+										<div className="flex items-center gap-1.5">
+											<button
+												type="button"
 												onClick={handleCancel}
 												disabled={isSaving}
-												className="flex items-center gap-1.5 h-8 px-3 text-xs sm:text-sm text-gray-600 hover:text-gray-900"
+												className="inline-flex items-center gap-1 h-7 px-2 rounded-lg text-[11px] font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
 											>
-												<X className="w-3.5 h-3.5" />
+												<X className="w-3 h-3" />
 												{t('profile.cancel')}
-											</Button>
-											<Button
-												size="sm"
+											</button>
+											<button
+												type="button"
 												onClick={handleSave}
 												disabled={isSaving}
-												className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white h-8 px-3 text-xs sm:text-sm shadow-sm"
+												className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg bg-brand-btn text-[11px] font-medium text-white disabled:opacity-50"
 											>
-												<Save className="w-3.5 h-3.5" />
+												<Save className="w-3 h-3" />
 												{isSaving ? t('profile.saving') : t('profile.save')}
-											</Button>
+											</button>
 										</div>
 									)}
 								</div>
@@ -834,54 +985,43 @@ export default function CustomerProfilePage() {
 						</CardContent>
 					</Card>
 
+					{hasPassword && (
 					<Card className="bg-white border border-gray-100 shadow-sm relative overflow-hidden rounded-2xl mt-6">
 						<CardHeader className="border-b border-gray-100 bg-white px-4 py-3">
 							<CardTitle className="text-sm font-semibold text-[#05324f] flex items-center gap-2">
 								<Lock className="w-4 h-4" />
-								{hasPassword
-									? (t('profile.change_password_title') || 'Change password')
-									: (t('profile.create_password_title') || 'Create password')}
+								{t('profile.change_password_title') || 'Change password'}
 							</CardTitle>
-							{!hasPassword && (
-								<p className="text-xs text-gray-500 mt-2 leading-relaxed">
-									{t('profile.create_password_desc') ||
-										'You signed in with a magic link. Create a password to also sign in with email and password.'}
-								</p>
-							)}
 						</CardHeader>
 						<CardContent className="p-4 space-y-4">
-							{hasPassword && (
-								<div className="space-y-2">
-									<Label htmlFor="currentPassword" className="text-[11px] font-semibold text-gray-400">
-										{t('profile.current_password') || 'Current password'}
-									</Label>
-									<div className="relative">
-										<Input
-											id="currentPassword"
-											type={showCurrentPassword ? 'text' : 'password'}
-											value={passwordData.currentPassword}
-											onChange={(e) => handlePasswordInputChange('currentPassword', e.target.value)}
-											disabled={isSavingPassword}
-											className="pr-10"
-											autoComplete="current-password"
-										/>
-										<button
-											type="button"
-											onClick={() => setShowCurrentPassword((prev) => !prev)}
-											className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-											tabIndex={-1}
-										>
-											{showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-										</button>
-									</div>
+							<div className="space-y-2">
+								<Label htmlFor="currentPassword" className="text-[11px] font-semibold text-gray-400">
+									{t('profile.current_password') || 'Current password'}
+								</Label>
+								<div className="relative">
+									<Input
+										id="currentPassword"
+										type={showCurrentPassword ? 'text' : 'password'}
+										value={passwordData.currentPassword}
+										onChange={(e) => handlePasswordInputChange('currentPassword', e.target.value)}
+										disabled={isSavingPassword}
+										className="pr-10"
+										autoComplete="current-password"
+									/>
+									<button
+										type="button"
+										onClick={() => setShowCurrentPassword((prev) => !prev)}
+										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+										tabIndex={-1}
+									>
+										{showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+									</button>
 								</div>
-							)}
+							</div>
 
 							<div className="space-y-2">
 								<Label htmlFor="newPassword" className="text-[11px] font-semibold text-gray-400">
-									{hasPassword
-										? (t('profile.new_password') || 'New password')
-										: (t('profile.password') || 'Password')}
+									{t('profile.new_password') || 'New password'}
 								</Label>
 								<div className="relative">
 									<Input
@@ -937,12 +1077,11 @@ export default function CustomerProfilePage() {
 							>
 								{isSavingPassword
 									? (t('profile.saving') || 'Saving...')
-									: hasPassword
-										? (t('profile.save_password') || 'Save password')
-										: (t('profile.create_password_button') || 'Create password')}
+									: (t('profile.save_password') || 'Save password')}
 							</Button>
 						</CardContent>
 					</Card>
+					)}
 					</div>
 
 					<div className="space-y-6 hidden">
@@ -976,19 +1115,17 @@ export default function CustomerProfilePage() {
 					</div>
 				</div>
 			</div>
+			)}
 			</div>
 
-			<Footer />
-
-			{SHOW_PROFILE_LANGUAGE_SETTINGS && (
-			<Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+			<Dialog open={languageOpen} onOpenChange={setLanguageOpen}>
 				<DialogContent
-					onClose={() => setSettingsOpen(false)}
+					onClose={() => setLanguageOpen(false)}
 					className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
 				>
 					<DialogHeader className="text-center items-center sm:text-center">
 						<DialogTitle className="text-xl sm:text-2xl font-black text-[#05324f] leading-tight mb-2 text-center w-full">
-							{t('profile.settings_title') || 'Settings'}
+							{t('profile.language') || 'Language'}
 						</DialogTitle>
 					</DialogHeader>
 
@@ -1004,10 +1141,11 @@ export default function CustomerProfilePage() {
 									onClick={() => {
 										i18n.changeLanguage(lang.code)
 										localStorage.setItem('language', lang.code)
+										setLanguageOpen(false)
 									}}
 									className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
 										i18n.language === lang.code
-											? 'border-[#34C759] bg-[#F2F9F4] text-[#34C759]'
+											? 'border-[#008037] bg-[#F2F9F4] text-[#008037]'
 											: 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
 									}`}
 								>
@@ -1019,7 +1157,22 @@ export default function CustomerProfilePage() {
 					</div>
 				</DialogContent>
 			</Dialog>
-			)}
+
+			<Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+				<DialogContent
+					onClose={() => setNotificationsOpen(false)}
+					className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
+				>
+					<DialogHeader className="text-center items-center sm:text-center">
+						<DialogTitle className="text-xl sm:text-2xl font-black text-[#05324f] leading-tight mb-2 text-center w-full">
+							{t('profile.notifications') || 'Notifications'}
+						</DialogTitle>
+						<DialogDescription className="text-gray-500 text-sm sm:text-base leading-relaxed text-center">
+							{t('profile.notifications_managed_by_email')}
+						</DialogDescription>
+					</DialogHeader>
+				</DialogContent>
+			</Dialog>
 
 			<Dialog open={isLogoutConfirmOpen} onOpenChange={setIsLogoutConfirmOpen}>
 				<DialogContent className="w-[min(calc(100vw-1.5rem),320px)] sm:w-[min(calc(100vw-2rem),380px)] md:w-[min(calc(100vw-2rem),420px)] lg:max-w-[440px] mx-auto overflow-hidden box-border bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 pt-5 sm:p-6 md:p-7 lg:p-8 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
@@ -1041,7 +1194,7 @@ export default function CustomerProfilePage() {
 						</Button>
 						<Button
 							onClick={confirmLogout}
-							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95"
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-brand-btn text-white font-semibold text-sm transition-all shadow-md active:scale-95"
 						>
 							{t('navigation.logout') || 'Log Out'}
 						</Button>
@@ -1071,7 +1224,7 @@ export default function CustomerProfilePage() {
 						<Button
 							onClick={confirmDeleteAccount}
 							disabled={isDeleting}
-							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95 disabled:opacity-60"
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-brand-btn text-white font-semibold text-sm transition-all shadow-md active:scale-95 disabled:opacity-60"
 						>
 							{isDeleting ? (t('profile.deleting_account') || 'Deleting...') : (t('profile.delete_account') || 'Delete account')}
 						</Button>

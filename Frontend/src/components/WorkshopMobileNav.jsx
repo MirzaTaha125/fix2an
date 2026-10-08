@@ -1,31 +1,33 @@
 import { Link, useLocation } from 'react-router-dom'
-import { FileText, Send, FileCheck, User } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import {
+	NavCasesIcon,
+	NavHomeIcon,
+	NavJobsIcon,
+	NavSettingsIcon,
+} from './icons/CustomerNavIcons'
 
-const ACTIVE_GREEN = '#438B3E'
-const INACTIVE_COLOR = '#333333'
+const ACTIVE_GREEN = '#018A04'
+const INACTIVE_COLOR = '#05324f'
 
 function NavLinkItem({ to, icon: Icon, label, active }) {
 	return (
 		<Link
 			to={to}
-			className="relative flex flex-1 items-center justify-center gap-1.5 sm:gap-2 py-3 min-w-0 transition-colors px-1"
+			className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2 min-w-0 transition-colors"
 			style={{ color: active ? ACTIVE_GREEN : INACTIVE_COLOR }}
 		>
-			<Icon
-				className="w-[18px] h-[18px] shrink-0"
-				strokeWidth={1.75}
-				style={{ color: active ? ACTIVE_GREEN : INACTIVE_COLOR }}
-			/>
-			<span className={`text-[11px] sm:text-[13px] md:text-sm truncate ${active ? 'font-semibold' : 'font-medium'}`}>
+			<span className="relative flex items-center justify-center w-6 h-6">
+				<Icon
+					className="w-6 h-6 shrink-0"
+					strokeWidth={1.85}
+					filled={active}
+					style={{ color: active ? ACTIVE_GREEN : INACTIVE_COLOR }}
+				/>
+			</span>
+			<span className={`text-[11px] truncate ${active ? 'font-medium' : 'font-normal'}`}>
 				{label}
 			</span>
-			{active && (
-				<span
-					className="absolute bottom-0 left-2 right-2 sm:left-3 sm:right-3 h-[2px] rounded-full"
-					style={{ backgroundColor: ACTIVE_GREEN }}
-				/>
-			)}
 		</Link>
 	)
 }
@@ -34,36 +36,36 @@ export default function WorkshopMobileNav() {
 	const { pathname } = useLocation()
 	const { t } = useTranslation()
 
-	const isJobs = pathname.startsWith('/workshop/requests')
-	const isProposals = pathname.startsWith('/workshop/proposals')
-	const isContracts = pathname.startsWith('/workshop/contracts')
-	const isProfile = pathname.startsWith('/workshop/profile')
+	const isOverview = pathname.startsWith('/workshop/dashboard')
+	const isCases = pathname.startsWith('/workshop/requests') || pathname.startsWith('/workshop/proposals')
+	const isJobs = pathname.startsWith('/workshop/contracts')
+	const isSettings = pathname.startsWith('/workshop/settings')
 
 	return (
-		<div className="flex items-stretch w-full bg-white">
+		<div className="flex items-stretch w-full bg-white min-h-[60px]">
 			<NavLinkItem
-				to="/workshop/requests"
-				icon={FileText}
-				label={t('navigation.jobs') || 'Jobs'}
-				active={isJobs}
+				to="/workshop/dashboard"
+				icon={NavHomeIcon}
+				label={t('workshop.panel.nav.overview')}
+				active={isOverview}
 			/>
 			<NavLinkItem
-				to="/workshop/proposals"
-				icon={Send}
-				label={t('navigation.proposals') || 'Proposals'}
-				active={isProposals}
+				to="/workshop/requests"
+				icon={NavCasesIcon}
+				label={t('workshop.panel.nav.cases')}
+				active={isCases}
 			/>
 			<NavLinkItem
 				to="/workshop/contracts"
-				icon={FileCheck}
-				label={t('navigation.contracts') || 'Contracts'}
-				active={isContracts}
+				icon={NavJobsIcon}
+				label={t('workshop.panel.nav.jobs')}
+				active={isJobs}
 			/>
 			<NavLinkItem
-				to="/workshop/profile"
-				icon={User}
-				label={t('navigation.profile') || 'Profile'}
-				active={isProfile}
+				to="/workshop/settings"
+				icon={NavSettingsIcon}
+				label={t('workshop.panel.nav.settings')}
+				active={isSettings}
 			/>
 		</div>
 	)

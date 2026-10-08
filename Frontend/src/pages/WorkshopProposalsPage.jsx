@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Skeleton } from '../components/ui/Skeleton'
+import EmptyState from '../components/ui/EmptyState'
 import toast from 'react-hot-toast'
 import { formatPrice, formatDate, formatDateTime } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
-import { FileText, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import WorkshopShell from '../components/workshop/WorkshopShell'
 import VehicleRequestCard from '../components/VehicleRequestCard'
 import ViewOfferModal from '../components/ViewOfferModal'
 
@@ -28,7 +28,7 @@ export default function WorkshopProposalsPage() {
 	useEffect(() => {
 		if (!authLoading) {
 			if (!user) {
-				navigate('/auth/signin', { replace: true })
+				navigate('/workshop/login', { replace: true })
 				return
 			}
 			if (user.role !== 'WORKSHOP') {
@@ -99,8 +99,8 @@ export default function WorkshopProposalsPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="list-page-shell bg-gray-50">
-				<Navbar />
+			<WorkshopShell>
+			<div className="list-page-shell bg-transparent">
 				<div className="list-page-content">
 					<div className="mb-6 md:mb-7">
 						<Skeleton className="h-9 w-40 mb-2" />
@@ -129,8 +129,8 @@ export default function WorkshopProposalsPage() {
 						))}
 					</div>
 				</div>
-				<Footer className="max-lg:hidden" />
 			</div>
+			</WorkshopShell>
 		)
 	}
 
@@ -141,8 +141,8 @@ export default function WorkshopProposalsPage() {
 
 
 	return (
-	<div className="list-page-shell bg-gray-50">
-		<Navbar />
+	<WorkshopShell>
+	<div className="list-page-shell bg-transparent">
 		<div className="list-page-content">
 			<div className="mb-6 md:mb-7">
 				<h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#05324f] leading-tight mb-1.5 lg:mb-2">
@@ -170,19 +170,15 @@ export default function WorkshopProposalsPage() {
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 mb-6 md:mb-8 max-lg:pb-2">
 				{filteredOffers.length === 0 ? (
-					<div className="col-span-full bg-white rounded-2xl border border-gray-100 shadow-sm p-8 md:p-10 text-center">
-						<div className="w-16 h-16 bg-[#34C759]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-							<FileText className="w-8 h-8 text-[#34C759]" />
-						</div>
-						<h3 className="text-base font-black text-[#05324f] mb-2">
-							{t('workshop.proposals.no_proposals.title') || 'No Proposals Found'}
-						</h3>
-						<p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed">
-							{activeTab === 'all'
-								? (t('workshop.proposals.no_proposals.description', { defaultValue: "You haven't submitted any proposals yet. Check the jobs tab to find new opportunities." }))
-								: (t(`workshop.proposals.no_proposals.${activeTab}_description`, { defaultValue: `You don't have any ${activeTab} proposals at the moment.` }))
+					<div className="col-span-full bg-white rounded-2xl border border-gray-100 shadow-sm">
+						<EmptyState
+							title={t('common.empty.workshop_proposals_title')}
+							description={
+								activeTab === 'all'
+									? t('common.empty.workshop_proposals_desc')
+									: (t(`workshop.proposals.no_proposals.${activeTab}_description`, { defaultValue: t('common.empty.workshop_proposals_desc') }))
 							}
-						</p>
+						/>
 					</div>
 				) : (
 					filteredOffers.map((offer) => {
@@ -200,7 +196,7 @@ export default function WorkshopProposalsPage() {
 									request={request}
 									className="items-start"
 									headerEnd={
-										<p className="text-base font-black text-[#38BC54] shrink-0 leading-tight">
+										<p className="text-base font-black text-[#008037] shrink-0 leading-tight">
 											{formatPrice(offer.price)}
 										</p>
 									}
@@ -211,11 +207,11 @@ export default function WorkshopProposalsPage() {
 													setSelectedOffer(offer)
 													setViewModalOpen(true)
 												}}
-												className="flex-1 min-w-0 h-10 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl font-semibold text-xs flex items-center justify-center shadow-sm"
+												className="flex-1 min-w-0 h-10 bg-brand-btn text-white rounded-xl font-semibold text-xs flex items-center justify-center shadow-sm"
 											>
 												{t('common.view') || 'View'}
 											</Button>
-											<ChevronRight className="w-5 h-5 text-black shrink-0" strokeWidth={2} />
+											<ChevronRight className="w-5 h-5 text-brand-dark shrink-0" strokeWidth={2} />
 										</div>
 									}
 								>
@@ -251,8 +247,8 @@ export default function WorkshopProposalsPage() {
 			offer={selectedOffer}
 		/>
 
-		<Footer className="max-lg:hidden" />
 	</div>
+	</WorkshopShell>
 	)
 }
 

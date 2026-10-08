@@ -6,7 +6,9 @@
 
 @layer base {
 	:root {
-		--bottom-nav-height: 4.5rem;
+		--bottom-nav-height: 4.25rem;
+		--brand-blue: #1C3F94;
+		--brand-green: #008037;
 		--background: 0 0% 100%;
 		--foreground: 222.2 84% 4.9%;
 		--card: 0 0% 100%;
@@ -15,12 +17,12 @@
 		--popover-foreground: 222.2 84% 4.9%;
 		--primary: 142 71% 45%;
 		--primary-foreground: 210 40% 98%;
-		--secondary: 210 40% 96%;
+		--secondary: 210 34% 96.2%;
 		--secondary-foreground: 222.2 84% 4.9%;
 		--muted: 210 40% 96%;
 		--muted-foreground: 215.4 16.3% 46.9%;
 		--accent: 142 71% 45%;
-		--accent-foreground: 222.2 84% 4.9%;
+		--accent-foreground: 210 40% 98%;
 		--destructive: 0 84.2% 60.2%;
 		--destructive-foreground: 210 40% 98%;
 		--border: 214.3 31.8% 91.4%;
@@ -66,7 +68,11 @@
 	body {
 		@apply bg-background text-foreground;
 		font-family: 'Poppins', 'Inter', sans-serif;
+		/* Brödtext stor — default reading size */
 		font-size: 16px;
+		font-weight: 400;
+		letter-spacing: 0;
+		line-height: 1.6;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
 		overflow-x: hidden;
@@ -76,25 +82,127 @@
 		position: relative;
 	}
 
+	/* Prevent iOS Safari auto-zoom on focus when inputs use text-sm (<16px) */
+	@media (max-width: 1023px) {
+		input,
+		textarea,
+		select {
+			font-size: 16px !important;
+		}
+	}
+
 	#root {
 		min-height: 100dvh;
 		overflow: visible;
 	}
-	h1 {
-		font-size: 44px;
+
+	/*
+	 * Typography system (Poppins)
+	 * H1 32/700/-0.5 · H2 24/600/-0.2 · H3 20/600 · H4 18/600
+	 * Body lg 16/400 · Body 14/400 · Small 12/400
+	 */
+	h1,
+	.text-h1,
+	.type-h1 {
+		font-size: 32px;
 		font-weight: 700;
-		line-height: 1.15;
+		letter-spacing: -0.5px;
+		line-height: 1.2;
+		color: #05324f;
 	}
-	h2 {
-		font-size: 30px;
+
+	h2,
+	.text-h2,
+	.type-h2 {
+		font-size: 24px;
 		font-weight: 600;
+		letter-spacing: -0.2px;
 		line-height: 1.25;
+		color: #05324f;
 	}
-	h3 {
-		font-size: 22px;
+
+	h3,
+	.text-h3,
+	.type-h3 {
+		font-size: 20px;
 		font-weight: 600;
-		line-height: 1.35;
+		letter-spacing: 0;
+		line-height: 1.3;
+		color: #05324f;
 	}
+
+	h4,
+	.text-h4,
+	.type-h4 {
+		font-size: 18px;
+		font-weight: 600;
+		letter-spacing: 0;
+		line-height: 1.35;
+		color: #05324f;
+	}
+
+	/* Screen titles → H2 */
+	.page-title {
+		font-size: 24px;
+		font-weight: 600;
+		letter-spacing: -0.2px;
+		line-height: 1.25;
+		color: #05324f;
+		margin-bottom: 0.375rem;
+	}
+
+	.text-body-lg,
+	.type-body-lg {
+		font-size: 16px;
+		font-weight: 400;
+		letter-spacing: 0;
+		line-height: 1.6;
+	}
+
+	.text-body,
+	.type-body {
+		font-size: 14px;
+		font-weight: 400;
+		letter-spacing: 0;
+		line-height: 1.5;
+	}
+
+	.text-small,
+	.type-small {
+		font-size: 12px;
+		font-weight: 400;
+		letter-spacing: 0;
+		line-height: 1.4;
+	}
+
+	/*
+	 * App-wide weight map: bold UI copy uses H2–H4 weight (600).
+	 * True H1 / extrabold stay at 700.
+	 */
+	.customer-app .font-bold:not(h1):not(.text-h1):not(.type-h1):not(.page-title-h1),
+	.workshop-app .font-bold:not(h1):not(.text-h1):not(.type-h1):not(.page-title-h1),
+	.admin-app .font-bold:not(h1):not(.text-h1):not(.type-h1):not(.page-title-h1) {
+		font-weight: 600;
+	}
+
+	.customer-app .font-semibold,
+	.workshop-app .font-semibold,
+	.admin-app .font-semibold {
+		font-weight: 600;
+	}
+
+	.customer-app .font-medium,
+	.workshop-app .font-medium,
+	.admin-app .font-medium {
+		font-weight: 500;
+	}
+
+	.customer-app .font-normal,
+	.workshop-app .font-normal,
+	.admin-app .font-normal {
+		font-weight: 400;
+	}
+
 	input:focus,
 	textarea:focus,
 	select:focus {
@@ -131,6 +239,17 @@
 	animation: fadeInUp 0.6s ease-out;
 }
 
+.no-scrollbar {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+	width: 0;
+	height: 0;
+}
+
 .custom-scrollbar {
 	scrollbar-width: thin;
 	scrollbar-color: rgba(5, 50, 79, 0.2) transparent;
@@ -160,7 +279,43 @@
 	filter: brightness(0) invert(1);
 }
 
+/* App-wide: action buttons one step lighter (semibold→medium, bold→semibold) */
+button.font-semibold,
+a.font-semibold,
+button[class*='font-semibold'],
+a[class*='font-semibold'] {
+	font-weight: 500 !important;
+}
+
+button.font-bold,
+a.font-bold,
+button[class*='font-bold'],
+a[class*='font-bold'] {
+	font-weight: 600 !important;
+}
+
 @layer components {
+	/* Primary CTA fill — brand green (#008037) */
+	.bg-brand-btn {
+		background-color: #008037;
+		background-image: none;
+		color: #fff;
+	}
+	.bg-brand-btn:hover:not(:disabled):not([aria-disabled='true']) {
+		background-color: #006b28;
+	}
+	.bg-brand-btn:active:not(:disabled):not([aria-disabled='true']) {
+		background-color: #005c22;
+	}
+	.bg-brand-btn:disabled,
+	.bg-brand-btn[disabled],
+	.bg-brand-btn.disabled\:bg-gray-300:disabled {
+		background-image: none;
+		background-color: #d1d5db;
+		filter: none;
+		color: #fff;
+	}
+
 	/* Horizontal padding matches navbar (logo alignment on lg+) */
 	.app-page-container {
 		@apply mx-auto w-full px-4 sm:px-6 lg:px-8;
@@ -176,10 +331,17 @@
 		overflow-y: visible;
 	}
 
-	.app-layout > * {
+	.app-layout > *:not(.mobile-bottom-nav):not(.customer-side-nav):not(.customer-mobile-topbar) {
 		flex: 1 1 auto;
 		width: 100%;
 		min-height: 100dvh;
+	}
+
+	/* Top logo bar must stay compact — never stretch to full viewport height */
+	.app-layout > .customer-mobile-topbar {
+		flex: none;
+		min-height: 0;
+		width: 100%;
 	}
 
 	/* Fixed bottom tab bar — always pinned to viewport bottom on mobile/tablet */
@@ -197,6 +359,88 @@
 	 * Sticky footer: flex column + margin-top:auto on footer.
 	 * (Navbar is position:fixed — grid row 1 collapses and broke footer order.)
 	 */
+	.workshop-app .list-page-content,
+	.workshop-app .list-page-main > .app-page-container,
+	.workshop-app .list-page-shell > .app-page-container,
+	.workshop-app .app-page-container {
+		padding-top: 1.5rem;
+		max-width: none !important;
+		width: 100%;
+	}
+
+	@media (min-width: 1024px) {
+		.workshop-app .workshop-messages-page.list-page-shell,
+		.workshop-app .workshop-cases-page.list-page-shell,
+		.workshop-app .workshop-jobs-page.list-page-shell,
+		.workshop-app .workshop-calendar-page.list-page-shell {
+			height: calc(100dvh - 1rem) !important;
+			max-height: calc(100dvh - 1rem) !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
+		}
+
+		.workshop-app .workshop-messages-page > .list-page-content,
+		.workshop-app .workshop-cases-page > .list-page-content,
+		.workshop-app .workshop-jobs-page > .list-page-content,
+		.workshop-app .workshop-calendar-page > .list-page-content {
+			flex: 1 1 auto !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.customer-app .customer-messages-page.list-page-shell {
+			height: 100dvh !important;
+			max-height: 100dvh !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
+		}
+
+		.customer-app .customer-messages-page > .list-page-content {
+			flex: 1 1 auto !important;
+			min-height: 0 !important;
+			overflow: hidden !important;
+			display: flex;
+			flex-direction: column;
+			max-width: none !important;
+			padding-bottom: 1.25rem !important;
+		}
+	}
+
+	/* Chat screens: header + composer stay put; only the message list scrolls */
+	.case-chat-root {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+		height: 100%;
+		overflow: hidden;
+	}
+
+	.case-chat-list {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow-x: hidden;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.case-chat-composer,
+	.case-chat-header {
+		flex-shrink: 0;
+	}
+
+	.case-detail-chat-lock {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+		height: 100%;
+		overflow: hidden;
+	}
+
 	.list-page-shell {
 		@apply w-full;
 		display: flex;
@@ -323,11 +567,13 @@
 	}
 
 	.workshop-pill-tab {
-		@apply flex-1 sm:flex-initial min-w-0 px-3 py-2.5 sm:px-6 sm:py-2 sm:min-w-[88px] rounded-lg text-[11px] sm:text-xs md:text-sm font-semibold transition-all duration-300 whitespace-nowrap shadow-sm border border-transparent flex items-center justify-center;
+		@apply flex-1 sm:flex-initial min-w-0 px-3 py-2.5 sm:px-6 sm:py-2 sm:min-w-[88px] rounded-xl text-[11px] sm:text-xs md:text-sm font-semibold transition-all duration-300 whitespace-nowrap shadow-sm border border-transparent flex items-center justify-center;
 	}
 
 	.workshop-pill-tab-active {
-		@apply bg-[#34C759] text-white shadow-md active:scale-95 border-[#34C759];
+		@apply text-white shadow-md active:scale-95 border-transparent;
+		background-color: #008037;
+		background-image: none;
 	}
 
 	.workshop-pill-tab-inactive {
@@ -370,6 +616,20 @@
 	.footer-scroll-inset {
 		padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
 	}
+
+	/* Create-case (/upload): tighter footer for logged-in customer app */
+	@media (max-width: 1023px) {
+		.customer-app .customer-upload-page > footer,
+		.customer-app .customer-upload-footer {
+			margin-top: 0.75rem;
+			padding-top: 0.75rem;
+			padding-bottom: calc(0.35rem + var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+		}
+
+		html.customer-menu-layout .customer-upload-page > .list-page-content {
+			padding-bottom: 0.5rem !important;
+		}
+	}
 }
 
 @media (min-width: 1024px) {
@@ -408,7 +668,7 @@
 		overflow: visible !important;
 	}
 
-	.list-page-shell.flex.flex-col {
+	.list-page-shell.flex.flex-col:not(.customer-cases-page):not(.customer-messages-page):not(.workshop-messages-page):not(.workshop-cases-page):not(.workshop-jobs-page):not(.workshop-calendar-page) {
 		display: flex !important;
 		flex-direction: column !important;
 		height: auto !important;
@@ -416,21 +676,239 @@
 		overflow: visible !important;
 	}
 
-	.list-page-shell > .list-page-main,
-	.list-page-shell > .list-page-content,
-	.list-page-shell > main:not(footer) {
+	.list-page-shell:not(.customer-cases-page):not(.customer-messages-page):not(.workshop-messages-page):not(.workshop-cases-page):not(.workshop-jobs-page):not(.workshop-calendar-page) > .list-page-main,
+	.list-page-shell:not(.customer-cases-page):not(.customer-messages-page):not(.workshop-messages-page):not(.workshop-cases-page):not(.workshop-jobs-page):not(.workshop-calendar-page) > .list-page-content,
+	.list-page-shell:not(.customer-cases-page):not(.customer-messages-page):not(.workshop-messages-page):not(.workshop-cases-page):not(.workshop-jobs-page):not(.workshop-calendar-page) > main:not(footer) {
 		flex: 1 0 auto !important;
 		min-height: auto !important;
 		overflow: visible !important;
 	}
 
-	/* Horizontal overflow on mobile steals vertical pan — except admin tables */
+	/* Horizontal overflow on mobile steals vertical pan — except admin / calendar */
 	.overflow-x-auto {
 		overflow-x: visible !important;
 	}
 
+	.admin-app .overflow-x-auto,
 	.admin-app-shell .overflow-x-auto {
 		overflow-x: auto !important;
 		-webkit-overflow-scrolling: touch;
+	}
+
+	.admin-app .admin-h-scroll {
+		overflow-x: auto !important;
+		-webkit-overflow-scrolling: touch;
+		overscroll-behavior-x: contain;
+		scrollbar-width: thin;
+	}
+
+	.workshop-calendar-scroll {
+		overflow: auto !important;
+		-webkit-overflow-scrolling: touch;
+		overscroll-behavior: contain;
+		touch-action: pan-x pan-y;
+		min-height: 0;
+	}
+
+	/* Contained horizontal carousels (reviews slider, etc.) */
+	.review-slider-track {
+		display: flex;
+		overflow-x: auto !important;
+		overflow-y: hidden;
+		-webkit-overflow-scrolling: touch;
+		scroll-snap-type: x mandatory;
+		overscroll-behavior-x: contain;
+		touch-action: pan-x;
+	}
+}
+
+html.customer-menu-layout .list-page-content,
+html.customer-menu-layout .list-page-shell > .app-page-container,
+html.customer-menu-layout .list-page-main > .app-page-container {
+	padding-top: 1.75rem !important;
+}
+
+@media (max-width: 1023px) {
+	/* Screen titles → H2 (24/600/-0.2) */
+	.customer-app .page-title,
+	.workshop-app .page-title {
+		font-size: 24px !important;
+		font-weight: 600 !important;
+		letter-spacing: -0.2px !important;
+		line-height: 1.25 !important;
+		color: #05324f !important;
+		margin-top: 0.875rem !important;
+		margin-bottom: 0.25rem !important;
+		font-family: 'Poppins', 'Inter', sans-serif !important;
+	}
+
+	/* Messages list titles → H3 (20/600) */
+	.messages-list-title {
+		font-size: 20px;
+		font-weight: 600;
+		letter-spacing: 0;
+		line-height: 1.3;
+		color: #05324f;
+		margin: 0 0 0.625rem;
+		font-family: 'Poppins', 'Inter', sans-serif;
+	}
+
+	.customer-app .customer-messages-page .messages-list-title {
+		margin-top: 0 !important;
+		margin-bottom: 0.75rem !important;
+	}
+
+	html.customer-menu-layout .list-page-content,
+	html.customer-menu-layout .list-page-shell > .app-page-container,
+	html.customer-menu-layout .list-page-main > .app-page-container {
+		padding-top: calc(3.75rem + env(safe-area-inset-top, 0px)) !important;
+		padding-bottom: calc(1.5rem + var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px)) !important;
+	}
+
+	html.customer-menu-layout .customer-messages-page > .list-page-content {
+		padding-top: calc(3.75rem + env(safe-area-inset-top, 0px)) !important;
+		padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px)) !important;
+	}
+
+	html.customer-menu-layout .customer-cases-page > .list-page-content {
+		padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px)) !important;
+	}
+
+	/* Mobile: pin header/tabs; only the list scrolls inside cases + messages */
+	html.customer-menu-layout .customer-cases-page.list-page-shell,
+	html.customer-menu-layout .customer-messages-page.list-page-shell {
+		height: 100dvh !important;
+		max-height: 100dvh !important;
+		min-height: 0 !important;
+		overflow: hidden !important;
+	}
+
+	html.customer-menu-layout .customer-cases-page > .list-page-content,
+	html.customer-menu-layout .customer-messages-page > .list-page-content {
+		display: flex !important;
+		flex-direction: column !important;
+		flex: 1 1 auto !important;
+		min-height: 0 !important;
+		height: 100% !important;
+		overflow: hidden !important;
+	}
+
+	/* Workshop list pages: restore flex chain; only the list scrolls */
+	html.workshop-menu-layout .workshop-app:has(.workshop-messages-page),
+	html.workshop-menu-layout .workshop-app:has(.workshop-cases-page),
+	html.workshop-menu-layout .workshop-app:has(.workshop-jobs-page),
+	html.workshop-menu-layout .workshop-app:has(.workshop-calendar-page),
+	html.workshop-menu-layout .workshop-app:has(.workshop-messages-page) > .lg\:pl-\[260px\],
+	html.workshop-menu-layout .workshop-app:has(.workshop-cases-page) > .lg\:pl-\[260px\],
+	html.workshop-menu-layout .workshop-app:has(.workshop-jobs-page) > .lg\:pl-\[260px\],
+	html.workshop-menu-layout .workshop-app:has(.workshop-calendar-page) > .lg\:pl-\[260px\] {
+		display: flex !important;
+		flex-direction: column !important;
+		height: 100dvh !important;
+		max-height: 100dvh !important;
+		min-height: 0 !important;
+		overflow: hidden !important;
+	}
+
+	html.workshop-menu-layout .workshop-app:has(.workshop-messages-page) > .lg\:pl-\[260px\] > .flex-1,
+	html.workshop-menu-layout .workshop-app:has(.workshop-cases-page) > .lg\:pl-\[260px\] > .flex-1,
+	html.workshop-menu-layout .workshop-app:has(.workshop-jobs-page) > .lg\:pl-\[260px\] > .flex-1,
+	html.workshop-menu-layout .workshop-app:has(.workshop-calendar-page) > .lg\:pl-\[260px\] > .flex-1 {
+		flex: 1 1 auto !important;
+		min-height: 0 !important;
+		height: auto !important;
+		padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px)) !important;
+		display: flex !important;
+		flex-direction: column !important;
+		overflow: hidden !important;
+	}
+
+	html.workshop-menu-layout .workshop-messages-page.list-page-shell,
+	html.workshop-menu-layout .workshop-cases-page.list-page-shell,
+	html.workshop-menu-layout .workshop-jobs-page.list-page-shell,
+	html.workshop-menu-layout .workshop-calendar-page.list-page-shell {
+		flex: 1 1 auto !important;
+		height: 100% !important;
+		max-height: 100% !important;
+		min-height: 0 !important;
+		overflow: hidden !important;
+		display: flex !important;
+		flex-direction: column !important;
+	}
+
+	html.workshop-menu-layout .workshop-messages-page > .list-page-content,
+	html.workshop-menu-layout .workshop-cases-page > .list-page-content,
+	html.workshop-menu-layout .workshop-jobs-page > .list-page-content,
+	html.workshop-menu-layout .workshop-calendar-page > .list-page-content {
+		display: flex !important;
+		flex-direction: column !important;
+		flex: 1 1 auto !important;
+		min-height: 0 !important;
+		height: 100% !important;
+		overflow: hidden !important;
+		padding-bottom: 0 !important;
+	}
+
+	/* Messages inbox: lock page scroll; only the conversation list moves */
+	html.workshop-menu-layout:has(.workshop-messages-page),
+	html.workshop-menu-layout:has(.workshop-messages-page) body {
+		overflow: hidden !important;
+		height: 100% !important;
+		overscroll-behavior: none;
+	}
+
+	html.workshop-menu-layout .workshop-messages-page.list-page-shell {
+		overscroll-behavior: none;
+	}
+
+	/*
+	 * Mobile action buttons: one size + radius (matches Create a new case).
+	 * Only targets controls that already declare a min-height; skips pills/icons.
+	 */
+	.customer-app button[class*='min-h-']:not(.rounded-full):not([class*='rounded-full']),
+	.customer-app a[class*='min-h-']:not(.rounded-full):not([class*='rounded-full']),
+	.workshop-app button[class*='min-h-']:not(.rounded-full):not([class*='rounded-full']),
+	.workshop-app a[class*='min-h-']:not(.rounded-full):not([class*='rounded-full']) {
+		min-height: 44px !important;
+		border-radius: 0.5rem !important;
+		/* Brödtext 14/500 */
+		font-size: 14px !important;
+		line-height: 1.5 !important;
+		letter-spacing: 0 !important;
+		font-weight: 500 !important;
+	}
+}
+
+@media (min-width: 1024px) {
+	html.customer-menu-layout .customer-app > :not(.customer-side-nav):not(.mobile-bottom-nav):not(.customer-mobile-topbar) {
+		margin-left: 260px;
+		width: auto;
+		max-width: calc(100% - 260px);
+	}
+
+	html.customer-menu-layout .list-page-shell {
+		min-height: 100dvh;
+		background: #fff;
+	}
+
+	html.customer-menu-layout .list-page-content {
+		max-width: none !important;
+		flex: 1 1 auto;
+	}
+
+	html.customer-menu-layout .customer-cases-page.list-page-shell {
+		height: 100dvh !important;
+		max-height: 100dvh !important;
+		min-height: 0 !important;
+		overflow: hidden !important;
+	}
+
+	html.customer-menu-layout .customer-cases-page > .list-page-content {
+		flex: 1 1 auto !important;
+		min-height: 0 !important;
+		overflow: hidden !important;
+		display: flex;
+		flex-direction: column;
+		padding-bottom: 1rem !important;
 	}
 }

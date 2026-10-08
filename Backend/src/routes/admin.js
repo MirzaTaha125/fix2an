@@ -5,9 +5,11 @@ import Request from '../models/Request.js'
 import Offer from '../models/Offer.js'
 import Booking from '../models/Booking.js'
 import EmailConfig from '../models/EmailConfig.js'
+import PlatformSettings from '../models/PlatformSettings.js'
 import { notifyWorkshopWelcome } from '../services/notificationService.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import { expireRequests } from '../utils/expireRequests.js'
+import { defaultCommissionRate, defaultVatRate, getPlatformRates } from '../utils/platformSettings.js'
 
 const router = express.Router()
 
@@ -481,6 +483,51 @@ router.patch('/email-config', async (req, res) => {
 	}
 })
 
+
+router.get('/settings', async (req, res) => {
+	try {
+		const rates = await getPlatformRates()
+		res.json(rates)
+	} catch (error) {
+		console.error('Get platform settings error:', error)
+		res.status(500).json({ message: 'Failed to fetch settings' })
+	}
+})
+
+router.patch('/settings', async (req, res) => {
+	try {
+		const update = {}
+		if (req.body.commissionRate !== undefined) {
+			const rate = Number(req.body.commissionRate)
+			if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
+				return res.status(400).json({ message: 'Commission must be between 0 and 100' })
+			}
+			update.commissionRate = rate
+		}
+		if (req.body.vatRate !== undefined) {
+			const vat = Number(req.body.vatRate)
+			if (!Number.isFinite(vat) || vat < 0 || vat > 100) {
+				return res.status(400).json({ message: 'VAT must be between 0 and 100' })
+			}
+			update.vatRate = vat
+		}
+		if (Object.keys(update).length === 0) {
+			return res.status(400).json({ message: 'No settings provided' })
+		}
+		const doc = await PlatformSettings.findOneAndUpdate(
+			{},
+			{ $set: update },
+			{ upsert: true, new: true }
+		).lean()
+		res.json({
+			commissionRate: doc.commissionRate ?? defaultCommissionRate(),
+			vatRate: doc.vatRate ?? defaultVatRate(),
+		})
+	} catch (error) {
+		console.error('Update platform settings error:', error)
+		res.status(500).json({ message: 'Failed to update settings' })
+	}
+})
 
 export default router
 

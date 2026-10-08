@@ -20,7 +20,7 @@ export default function UnderConstructionPage() {
 					className="mx-auto h-16 sm:h-20 w-auto object-contain mb-10"
 				/>
 
-				<p className="text-sm font-semibold tracking-wide uppercase text-[#34C759] mb-3">
+				<p className="text-sm font-semibold tracking-wide uppercase text-[#008037] mb-3">
 					Kommer snart
 				</p>
 
@@ -35,7 +35,7 @@ export default function UnderConstructionPage() {
 
 				<a
 					href="mailto:info@fixa2an.se"
-					className="inline-flex items-center justify-center rounded-xl bg-[#34C759] px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+					className="inline-flex items-center justify-center rounded-xl bg-brand-btn px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
 				>
 					Kontakta oss · info@fixa2an.se
 				</a>

@@ -79,11 +79,19 @@ export const emailTemplates = {
 <p style="${style.footer}">Om länken inte fungerar, kopiera: ${verificationUrl}</p>`,
 	}),
 	magicLinkLogin: (magicLinkUrl) => ({
-		subject: 'Din inloggningslänk – Fixa2an',
-		heading: 'Logga in och skicka din förfrågan',
-		body: `<p>Klicka på länken nedan för att logga in och skicka din förfrågan till verifierade verkstäder:</p>
+		subject: 'Logga in på Fixa2an',
+		heading: 'Öppna ditt konto',
+		body: `<p>Klicka på länken nedan för att logga in och följa dina ärenden:</p>
 <p><a href="${magicLinkUrl}" style="${style.button}">Öppna Fixa2an</a></p>
-<p style="${style.footer}">Länken är giltig i 30 minuter. Om du inte begärde detta kan du ignorera detta mejl.<br/>Om länken inte fungerar, kopiera: ${magicLinkUrl}</p>`,
+<p style="${style.footer}">Länken är giltig i 15 minuter. Om du inte begärde detta kan du ignorera detta mejl.<br/>Om länken inte fungerar, kopiera: ${magicLinkUrl}</p>`,
+	}),
+	caseAccessLink: (magicLinkUrl) => ({
+		subject: 'Din förfrågan har skickats – Fixa2an',
+		heading: 'Din förfrågan har skickats',
+		body: `<p>Vi har tagit emot din förfrågan. Verkstäder kan nu skicka offerter.</p>
+<p>Använd länken nedan när du vill komma tillbaka och följa ärendet:</p>
+<p><a href="${magicLinkUrl}" style="${style.button}">Följ ditt ärende</a></p>
+<p style="${style.footer}">Länken är personlig. Om du inte skickade förfrågan kan du ignorera detta mejl.<br/>Om länken inte fungerar, kopiera: ${magicLinkUrl}</p>`,
 	}),
 	emailVerificationCode: (code) => ({
 		subject: 'Din verifieringskod – Fixa2an',

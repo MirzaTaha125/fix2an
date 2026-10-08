@@ -2,22 +2,25 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useDropzone } from 'react-dropzone'
-import { Eye, EyeOff, Upload, X, Building2, Clock, Plus, ChevronDown } from 'lucide-react'
+import { Eye, EyeOff, Plus, User, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { PhoneInput } from '../components/ui/PhoneInput'
 import { Label } from '../components/ui/Label'
 import { Textarea } from '../components/ui/Textarea'
 import { Button } from '../components/ui/Button'
-import { validateFile, getFileIcon } from '../utils/cn'
+import { validateFile } from '../utils/cn'
 import { uploadAPI, workshopAPI } from '../services/api'
 
 export default function WorkshopSignupPage() {
 	const navigate = useNavigate()
 	const { t } = useTranslation()
+	const fieldLabel = 'block text-sm lg:text-base font-semibold text-brand-dark mb-2.5'
+	const fieldInput =
+		'h-12 lg:h-16 w-full min-w-0 rounded-xl lg:rounded-2xl border border-gray-200 bg-white text-sm lg:text-base shadow-none focus:ring-0 focus:border-[#008037] hover:bg-white'
+	const timeLabel = 'block text-sm font-semibold text-brand-dark mb-1.5'
 	
 	const [formData, setFormData] = useState({
 		// User info
@@ -56,45 +59,32 @@ export default function WorkshopSignupPage() {
 		brands: [],
 	})
 
+	const [dayEnabled, setDayEnabled] = useState({
+		monday: true,
+		tuesday: true,
+		wednesday: true,
+		thursday: true,
+		friday: true,
+		saturday: true,
+		sunday: false,
+	})
+	const dayDefaults = {
+		monday: { open: '08:00', close: '17:00' },
+		tuesday: { open: '08:00', close: '17:00' },
+		wednesday: { open: '08:00', close: '17:00' },
+		thursday: { open: '08:00', close: '17:00' },
+		friday: { open: '08:00', close: '17:00' },
+		saturday: { open: '09:00', close: '15:00' },
+		sunday: { open: '10:00', close: '14:00' },
+	}
+
 	const [documents, setDocuments] = useState([])
+	const [profileImage, setProfileImage] = useState(null)
+	const [profilePreview, setProfilePreview] = useState('')
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [showPassword, setShowPassword] = useState(false)
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 	const [fieldErrors, setFieldErrors] = useState({})
-
-	const carBrands = [
-		'Volvo',
-		'Saab',
-		'BMW',
-		'Mercedes-Benz',
-		'Audi',
-		'Volkswagen',
-		'Toyota',
-		'Honda',
-		'Ford',
-		'Opel',
-		'Peugeot',
-		'Renault',
-		'Citroën',
-		'Fiat',
-		'Nissan',
-		'Mazda',
-		'Hyundai',
-		'Kia',
-		'Skoda',
-		'Seat',
-		'Alfa Romeo',
-		'Jaguar',
-		'Land Rover',
-		'Mini',
-		'Smart',
-		'Subaru',
-		'Suzuki',
-		'Mitsubishi',
-		'Lexus',
-		'Infiniti',
-		'Andra',
-	]
 
 	const onDrop = (acceptedFiles) => {
 		const validFiles = []
@@ -127,6 +117,23 @@ export default function WorkshopSignupPage() {
 		setDocuments((prev) => prev.filter((_, i) => i !== index))
 	}
 
+	const handleProfileImage = (event) => {
+		const file = event.target.files?.[0]
+		if (!file) return
+		if (!file.type.startsWith('image/')) {
+			toast.error(t('errors.invalid_file_type') || 'Only JPG and PNG images are allowed')
+			return
+		}
+		const validation = validateFile(file, t)
+		if (!validation.isValid) {
+			toast.error(validation.error || 'Invalid file')
+			return
+		}
+		if (profilePreview) URL.revokeObjectURL(profilePreview)
+		setProfileImage(file)
+		setProfilePreview(URL.createObjectURL(file))
+	}
+
 	const handleInputChange = (e) => {
 		const { name, value } = e.target
 		setFormData((prev) => ({ ...prev, [name]: value }))
@@ -137,34 +144,6 @@ export default function WorkshopSignupPage() {
 				[name]: '',
 			})
 		}
-	}
-
-	const handleBrandToggle = (brand) => {
-		setFormData((prev) => ({
-			...prev,
-			brands: prev.brands.includes(brand)
-				? prev.brands.filter((b) => b !== brand)
-				: [...prev.brands, brand],
-		}))
-	}
-
-	const handleAddBrand = (e) => {
-		const selectedBrand = e.target.value
-		if (selectedBrand && !formData.brands.includes(selectedBrand)) {
-			setFormData((prev) => ({
-				...prev,
-				brands: [...prev.brands, selectedBrand],
-			}))
-			// Reset dropdown
-			e.target.value = ''
-		}
-	}
-
-	const handleRemoveBrand = (brandToRemove) => {
-		setFormData((prev) => ({
-			...prev,
-			brands: prev.brands.filter((b) => b !== brandToRemove),
-		}))
 	}
 
 	const handleSubmit = async (e) => {
@@ -185,6 +164,15 @@ export default function WorkshopSignupPage() {
 		}
 
 		try {
+			let imageUrl = ''
+			if (profileImage) {
+				const imageFormData = new FormData()
+				imageFormData.append('file', profileImage)
+				const imageResponse = await uploadAPI.uploadFile(imageFormData)
+				imageUrl = imageResponse.data?.fileUrl || ''
+				if (!imageUrl) throw new Error('DOCUMENT_UPLOAD_FAILED')
+			}
+
 			// Upload documents
 			const uploadedDocuments = []
 			for (const file of documents) {
@@ -217,7 +205,7 @@ export default function WorkshopSignupPage() {
 
 			// Prepare registration data
 			const registrationData = {
-				name: formData.name.trim(),
+				name: (formData.name.trim() || formData.companyName.trim()),
 				email: formData.email.trim().toLowerCase(),
 				password: formData.password,
 				phone: formData.phone?.trim() || '',
@@ -228,22 +216,23 @@ export default function WorkshopSignupPage() {
 				city: formData.city.trim(),
 				postalCode: formData.postalCode.trim(),
 				description: formData.description?.trim() || '',
-				mondayOpen: formData.mondayOpen || '',
-				mondayClose: formData.mondayClose || '',
-				tuesdayOpen: formData.tuesdayOpen || '',
-				tuesdayClose: formData.tuesdayClose || '',
-				wednesdayOpen: formData.wednesdayOpen || '',
-				wednesdayClose: formData.wednesdayClose || '',
-				thursdayOpen: formData.thursdayOpen || '',
-				thursdayClose: formData.thursdayClose || '',
-				fridayOpen: formData.fridayOpen || '',
-				fridayClose: formData.fridayClose || '',
-				saturdayOpen: formData.saturdayOpen || '',
-				saturdayClose: formData.saturdayClose || '',
-				sundayOpen: formData.sundayOpen || '',
-				sundayClose: formData.sundayClose || '',
+				mondayOpen: dayEnabled.monday ? formData.mondayOpen || '' : '',
+				mondayClose: dayEnabled.monday ? formData.mondayClose || '' : '',
+				tuesdayOpen: dayEnabled.tuesday ? formData.tuesdayOpen || '' : '',
+				tuesdayClose: dayEnabled.tuesday ? formData.tuesdayClose || '' : '',
+				wednesdayOpen: dayEnabled.wednesday ? formData.wednesdayOpen || '' : '',
+				wednesdayClose: dayEnabled.wednesday ? formData.wednesdayClose || '' : '',
+				thursdayOpen: dayEnabled.thursday ? formData.thursdayOpen || '' : '',
+				thursdayClose: dayEnabled.thursday ? formData.thursdayClose || '' : '',
+				fridayOpen: dayEnabled.friday ? formData.fridayOpen || '' : '',
+				fridayClose: dayEnabled.friday ? formData.fridayClose || '' : '',
+				saturdayOpen: dayEnabled.saturday ? formData.saturdayOpen || '' : '',
+				saturdayClose: dayEnabled.saturday ? formData.saturdayClose || '' : '',
+				sundayOpen: dayEnabled.sunday ? formData.sundayOpen || '' : '',
+				sundayClose: dayEnabled.sunday ? formData.sundayClose || '' : '',
 				brands: formData.brands || [],
 				documents: uploadedDocuments,
+				image: imageUrl,
 			}
 
 			console.log('Submitting workshop registration...', { 
@@ -260,7 +249,7 @@ export default function WorkshopSignupPage() {
 			if (response.status === 201 || response.data) {
 				toast.success(t('workshop.signup.registration_sent') || 'Registration submitted successfully!')
 				setTimeout(() => {
-					navigate('/auth/signin')
+					navigate('/workshop/login')
 				}, 1500)
 			}
 		} catch (error) {
@@ -314,203 +303,76 @@ export default function WorkshopSignupPage() {
 	}
 
 	return (
-		<div className="list-page-shell bg-white">
+		<div className="list-page-shell bg-[#F3F5F8]">
 			<Navbar />
-
-			{/* Signup Form */}
-			<section id="signup-form" className="list-page-main bg-white pt-24 sm:pt-20 md:pt-24 pb-12">
-				<div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-					<div className="text-center mb-8 sm:mb-10 mt-0 sm:mt-5">
-						<h1 className="text-2xl md:text-5xl font-bold mb-6" style={{ color: '#05324f' }}>
-							{t('workshop.signup.title')}
-						</h1>
-						<p className="text-sm sm:text-base md:text-lg" style={{ color: '#05324f' }}>
+			<section id="signup-form" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-32 pb-12">
+				<form onSubmit={handleSubmit} className="flex flex-col gap-4 lg:gap-0" noValidate>
+				<div className="grid gap-4 lg:gap-8 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] lg:items-stretch">
+					<div className="min-w-0 lg:h-full flex flex-col bg-white rounded-2xl lg:rounded-3xl border border-[#EEF1F4] shadow-[0_8px_30px_rgba(15,23,42,0.04)] p-4 sm:p-5 lg:p-8">
+						<h1 className="page-title !mt-0 lg:text-[2.75rem]">{t('workshop.signup.title')}</h1>
+						<p className="text-[0.95rem] lg:text-lg text-[#374151] leading-relaxed mt-3 lg:mt-4 mb-6 lg:mb-8">
 							{t('workshop.signup.subtitle')}
 						</p>
-					</div>
 
-				<form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-					{/* Personal Information */}
-					<Card className="rounded-card shadow-card border border-gray-100 bg-white">
-						<CardHeader className="pb-4">
-							<CardTitle className="text-xl font-bold" style={{ color: '#05324f' }}>
-								{t('workshop.signup.personal_info.title')}
-							</CardTitle>
-							<CardDescription style={{ color: '#05324f' }}>
-								{t('workshop.signup.personal_info.description')}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-								<div>
-									<Label htmlFor="name" className="text-sm sm:text-base">
-										{t('workshop.signup.personal_info.name')}
-									</Label>
-									<Input
-										id="name"
-										name="name"
-										value={formData.name}
-										onChange={handleInputChange}
-										required
-										placeholder={t('workshop.signup.personal_info.name_placeholder')}
-									/>
-								</div>
-								<div>
-									<Label htmlFor="email" className="text-sm sm:text-base">
-										{t('workshop.signup.personal_info.email')}
-									</Label>
-									<Input
-										id="email"
-										name="email"
-										type="email"
-										value={formData.email}
-										onChange={(e) => {
-											handleInputChange(e)
-											if (fieldErrors.email) {
-												setFieldErrors({ ...fieldErrors, email: '' })
-											}
-										}}
-										required
-										placeholder={t('workshop.signup.personal_info.email_placeholder')}
-										className={fieldErrors.email ? 'border-red-500 focus:ring-red-500' : ''}
-									/>
-									{fieldErrors.email && (
-										<p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+						<div className="flex justify-center mb-6">
+							<label htmlFor="profileImage" className="relative h-28 w-28 cursor-pointer">
+								<span className="flex h-full w-full items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-[#F3F5F8]">
+									{profilePreview ? (
+										<img src={profilePreview} alt="" className="h-full w-full object-cover" />
+									) : (
+										<User className="w-10 h-10 text-[#9CA3AF]" strokeWidth={1.75} />
 									)}
-								</div>
-							</div>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-								<div>
-									<Label htmlFor="phone" className="text-sm sm:text-base">
-										{t('workshop.signup.personal_info.phone')}
-									</Label>
-									<PhoneInput
-										id="phone"
-										name="phone"
-										value={formData.phone}
-										onChange={handleInputChange}
-										required
-										placeholder={t('workshop.signup.personal_info.phone')}
-									/>
-								</div>
-								<div>
-									<Label htmlFor="website" className="text-sm sm:text-base">
-										{t('workshop.signup.personal_info.website')}
-									</Label>
-									<Input
-										id="website"
-										name="website"
-										type="url"
-										value={formData.website}
-										onChange={handleInputChange}
-										placeholder={t('workshop.signup.personal_info.website_placeholder')}
-									/>
-								</div>
-							</div>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-								<div>
-									<Label htmlFor="password" className="text-sm sm:text-base">
-										{t('workshop.signup.personal_info.password')}
-									</Label>
-									<div className="relative">
-										<Input
-											id="password"
-											name="password"
-											type={showPassword ? 'text' : 'password'}
-											value={formData.password}
-											onChange={handleInputChange}
-											required
-											placeholder={t('workshop.signup.personal_info.password_placeholder')}
-											className="pr-10"
-										/>
-										<button
-											type="button"
-											onClick={() => setShowPassword(!showPassword)}
-											className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-										>
-											{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-										</button>
-									</div>
-								</div>
-								<div>
-									<Label htmlFor="confirmPassword" className="text-sm sm:text-base">
-										{t('workshop.signup.personal_info.confirm_password')}
-									</Label>
-									<div className="relative">
-										<Input
-											id="confirmPassword"
-											name="confirmPassword"
-											type={showConfirmPassword ? 'text' : 'password'}
-											value={formData.confirmPassword}
-											onChange={handleInputChange}
-											required
-											placeholder={t('workshop.signup.personal_info.confirm_password_placeholder')}
-											className="pr-10"
-										/>
-										<button
-											type="button"
-											onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-											className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-										>
-											{showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-										</button>
-									</div>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
+								</span>
+								<span className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-brand-btn text-white shadow-sm">
+									<Plus className="h-5 w-5" strokeWidth={2.5} />
+								</span>
+								<input
+									id="profileImage"
+									type="file"
+									accept="image/jpeg,image/png,image/jpg"
+									className="sr-only"
+									onChange={handleProfileImage}
+								/>
+							</label>
+						</div>
 
-					{/* Company Information */}
-					<Card className="rounded-card shadow-card border border-gray-100 bg-white">
-						<CardHeader className="pb-4">
-							<CardTitle className="flex items-center gap-2 text-xl font-bold" style={{ color: '#05324f' }}>
-								<Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#34C759]" />
-								{t('workshop.signup.company_info.title')}
-							</CardTitle>
-							<CardDescription style={{ color: '#05324f' }}>
-								{t('workshop.signup.company_info.description')}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-								<div>
-									<Label htmlFor="companyName" className="text-sm sm:text-base">
-										{t('workshop.signup.company_info.company_name')}
-									</Label>
-									<Input
-										id="companyName"
-										name="companyName"
-										value={formData.companyName}
-										onChange={handleInputChange}
-										required
-										placeholder={t('workshop.signup.company_info.company_name_placeholder')}
-									/>
-								</div>
-								<div>
-									<Label htmlFor="organizationNumber" className="text-sm sm:text-base">
-										{t('workshop.signup.company_info.organization_number')}
-									</Label>
-									<Input
-										id="organizationNumber"
-										name="organizationNumber"
-										value={formData.organizationNumber}
-										onChange={(e) => {
-											handleInputChange(e)
-											if (fieldErrors.organizationNumber) {
-												setFieldErrors({ ...fieldErrors, organizationNumber: '' })
-											}
-										}}
-										required
-										placeholder={t('workshop.signup.company_info.organization_number_placeholder')}
-										className={fieldErrors.organizationNumber ? 'border-red-500 focus:ring-red-500' : ''}
-									/>
-									{fieldErrors.organizationNumber && (
-										<p className="mt-1 text-sm text-red-600">{fieldErrors.organizationNumber}</p>
-									)}
-								</div>
+						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+							<div className="min-w-0">
+								<Label htmlFor="companyName" className={fieldLabel}>
+									{t('workshop.signup.company_info.company_name')}
+								</Label>
+								<Input
+									id="companyName"
+									name="companyName"
+									value={formData.companyName}
+									onChange={handleInputChange}
+									required
+									placeholder={t('workshop.signup.company_info.company_name_placeholder')}
+									className={fieldInput}
+								/>
 							</div>
-							<div>
-								<Label htmlFor="address" className="text-sm sm:text-base">
+							<div className="min-w-0">
+								<Label htmlFor="organizationNumber" className={fieldLabel}>
+									{t('workshop.signup.company_info.organization_number')}
+								</Label>
+								<Input
+									id="organizationNumber"
+									name="organizationNumber"
+									value={formData.organizationNumber}
+									onChange={(e) => {
+										handleInputChange(e)
+										if (fieldErrors.organizationNumber) setFieldErrors({ ...fieldErrors, organizationNumber: '' })
+									}}
+									required
+									placeholder={t('workshop.signup.company_info.organization_number_placeholder')}
+									className={`${fieldInput} ${fieldErrors.organizationNumber ? 'border-red-500 focus:ring-red-500' : ''}`}
+								/>
+								{fieldErrors.organizationNumber && (
+									<p className="mt-1 text-xs text-red-600">{fieldErrors.organizationNumber}</p>
+								)}
+							</div>
+							<div className="min-w-0">
+								<Label htmlFor="address" className={fieldLabel}>
 									{t('workshop.signup.company_info.address')}
 								</Label>
 								<Input
@@ -520,286 +382,281 @@ export default function WorkshopSignupPage() {
 									onChange={handleInputChange}
 									required
 									placeholder={t('workshop.signup.company_info.address_placeholder')}
+									className={fieldInput}
 								/>
 							</div>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-								<div>
-									<Label htmlFor="city" className="text-sm sm:text-base">
-										{t('workshop.signup.company_info.city')}
-									</Label>
-									<Input
-										id="city"
-										name="city"
-										value={formData.city}
-										onChange={handleInputChange}
-										required
-										placeholder={t('workshop.signup.company_info.city_placeholder')}
-									/>
-								</div>
-								<div>
-									<Label htmlFor="postalCode" className="text-sm sm:text-base">
-										{t('workshop.signup.company_info.postal_code')}
-									</Label>
-									<Input
-										id="postalCode"
-										name="postalCode"
-										value={formData.postalCode}
-										onChange={handleInputChange}
-										required
-										placeholder={t('workshop.signup.company_info.postal_code_placeholder')}
-									/>
-								</div>
-							</div>
-							<div>
-								<Label htmlFor="description" className="text-sm sm:text-base">
-									{t('workshop.signup.company_info.description_label')}
+							<div className="min-w-0">
+								<Label htmlFor="website" className={fieldLabel}>
+									{t('workshop.signup.personal_info.website')}
 								</Label>
-								<Textarea
-									id="description"
-									name="description"
-									value={formData.description}
+								<Input
+									id="website"
+									name="website"
+									type="url"
+									value={formData.website}
 									onChange={handleInputChange}
-									placeholder={t('workshop.signup.company_info.description_placeholder')}
-									rows={3}
+									placeholder={t('workshop.signup.personal_info.website_placeholder')}
+									className={fieldInput}
 								/>
 							</div>
-						</CardContent>
-					</Card>
+							<div className="min-w-0">
+								<Label htmlFor="email" className={fieldLabel}>
+									{t('workshop.signup.personal_info.email')}
+								</Label>
+								<Input
+									id="email"
+									name="email"
+									type="email"
+									value={formData.email}
+									onChange={(e) => {
+										handleInputChange(e)
+										if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' })
+									}}
+									required
+									placeholder={t('workshop.signup.personal_info.email_placeholder')}
+									className={`${fieldInput} ${fieldErrors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
+								/>
+								{fieldErrors.email && <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>}
+							</div>
+							<div className="min-w-0">
+								<Label htmlFor="phone" className={fieldLabel}>
+									{t('workshop.signup.personal_info.phone')}
+								</Label>
+								<PhoneInput
+									id="phone"
+									name="phone"
+									value={formData.phone}
+									onChange={handleInputChange}
+									required
+									placeholder={t('workshop.signup.personal_info.phone')}
+									inputClassName={fieldInput}
+									prefixClassName="h-12 lg:h-16 rounded-l-xl lg:rounded-l-2xl border border-gray-200 border-r-0 bg-white px-3.5 lg:px-4 text-sm lg:text-base font-medium text-brand-dark"
+								/>
+							</div>
+							<div className="min-w-0">
+								<Label htmlFor="password" className={fieldLabel}>
+									{t('workshop.signup.personal_info.password')}
+								</Label>
+								<div className="relative">
+									<Input
+										id="password"
+										name="password"
+										type={showPassword ? 'text' : 'password'}
+										value={formData.password}
+										onChange={handleInputChange}
+										required
+										placeholder={t('workshop.signup.personal_info.password_placeholder')}
+										className={`${fieldInput} pr-11`}
+									/>
+									<button
+										type="button"
+										onClick={() => setShowPassword(!showPassword)}
+										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+									>
+										{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+									</button>
+								</div>
+							</div>
+							<div className="min-w-0">
+								<Label htmlFor="confirmPassword" className={fieldLabel}>
+									{t('workshop.signup.personal_info.confirm_password')}
+								</Label>
+								<div className="relative">
+									<Input
+										id="confirmPassword"
+										name="confirmPassword"
+										type={showConfirmPassword ? 'text' : 'password'}
+										value={formData.confirmPassword}
+										onChange={handleInputChange}
+										required
+										placeholder={t('workshop.signup.personal_info.confirm_password_placeholder')}
+										className={`${fieldInput} pr-11`}
+									/>
+									<button
+										type="button"
+										onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+									>
+										{showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+									</button>
+								</div>
+							</div>
+						</div>
 
-					{/* Opening Hours */}
-					<Card className="rounded-card shadow-card border border-gray-100 bg-white">
-						<CardHeader className="pb-4">
-							<CardTitle className="text-xl font-bold" style={{ color: '#05324f' }}>
-								{t('workshop.signup.opening_hours.title')}
-							</CardTitle>
-							<CardDescription style={{ color: '#05324f' }}>
-								{t('workshop.signup.opening_hours.description')}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="px-3 sm:px-6 pt-0">
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-								{['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(
-									(day) => (
-										<div key={day} className="p-2 sm:p-4 rounded-xl border border-gray-100 bg-gray-50/30">
-											<Label className="text-xs sm:text-sm font-bold text-[#05324f] mb-2 sm:mb-3 block capitalize">
+						<div className="mt-4">
+							<Label htmlFor="description" className={fieldLabel}>
+								{t('workshop.signup.company_info.description_label')}
+							</Label>
+							<Textarea
+								id="description"
+								name="description"
+								value={formData.description}
+								onChange={handleInputChange}
+								placeholder={t('workshop.signup.company_info.description_placeholder')}
+								rows={3}
+								className={`${fieldInput} min-h-[7.5rem] py-3 h-auto`}
+							/>
+						</div>
+
+						<div className="mt-4">
+							<Label className={fieldLabel}>{t('workshop.signup.documents.title')}</Label>
+							<div
+								{...getRootProps()}
+								className={`${fieldInput} flex items-center px-4 cursor-pointer text-[#6B7280] overflow-hidden ${
+									isDragActive ? 'border-[#008037]' : ''
+								}`}
+							>
+								<input {...getInputProps()} />
+								<span className="truncate text-sm">
+									{documents.length > 0
+										? documents.map((file) => file.name).join(', ')
+										: t('workshop.signup.documents.drag_drop')}
+								</span>
+							</div>
+							{documents.length > 0 && (
+								<ul className="mt-2 space-y-1">
+									{documents.map((file, index) => (
+										<li
+											key={`${file.name}-${index}`}
+											className="flex items-center justify-between gap-2 text-sm text-[#374151]"
+										>
+											<span className="truncate min-w-0">{file.name}</span>
+											<button
+												type="button"
+												onClick={() => removeDocument(index)}
+												className="shrink-0 text-gray-400 hover:text-gray-600"
+											>
+												<X className="w-4 h-4" />
+											</button>
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
+
+						<div className="mt-auto pt-6 max-lg:hidden">
+							<Button
+								type="submit"
+								disabled={isSubmitting}
+								className="w-full min-h-[52px] lg:min-h-[64px] rounded-xl bg-brand-btn text-white font-semibold text-base lg:text-lg"
+							>
+								{isSubmitting ? t('workshop.signup.submitting') : t('workshop.signup.submit')}
+							</Button>
+							<p className="text-sm text-gray-600 text-center mt-5">
+								{t('workshop.signup.already_account')}{' '}
+								<Link to="/workshop/login" className="font-medium text-[#008037] hover:underline">
+									{t('workshop.signup.sign_in_here')}
+								</Link>
+							</p>
+						</div>
+					</div>
+
+					<div className="min-w-0 lg:h-full flex flex-col bg-white rounded-2xl lg:rounded-3xl border border-[#EEF1F4] shadow-[0_8px_30px_rgba(15,23,42,0.04)] p-4 sm:p-5 lg:p-8">
+						<h2 className="page-title !mt-0 lg:text-[2.75rem] shrink-0">
+							{t('workshop.signup.opening_hours.title')}
+						</h2>
+						<p className="text-[0.95rem] lg:text-lg text-[#374151] leading-relaxed mt-2 lg:mt-4 mb-4 lg:mb-5 shrink-0">
+							{t('workshop.signup.opening_hours.description')}
+						</p>
+						<div className="flex flex-col gap-3 lg:flex-1 lg:justify-between lg:min-h-0">
+							{['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
+								const enabled = Boolean(dayEnabled[day])
+								return (
+									<div
+										key={day}
+										className={`p-3 rounded-xl border border-gray-100 ${enabled ? '' : 'bg-[#F9FAFB]'}`}
+									>
+										<div className="flex items-center justify-between gap-3 mb-2">
+											<Label className="text-sm font-semibold text-brand-dark">
 												{t(`workshop.signup.opening_hours.days.${day}`)}
 											</Label>
-											<div className="grid grid-cols-2 gap-2 md:gap-4 max-md:max-w-[300px]">
-												<div className="space-y-1">
-													<Label className="text-[10px] md:text-xs text-gray-500 block uppercase tracking-wider font-medium">
-														{t('workshop.signup.opening_hours.open') || 'Open'}
-													</Label>
+											<button
+												type="button"
+												role="switch"
+												aria-checked={enabled}
+												aria-label={`${t(`workshop.signup.opening_hours.days.${day}`)} ${
+													enabled
+														? t('workshop.signup.opening_hours.day_on')
+														: t('workshop.signup.opening_hours.day_off')
+												}`}
+												onClick={() => {
+													setDayEnabled((prev) => {
+														const nextOn = !prev[day]
+														if (nextOn) {
+															const defaults = dayDefaults[day]
+															setFormData((form) => ({
+																...form,
+																[`${day}Open`]: form[`${day}Open`] || defaults.open,
+																[`${day}Close`]: form[`${day}Close`] || defaults.close,
+															}))
+														}
+														return { ...prev, [day]: nextOn }
+													})
+												}}
+												className={`relative w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 ${
+													enabled ? 'bg-[#008037]' : 'bg-gray-200'
+												}`}
+											>
+												<span
+													className={`block w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+														enabled ? 'translate-x-5' : 'translate-x-0'
+													}`}
+												/>
+											</button>
+										</div>
+										{enabled ? (
+											<div className="grid grid-cols-2 gap-4">
+												<div className="min-w-0">
+													<Label className={timeLabel}>{t('workshop.signup.opening_hours.open')}</Label>
 													<Input
 														type="time"
 														value={formData[`${day}Open`]}
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Open`]: e.target.value }))
 														}
-														className="h-10 md:h-12 w-full p-0 md:px-3 text-center text-xs md:text-sm bg-white"
+														className={`${fieldInput} !h-12 lg:!h-16 text-center px-2`}
 													/>
 												</div>
-												<div className="space-y-1">
-													<Label className="text-[10px] md:text-xs text-gray-500 block uppercase tracking-wider font-medium">
-														{t('workshop.signup.opening_hours.close') || 'Close'}
-													</Label>
+												<div className="min-w-0">
+													<Label className={timeLabel}>{t('workshop.signup.opening_hours.close')}</Label>
 													<Input
 														type="time"
 														value={formData[`${day}Close`]}
 														onChange={(e) =>
 															setFormData((prev) => ({ ...prev, [`${day}Close`]: e.target.value }))
 														}
-														className="h-10 md:h-12 w-full p-0 md:px-3 text-center text-xs md:text-sm bg-white"
+														className={`${fieldInput} !h-12 lg:!h-16 text-center px-2`}
 													/>
 												</div>
 											</div>
-										</div>
-									),
-								)}
-							</div>
-						</CardContent>
-					</Card>
-
-					{/* Brands */}
-					<Card className="rounded-card shadow-card border border-gray-100 bg-white">
-						<CardHeader className="pb-4">
-							<CardTitle className="text-xl font-bold" style={{ color: '#05324f' }}>
-								{t('workshop.signup.brands.title')}
-							</CardTitle>
-							<CardDescription style={{ color: '#05324f' }}>
-								{t('workshop.signup.brands.description')}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							{/* Dropdown to add brands */}
-							<div className="space-y-2">
-								<Label htmlFor="brandSelect" className="text-sm sm:text-base font-semibold text-gray-700 block">
-									{t('workshop.signup.brands.select_brand') || 'Select car brand'}
-								</Label>
-								<div className="relative">
-									<select
-										id="brandSelect"
-										onChange={handleAddBrand}
-										className="w-full rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 py-3 pr-10 text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] hover:bg-white transition-all appearance-none cursor-pointer"
-										defaultValue=""
-									>
-										<option value="" disabled hidden>
-											{t('workshop.signup.brands.select_placeholder') || 'Select a brand...'}
-										</option>
-										{carBrands
-											.filter((brand) => !formData.brands.includes(brand))
-											.map((brand) => (
-												<option key={brand} value={brand}>
-													{brand}
-												</option>
-											))}
-									</select>
-									<div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-										<ChevronDown className="w-5 h-5 text-gray-400" />
+										) : (
+											<p className="text-sm text-[#9CA3AF] py-1">
+												{t('workshop.signup.opening_hours.day_off')}
+											</p>
+										)}
 									</div>
-								</div>
-							</div>
+								)
+							})}
+						</div>
+					</div>
+				</div>
 
-							{/* Selected brands list */}
-							{formData.brands.length > 0 && (
-								<div>
-									<Label className="text-sm sm:text-base mb-2 block">
-										{t('workshop.signup.brands.selected_brands') || 'Selected brands:'}
-									</Label>
-									<div className="flex flex-wrap gap-2">
-										{formData.brands.map((brand) => (
-											<div
-												key={brand}
-												className="inline-flex items-center gap-2 px-4 py-2 bg-[#34C759]/10 text-[#34C759] rounded-full text-sm font-medium border border-[#34C759]/20 hover:bg-[#34C759]/20 transition-colors"
-											>
-												<span>{brand}</span>
-												<button
-													type="button"
-													onClick={() => handleRemoveBrand(brand)}
-													className="hover:bg-[#34C759]/30 rounded-full p-0.5 transition-colors"
-													aria-label={`${t('workshop.signup.brands.remove')} ${brand}`}
-												>
-													<X className="w-4 h-4" />
-												</button>
-											</div>
-										))}
-									</div>
-								</div>
-							)}
-						</CardContent>
-					</Card>
-
-					{/* Documents */}
-					<Card className="rounded-card shadow-card border border-gray-100 bg-white">
-						<CardHeader className="pb-4">
-							<CardTitle className="text-xl font-bold" style={{ color: '#05324f' }}>
-								{t('workshop.signup.documents.title')}
-							</CardTitle>
-							<CardDescription style={{ color: '#05324f' }}>
-								{t('workshop.signup.documents.description')}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div
-								{...getRootProps()}
-								className={`border-2 border-dashed rounded-xl p-4 sm:p-6 md:p-8 text-center cursor-pointer transition-all ${
-									isDragActive
-										? 'border-[#34C759] bg-[#34C759]/10 shadow-lg scale-[1.02]'
-										: 'border-gray-300 hover:border-[#34C759] hover:bg-[#34C759]/5 hover:shadow-md'
-								}`}
-							>
-								<input {...getInputProps()} />
-								<Upload className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto mb-3 sm:mb-4 text-gray-400" />
-								{isDragActive ? (
-									<p className="text-sm sm:text-base md:text-lg text-[#34C759] font-semibold">
-										{t('workshop.signup.documents.drop_here')}
-									</p>
-								) : (
-									<div>
-										<p className="text-sm sm:text-base md:text-lg text-gray-600 mb-2">
-											{t('workshop.signup.documents.drag_drop')}
-										</p>
-										<p className="text-xs sm:text-sm text-gray-500">
-											{t('workshop.signup.documents.file_types')}
-										</p>
-									</div>
-								)}
-							</div>
-
-							{documents.length > 0 && (
-								<div className="mt-4 sm:mt-6 space-y-2">
-									<h4 className="font-medium text-sm sm:text-base">
-										{t('workshop.signup.documents.uploaded_documents')}
-									</h4>
-									{documents.map((file, index) => (
-										<div
-											key={index}
-											className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg"
-										>
-											<div className="flex items-center gap-2 sm:gap-3">
-												<span className="text-xl sm:text-2xl">{getFileIcon(file.type)}</span>
-												<div className="flex-1 min-w-0">
-													<p className="font-medium text-xs sm:text-sm truncate">{file.name}</p>
-													<p className="text-xs text-gray-500">
-														{(file.size / 1024 / 1024).toFixed(2)} MB
-													</p>
-												</div>
-											</div>
-											<Button
-												type="button"
-												variant="ghost"
-												size="sm"
-												onClick={() => removeDocument(index)}
-												className="flex-shrink-0"
-											>
-												<X className="w-3 h-3 sm:w-4 sm:h-4" />
-											</Button>
-										</div>
-									))}
-								</div>
-							)}
-						</CardContent>
-					</Card>
-
-					{/* Submit */}
-					<div className="flex justify-end pt-4">
-						<Button 
-							type="submit" 
-							size="default" 
-							className="w-full sm:w-auto text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:ring-4 disabled:opacity-50" 
-							style={{ 
-								backgroundColor: '#34C759',
-								backgroundImage: 'none',
-							}}
-							onMouseEnter={(e) => e.target.style.backgroundColor = '#2db04a'}
-							onMouseLeave={(e) => e.target.style.backgroundColor = '#34C759'}
-							onFocus={(e) => e.target.style.boxShadow = '0 0 0 4px rgba(52, 199, 89, 0.3)'}
-							onBlur={(e) => e.target.style.boxShadow = ''}
+					<div className="lg:hidden w-full pt-1 pb-2">
+						<Button
+							type="submit"
 							disabled={isSubmitting}
+							className="w-full min-h-[52px] rounded-xl bg-brand-btn text-white font-semibold text-base"
 						>
-							{isSubmitting ? (
-								<>
-									<svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-										<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-									</svg>
-									{t('workshop.signup.submitting')}
-								</>
-							) : (
-								t('workshop.signup.submit')
-							)}
+							{isSubmitting ? t('workshop.signup.submitting') : t('workshop.signup.submit')}
 						</Button>
+						<p className="text-sm text-gray-600 text-center mt-5">
+							{t('workshop.signup.already_account')}{' '}
+							<Link to="/workshop/login" className="font-medium text-[#008037] hover:underline">
+								{t('workshop.signup.sign_in_here')}
+							</Link>
+						</p>
 					</div>
 				</form>
-
-				<div className="text-center mt-6 sm:mt-8">
-					<p className="text-xs sm:text-sm text-gray-600">
-						{t('workshop.signup.already_account')}{' '}
-						<Link to="/auth/signin" className="font-medium text-green-600 hover:text-green-800">
-							{t('workshop.signup.sign_in_here')}
-						</Link>
-					</p>
-				</div>
-				</div>
 			</section>
 			<Footer />
 		</div>

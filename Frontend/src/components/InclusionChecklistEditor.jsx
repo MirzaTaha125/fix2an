@@ -26,12 +26,12 @@ export default function InclusionChecklistEditor({ items, onChange, disabled = f
 	return (
 		<div className="space-y-2.5">
 			<Label className="text-sm font-semibold text-[#05324f]">
-				{t('offers_page.included_question') || "What's included in the price?"}
+				{t('quotes.flow.whats_included') || "What's included in the quote?"}
 			</Label>
 			<div className="space-y-2">
 				{items.map((item, index) => (
 					<div key={index} className="flex items-center gap-2">
-						<Check size={16} className="text-[#38BC54] shrink-0" strokeWidth={3} />
+						<Check size={16} className="text-[#008037] shrink-0" strokeWidth={3} />
 						<Input
 							value={item}
 							disabled={disabled}

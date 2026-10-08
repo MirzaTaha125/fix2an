@@ -9,14 +9,16 @@ export function Select({ value, onValueChange, children }) {
 	const [open, setOpen] = React.useState(false)
 	const [selectedValue, setSelectedValue] = React.useState(value || '')
 	const [displayText, setDisplayText] = React.useState('')
+	const [placeholder, setPlaceholder] = React.useState('')
 
 	React.useEffect(() => {
 		setSelectedValue(value || '')
+		if (!value) setDisplayText('')
 	}, [value])
 
 	const handleSelect = (newValue, newText) => {
 		setSelectedValue(newValue)
-		setDisplayText(newText)
+		setDisplayText(typeof newText === 'string' ? newText : String(newText ?? ''))
 		setOpen(false)
 		if (onValueChange) {
 			onValueChange(newValue)
@@ -24,36 +26,46 @@ export function Select({ value, onValueChange, children }) {
 	}
 
 	return (
-		<SelectContext.Provider value={{ selectedValue, displayText, open, setOpen, handleSelect }}>
+		<SelectContext.Provider
+			value={{ selectedValue, displayText, open, setOpen, handleSelect, placeholder, setPlaceholder }}
+		>
 			<div className="relative">{children}</div>
 		</SelectContext.Provider>
 	)
 }
 
-export function SelectTrigger({ className, children, placeholder, ...props }) {
+export function SelectTrigger({ className, children, placeholder: triggerPlaceholder, ...props }) {
 	const { t } = useTranslation()
-	const { selectedValue, displayText, open, setOpen } = React.useContext(SelectContext)
-	const displayValue = displayText || selectedValue || placeholder || t('common.select_placeholder')
+	const { selectedValue, displayText, open, setOpen, placeholder: contextPlaceholder } =
+		React.useContext(SelectContext)
+	const placeholder = triggerPlaceholder || contextPlaceholder || t('common.select_placeholder')
+	const hasValue = Boolean(displayText || selectedValue)
+	const displayValue = hasValue ? displayText || selectedValue : placeholder
 
 	return (
 		<button
 			type="button"
 			className={cn(
-				'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+				'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
 				className
 			)}
 			onClick={() => setOpen(!open)}
 			{...props}
 		>
-			<span className="line-clamp-1">{displayValue}</span>
-			<ChevronDown className={cn('h-4 w-4 opacity-50 transition-transform', open && 'rotate-180')} />
+			<span className={cn('line-clamp-1 text-left', !hasValue && 'text-[#9CA3AF]')}>{displayValue}</span>
+			{children}
+			<ChevronDown className={cn('h-4 w-4 shrink-0 opacity-50 transition-transform', open && 'rotate-180')} />
 		</button>
 	)
 }
 
 export function SelectValue({ placeholder }) {
-	const { selectedValue, displayText } = React.useContext(SelectContext)
-	// This component is used to set the placeholder, but the actual display is handled by SelectTrigger
+	const { setPlaceholder } = React.useContext(SelectContext)
+
+	React.useEffect(() => {
+		if (placeholder != null) setPlaceholder(placeholder)
+	}, [placeholder, setPlaceholder])
+
 	return null
 }
 
@@ -78,10 +90,7 @@ export function SelectContent({ className, children, ...props }) {
 
 	return (
 		<>
-			<div
-				className="fixed inset-0 z-40"
-				onClick={() => setOpen(false)}
-			/>
+			<div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
 			<div
 				ref={contentRef}
 				className={cn(
@@ -93,8 +102,12 @@ export function SelectContent({ className, children, ...props }) {
 				<div className="p-1 max-h-96 overflow-y-auto">
 					{React.Children.map(children, (child) => {
 						if (React.isValidElement(child) && child.type === SelectItem) {
+							const label =
+								typeof child.props.children === 'string' || typeof child.props.children === 'number'
+									? String(child.props.children)
+									: child.props.children
 							return React.cloneElement(child, {
-								onClick: () => handleSelect(child.props.value, child.props.children),
+								onClick: () => handleSelect(child.props.value, label),
 								isSelected: child.props.value === selectedValue,
 							})
 						}
@@ -132,20 +145,9 @@ export function SelectGroup({ children }) {
 }
 
 export function SelectLabel({ className, ...props }) {
-	return (
-		<div
-			className={cn('py-1.5 pl-8 pr-2 text-sm font-semibold', className)}
-			{...props}
-		/>
-	)
+	return <div className={cn('py-1.5 pl-8 pr-2 text-sm font-semibold', className)} {...props} />
 }
 
 export function SelectSeparator({ className, ...props }) {
-	return (
-		<div
-			className={cn('-mx-1 my-1 h-px bg-gray-200', className)}
-			{...props}
-		/>
-	)
+	return <div className={cn('-mx-1 my-1 h-px bg-gray-200', className)} {...props} />
 }
-

@@ -1,23 +1,25 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Input } from '../components/ui/Input'
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/Dialog'
-import { Skeleton } from '../components/ui/Skeleton'
+import { CaseDetailSkeleton, WorkshopCasesListSkeleton } from '../components/ui/Skeleton'
+import EmptyState from '../components/ui/EmptyState'
 import toast from 'react-hot-toast'
-import { formatPrice, formatDate, formatDateTime, formatTime, calculateDistance } from '../utils/cn'
+import { formatPrice, formatDate, formatDateTime, calculateDistance } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import StatCard from '../components/ui/StatCard'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
-import VehicleRequestCard from '../components/VehicleRequestCard'
+import WorkshopShell from '../components/workshop/WorkshopShell'
+import { WorkshopCasePanel } from './WorkshopCaseDetailPage'
+import { CreateQuotePanel } from './CreateOfferPage'
+import { getCaseTitle, getVehicleLine } from '../components/cases/caseHelpers'
 import CreateOfferModal from '../components/CreateOfferModal'
 import ViewOfferModal from '../components/ViewOfferModal'
 
-import { requestsAPI, workshopAPI, offersAPI } from '../services/api'
+import { requestsAPI, workshopAPI, offersAPI, bookingsAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 import {
 	Car,
@@ -45,8 +47,36 @@ import {
 
 export default function WorkshopRequestsPage() {
 	const navigate = useNavigate()
+	const [searchParams, setSearchParams] = useSearchParams()
+	const selectedId = searchParams.get('case')
+	const showQuote = searchParams.get('panel') === 'quote'
+	const openCase = (requestId) => {
+		const next = new URLSearchParams(searchParams)
+		next.set('case', requestId)
+		next.delete('panel')
+		next.delete('view')
+		setSearchParams(next)
+	}
+	const closeCase = () => {
+		const next = new URLSearchParams(searchParams)
+		next.delete('case')
+		next.delete('panel')
+		next.delete('view')
+		setSearchParams(next)
+	}
+	const openQuote = () => {
+		const next = new URLSearchParams(searchParams)
+		next.set('panel', 'quote')
+		setSearchParams(next)
+	}
+	const closeQuote = () => {
+		const next = new URLSearchParams(searchParams)
+		next.delete('panel')
+		next.delete('view')
+		setSearchParams(next)
+	}
 	const { user, loading: authLoading } = useAuth()
-	const { t } = useTranslation()
+	const { t, i18n } = useTranslation()
 	const [requests, setRequests] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [searchQuery, setSearchQuery] = useState('')
@@ -59,19 +89,21 @@ export default function WorkshopRequestsPage() {
 	const [workshopCoords, setWorkshopCoords] = useState({ lat: null, lng: null })
 	const [selectedReport, setSelectedReport] = useState(null)
 	const [showReportDialog, setShowReportDialog] = useState(false)
-	const [mobileTab, setMobileTab] = useState('new')
+	const [caseFilter, setCaseFilter] = useState('all')
+	const [showAllCases, setShowAllCases] = useState(false)
 	const [offerModalOpen, setOfferModalOpen] = useState(false)
 	const [selectedRequestIdForOffer, setSelectedRequestIdForOffer] = useState(null)
 	const [viewModalOpen, setViewModalOpen] = useState(false)
 	const [selectedOffer, setSelectedOffer] = useState(null)
 	const [workshopOffers, setWorkshopOffers] = useState([])
+	const [completedBookings, setCompletedBookings] = useState([])
 
 	// Redirect if not authenticated or not workshop
 	useEffect(() => {
 		if (!authLoading) {
 			const userRole = user?.role?.toUpperCase()
 			if (!user) {
-				navigate('/auth/signin', { replace: true })
+				navigate('/workshop/login', { replace: true })
 				return
 			}
 			if (userRole !== 'WORKSHOP') {
@@ -84,11 +116,10 @@ export default function WorkshopRequestsPage() {
 		}
 	}, [user, authLoading, navigate])
 
-	const fetchRequests = async () => {
+	const fetchRequests = async ({ silent = false } = {}) => {
 		if (!user || user.role?.toUpperCase() !== 'WORKSHOP') return
 
 		try {
-			// Fetch all available requests (no distance filtering)
 			const response = await requestsAPI.getAvailable()
 			
 			if (response.data) {
@@ -96,8 +127,7 @@ export default function WorkshopRequestsPage() {
 			}
 		} catch (error) {
 			console.error('Failed to fetch requests:', error)
-			console.error('Error details:', error.response?.data)
-			toast.error(error.response?.data?.message || t('errors.fetch_failed'))
+			if (!silent) toast.error(error.response?.data?.message || t('errors.fetch_failed'))
 		} finally {
 			setLoading(false)
 		}
@@ -114,13 +144,49 @@ export default function WorkshopRequestsPage() {
 		}
 	}
 
+	const fetchCompletedBookings = async () => {
+		try {
+			const response = await bookingsAPI.getByWorkshopMe()
+			const rows = Array.isArray(response.data) ? response.data : []
+			setCompletedBookings(rows.filter((booking) => {
+				const bookingStatus = String(booking.status || '').toUpperCase()
+				const requestStatus = String(booking.requestId?.status || '').toUpperCase()
+				return bookingStatus === 'DONE' || requestStatus === 'COMPLETED'
+			}))
+		} catch (error) {
+			console.error('Failed to fetch completed bookings:', error)
+			setCompletedBookings([])
+		}
+	}
+
 	useEffect(() => {
 		if (user && user.role?.toUpperCase() === 'WORKSHOP') {
 			fetchRequests()
 			fetchWorkshopProfile()
 			fetchWorkshopOffers()
+			fetchCompletedBookings()
 		}
 	}, [user])
+
+	useEffect(() => {
+		if (!user || user.role?.toUpperCase() !== 'WORKSHOP') return undefined
+		const timer = setInterval(() => {
+			if (document.visibilityState !== 'visible') return
+			fetchRequests({ silent: true })
+			fetchWorkshopOffers()
+			fetchCompletedBookings()
+		}, 8000)
+		return () => clearInterval(timer)
+	}, [user])
+
+	const quotePanelWasOpen = useRef(false)
+	useEffect(() => {
+		if (quotePanelWasOpen.current && !showQuote && user?.role?.toUpperCase() === 'WORKSHOP') {
+			fetchRequests()
+			fetchWorkshopOffers()
+		}
+		quotePanelWasOpen.current = showQuote
+	}, [showQuote, user])
 
 	const fetchWorkshopProfile = async () => {
 		try {
@@ -150,18 +216,13 @@ export default function WorkshopRequestsPage() {
 	if (!user || user.role !== 'WORKSHOP') {
 		if (authLoading) {
 			return (
-				<div className="min-h-screen bg-white">
-					<Navbar />
-					<div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
-						<div className="text-center">
-							<div className="relative">
-								<div className="w-20 h-20 border-4 border-[#34C759]/20 border-t-[#34C759] rounded-full animate-spin mx-auto mb-4"></div>
-								<Car className="w-10 h-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[#34C759]" />
-							</div>
-							<p className="text-gray-600 font-medium">{t('common.loading')}</p>
-						</div>
+				<WorkshopShell>
+				<div className="workshop-cases-page list-page-shell bg-transparent flex flex-col">
+					<div className="list-page-content !px-6 sm:!px-8 lg:!px-10 flex-1 !min-h-0 flex flex-col overflow-hidden">
+						<WorkshopCasesListSkeleton />
 					</div>
 				</div>
+				</WorkshopShell>
 			)
 		}
 		return null
@@ -251,19 +312,58 @@ export default function WorkshopRequestsPage() {
 		)
 	}
 
-	// "New" — requests from the last 48 hours (even if workshop already sent an offer)
-	const filteredRequests = requests.filter((request) => {
-		if (!isRequestWithin48Hours(request)) return false
-		return matchesSearch(request)
+	const searched = requests.filter((request) => matchesSearch(request))
+
+	const hasQuoteDraft = (requestId) => {
+		try {
+			const raw = sessionStorage.getItem(`offer-draft-${requestId}`)
+			if (!raw) return false
+			const draft = JSON.parse(raw)
+			return Boolean(draft && typeof draft === 'object')
+		} catch {
+			return false
+		}
+	}
+
+	const closedFromBookings = completedBookings
+		.map((booking) => {
+			const request = booking.requestId && typeof booking.requestId === 'object'
+				? booking.requestId
+				: { _id: booking.requestId }
+			const requestId = request._id || request.id || booking.requestId
+			if (!requestId) return null
+			return {
+				...request,
+				_id: requestId,
+				id: requestId,
+				vehicleId: request.vehicleId,
+				description: request.description,
+				registrationNumber: request.registrationNumber,
+				offers: booking.offerId ? [booking.offerId] : [{ status: 'DONE' }],
+				updatedAt: booking.updatedAt || booking.completedAt || request.updatedAt || request.createdAt,
+				_completed: true,
+			}
+		})
+		.filter(Boolean)
+		.filter((item, index, list) => list.findIndex((row) => String(row._id) === String(item._id)) === index)
+		.filter((request) => matchesSearch(request))
+
+	// All = still needs a quote; Waiting = quote sent (awaiting customer)
+	const allList = searched.filter((request) => (request.offers || []).length === 0)
+	const waitingList = searched.filter((request) => (request.offers || []).length > 0)
+	const closedList = closedFromBookings
+	const draftList = searched.filter((request) => {
+		const id = request._id || request.id
+		return hasQuoteDraft(id) && (request.offers || []).length === 0
 	})
 
-	// "All" — only requests older than 48 hours
-	const allRequests = requests.filter((request) => {
-		if (isRequestWithin48Hours(request)) return false
-		return matchesSearch(request)
-	})
-
-	const mobileList = mobileTab === 'all' ? allRequests : filteredRequests
+	const filteredList = (() => {
+		if (caseFilter === 'waiting') return waitingList
+		if (caseFilter === 'closed') return closedList
+		if (caseFilter === 'draft') return draftList
+		return allList
+	})()
+	const mobileList = showAllCases ? filteredList : filteredList.slice(0, 4)
 
 	const formatK = (value) => {
 		if (!value) return '0'
@@ -316,163 +416,169 @@ export default function WorkshopRequestsPage() {
 		setViewModalOpen(true)
 	}
 
-	const formatRelativeSent = (dateStr) => {
-		if (!dateStr) return ''
-		try {
-			const d = new Date(dateStr)
-			const now = new Date()
-			const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-			const yesterday = new Date(today.getTime() - 86400000)
-			const time = formatTime(d)
-			if (d >= today) return t('workshop.requests.sent_today', { time }) || `Today ${time}`
-			if (d >= yesterday) return t('workshop.requests.sent_yesterday', { time }) || `Yesterday ${time}`
-			return formatDateTime(d)
-		} catch {
-			return ''
-		}
+	const caseUpdatedLabel = (request) => {
+		const raw = request?.updatedAt || request?.createdAt
+		if (!raw) return ''
+		const date = new Date(raw)
+		if (Number.isNaN(date.getTime())) return ''
+		const now = new Date()
+		const isToday = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate()
+		const time = date.toLocaleTimeString(i18n.language?.startsWith('sv') ? 'sv-SE' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
+		if (isToday) return `${t('my_cases.flow.last_updated')}: ${t('my_cases.flow.today')} ${time}`
+		return `${t('my_cases.flow.last_updated')}: ${formatDateTime(date, i18n.language)}`
 	}
 
 	return (
-	<div className="list-page-shell bg-gray-50">
-		<Navbar />
+	<WorkshopShell>
+	<div className="workshop-cases-page list-page-shell bg-transparent flex flex-col">
 
 		{(authLoading || loading) ? (
-			<div className="list-page-content">
-				<div className="mb-6 md:mb-7">
-					<Skeleton className="h-9 w-40 mb-2" />
-					<Skeleton className="h-4 w-64" />
-				</div>
-				<div className="list-tabs-row">
-					<div className="workshop-pill-tabs-skeleton">
-						<Skeleton className="h-10 flex-1 rounded-lg" />
-						<Skeleton className="h-10 flex-1 rounded-lg" />
-					</div>
-				</div>
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
-						{[...Array(4)].map((_, i) => (
-							<div key={`skel-req-${i}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 md:p-4">
-								<div className="flex gap-3 md:gap-4">
-									<Skeleton className="w-28 h-16 md:w-32 md:h-20 rounded-xl shrink-0" />
-									<div className="flex-1 space-y-2">
-										<Skeleton className="h-4 w-3/4" />
-										<Skeleton className="h-3 w-full" />
-										<Skeleton className="h-3 w-2/3" />
-									</div>
-								</div>
-								<Skeleton className="h-10 w-full rounded-xl mt-4" />
-							</div>
-						))}
-				</div>
+			<div className="list-page-content !px-6 sm:!px-8 lg:!px-10 flex-1 !min-h-0 flex flex-col overflow-hidden">
+				{selectedId ? <CaseDetailSkeleton /> : <WorkshopCasesListSkeleton />}
 			</div>
 		) : (
-		<div className="list-page-content">
-			<div className="mb-6 md:mb-7">
-				<h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#05324f] leading-tight mb-1.5 lg:mb-2">
-					{t('workshop.requests.page_title') || 'Requests'}
+		<div className="list-page-content !px-6 sm:!px-8 lg:!px-10 flex-1 !min-h-0 overflow-hidden flex flex-col">
+		<div className="flex-1 min-h-0 overflow-hidden lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-8 lg:items-stretch">
+			<div className={`flex flex-col min-h-0 h-full overflow-hidden ${selectedId ? 'max-lg:hidden' : ''}`}>
+			<div className="mb-5 shrink-0">
+				<h1 className="page-title">
+					{t('workshop.panel.nav.cases')}
 				</h1>
-				<p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
-					{t('workshop.requests.page_subtitle') || 'See new requests from customers here.'}
+				<p className="text-sm text-[#6B7280] mt-2">
+					{t('workshop.panel.cases_sub')}
 				</p>
 			</div>
 
-			{/* Tabs (New / All) */}
-			<div className="list-tabs-row">
-				<div className="workshop-pill-tabs">
+			<div className="shrink-0 flex w-full border-b border-gray-200 mb-2 pt-2">
+				{[
+					['all', t('workshop.panel.filter_all'), allList.length],
+					['waiting', t('workshop.panel.filter_waiting'), waitingList.length],
+					['draft', t('workshop.panel.filter_draft'), draftList.length],
+					['closed', t('workshop.panel.filter_closed'), closedList.length],
+				].map(([key, label, count]) => (
 					<button
+						key={key}
 						type="button"
-						onClick={() => setMobileTab('new')}
-						className={`workshop-pill-tab ${mobileTab === 'new' ? 'workshop-pill-tab-active' : 'workshop-pill-tab-inactive'}`}
+						onClick={() => setCaseFilter(key)}
+						className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${caseFilter === key ? 'text-[#008037] border-[#008037]' : 'text-[#9CA3AF] border-transparent'}`}
 					>
-						{t('workshop.requests.tab_new') || 'New'} ({filteredRequests.length})
+						<span className="block truncate">{label} ({count})</span>
 					</button>
-					<button
-						type="button"
-						onClick={() => setMobileTab('all')}
-						className={`workshop-pill-tab ${mobileTab === 'all' ? 'workshop-pill-tab-active' : 'workshop-pill-tab-inactive'}`}
-					>
-						{t('workshop.requests.tab_all') || 'All'} ({allRequests.length})
-					</button>
-				</div>
+				))}
 			</div>
 
-			{/* Job cards */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 mb-6 md:mb-8">
+			<div className="flex-1 min-h-0 overflow-y-auto no-scrollbar overscroll-contain mt-4 space-y-3 pb-2">
 				{mobileList.length === 0 ? (
-					<div className="col-span-full bg-white rounded-2xl border border-gray-100 shadow-sm p-8 md:p-10 text-center">
-						<Car className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-						<h3 className="text-base font-black text-[#05324f] mb-1">{t('workshop.requests.no_requests.title')}</h3>
-						<p className="text-xs text-gray-500">{t('workshop.requests.no_requests.description')}</p>
-					</div>
+					<EmptyState
+						title={
+							caseFilter === 'draft'
+								? t('common.empty.workshop_drafts_title')
+								: caseFilter === 'closed'
+									? t('common.empty.workshop_closed_title')
+									: caseFilter === 'waiting'
+										? t('common.empty.workshop_waiting_title')
+										: t('common.empty.workshop_requests_title')
+						}
+						description={
+							caseFilter === 'draft'
+								? t('common.empty.workshop_drafts_desc')
+								: caseFilter === 'closed'
+									? t('common.empty.workshop_closed_desc')
+									: caseFilter === 'waiting'
+										? t('common.empty.workshop_waiting_desc')
+										: t('common.empty.workshop_requests_desc')
+						}
+					/>
 				) : (
 					mobileList.map((request) => {
 						const requestId = request._id || request.id
+						const selected = String(selectedId) === String(requestId)
+						const shortId = String(requestId || '').slice(-4).toUpperCase()
+						const isCompleted = Boolean(request._completed)
 						const hasOffer = (request.offers || []).length > 0
-						const showNewBadge = !hasOffer && isRequestWithin48Hours(request)
+						const isDraft = !isCompleted && !hasOffer && hasQuoteDraft(requestId)
+						const vehicle = request.vehicleId || request.vehicle
+						const vehicleRequest = vehicle && vehicle !== request.vehicleId ? { ...request, vehicleId: vehicle } : request
 						return (
-							<div key={`m-${requestId}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 md:p-4 flex flex-col h-full">
-								<VehicleRequestCard
-									request={request}
-									showLocation
-									headerEnd={
-										hasOffer ? (
-											<span className="shrink-0 text-[10px] font-black bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md border border-gray-200">
-												{t('workshop.requests.offer_sent') || 'Sent'}
-											</span>
-										) : showNewBadge ? (
-											<span className="shrink-0 text-[10px] font-black bg-[#F2F9F4] text-[#38BC54] px-2 py-0.5 rounded-md border border-[#38BC54]/20">
-												{t('workshop.requests.new_badge') || 'New'}
-											</span>
-										) : null
-									}
-									footer={
-										hasOffer ? (
-											<div className="mt-auto pt-4 flex items-center gap-3.5 shrink-0">
-												<Button
-													onClick={() => handleViewOffer(request)}
-													className="flex-1 min-w-0 h-10 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl font-semibold text-xs flex items-center justify-center shadow-sm"
-												>
-													{t('common.view') || 'View'}
-												</Button>
-												<ChevronRight className="w-5 h-5 text-black shrink-0" strokeWidth={2} />
-											</div>
-										) : (
-											<div className="mt-auto pt-4 flex items-center gap-3.5 shrink-0">
-												<Button
-													onClick={() => {
-														setSelectedRequestIdForOffer(requestId)
-														setOfferModalOpen(true)
-													}}
-													className="flex-1 min-w-0 h-10 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-xl font-semibold text-xs flex items-center justify-center shadow-sm"
-												>
-													{t('workshop.requests.leave_a_quote') || 'Submit offer'}
-												</Button>
-												<ChevronRight className="w-5 h-5 text-black shrink-0" strokeWidth={2} />
-											</div>
-										)
-									}
-								>
-									{request.createdAt && (
-										<p className="text-[11px] text-[#05324f]/80">
-											<span className="font-bold">{t('workshop.requests.sent_label') || 'Sent'}:</span> {formatRelativeSent(request.createdAt)}
-										</p>
-									)}
-								</VehicleRequestCard>
-							</div>
+							<button
+								key={`m-${requestId}`}
+								type="button"
+								onClick={() => openCase(requestId)}
+								className={`w-full text-left rounded-2xl border bg-white p-4 flex items-center gap-3 transition-colors ${
+									selected ? 'border-[#008037] bg-[#F0F7F2]' : 'border-gray-100 hover:border-gray-200'
+								}`}
+							>
+								<div className="min-w-0 flex-1">
+									<p className="text-[11px] text-gray-400 mb-2">{t('my_cases.flow.case_no', { id: shortId })}</p>
+									<p className="font-bold text-brand-dark text-[15px] leading-snug line-clamp-2">{getCaseTitle(request)}</p>
+									<p className="text-sm text-[#374151] mt-1">{getVehicleLine(vehicleRequest)}</p>
+									<p className="text-xs text-[#6B7280] mt-2">{caseUpdatedLabel(request)}</p>
+								</div>
+								<div className="shrink-0 self-stretch relative flex items-center pl-1 min-w-[5.5rem]">
+									<span className={`absolute top-0 right-0 whitespace-nowrap text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
+										isCompleted
+											? 'bg-[#ECFDF5] text-[#008037] border-[#86EFAC]'
+											: hasOffer
+												? 'bg-[#EFF6FF] text-[#2563EB] border-[#93C5FD]'
+												: isDraft
+													? 'bg-[#F3F4F6] text-[#4B5563] border-[#D1D5DB]'
+													: 'bg-[#FFF7ED] text-[#EA580C] border-[#FDBA74]'
+									}`}>
+										{isCompleted
+											? t('workshop.panel.completed_badge')
+											: hasOffer
+												? t('workshop.panel.offer_sent')
+												: isDraft
+													? t('workshop.panel.draft_badge')
+													: t('workshop.panel.new_badge')}
+									</span>
+									<ChevronRight className="w-5 h-5 text-brand-dark ml-auto" />
+								</div>
+							</button>
 						)
 					})
 				)}
 			</div>
-
-			{/* Disclaimer */}
-			{mobileList.length > 0 && (
-				<div className="flex items-start gap-2.5 px-1 pt-2 md:pt-4">
-					<CheckCircle className="w-4 h-4 text-[#38BC54] shrink-0 mt-0.5" />
-					<p className="text-[11px] text-gray-500 leading-snug">
-						{t('workshop.requests.share_disclaimer') || 'You only share offers with the customer if you choose to send them.'}
-					</p>
-				</div>
+			{!showAllCases && filteredList.length > 4 && (
+				<button
+					type="button"
+					onClick={() => setShowAllCases(true)}
+					className="shrink-0 w-full mt-4 min-h-[52px] rounded-xl border border-[#008037] bg-white text-sm font-semibold text-[#008037] hover:bg-[#F3FBF6]"
+				>
+					{t('workshop.panel.view_all_cases')}
+				</button>
 			)}
+			</div>
 
+			<div className={selectedId ? 'min-w-0 min-h-0 h-full overflow-y-auto no-scrollbar overscroll-contain' : 'hidden lg:block min-w-0 h-full'}>
+				{selectedId ? (
+					<>
+						<div className={showQuote ? 'hidden' : ''} aria-hidden={showQuote}>
+							<WorkshopCasePanel
+								requestId={selectedId}
+								embedded
+								onBack={closeCase}
+								suspendBack={showQuote}
+								onCreateQuote={openQuote}
+								quoteSent={(requests.find((request) => String(request._id || request.id) === String(selectedId))?.offers || []).length > 0}
+								quote={workshopOffers.find((offer) => {
+									const offerRequestId = offer.requestId?._id || offer.requestId?.id || offer.requestId
+									return String(offerRequestId) === String(selectedId)
+								}) || null}
+							/>
+						</div>
+						{showQuote ? (
+							<CreateQuotePanel requestId={selectedId} onBack={closeQuote} />
+						) : null}
+					</>
+				) : (
+					<div className="h-full min-h-[280px] flex items-center justify-center rounded-2xl border border-dashed border-[#E5E7EB] bg-white px-6 text-center">
+						<p className="text-sm text-[#9CA3AF]">{t('workshop.panel.select_case')}</p>
+					</div>
+				)}
+			</div>
+
+		</div>
 		</div>
 		)}
 
@@ -524,7 +630,7 @@ export default function WorkshopRequestsPage() {
 									</div>
 									<Button
 										asChild
-										className="bg-[#34C759] hover:bg-[#2EB04F] text-white px-8 py-6 rounded-2xl shadow-xl shadow-[#34C759]/20 font-black uppercase tracking-widest text-xs transition-all active:scale-95"
+										className="bg-[#008037] hover:bg-[#2EB04F] text-white px-8 py-6 rounded-xl shadow-xl shadow-[#008037]/20 font-semibold uppercase tracking-widest text-xs transition-all active:scale-95"
 									>
 										<a
 											href={getFullUrl(selectedReport.fileUrl)}
@@ -558,7 +664,7 @@ export default function WorkshopRequestsPage() {
 				offer={selectedOffer}
 			/>
 
-			<Footer className="max-lg:hidden" />
 		</div>
+	</WorkshopShell>
 	)
 }

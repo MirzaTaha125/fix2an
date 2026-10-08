@@ -34,19 +34,63 @@ import {
 	FileCheck,
 	Briefcase,
 	Camera,
-	ChevronRight,
-	ShieldCheck,
-	Settings,
-	HelpCircle,
-	LogOut,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import { useRegisterMobileBack } from '../context/MobileBackContext'
+import WorkshopShell from '../components/workshop/WorkshopShell'
 
 import { workshopAPI, authAPI, uploadAPI } from '../services/api'
 import { getFullUrl, toStorageUrl } from '../config/api.js'
 import { formatSwedishPhone } from '../utils/swedishPhone'
+
+const WEEK_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+const DAY_DEFAULTS = {
+	monday: { open: '08:00', close: '17:00' },
+	tuesday: { open: '08:00', close: '17:00' },
+	wednesday: { open: '08:00', close: '17:00' },
+	thursday: { open: '08:00', close: '17:00' },
+	friday: { open: '08:00', close: '17:00' },
+	saturday: { open: '09:00', close: '15:00' },
+	sunday: { open: '10:00', close: '14:00' },
+}
+
+function parseOpeningHours(raw) {
+	const hours = {}
+	const enabled = {}
+	WEEK_DAYS.forEach((day) => {
+		hours[day] = { open: DAY_DEFAULTS[day].open, close: DAY_DEFAULTS[day].close }
+		enabled[day] = day !== 'sunday'
+	})
+	if (!raw) return { hours, enabled }
+	try {
+		const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw
+		if (!parsed || typeof parsed !== 'object') return { hours, enabled }
+		WEEK_DAYS.forEach((day) => {
+			const entry = parsed[day] || {}
+			const open = entry.open || entry.opens || ''
+			const close = entry.close || entry.closes || ''
+			const isOpen = Boolean(open && close)
+			enabled[day] = isOpen
+			hours[day] = {
+				open: open || DAY_DEFAULTS[day].open,
+				close: close || DAY_DEFAULTS[day].close,
+			}
+		})
+	} catch {
+		/* keep defaults */
+	}
+	return { hours, enabled }
+}
+
+function serializeOpeningHours(hours, enabled) {
+	const next = {}
+	WEEK_DAYS.forEach((day) => {
+		next[day] = enabled[day]
+			? { open: hours[day]?.open || '', close: hours[day]?.close || '' }
+			: { open: '', close: '' }
+	})
+	return next
+}
 
 export default function WorkshopProfilePage() {
 	const navigate = useNavigate()
@@ -78,10 +122,15 @@ export default function WorkshopProfilePage() {
 		postalCode: '',
 		website: '',
 		description: '',
+		openingHours: '',
 		image: '',
 		isVerified: false,
 	})
 	const [originalProfileData, setOriginalProfileData] = useState({})
+	const [openingHours, setOpeningHours] = useState(() => parseOpeningHours('').hours)
+	const [dayEnabled, setDayEnabled] = useState(() => parseOpeningHours('').enabled)
+	const [originalOpeningHours, setOriginalOpeningHours] = useState(() => parseOpeningHours('').hours)
+	const [originalDayEnabled, setOriginalDayEnabled] = useState(() => parseOpeningHours('').enabled)
 	const [settingsOpen, setSettingsOpen] = useState(false)
 	const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
 	const [showInfoOnMobile, setShowInfoOnMobile] = useState(false)
@@ -91,7 +140,7 @@ export default function WorkshopProfilePage() {
 	useEffect(() => {
 		if (!authLoading) {
 			if (!user) {
-				navigate('/auth/signin', { replace: true })
+				navigate('/workshop/login', { replace: true })
 				return
 			}
 			if (user.role !== 'WORKSHOP') {
@@ -147,9 +196,15 @@ export default function WorkshopProfilePage() {
 					description: workshopData?.description || '',
 					image: imageUrl,
 					isVerified: workshopData?.isVerified || false,
+					openingHours: workshopData?.openingHours || '',
 				}
+				const parsedHours = parseOpeningHours(workshopData?.openingHours || '')
 				setProfileData(profile)
 				setOriginalProfileData(profile)
+				setOpeningHours(parsedHours.hours)
+				setDayEnabled(parsedHours.enabled)
+				setOriginalOpeningHours(parsedHours.hours)
+				setOriginalDayEnabled(parsedHours.enabled)
 			}
 		} catch (error) {
 			console.error('Failed to fetch data:', error)
@@ -183,6 +238,8 @@ export default function WorkshopProfilePage() {
 		setSearchParams({})
 	}
 
+	useRegisterMobileBack(closeProfileInfo, showInfoOnMobile)
+
 	const handleInputChange = (field, value) => {
 		setProfileData((prev) => ({
 			...prev,
@@ -193,6 +250,7 @@ export default function WorkshopProfilePage() {
 	const handleSave = async () => {
 		setIsSaving(true)
 		try {
+			const hoursPayload = serializeOpeningHours(openingHours, dayEnabled)
 			// Update workshop profile
 			await workshopAPI.updateProfile({
 				name: profileData.name,
@@ -205,10 +263,13 @@ export default function WorkshopProfilePage() {
 				postalCode: profileData.postalCode,
 				website: profileData.website,
 				description: profileData.description,
+				openingHours: hoursPayload,
 			})
 
 			toast.success(t('workshop.profile.update_success') || 'Profile updated successfully')
 			setOriginalProfileData(profileData)
+			setOriginalOpeningHours(openingHours)
+			setOriginalDayEnabled(dayEnabled)
 			setIsEditing(false)
 			
 			// Refresh user data
@@ -228,6 +289,8 @@ export default function WorkshopProfilePage() {
 
 	const handleCancel = () => {
 		setProfileData(originalProfileData)
+		setOpeningHours(originalOpeningHours)
+		setDayEnabled(originalDayEnabled)
 		setIsEditing(false)
 	}
 
@@ -296,13 +359,13 @@ export default function WorkshopProfilePage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="list-page-shell bg-[#FAFBFC]">
-				<Navbar />
+			<WorkshopShell>
+			<div className="list-page-shell bg-transparent">
 				<div className="list-page-main">
 					<ProfileMenuSkeleton menuRows={3} avatarClassName="rounded-xl" />
 				</div>
-				<Footer />
 			</div>
+			</WorkshopShell>
 		)
 	}
 
@@ -310,130 +373,74 @@ export default function WorkshopProfilePage() {
 		return null
 	}
 
-	const handleLogout = () => {
-		setIsLogoutConfirmOpen(true)
-	}
-
 	const confirmLogout = () => {
 		setIsLogoutConfirmOpen(false)
 		logout()
-		navigate('/auth/signin', { replace: true })
+		navigate('/workshop/login', { replace: true })
 	}
 
 	return (
-		<div className="list-page-shell bg-[#FAFBFC]">
-			<Navbar />
+		<WorkshopShell>
+		<div className="list-page-shell bg-transparent">
 
 			<div className="list-page-main">
 			{/* Profile menu — all breakpoints */}
-			<div className={`app-page-container max-w-2xl md:max-w-5xl lg:max-w-7xl pt-24 md:pt-32 ${showInfoOnMobile ? 'hidden' : 'block'}`}>
-				<div className="mb-6">
-					<h1 className="text-xl sm:text-2xl font-semibold text-[#05324f] leading-tight mb-1.5">
-						{t('workshop.profile.title') || 'Profile'}
-					</h1>
-					<p className="text-xs sm:text-sm text-gray-500 leading-snug">
-						{t('workshop.profile.subtitle_mobile') || 'Manage your workshop and your settings.'}
-					</p>
-				</div>
-
-				{/* Workshop hero card */}
-				<button
-					type="button"
-					onClick={openProfileInfo}
-					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 mb-5 flex items-center gap-3 active:scale-[0.99] transition-transform"
-				>
-					<div className="w-14 h-14 rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0 overflow-hidden">
+			<div className={`list-page-content !max-w-none ${showInfoOnMobile ? 'hidden' : 'block'}`}>
+				<div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8">
+					<div className="w-28 h-28 rounded-full bg-[#0B2540] text-white text-2xl font-bold flex items-center justify-center overflow-hidden shrink-0 ring-4 ring-white shadow-sm">
 						{profileData.image ? (
-							<img src={profileData.image} alt={profileData.companyName || 'Workshop'} className="w-full h-full object-cover" />
+							<img src={profileData.image} alt="" className="w-full h-full object-cover" />
 						) : (
-							<Building2 className="text-white/30 w-6 h-6" />
+							(profileData.companyName || 'W').slice(0, 2).toUpperCase()
 						)}
 					</div>
-					<div className="flex-1 min-w-0 text-left">
-						<h3 className="text-base font-semibold text-[#05324f] truncate">
+					<div className="min-w-0">
+						<h1 className="page-title">
 							{profileData.companyName || profileData.name || t('workshop.profile.workshop')}
-						</h3>
-						{profileData.isVerified ? (
-							<VerifiedBadge className="mt-1" />
-						) : (
-							<Badge
-								variant="outline"
-								className="mt-1 bg-gray-100 text-gray-600 border-gray-300"
+						</h1>
+						<p className="text-sm text-[#6B7280] mt-1.5">
+							{[profileData.address, [profileData.postalCode, profileData.city].filter(Boolean).join(' ')].filter(Boolean).join(', ') || '—'}
+						</p>
+						<div className="flex items-center gap-2 mt-2">
+							<div className="flex items-center gap-0.5">
+								{[...Array(5)].map((_, index) => (
+									<Star
+										key={index}
+										className={`w-4 h-4 ${index < Math.round(Number(stats.rating) || 0) ? 'text-[#008037] fill-[#008037]' : 'text-[#D1D5DB]'}`}
+									/>
+								))}
+							</div>
+							<span className="text-sm font-semibold text-[#008037]">{Number(stats.rating || 0).toFixed(1)}</span>
+							<span className="text-sm text-[#9CA3AF]">{t('workshop.panel.review_count', { count: stats.reviewCount || 0 })}</span>
+						</div>
+						<div className="flex flex-wrap gap-3 mt-5">
+							<Link
+								to="/workshop/reviews"
+								className="min-h-[44px] px-6 rounded-full border border-[#E5E7EB] bg-white text-sm font-semibold text-[#111827] inline-flex items-center justify-center"
 							>
-								{t('workshop.profile.unverified') || 'Unverified'}
-							</Badge>
-						)}
-					</div>
-					<ChevronRight className="text-gray-300 shrink-0" size={20} />
-				</button>
-
-				{/* Menu items */}
-				<div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
-					{[
-						{
-							icon: <Building2 className="w-5 h-5 text-[#05324f]" />,
-							title: t('workshop.profile.workshop_info_title') || 'Workshop information',
-							desc: t('workshop.profile.workshop_info_desc') || 'Address, contact details and opening hours',
-							onClick: openProfileInfo,
-						},
-						...(SHOW_PROFILE_LANGUAGE_SETTINGS
-							? [
-									{
-										icon: <Settings className="w-5 h-5 text-[#05324f]" />,
-										title: t('workshop.profile.settings_title') || 'Settings',
-										desc: t('workshop.profile.settings_desc') || 'Notifications, language and other settings',
-										onClick: () => setSettingsOpen(true),
-									},
-								]
-							: []),
-						{
-							icon: <HelpCircle className="w-5 h-5 text-[#05324f]" />,
-							title: t('workshop.profile.help_title') || 'Help and support',
-							desc: t('workshop.profile.help_desc') || 'FAQ and contact support',
-							onClick: () => navigate('/support'),
-						},
-					].map((item, i, arr) => (
-						<div key={item.title}>
+								{t('workshop.panel.view_public')}
+							</Link>
 							<button
 								type="button"
-								onClick={item.onClick}
-								className="w-full p-4 flex items-center gap-3 active:bg-gray-50 transition-colors text-left"
+								onClick={openProfileInfo}
+								className="min-h-[44px] px-6 rounded-full bg-brand-btn text-white text-sm font-semibold"
 							>
-								<div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">
-									{item.icon}
-								</div>
-								<div className="flex-1 min-w-0">
-									<p className="text-sm font-semibold text-[#05324f]">{item.title}</p>
-									<p className="text-[11px] text-gray-400 font-medium leading-tight mt-0.5">{item.desc}</p>
-								</div>
-								<ChevronRight className="text-gray-300 shrink-0" size={20} />
+								{t('workshop.panel.edit_profile')}
 							</button>
-							{i < arr.length - 1 && <div className="border-b border-gray-100 mx-4" />}
 						</div>
-					))}
+					</div>
 				</div>
-
-				{/* Logout button */}
-				<button
-					type="button"
-					onClick={handleLogout}
-					className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center justify-center gap-2 text-[#34C759] font-semibold text-sm active:scale-[0.99] transition-transform"
-				>
-					<LogOut className="w-5 h-5 text-[#34C759]" />
-					{t('workshop.profile.logout') || 'Log out'}
-				</button>
-
 			</div>
 
 			<div
 				id="workshop-info-form"
-				className={`app-page-container max-w-2xl md:max-w-5xl lg:max-w-7xl pt-24 md:pt-32 ${showInfoOnMobile ? 'block' : 'hidden'}`}
+				className={`app-page-container w-full pt-6 ${showInfoOnMobile ? 'block' : 'hidden'}`}
 				style={{ scrollMarginTop: '5rem' }}
 			>
 
 				{/* Header Section */}
 				<div className="mb-6">
-					<h1 className="text-xl sm:text-2xl font-semibold text-[#05324f] leading-tight mb-1.5">
+					<h1 className="page-title">
 						{t('workshop.profile.workshop_info_title') || 'Workshop information'}
 					</h1>
 					<p className="text-xs sm:text-sm text-gray-500 leading-snug mb-5">
@@ -468,7 +475,7 @@ export default function WorkshopProfilePage() {
 								type="button"
 								onClick={() => document.getElementById('profile-image-input')?.click()}
 								disabled={isUploadingImage}
-								className="absolute -bottom-0.5 -right-0.5 p-1.5 bg-[#38BC54] hover:bg-[#2eb34f] text-white rounded-full shadow-md transition-all disabled:opacity-50"
+								className="absolute -bottom-0.5 -right-0.5 p-1.5 bg-brand-btn text-white rounded-full shadow-md transition-all disabled:opacity-50"
 								title="Change profile image"
 							>
 								{isUploadingImage ? (
@@ -777,6 +784,129 @@ export default function WorkshopProfilePage() {
 									</div>
 								</div>
 							</div>
+
+							{/* Opening hours / slots */}
+							<div>
+								<div className="flex items-center gap-2 mb-3">
+									<Calendar className="w-4 h-4 text-gray-400" />
+									<h3 className="text-sm font-semibold text-[#05324f]">
+										{t('workshop.signup.opening_hours.title') || t('workshop.profile.opening_hours') || 'Opening hours'}
+									</h3>
+								</div>
+								<p className="text-xs text-gray-500 mb-3 leading-relaxed">
+									{t('workshop.signup.opening_hours.description') || 'Enter your opening hours'}
+								</p>
+								<div className="flex flex-col gap-3">
+									{WEEK_DAYS.map((day) => {
+										const enabled = Boolean(dayEnabled[day])
+										const open = openingHours[day]?.open || ''
+										const close = openingHours[day]?.close || ''
+										return (
+											<div
+												key={day}
+												className={`p-3 rounded-xl border border-gray-100 ${enabled ? '' : 'bg-[#F9FAFB]'}`}
+											>
+												<div className="flex items-center justify-between gap-3 mb-2">
+													<Label className="text-sm font-semibold text-brand-dark">
+														{t(`workshop.signup.opening_hours.days.${day}`)}
+													</Label>
+													{isEditing ? (
+														<button
+															type="button"
+															role="switch"
+															aria-checked={enabled}
+															disabled={isSaving}
+															aria-label={`${t(`workshop.signup.opening_hours.days.${day}`)} ${
+																enabled
+																	? t('workshop.signup.opening_hours.day_on')
+																	: t('workshop.signup.opening_hours.day_off')
+															}`}
+															onClick={() => {
+																setDayEnabled((prev) => {
+																	const nextOn = !prev[day]
+																	if (nextOn) {
+																		setOpeningHours((form) => ({
+																			...form,
+																			[day]: {
+																				open: form[day]?.open || DAY_DEFAULTS[day].open,
+																				close: form[day]?.close || DAY_DEFAULTS[day].close,
+																			},
+																		}))
+																	}
+																	return { ...prev, [day]: nextOn }
+																})
+															}}
+															className={`relative w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 disabled:opacity-50 ${
+																enabled ? 'bg-[#008037]' : 'bg-gray-200'
+															}`}
+														>
+															<span
+																className={`block w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+																	enabled ? 'translate-x-5' : 'translate-x-0'
+																}`}
+															/>
+														</button>
+													) : (
+														<span className={`text-xs font-semibold ${enabled ? 'text-[#008037]' : 'text-gray-400'}`}>
+															{enabled
+																? t('workshop.signup.opening_hours.day_on')
+																: t('workshop.signup.opening_hours.day_off')}
+														</span>
+													)}
+												</div>
+												{enabled ? (
+													isEditing ? (
+														<div className="grid grid-cols-2 gap-3">
+															<div className="min-w-0">
+																<Label className="block text-xs font-semibold text-brand-dark mb-1.5">
+																	{t('workshop.signup.opening_hours.open')}
+																</Label>
+																<Input
+																	type="time"
+																	value={open}
+																	disabled={isSaving}
+																	onChange={(e) =>
+																		setOpeningHours((prev) => ({
+																			...prev,
+																			[day]: { ...prev[day], open: e.target.value },
+																		}))
+																	}
+																	className="w-full h-11 text-center"
+																/>
+															</div>
+															<div className="min-w-0">
+																<Label className="block text-xs font-semibold text-brand-dark mb-1.5">
+																	{t('workshop.signup.opening_hours.close')}
+																</Label>
+																<Input
+																	type="time"
+																	value={close}
+																	disabled={isSaving}
+																	onChange={(e) =>
+																		setOpeningHours((prev) => ({
+																			...prev,
+																			[day]: { ...prev[day], close: e.target.value },
+																		}))
+																	}
+																	className="w-full h-11 text-center"
+																/>
+															</div>
+														</div>
+													) : (
+														<p className="text-sm font-medium text-[#05324f]">
+															{open} – {close}
+														</p>
+													)
+												) : (
+													<p className="text-sm text-gray-400">
+														{t('workshop.signup.opening_hours.day_off')}
+													</p>
+												)}
+											</div>
+										)
+									})}
+								</div>
+							</div>
 						</CardContent>
 					</Card>
 
@@ -785,7 +915,7 @@ export default function WorkshopProfilePage() {
 						<Card className="bg-white border border-gray-100 shadow-sm rounded-2xl">
 							<CardHeader className="border-b border-gray-100 bg-white px-4 py-3">
 								<CardTitle className="text-sm font-semibold text-[#05324f] flex items-center gap-2">
-									<Star className="w-4 h-4 text-green-500" />
+									<Star className="w-4 h-4 text-[#008037] fill-[#008037]" />
 									{t('workshop.profile.quick_stats') || 'Quick Stats'}
 								</CardTitle>
 							</CardHeader>
@@ -805,7 +935,7 @@ export default function WorkshopProfilePage() {
 														key={i}
 														className={`w-4 h-4 ${
 															i < Math.round(stats.rating)
-																? 'text-green-400 fill-green-400'
+																? 'text-[#008037] fill-[#008037]'
 																: 'text-gray-300'
 														}`}
 													/>
@@ -821,7 +951,7 @@ export default function WorkshopProfilePage() {
 											<span className="text-[11px] font-semibold text-gray-400">{t('workshop.profile.reviews')}</span>
 											<span className="text-sm font-semibold text-[#05324f]">{stats.reviewCount}</span>
 										</div>
-										<span className="text-[11px] text-[#38BC54] font-medium mt-0.5 block">
+										<span className="text-[11px] text-[#008037] font-medium mt-0.5 block">
 											{t('workshop.profile.view_all_reviews') || 'View all reviews →'}
 										</span>
 									</Link>
@@ -832,8 +962,6 @@ export default function WorkshopProfilePage() {
 				</div>
 			</div>
 			</div>
-
-			<Footer />
 
 			{SHOW_PROFILE_LANGUAGE_SETTINGS && (
 			<Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
@@ -862,7 +990,7 @@ export default function WorkshopProfilePage() {
 									}}
 									className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
 										i18n.language === lang.code
-											? 'border-[#34C759] bg-[#F2F9F4] text-[#34C759]'
+											? 'border-[#008037] bg-[#F2F9F4] text-[#008037]'
 											: 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
 									}`}
 								>
@@ -896,7 +1024,7 @@ export default function WorkshopProfilePage() {
 						</Button>
 						<Button
 							onClick={confirmLogout}
-							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95"
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-brand-btn text-white font-semibold text-sm transition-all shadow-md active:scale-95"
 						>
 							{t('navigation.logout') || 'Log Out'}
 						</Button>
@@ -904,5 +1032,6 @@ export default function WorkshopProfilePage() {
 				</DialogContent>
 			</Dialog>
 		</div>
+		</WorkshopShell>
 	)
 }

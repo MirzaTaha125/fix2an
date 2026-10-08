@@ -4,7 +4,7 @@ import { cn } from '../../utils/cn'
 import { formatSwedishPhone, SWEDISH_COUNTRY_CODE, toNationalPhoneInput } from '../../utils/swedishPhone'
 
 export const PhoneInput = React.forwardRef(function PhoneInput(
-	{ onChange, value, placeholder = 'Phone number', className, ...props },
+	{ onChange, value, placeholder = 'Phone number', className, desktopLarge = false, inputClassName, prefixClassName, ...props },
 	ref,
 ) {
 	const nationalValue = toNationalPhoneInput(value)
@@ -19,7 +19,13 @@ export const PhoneInput = React.forwardRef(function PhoneInput(
 
 	return (
 		<div className={cn('flex w-full items-stretch', className)}>
-			<span className="inline-flex h-12 items-center rounded-l-xl border-2 border-r-0 border-gray-200 bg-gray-100 px-3 text-sm font-medium text-[#05324f] shrink-0">
+			<span
+				className={cn(
+					'inline-flex h-12 items-center rounded-l-xl border-2 border-r-0 border-gray-200 bg-gray-100 px-3 text-sm font-medium text-[#05324f] shrink-0',
+					desktopLarge && 'lg:h-16 lg:rounded-l-2xl lg:px-4 lg:text-base',
+					prefixClassName,
+				)}
+			>
 				{SWEDISH_COUNTRY_CODE}
 			</span>
 			<Input
@@ -30,7 +36,12 @@ export const PhoneInput = React.forwardRef(function PhoneInput(
 				value={nationalValue}
 				onChange={handleChange}
 				placeholder={placeholder}
-				className="rounded-l-none border-l-0 flex-1 min-w-0 focus:border-l-0"
+				className={cn(
+					'border-l-0 flex-1 min-w-0 focus:border-l-0',
+					desktopLarge && 'lg:h-16 lg:text-base',
+					inputClassName,
+					'rounded-l-none lg:rounded-l-none',
+				)}
 				{...props}
 			/>
 		</div>

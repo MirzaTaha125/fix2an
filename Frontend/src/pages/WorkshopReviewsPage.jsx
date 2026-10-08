@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Button } from '../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
+import EmptyState from '../components/ui/EmptyState'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
-import { Star, ArrowLeft, MessageSquare, User } from 'lucide-react'
+import { Star, ArrowLeft, User } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import WorkshopShell from '../components/workshop/WorkshopShell'
 import { workshopAPI } from '../services/api'
 import { formatDateTime } from '../utils/cn'
+import { ReviewListSkeleton } from '../components/ui/Skeleton'
 
 export default function WorkshopReviewsPage() {
 	const navigate = useNavigate()
@@ -22,7 +22,7 @@ export default function WorkshopReviewsPage() {
 	useEffect(() => {
 		if (!authLoading) {
 			if (!user) {
-				navigate('/auth/signin', { replace: true })
+				navigate('/workshop/login', { replace: true })
 				return
 			}
 			if (user.role !== 'WORKSHOP') {
@@ -71,13 +71,13 @@ export default function WorkshopReviewsPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="min-h-screen bg-gray-50 flex items-center justify-center pt-20">
-				<Navbar />
-				<div className="text-center">
-					<div className="w-14 h-14 border-4 border-green-500/20 border-t-green-500 rounded-full animate-spin mx-auto mb-4"></div>
-					<p className="text-gray-600">{t('common.loading')}</p>
+			<WorkshopShell>
+			<div className="list-page-shell bg-transparent">
+				<div className="list-page-content">
+					<ReviewListSkeleton />
 				</div>
 			</div>
+			</WorkshopShell>
 		)
 	}
 
@@ -86,14 +86,14 @@ export default function WorkshopReviewsPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-50">
-			<Navbar />
-			<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
+		<WorkshopShell>
+		<div className="min-h-screen bg-transparent">
+			<div className="w-full px-4 sm:px-6 lg:px-8 pt-6 pb-20">
 				{/* Header */}
 				<div className="mb-8">
 					<Link
 						to="/workshop/profile"
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
+						className="hidden lg:inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
 					>
 						<ArrowLeft className="w-4 h-4" />
 						{t('workshop.reviews.back_to_profile') || 'Back to Profile'}
@@ -113,7 +113,7 @@ export default function WorkshopReviewsPage() {
 										key={star}
 										className={`w-5 h-5 ${
 											star <= Math.round(stats.rating)
-												? 'text-green-500 fill-green-500'
+												? 'text-[#008037] fill-[#008037]'
 												: 'text-gray-300'
 										}`}
 									/>
@@ -134,17 +134,13 @@ export default function WorkshopReviewsPage() {
 				{/* Reviews List */}
 				{reviews.length === 0 ? (
 					<Card className="border border-gray-200 bg-white">
-						<CardContent className="py-16 text-center">
-							<MessageSquare className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-							<h3 className="text-lg font-semibold text-gray-900 mb-2">
-								{t('workshop.reviews.no_reviews') || 'No reviews yet'}
-							</h3>
-							<p className="text-gray-500 max-w-sm mx-auto">
-								{t('workshop.reviews.no_reviews_desc') || 'Complete jobs and get feedback from customers to see reviews here.'}
-							</p>
-							<Link to="/workshop/profile" className="inline-block mt-6">
-								<Button variant="outline">{t('workshop.reviews.back_to_profile') || 'Back to Profile'}</Button>
-							</Link>
+						<CardContent className="p-0">
+							<EmptyState
+								title={t('common.empty.workshop_reviews_title')}
+								description={t('common.empty.workshop_reviews_desc')}
+								actionLabel={t('workshop.reviews.back_to_profile') || 'Back to Profile'}
+								actionTo="/workshop/profile"
+							/>
 						</CardContent>
 					</Card>
 				) : (
@@ -160,8 +156,8 @@ export default function WorkshopReviewsPage() {
 										<div className="flex items-start justify-between gap-4">
 											<div className="flex-1 min-w-0">
 												<div className="flex items-center gap-2 mb-2">
-													<div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-														<User className="w-4 h-4 text-green-600" />
+													<div className="w-8 h-8 rounded-full bg-[#E8F5EC] flex items-center justify-center flex-shrink-0">
+														<User className="w-4 h-4 text-[#008037]" />
 													</div>
 													<div>
 														<p className="font-semibold text-gray-900">{customerName}</p>
@@ -176,7 +172,7 @@ export default function WorkshopReviewsPage() {
 															key={star}
 															className={`w-4 h-4 ${
 																star <= (review.rating || 0)
-																	? 'text-green-500 fill-green-500'
+																	? 'text-[#008037] fill-[#008037]'
 																	: 'text-gray-300'
 															}`}
 														/>
@@ -199,7 +195,7 @@ export default function WorkshopReviewsPage() {
 					</div>
 				)}
 			</div>
-			<Footer />
 		</div>
+		</WorkshopShell>
 	)
 }

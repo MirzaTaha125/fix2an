@@ -8,6 +8,7 @@ import VehicleRequestCard from './VehicleRequestCard'
 import { formatPrice, formatDate, parseInclusionItems } from '../utils/cn'
 import { useTranslation } from 'react-i18next'
 import { Check } from 'lucide-react'
+import CaseChat from './cases/CaseChat'
 
 function formatDuration(minutes) {
 	if (!minutes) return null
@@ -48,6 +49,8 @@ export default function ViewOfferModal({ open, onOpenChange, offer }) {
 
 	const request = offer.requestId || offer.request
 	const customer = request?.customerId || request?.customer
+	const requestId = request?._id || request?.id
+	const workshopId = offer.workshopId?._id || offer.workshopId
 	const inclusionItems = parseInclusionItems(offer.inclusions)
 
 	const statusLabel =
@@ -100,7 +103,7 @@ export default function ViewOfferModal({ open, onOpenChange, offer }) {
 								<InfoRow
 									label={t('workshop.proposals.total_price') || 'Total Price'}
 									value={formatPrice(offer.price)}
-									valueClassName="text-[#38BC54] font-black"
+									valueClassName="text-[#008037] font-black"
 								/>
 								<InfoRow
 									label={t('workshop.proposals.estimated_duration') || 'Estimated Duration'}
@@ -135,7 +138,7 @@ export default function ViewOfferModal({ open, onOpenChange, offer }) {
 									<div className="space-y-2">
 										{inclusionItems.map((item, index) => (
 											<div key={index} className="flex items-start gap-2">
-												<Check size={14} className="text-[#38BC54] mt-0.5 shrink-0" strokeWidth={3} />
+												<Check size={14} className="text-[#008037] mt-0.5 shrink-0" strokeWidth={3} />
 												<span className="text-xs text-[#05324f] font-medium leading-snug">{item}</span>
 											</div>
 										))}
@@ -144,6 +147,17 @@ export default function ViewOfferModal({ open, onOpenChange, offer }) {
 							)}
 
 							<InfoBlock label={t('common.note') || 'Note'} value={offer.note} />
+
+							{requestId && workshopId && (
+								<div className="case-chat-root h-[min(50dvh,420px)] mt-4">
+									<CaseChat
+										requestId={requestId}
+										workshopId={workshopId}
+										title={customer?.name || t('my_cases.flow.panel_messages')}
+										viewerRole="WORKSHOP"
+									/>
+								</div>
+							)}
 						</div>
 					</div>
 				</div>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, Check, Search } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '../../utils/cn'
 
 export default function SearchableSelect({
@@ -11,19 +12,29 @@ export default function SearchableSelect({
 	emptyText = 'No results',
 	disabled = false,
 	triggerClassName,
+	allowCustom = false,
+	selectedLabel,
 }) {
+	const { t } = useTranslation()
 	const [open, setOpen] = useState(false)
 	const [query, setQuery] = useState('')
 	const containerRef = useRef(null)
 	const searchRef = useRef(null)
 
 	const selectedOption = options.find((option) => option.value === value)
+	const displayText = selectedOption?.label || selectedLabel || (allowCustom && value ? value : '') || ''
 
 	const filteredOptions = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase()
 		if (!normalizedQuery) return options
 		return options.filter((option) => option.label.toLowerCase().includes(normalizedQuery))
 	}, [options, query])
+
+	const trimmedQuery = query.trim()
+	const exactMatch = options.some(
+		(option) => option.label.toLowerCase() === trimmedQuery.toLowerCase()
+	)
+	const showCustomOption = allowCustom && trimmedQuery.length > 0 && !exactMatch
 
 	useEffect(() => {
 		if (!open) setQuery('')
@@ -46,6 +57,16 @@ export default function SearchableSelect({
 		}
 	}, [open])
 
+	const pick = (nextValue, label) => {
+		onValueChange?.(nextValue, label)
+		setOpen(false)
+	}
+
+	const commitCustom = () => {
+		if (!trimmedQuery) return
+		pick(trimmedQuery, trimmedQuery)
+	}
+
 	return (
 		<div ref={containerRef} className="relative">
 			<button
@@ -57,8 +78,8 @@ export default function SearchableSelect({
 					triggerClassName
 				)}
 			>
-				<span className={cn('line-clamp-1 text-left', !selectedOption && 'text-gray-400')}>
-					{selectedOption?.label || placeholder}
+				<span className={cn('line-clamp-1 text-left', !displayText && 'text-gray-400')}>
+					{displayText || placeholder}
 				</span>
 				<ChevronDown className={cn('h-4 w-4 shrink-0 opacity-50 transition-transform', open && 'rotate-180')} />
 			</button>
@@ -75,13 +96,32 @@ export default function SearchableSelect({
 									type="text"
 									value={query}
 									onChange={(e) => setQuery(e.target.value)}
-									placeholder={searchPlaceholder}
-									className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-3 text-sm outline-none focus:border-[#38BC54] focus:ring-1 focus:ring-[#38BC54]"
+									onKeyDown={(e) => {
+										if (e.key === 'Enter' && showCustomOption) {
+											e.preventDefault()
+											commitCustom()
+										}
+									}}
+									placeholder={
+										allowCustom
+											? t('common.search_or_type') || 'Search or type...'
+											: searchPlaceholder
+									}
+									className="h-9 w-full rounded-2xl border border-gray-200 bg-white pl-8 pr-3 text-sm outline-none focus:border-[#008037] focus:ring-1 focus:ring-[#008037]"
 								/>
 							</div>
 						</div>
 						<div className="max-h-[240px] overflow-y-auto p-1">
-							{filteredOptions.length === 0 ? (
+							{showCustomOption && (
+								<button
+									type="button"
+									onClick={commitCustom}
+									className="relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 px-3 text-left text-sm outline-none hover:bg-[#E8F5EC] text-[#008037] font-semibold"
+								>
+									{t('common.use_custom', { value: trimmedQuery }) || `Use "${trimmedQuery}"`}
+								</button>
+							)}
+							{filteredOptions.length === 0 && !showCustomOption ? (
 								<p className="px-3 py-2 text-xs text-gray-400">{emptyText}</p>
 							) : (
 								filteredOptions.map((option) => {
@@ -90,10 +130,7 @@ export default function SearchableSelect({
 										<button
 											key={option.value}
 											type="button"
-											onClick={() => {
-												onValueChange(option.value)
-												setOpen(false)
-											}}
+											onClick={() => pick(option.value, option.label)}
 											className={cn(
 												'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-2 text-left text-sm outline-none hover:bg-gray-100',
 												isSelected && 'bg-gray-100 text-[#05324f] font-medium'
@@ -101,7 +138,7 @@ export default function SearchableSelect({
 										>
 											{isSelected && (
 												<span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-													<Check className="h-4 w-4 text-[#38BC54]" />
+													<Check className="h-4 w-4 text-[#008037]" />
 												</span>
 											)}
 											{option.label}

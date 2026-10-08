@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useTranslation } from 'react-i18next'
+import { AuthPageSkeleton } from '../components/ui/Skeleton'
 
 export default function Auth2FAVerifyPage() {
 	const { t } = useTranslation()
@@ -25,7 +26,7 @@ export default function Auth2FAVerifyPage() {
 	useEffect(() => {
 		if (!tempToken && !loading) {
 			toast.error(t('auth.twofa.session_expired'))
-			navigate('/auth/signin', { replace: true })
+			navigate('/workshop/login', { replace: true })
 		}
 	}, [tempToken, loading, navigate, t])
 
@@ -57,14 +58,7 @@ export default function Auth2FAVerifyPage() {
 	}
 
 	if (loading || !tempToken) {
-		return (
-			<div className="min-h-screen bg-white flex items-center justify-center">
-				<div className="text-center">
-					<div className="w-20 h-20 border-4 border-[#34C759]/20 border-t-[#34C759] rounded-full animate-spin mx-auto mb-4"></div>
-					<p className="text-gray-600">{t('common.loading')}</p>
-				</div>
-			</div>
-		)
+		return <AuthPageSkeleton />
 	}
 
 	return (
@@ -73,7 +67,7 @@ export default function Auth2FAVerifyPage() {
 			<div className="list-page-main list-page-main--center">
 				<div className="max-w-md w-full space-y-6">
 					<div className="text-center">
-						<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#34C759' }}>
+						<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#008037' }}>
 							<Shield className="w-8 h-8 text-white" />
 						</div>
 						<h2 className="text-xl font-bold mb-2" style={{ color: '#05324f' }}>{t('auth.twofa.title')}</h2>
@@ -92,7 +86,7 @@ export default function Auth2FAVerifyPage() {
 									value={code}
 									onChange={handleCodeChange}
 									placeholder="000000"
-									className="block w-full px-4 py-3 text-center text-xl tracking-[0.5em] font-mono border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#34C759] focus:border-[#34C759] bg-gray-50/50"
+									className="block w-full px-4 py-3 text-center text-xl tracking-[0.5em] font-mono border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#008037] focus:border-[#008037] bg-gray-50/50"
 									autoFocus
 								/>
 								<p className="text-xs text-gray-500 mt-2">{t('auth.twofa.hint')}</p>
@@ -100,8 +94,8 @@ export default function Auth2FAVerifyPage() {
 							<button
 								type="submit"
 								disabled={isLoading || code.length !== 6}
-								className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-								style={{ backgroundColor: '#34C759' }}
+								className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-lg font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+								style={{ backgroundColor: '#008037' }}
 							>
 								{isLoading ? (
 									<>
@@ -120,7 +114,7 @@ export default function Auth2FAVerifyPage() {
 
 					<div className="text-center">
 						<Link
-							to="/auth/signin"
+							to="/workshop/login"
 							className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#05324f] transition-colors"
 						>
 							<ArrowLeft className="w-4 h-4" />

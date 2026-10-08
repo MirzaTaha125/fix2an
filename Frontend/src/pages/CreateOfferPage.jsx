@@ -1,26 +1,45 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card'
-import { Input } from '../components/ui/Input'
-import { Label } from '../components/ui/Label'
-import { Textarea } from '../components/ui/Textarea'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
-import { formatPrice, formatDate, parseInclusionItems, serializeInclusionItems } from '../utils/cn'
-import { Car, Clock, DollarSign, FileText, Shield, User, MessageSquare, AlertTriangle } from 'lucide-react'
+import { formatDate, parseInclusionItems, serializeInclusionItems } from '../utils/cn'
+import { AlertTriangle, ArrowLeft, CheckCircle, Clock, Shield } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
-import VehicleRequestCard from '../components/VehicleRequestCard'
+import { useRegisterMobileBack } from '../context/MobileBackContext'
 import InclusionChecklistEditor from '../components/InclusionChecklistEditor'
+import { requestsAPI, offersAPI, workshopAPI } from '../services/api'
+import {
+	DEFAULT_COMMISSION_RATE,
+	DEFAULT_VAT_RATE,
+	quoteTotalsFromCosts,
+	vatFactor,
+} from '../utils/platformRates'
 
-import { requestsAPI, offersAPI } from '../services/api'
+function money(value) {
+	const number = Number(value)
+	return Number.isFinite(number) ? Math.round(number) : 0
+}
 
-export default function CreateOfferPage() {
+function durationSelectValue(raw) {
+	const n = Number(raw)
+	if (!n) return ''
+	const hours = n >= 15 ? n / 60 : n
+	const options = [2, 3, 4, 5, 8]
+	return String(options.reduce((best, cur) => (Math.abs(cur - hours) < Math.abs(best - hours) ? cur : best)))
+}
+
+function quoteTotals(laborCost, partsCost, otherCost, vatRate = DEFAULT_VAT_RATE) {
+	return quoteTotalsFromCosts(laborCost, partsCost, otherCost, vatRate)
+}
+
+function formatKr(value) {
+	return `${new Intl.NumberFormat('sv-SE').format(value)} kr`
+}
+
+export function CreateQuotePanel({ requestId, onBack }) {
 	const navigate = useNavigate()
-	const { id: requestId } = useParams()
 	const [searchParams] = useSearchParams()
 	const viewMode = searchParams.get('view') === 'true'
 	const { user, loading: authLoading } = useAuth()
@@ -30,23 +49,31 @@ export default function CreateOfferPage() {
 	const [submitting, setSubmitting] = useState(false)
 	const [existingOffer, setExistingOffer] = useState(null)
 
+	const handleBack = onBack || (() => navigate(`/workshop/requests?case=${requestId}`))
+	useRegisterMobileBack(handleBack, true)
+
 	const [formData, setFormData] = useState({
 		price: '',
 		laborCost: '',
 		partsCost: '',
 		estimatedDuration: '',
-		warranty: '',
+		warranty: '12 months',
 		validityDays: '14',
 		inclusions: '',
 		note: '',
+		otherCost: '',
+		loanerCar: false,
+		originalParts: false,
 	})
 	const [inclusionItems, setInclusionItems] = useState([''])
+	const [commissionRate, setCommissionRate] = useState(DEFAULT_COMMISSION_RATE)
+	const [vatRate, setVatRate] = useState(DEFAULT_VAT_RATE)
 
 	// Redirect if not authenticated or not workshop
 	useEffect(() => {
 		if (!authLoading) {
 			if (!user) {
-				navigate('/auth/signin', { replace: true })
+				navigate('/workshop/login', { replace: true })
 				return
 			}
 			if (user.role !== 'WORKSHOP') {
@@ -58,6 +85,19 @@ export default function CreateOfferPage() {
 			}
 		}
 	}, [user, authLoading, navigate])
+
+	useEffect(() => {
+		if (!user || user.role !== 'WORKSHOP') return
+		let stop = false
+		workshopAPI.getPlatformSettings()
+			.then((res) => {
+				if (stop) return
+				if (res.data?.commissionRate != null) setCommissionRate(Number(res.data.commissionRate))
+				if (res.data?.vatRate != null) setVatRate(Number(res.data.vatRate))
+			})
+			.catch(() => {})
+		return () => { stop = true }
+	}, [user])
 
 	useEffect(() => {
 		if (requestId && user && user.role === 'WORKSHOP') {
@@ -83,19 +123,34 @@ export default function CreateOfferPage() {
 
 						if (workshopOffer) {
 							setExistingOffer(workshopOffer)
+							const labor = money(workshopOffer.laborCost)
+							const parts = money(workshopOffer.partsCost)
+							const offerVat = workshopOffer.vatRate != null ? Number(workshopOffer.vatRate) : vatRate
+							if (workshopOffer.vatRate != null) setVatRate(Number(workshopOffer.vatRate))
+							if (workshopOffer.commissionRate != null) setCommissionRate(Number(workshopOffer.commissionRate))
+							const other = Math.max(0, Math.round((money(workshopOffer.price) / vatFactor(offerVat)) - labor - parts))
 
 							setFormData({
 								price: workshopOffer.price?.toString() || '',
-								laborCost: workshopOffer.laborCost?.toString() || '',
-								partsCost: workshopOffer.partsCost?.toString() || '',
-								estimatedDuration: workshopOffer.estimatedDuration?.toString() || '',
-								warranty: workshopOffer.warranty || '',
+								laborCost: labor ? String(labor) : '',
+								partsCost: parts ? String(parts) : '',
+								otherCost: other ? String(other) : '',
+								estimatedDuration: durationSelectValue(workshopOffer.estimatedDuration),
+								warranty: workshopOffer.warranty || '12 months',
 								validityDays: workshopOffer.validityDays?.toString() || '14',
 								inclusions: workshopOffer.inclusions || '',
 								note: workshopOffer.note || '',
+								loanerCar: Boolean(workshopOffer.loanerCar),
+								originalParts: Boolean(workshopOffer.originalParts),
 							})
 							const parsedInclusions = parseInclusionItems(workshopOffer.inclusions)
 							setInclusionItems(parsedInclusions.length > 0 ? parsedInclusions : [''])
+						} else {
+							const raw = sessionStorage.getItem(`offer-draft-${requestId}`)
+							if (raw) {
+								const draft = JSON.parse(raw)
+								setFormData((prev) => ({ ...prev, ...draft, note: draft.note || '' }))
+							}
 						}
 					}
 				} catch (offerError) {
@@ -105,7 +160,8 @@ export default function CreateOfferPage() {
 		} catch (error) {
 			console.error('Failed to fetch request:', error)
 			toast.error(t('errors.request_not_found') || 'Request not found')
-			navigate('/workshop/requests')
+			if (onBack) onBack()
+			else navigate('/workshop/requests')
 		} finally {
 			setLoading(false)
 		}
@@ -114,43 +170,41 @@ export default function CreateOfferPage() {
 	const handleSubmit = async (e) => {
 		e.preventDefault()
 
-		if (!formData.price || !formData.estimatedDuration) {
+		const totals = quoteTotals(formData.laborCost, formData.partsCost, formData.otherCost, vatRate)
+		if (totals.subtotal <= 0) {
 			toast.error(t('errors.required_fields') || 'Please fill in all required fields')
+			return
+		}
+		if (!formData.estimatedDuration) {
+			toast.error(t('workshop.offer.duration_required') || 'Please select estimated time')
 			return
 		}
 
 		setSubmitting(true)
 
+		const payload = {
+			price: totals.total,
+			laborCost: money(formData.laborCost),
+			partsCost: money(formData.partsCost),
+			vatRate,
+			commissionRate,
+			warranty: formData.warranty || '',
+			validityDays: parseInt(formData.validityDays, 10) || 14,
+			inclusions: serializeInclusionItems(inclusionItems),
+			note: formData.note || '',
+			availableDates: [],
+			estimatedDuration: parseInt(formData.estimatedDuration, 10),
+			loanerCar: Boolean(formData.loanerCar),
+			originalParts: Boolean(formData.originalParts),
+		}
+
 		try {
 			let response
 			if (existingOffer) {
-				// Update existing offer
 				const offerId = existingOffer._id || existingOffer.id
-				response = await offersAPI.update(offerId, {
-					price: parseFloat(formData.price),
-					laborCost: parseFloat(formData.laborCost),
-					partsCost: parseFloat(formData.partsCost),
-					estimatedDuration: parseInt(formData.estimatedDuration),
-					warranty: formData.warranty || '',
-					validityDays: parseInt(formData.validityDays),
-					inclusions: serializeInclusionItems(inclusionItems),
-					note: formData.note || '',
-					availableDates: [],
-				})
+				response = await offersAPI.update(offerId, payload)
 			} else {
-				// Create new offer
-				response = await offersAPI.create({
-					requestId,
-					price: parseFloat(formData.price),
-					laborCost: parseFloat(formData.laborCost),
-					partsCost: parseFloat(formData.partsCost),
-					estimatedDuration: parseInt(formData.estimatedDuration),
-					warranty: formData.warranty || '',
-					validityDays: parseInt(formData.validityDays),
-					inclusions: serializeInclusionItems(inclusionItems),
-					note: formData.note || '',
-					availableDates: [],
-				})
+				response = await offersAPI.create({ requestId, ...payload })
 			}
 
 			if (response.data) {
@@ -171,54 +225,13 @@ export default function CreateOfferPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="list-page-shell bg-gray-50">
-				<Navbar />
-				<div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full">
-					{/* Header Skeleton */}
-					<div className="mb-8 space-y-2">
-						<Skeleton className="h-8 md:h-10 w-48" />
-						<Skeleton className="h-4 w-64" />
-					</div>
-					
-					{/* Request Info Card Skeleton */}
-					<Card className="mb-8 sm:mb-10 md:mb-12 shadow-lg border border-gray-200 bg-white">
-						<CardHeader className="pb-4 sm:pb-5 px-5 sm:px-7 pt-5 sm:pt-7">
-							<Skeleton className="h-6 w-40" />
-							<Skeleton className="h-4 w-full mt-2" />
-						</CardHeader>
-						<CardContent className="pt-0 px-5 sm:px-7 pb-5 sm:pb-7 flex flex-col md:flex-row gap-6">
-							<div className="flex-1 space-y-4">
-								<Skeleton className="h-12 w-full" />
-								<Skeleton className="h-12 w-full" />
-							</div>
-							<div className="flex-1 space-y-4">
-								<Skeleton className="h-12 w-full" />
-								<Skeleton className="h-12 w-full" />
-							</div>
-						</CardContent>
-					</Card>
-
-					{/* Form Skeleton */}
-					<Card className="shadow-lg border border-gray-200 bg-white">
-						<CardHeader className="pb-4 sm:pb-5 px-5 sm:px-7 pt-5 sm:pt-7">
-							<Skeleton className="h-6 w-48" />
-							<Skeleton className="h-4 w-full mt-2" />
-						</CardHeader>
-						<CardContent className="pt-0 px-5 sm:px-7 pb-5 sm:pb-7 space-y-6">
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-								<Skeleton className="h-12 w-full" />
-								<Skeleton className="h-12 w-full" />
-							</div>
-							<Skeleton className="h-12 w-full" />
-							<Skeleton className="h-24 w-full" />
-							<div className="flex justify-end gap-4 pt-6">
-								<Skeleton className="h-10 w-24" />
-								<Skeleton className="h-10 w-32" />
-							</div>
-						</CardContent>
-					</Card>
-				</div>
-				<Footer />
+			<div className="max-w-xl space-y-4">
+				<Skeleton className="h-8 w-48" />
+				<Skeleton className="h-4 w-64" />
+				<Skeleton className="h-28 w-full rounded-xl" />
+				<Skeleton className="h-11 w-full" />
+				<Skeleton className="h-11 w-full" />
+				<Skeleton className="h-11 w-full" />
 			</div>
 		)
 	}
@@ -230,12 +243,10 @@ export default function CreateOfferPage() {
 	// Block editing if offer was already SENT, ACCEPTED, EXPIRED or CANCELLED (unless in viewMode)
 	if (!viewMode && existingOffer && (['SENT', 'ACCEPTED', 'EXPIRED', 'CANCELLED'].includes(existingOffer.status))) {
 		return (
-			<div className="min-h-screen bg-white">
-				<Navbar />
-				<div className="max-w-5xl mx-auto px-4 py-24 text-center">
+			<div className="w-full py-8 text-center">
 					<div className="mb-6 flex justify-center">
 						<div className="p-4 bg-gray-50 rounded-full">
-							<Shield className="w-12 h-12 text-[#34C759]" />
+							<Shield className="w-12 h-12 text-[#008037]" />
 						</div>
 					</div>
 					<h2 className="text-2xl font-bold text-[#05324f] mb-4">
@@ -259,40 +270,38 @@ export default function CreateOfferPage() {
 						}
 					</p>
 					<div className="flex justify-center gap-4">
-						<Link to="/workshop/requests">
-							<Button variant="outline">
-								{t('common.back_to_requests') || 'Back to Requests'}
-							</Button>
-						</Link>
+						<Button variant="outline" onClick={onBack || (() => navigate('/workshop/requests'))}>
+							{t('common.back_to_requests') || 'Back to Requests'}
+						</Button>
 					</div>
-				</div>
 			</div>
 		)
 	}
 
-	const customer = request.customerId || request.customer
+	const vehicle = request.vehicleId || request.vehicle
+	const vehicleName = [vehicle?.make, vehicle?.model].filter(Boolean).join(' ')
+	const caseNo = String(request._id || request.id || requestId).slice(-5).toUpperCase()
+	const totals = quoteTotals(formData.laborCost, formData.partsCost, formData.otherCost, vatRate)
+	const commissionAmount = Math.round(totals.total * commissionRate) / 100
+	const priceRows = [
+		['laborCost', t('workshop.offer.labor')],
+		['partsCost', t('workshop.offer.spare_parts')],
+		['otherCost', t('workshop.offer.other')],
+	]
 
 	return (
-		<div className="min-h-screen bg-white">
-			<Navbar />
-			<div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-28 pb-12 sm:pb-16">
-				{/* Header */}
-				<div className="mb-8 sm:mb-10 md:mb-12">
-					<div className="mb-2">
-						<h1 className="text-xl sm:text-xl md:text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-							{existingOffer 
-								? (t('workshop.offer.edit_title') || 'Edit Offer')
-								: (t('workshop.offer.title') || 'Create Offer')
-							}
-						</h1>
-						<p className="text-sm sm:text-base text-gray-600 mt-1">
-							{existingOffer
-								? (t('workshop.offer.edit_subtitle') || 'Update your offer for this request')
-								: (t('workshop.offer.subtitle') || 'Submit your competitive offer for this request')
-							}
-						</p>
-					</div>
-				</div>
+				<div className="w-full">
+				<button type="button" onClick={handleBack} className="hidden lg:inline-flex items-center gap-1.5 text-sm font-semibold text-[#008037] mb-5">
+					<ArrowLeft className="w-4 h-4" strokeWidth={2.25} />
+					{t('workshop.panel.back')}
+				</button>
+				<h1 className="text-[1.7rem] font-semibold text-[#0B2540] leading-tight">
+					{existingOffer ? t('workshop.offer.edit_title') : t('workshop.offer.title')}
+				</h1>
+				<p className="text-sm text-[#6B7280] mt-1.5 mb-8">
+					{t('workshop.panel.case_no', { id: caseNo })}
+					{vehicleName ? ` · ${vehicleName}` : ''}
+				</p>
 
 				{/* Simplified Cancellation Notice */}
 				{existingOffer && existingOffer.status === 'CANCELLED' && (
@@ -337,253 +346,209 @@ export default function CreateOfferPage() {
 					</div>
 				)}
 
-				{/* Request Info */}
-				<Card className="mb-8 sm:mb-10 md:mb-12 shadow-lg border border-gray-200 bg-white">
-					<CardHeader className="pb-4 sm:pb-5 px-5 sm:px-7 pt-5 sm:pt-7">
-						<CardTitle className="text-lg sm:text-xl text-gray-900">
-							<span>{t('workshop.offer.request_details') || 'Request Details'}</span>
-						</CardTitle>
-						<CardDescription className="text-gray-600 mt-2 text-xs sm:text-sm">
-							{t('workshop.offer.review_request') || 'Review the customer\'s request before submitting your offer'}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="pt-0 px-5 sm:px-7 pb-5 sm:pb-7">
-						{request && (
-							<div className="mb-6 sm:mb-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
-								<VehicleRequestCard request={request} className="items-start" />
-							</div>
-						)}
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
-							<div>
-								<div className="flex items-start gap-3 sm:gap-4">
-									<div className="p-2 sm:p-2.5 bg-green-50 rounded-lg flex-shrink-0">
-										<User className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#34C759' }} />
-									</div>
-									<div className="min-w-0 flex-1">
-										<p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-											{t('workshop.offer.customer') || 'Customer'}
-										</p>
-										<p className="text-base sm:text-lg font-semibold text-gray-900 mb-1 truncate">{customer?.name || 'Customer'}</p>
-									</div>
-								</div>
+				<form onSubmit={handleSubmit}>
+					<label htmlFor="note" className="block text-sm font-semibold text-[#1F2937] mb-2">
+						{t('workshop.offer.work_description')}
+					</label>
+					<textarea
+						id="note"
+						value={formData.note}
+						disabled={viewMode}
+						onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+						rows={4}
+						className="w-full rounded-xl border border-[#E5E7EB] px-4 py-3 text-sm text-[#374151] leading-relaxed outline-none focus:border-[#008037] resize-y min-h-[108px]"
+					/>
+
+					<div className="mt-8 space-y-4">
+						<div className="flex items-center justify-between gap-6">
+							<label htmlFor="estimatedDuration" className="text-sm font-semibold text-[#1F2937]">
+								{t('quotes.flow.compare_time')} <span className="text-red-500">*</span>
+							</label>
+							<div className="relative w-44 shrink-0">
+								<select
+									id="estimatedDuration"
+									disabled={viewMode}
+									value={formData.estimatedDuration}
+									onChange={(e) => setFormData({ ...formData, estimatedDuration: e.target.value })}
+									className="w-full h-11 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-8 text-sm text-[#111827] outline-none focus:border-[#008037] appearance-none"
+								>
+									<option value="">{t('common.select') || 'Select'}</option>
+									<option value="2">1–2 {t('quotes.flow.hours')}</option>
+									<option value="3">2–3 {t('quotes.flow.hours')}</option>
+									<option value="4">3–4 {t('quotes.flow.hours')}</option>
+									<option value="5">4–5 {t('quotes.flow.hours')}</option>
+									<option value="8">6–8 {t('quotes.flow.hours')}</option>
+								</select>
 							</div>
 						</div>
 
-					</CardContent>
-				</Card>
-
-				{/* Offer Form */}
-				<Card className="shadow-lg border border-gray-200 bg-white">
-					<CardHeader className="pb-4 sm:pb-5 px-5 sm:px-7 pt-5 sm:pt-7">
-						<CardTitle className="text-lg sm:text-xl text-gray-900">
-							<span>{t('workshop.offer.your_offer_details') || 'Your Offer Details'}</span>
-						</CardTitle>
-						<CardDescription className="text-gray-600 mt-2 text-xs sm:text-sm">
-							{t('workshop.offer.fill_details') || 'Fill in all the details to make your offer competitive'}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="pt-0 px-5 sm:px-7 pb-5 sm:pb-7">
-						<form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-							{/* Price and Duration Structure */}
-							<div className="space-y-8">
-								{/* Top Section: Price and Validity */}
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 items-start">
-									<div className="space-y-6">
-										{/* Total Price */}
-										<div className="space-y-2">
-											<Label htmlFor="price" className="flex items-center gap-2 text-sm font-bold text-gray-700">
-												<DollarSign className="w-4 h-4 text-[#34C759]" />
-												<span>
-													Total Price (VAT Included) <span className="text-red-500">*</span>
-												</span>
-											</Label>
-											<div className="relative">
-												<Input
-													id="price"
-													type="number"
-													min="0"
-													step="0.01"
-													value={formData.price}
-													disabled={viewMode}
-													onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-													placeholder="0.00"
-													required
-													className="pl-10 h-12 text-lg font-bold text-gray-900 border-gray-200 focus:border-[#34C759] bg-white rounded-xl shadow-sm transition-all"
-												/>
-												<div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm">kr</div>
-											</div>
-										</div>
-
-										{/* Offer Validity */}
-										<div className="space-y-3 px-1">
-											<Label className="flex items-center gap-2 text-sm font-bold text-gray-700">
-												<Clock className="w-4 h-4 text-[#34C759]" />
-												<span>Offer Valid For</span>
-											</Label>
-											<div className="flex gap-3">
-												{['7', '14', '30'].map((days) => (
-													<button
-														key={days}
-														type="button"
-														disabled={viewMode}
-														onClick={() => setFormData({ ...formData, validityDays: days })}
-														className={`flex-1 py-3 px-4 rounded-xl border-2 font-bold text-sm transition-all duration-200 ${
-															formData.validityDays === days
-																? 'bg-[#34C759] border-[#34C759] text-white shadow-lg scale-[1.02]'
-																: 'border-gray-100 bg-gray-50 text-gray-400 hover:border-gray-200'
-														} ${viewMode ? 'cursor-default' : 'hover:shadow-md active:scale-95'}`}
-													>
-														{days} Days
-													</button>
-												))}
-											</div>
-										</div>
-									</div>
-
-									{/* Right side spacer for desktop, can be used for extra info if needed later */}
-									<div className="hidden md:block"></div>
-								</div>
-
-								{/* Inline Costs and Duration Breakdown */}
-								<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 pt-2">
-									{/* Labor Cost */}
-									<div className="space-y-2 px-1">
-										<Label htmlFor="laborCost" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-											Labor Cost (SEK)
-										</Label>
-										<Input
-											id="laborCost"
-											type="number"
-											disabled={viewMode}
-											value={formData.laborCost}
-											onChange={(e) => setFormData({ ...formData, laborCost: e.target.value })}
-											placeholder="0.00"
-											className="h-11 text-base font-medium border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-xl bg-white shadow-sm transition-all"
-										/>
-									</div>
-
-									{/* Parts Cost */}
-									<div className="space-y-2 px-1">
-										<Label htmlFor="partsCost" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-											Materials & Parts (SEK)
-										</Label>
-										<Input
-											id="partsCost"
-											type="number"
-											disabled={viewMode}
-											value={formData.partsCost}
-											onChange={(e) => setFormData({ ...formData, partsCost: e.target.value })}
-											placeholder="0.00"
-											className="h-11 text-base font-medium border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-xl bg-white shadow-sm transition-all"
-										/>
-									</div>
-
-									{/* Estimated Duration */}
-									<div className="space-y-2 px-1 col-span-1 sm:col-span-2 md:col-span-1">
-										<Label htmlFor="estimatedDuration" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-											<span>Estimated Duration (mins)</span>
-										</Label>
-										<Input
-											id="estimatedDuration"
-											type="number"
-											min="1"
-											value={formData.estimatedDuration}
-											disabled={viewMode}
-											onChange={(e) => setFormData({ ...formData, estimatedDuration: e.target.value })}
-											placeholder="60"
-											required
-											className="h-11 text-base font-medium text-gray-900 border-gray-200 focus:border-[#34C759] focus:ring--[#34C759]/10 rounded-xl bg-white shadow-sm transition-all"
-										/>
-									</div>
-								</div>
-							</div>
-
-							{/* Warranty */}
-							<div className="space-y-2 sm:space-y-3">
-								<Label htmlFor="warranty" className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700">
-									<div className="p-1 sm:p-1.5 bg-green-50 rounded-md flex-shrink-0">
-										<Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: '#34C759' }} />
-									</div>
-									<span>{t('workshop.offer.warranty_period') || 'Warranty Period'}</span>
-								</Label>
-								<Input
+						<div className="flex items-center justify-between gap-6">
+							<label htmlFor="warranty" className="text-sm font-semibold text-[#1F2937]">
+								{t('quotes.flow.compare_warranty')}
+							</label>
+							<div className="relative w-44 shrink-0">
+								<select
 									id="warranty"
-									type="text"
+									disabled={viewMode}
 									value={formData.warranty}
-									disabled={viewMode}
 									onChange={(e) => setFormData({ ...formData, warranty: e.target.value })}
-									placeholder={t('workshop.offer.warranty_placeholder') || 'e.g., 1 year, 12 months, 2 years'}
-									className="h-10 sm:h-12 text-sm sm:text-base"
-								/>
-								<p className="text-xs text-gray-500 ml-6 sm:ml-7">
-									{t('workshop.offer.warranty_optional') || 'Optional: Add warranty information to make your offer more attractive'}
-								</p>
+									className="w-full h-11 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-8 text-sm text-[#111827] outline-none focus:border-[#008037] appearance-none"
+								>
+									<option value="">{t('common.select') || 'Select'}</option>
+									<option value="3 months">{t('workshop.offer.warranty_3m') || '3 months'}</option>
+									<option value="6 months">{t('workshop.offer.warranty_6m') || '6 months'}</option>
+									<option value="12 months">{t('workshop.offer.warranty_12m') || '12 months'}</option>
+									<option value="24 months">{t('workshop.offer.warranty_24m') || '24 months'}</option>
+									<option value="36 months">{t('workshop.offer.warranty_36m') || '36 months'}</option>
+								</select>
 							</div>
+						</div>
 
-							<InclusionChecklistEditor
-								items={inclusionItems}
-								onChange={setInclusionItems}
+						<div className="flex items-center justify-between gap-6">
+							<span className="text-sm font-semibold text-[#1F2937]">{t('quotes.flow.compare_loaner')}</span>
+							<button
+								type="button"
+								role="switch"
+								aria-checked={formData.loanerCar}
 								disabled={viewMode}
-							/>
-
-							{/* Note */}
-							<div className="space-y-3">
-								<Label htmlFor="note" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-									<FileText className="w-4 h-4 text-[#34C759]" />
-									<span>Message to Customer</span>
-								</Label>
-								<Textarea
-									id="note"
-									value={formData.note}
-									disabled={viewMode}
-									onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-									placeholder="Describe your approach or additional details about the repair..."
-									rows={4}
-									className="resize-none text-sm leading-relaxed"
+								onClick={() => setFormData({ ...formData, loanerCar: !formData.loanerCar })}
+								className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+									formData.loanerCar ? 'bg-[#008037]' : 'bg-[#D1D5DB]'
+								} disabled:opacity-60`}
+							>
+								<span
+									className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${
+										formData.loanerCar ? 'translate-x-5' : 'translate-x-0'
+									}`}
 								/>
-							</div>
+							</button>
+						</div>
 
-							{/* Submit Buttons */}
-							<div className="flex flex-col sm:flex-row justify-end gap-4 sm:gap-5 pt-6 sm:pt-8 border-t border-gray-100">
-								<Link to="/workshop/requests" className="w-full sm:w-auto">
-									<Button type="button" variant="outline" size="default" className="w-full sm:w-auto px-6 sm:px-8 text-sm sm:text-base">
-										{viewMode ? (t('common.close') || 'Close') : (t('common.cancel') || 'Cancel')}
-									</Button>
-								</Link>
-								{!viewMode && (
-									<Button
-										type="submit"
-										disabled={submitting}
-										size="default"
-										className="w-full sm:w-auto px-6 sm:px-8 shadow-md hover:shadow-lg transition-all text-sm sm:text-base font-normal"
-										style={{ backgroundColor: '#34C759', color: '#FFFFFF' }}
-									>
-										{submitting ? (
-											<>
-												<div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-												{existingOffer 
-													? (t('workshop.offer.updating') || 'Updating...')
-													: (t('workshop.offer.submitting') || 'Submitting...')
-												}
-											</>
-										) : (
-											<>
-												{existingOffer
-													? (t('workshop.offer.update_offer') || 'Update Offer')
-													: (t('workshop.offer.submit_offer') || 'Submit Offer')
-												}
-											</>
-										)}
-									</Button>
-								)}
+						<div className="flex items-center justify-between gap-6">
+							<span className="text-sm font-semibold text-[#1F2937]">{t('quotes.flow.compare_parts')}</span>
+							<button
+								type="button"
+								role="switch"
+								aria-checked={formData.originalParts}
+								disabled={viewMode}
+								onClick={() => setFormData({ ...formData, originalParts: !formData.originalParts })}
+								className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+									formData.originalParts ? 'bg-[#008037]' : 'bg-[#D1D5DB]'
+								} disabled:opacity-60`}
+							>
+								<span
+									className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${
+										formData.originalParts ? 'translate-x-5' : 'translate-x-0'
+									}`}
+								/>
+							</button>
+						</div>
+					</div>
+
+					<div className="mt-8 space-y-4">
+						{priceRows.map(([key, label]) => (
+							<div key={key} className="flex items-center justify-between gap-6">
+								<label htmlFor={key} className="text-sm font-semibold text-[#1F2937]">{label}</label>
+								<div className="relative w-44 shrink-0">
+									<input
+										id={key}
+										type="number"
+										min="0"
+										step="1"
+										inputMode="numeric"
+										disabled={viewMode}
+										value={formData[key]}
+										onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+										placeholder="0"
+										className="w-full h-11 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-10 text-right text-sm text-[#111827] outline-none focus:border-[#008037]"
+									/>
+									<span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#6B7280]">kr</span>
+								</div>
 							</div>
-						</form>
-					</CardContent>
-				</Card>
-			</div>
-			
-			<Footer />
-		</div>
+						))}
+						<div className="flex items-center justify-between gap-6">
+							<span className="text-sm font-semibold text-[#1F2937]">
+								{t('workshop.offer.vat_rate', { rate: vatRate })}
+							</span>
+							<div className="relative w-44 shrink-0">
+								<input
+									readOnly
+									value={new Intl.NumberFormat('sv-SE').format(totals.vat)}
+									className="w-full h-11 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-10 text-right text-sm text-[#111827] outline-none"
+								/>
+								<span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#6B7280]">kr</span>
+							</div>
+						</div>
+					</div>
+
+					<div className="flex items-center justify-between gap-6 border-t border-[#E5E7EB] mt-6 pt-5">
+						<p className="text-base font-bold text-[#0B2540]">{t('workshop.offer.total_price')}</p>
+						<p className="text-[1.65rem] font-semibold text-[#008037] leading-none">{formatKr(totals.total)}</p>
+					</div>
+
+					{totals.total > 0 && (
+						<p className="mt-3 text-xs text-[#6B7280] leading-relaxed">
+							{t('workshop.contracts.commission_note', {
+								rate: commissionRate,
+								amount: formatKr(commissionAmount),
+							})}
+						</p>
+					)}
+
+					<div className="mt-8">
+						<InclusionChecklistEditor
+							items={inclusionItems}
+							onChange={setInclusionItems}
+							disabled={viewMode}
+						/>
+					</div>
+
+					<div className="flex flex-col gap-3 mt-8 lg:flex-row">
+						{viewMode ? (
+							<button type="button" onClick={onBack || (() => navigate('/workshop/requests'))} className="w-full lg:flex-1 min-h-[48px] rounded-lg border border-[#008037] text-[#008037] text-sm font-semibold inline-flex items-center justify-center">
+								{t('common.close') || 'Close'}
+							</button>
+						) : (
+							<button
+								type="button"
+								className="w-full lg:flex-1 min-h-[48px] rounded-lg border border-[#008037] text-[#008037] text-sm font-semibold bg-white"
+								onClick={() => {
+									sessionStorage.setItem(`offer-draft-${requestId}`, JSON.stringify(formData))
+									toast.success(t('workshop.panel.draft_saved'))
+								}}
+							>
+								{t('workshop.panel.save_draft')}
+							</button>
+						)}
+						{!viewMode && (
+							<button
+								type="submit"
+								disabled={submitting}
+								className="w-full lg:flex-1 min-h-[48px] rounded-lg bg-brand-btn text-white text-sm font-semibold disabled:opacity-60"
+							>
+								{submitting
+									? (existingOffer ? t('workshop.offer.updating') : t('workshop.offer.submitting'))
+									: (existingOffer ? t('workshop.offer.update_offer') : t('workshop.panel.send_quote'))}
+							</button>
+						)}
+					</div>
+				</form>
+				</div>
 	)
 }
 
+export default function CreateOfferPage() {
+	const { id } = useParams()
+	const [searchParams] = useSearchParams()
+	const navigate = useNavigate()
+
+	useEffect(() => {
+		const next = new URLSearchParams()
+		if (id) next.set('case', id)
+		next.set('panel', 'quote')
+		if (searchParams.get('view') === 'true') next.set('view', 'true')
+		navigate(`/workshop/requests?${next.toString()}`, { replace: true })
+	}, [id, navigate, searchParams])
+
+	return null
+}

@@ -19,15 +19,25 @@ import InclusionChecklistEditor from './InclusionChecklistEditor'
 import VehicleRequestCard, { formatRequestRegistration } from './VehicleRequestCard'
 import { parseInclusionItems, serializeInclusionItems } from '../utils/cn'
 
+function durationSelectValue(raw) {
+	const n = Number(raw)
+	if (!n) return ''
+	const hours = n >= 15 ? n / 60 : n
+	const options = [2, 3, 4, 5, 8]
+	return String(options.reduce((best, cur) => (Math.abs(cur - hours) < Math.abs(best - hours) ? cur : best)))
+}
+
 const initialFormData = {
 	price: '',
 	laborCost: '',
 	partsCost: '',
 	estimatedDuration: '',
-	warranty: '',
+	warranty: '12 months',
 	validityDays: '14',
 	inclusions: '',
 	note: '',
+	loanerCar: false,
+	originalParts: false,
 }
 
 export default function CreateOfferModal({ open, onOpenChange, requestId, onSuccess }) {
@@ -77,11 +87,13 @@ export default function CreateOfferModal({ open, onOpenChange, requestId, onSucc
 								price: workshopOffer.price?.toString() || '',
 								laborCost: workshopOffer.laborCost?.toString() || '',
 								partsCost: workshopOffer.partsCost?.toString() || '',
-								estimatedDuration: workshopOffer.estimatedDuration?.toString() || '',
-								warranty: workshopOffer.warranty || '',
+								estimatedDuration: durationSelectValue(workshopOffer.estimatedDuration),
+								warranty: workshopOffer.warranty || '12 months',
 								validityDays: workshopOffer.validityDays?.toString() || '14',
 								inclusions: workshopOffer.inclusions || '',
 								note: workshopOffer.note || '',
+								loanerCar: Boolean(workshopOffer.loanerCar),
+								originalParts: Boolean(workshopOffer.originalParts),
 							})
 							const parsedInclusions = parseInclusionItems(workshopOffer.inclusions)
 							setInclusionItems(parsedInclusions.length > 0 ? parsedInclusions : [''])
@@ -122,6 +134,8 @@ export default function CreateOfferModal({ open, onOpenChange, requestId, onSucc
 				inclusions: serializeInclusionItems(inclusionItems),
 				note: formData.note || '',
 				availableDates: [],
+				loanerCar: Boolean(formData.loanerCar),
+				originalParts: Boolean(formData.originalParts),
 			}
 
 			if (existingOffer) {
@@ -237,18 +251,66 @@ export default function CreateOfferModal({ open, onOpenChange, requestId, onSucc
 
 							<div className="space-y-2">
 								<Label htmlFor="offer-duration" className="text-sm font-semibold text-[#05324f]">
-									{t('workshop.proposals.estimated_duration') || 'Estimated Duration'} (min) <span className="text-red-500">*</span>
+									{t('quotes.flow.compare_time')} <span className="text-red-500">*</span>
 								</Label>
-								<Input
+								<select
 									id="offer-duration"
-									type="number"
-									min="1"
 									value={formData.estimatedDuration}
 									onChange={(e) => setFormData({ ...formData, estimatedDuration: e.target.value })}
-									placeholder="60"
 									required
-									className="h-11 rounded-xl border-gray-200"
-								/>
+									className="w-full h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm text-[#111827] outline-none focus:border-[#008037]"
+								>
+									<option value="">{t('common.select') || 'Select'}</option>
+									<option value="2">1–2 {t('quotes.flow.hours')}</option>
+									<option value="3">2–3 {t('quotes.flow.hours')}</option>
+									<option value="4">3–4 {t('quotes.flow.hours')}</option>
+									<option value="5">4–5 {t('quotes.flow.hours')}</option>
+									<option value="8">6–8 {t('quotes.flow.hours')}</option>
+								</select>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="offer-warranty" className="text-sm font-semibold text-[#05324f]">
+									{t('quotes.flow.compare_warranty')}
+								</Label>
+								<select
+									id="offer-warranty"
+									value={formData.warranty}
+									onChange={(e) => setFormData({ ...formData, warranty: e.target.value })}
+									className="w-full h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm text-[#111827] outline-none focus:border-[#008037]"
+								>
+									<option value="">{t('common.select') || 'Select'}</option>
+									<option value="3 months">{t('workshop.offer.warranty_3m') || '3 months'}</option>
+									<option value="6 months">{t('workshop.offer.warranty_6m') || '6 months'}</option>
+									<option value="12 months">{t('workshop.offer.warranty_12m') || '12 months'}</option>
+									<option value="24 months">{t('workshop.offer.warranty_24m') || '24 months'}</option>
+									<option value="36 months">{t('workshop.offer.warranty_36m') || '36 months'}</option>
+								</select>
+							</div>
+
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+								<button
+									type="button"
+									onClick={() => setFormData({ ...formData, loanerCar: !formData.loanerCar })}
+									className={`h-11 rounded-xl border text-sm font-semibold transition-colors ${
+										formData.loanerCar
+											? 'border-[#008037] bg-[#E8F5EC] text-[#008037]'
+											: 'border-gray-200 bg-white text-[#6B7280]'
+									}`}
+								>
+									{t('quotes.flow.compare_loaner')}: {formData.loanerCar ? t('common.yes') : t('common.no')}
+								</button>
+								<button
+									type="button"
+									onClick={() => setFormData({ ...formData, originalParts: !formData.originalParts })}
+									className={`h-11 rounded-xl border text-sm font-semibold transition-colors ${
+										formData.originalParts
+											? 'border-[#008037] bg-[#E8F5EC] text-[#008037]'
+											: 'border-gray-200 bg-white text-[#6B7280]'
+									}`}
+								>
+									{t('quotes.flow.compare_parts')}: {formData.originalParts ? t('common.yes') : t('common.no')}
+								</button>
 							</div>
 
 							<InclusionChecklistEditor
@@ -288,7 +350,7 @@ export default function CreateOfferModal({ open, onOpenChange, requestId, onSucc
 							type="submit"
 							form="create-offer-form"
 							disabled={submitting || loading}
-							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-brand-btn text-white font-semibold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50"
 						>
 							{submitting ? (
 								<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />

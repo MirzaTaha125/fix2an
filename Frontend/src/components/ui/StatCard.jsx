@@ -11,7 +11,7 @@ export function StatCard({
 	prefix, 
 	suffix, 
 	className, 
-	iconColor = '#34C759', 
+	iconColor = '#008037', 
 	iconBg = 'bg-green-50/50' 
 }) {
 	const isPositive = trend >= 0
@@ -32,7 +32,7 @@ export function StatCard({
 				)}
 				{Icon && (
 					<div className={cn(
-						'w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 duration-300',
+						'w-8 h-8 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 duration-300',
 						iconBg
 					)}>
 						<Icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: iconColor }} strokeWidth={2.5} />
@@ -55,7 +55,7 @@ export function StatCard({
 					<div className={cn(
 						'flex items-center gap-0.5 text-[11px] sm:text-xs font-bold px-1.5 py-0.5 rounded-md',
 						isPositive
-							? 'text-[#34C759]'
+							? 'text-[#008037]'
 							: 'text-red-500'
 					)}>
 						{isPositive ? (

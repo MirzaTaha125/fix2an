@@ -75,11 +75,12 @@ api.interceptors.response.use(
 		
 		if (error.response?.status === 401 && shouldLogoutOn401(error)) {
 			clearAuthSession()
-			const publicRoutes = ['/auth/signin', '/auth/signup', '/auth/verify-email', '/auth/2fa-verify', '/auth/magic-link', '/signin', '/signup', '/upload', '/', '/how-it-works', '/workshop/signup']
+			const publicRoutes = ['/auth/signin', '/auth/signup', '/auth/verify-email', '/auth/2fa-verify', '/auth/magic-link', '/signin', '/signup', '/upload', '/', '/how-it-works', '/about', '/workshop/signup', '/workshop/login', '/support']
 			const isPublicRoute = publicRoutes.some(route => window.location.pathname.includes(route))
 			if (!isPublicRoute) {
+				const workshopArea = window.location.pathname.startsWith('/workshop') || window.location.pathname.startsWith('/admin')
 				setTimeout(() => {
-					window.location.href = '/auth/signin'
+					window.location.href = workshopArea ? '/workshop/login' : '/auth/signin'
 				}, 100)
 			}
 		}
@@ -161,6 +162,24 @@ export const uploadAPI = {
 }
 
 // Reviews API
+export const messagesAPI = {
+	list: (requestId) => api.get(`/api/messages/request/${requestId}`),
+	inbox: () => api.get('/api/messages/workshop'),
+	customerInbox: () => api.get('/api/messages/customer'),
+	thread: (requestId, workshopId) => api.get(`/api/messages/request/${requestId}/workshop/${workshopId}`),
+	send: (data) => api.post('/api/messages', data),
+}
+
+export const supportAPI = {
+	listMine: () => api.get('/api/support/mine'),
+	getMine: (id) => api.get(`/api/support/mine/${id}`),
+	create: (data) => api.post('/api/support', data),
+	sendMessage: (id, data) => api.post(`/api/support/${id}/messages`, data),
+	adminList: (params) => api.get('/api/support/admin', { params }),
+	adminGet: (id) => api.get(`/api/support/admin/${id}`),
+	adminStatus: (id, status) => api.patch(`/api/support/admin/${id}/status`, { status }),
+}
+
 export const reviewsAPI = {
 	create: (data) => api.post('/api/reviews', data),
 	getByWorkshop: (workshopId) => api.get(`/api/reviews/workshop/${workshopId}`),
@@ -174,6 +193,8 @@ export const workshopAPI = {
 	getProfile: () => api.get('/api/workshop/profile'),
 	updateProfile: (data) => api.patch('/api/workshop/profile', data),
 	getReviews: () => api.get('/api/workshop/reviews'),
+	getDirectory: () => api.get('/api/workshop/directory'),
+	getPlatformSettings: () => api.get('/api/workshop/platform-settings'),
 }
 
 // Admin API
@@ -190,6 +211,8 @@ export const adminAPI = {
 	getBookings: (params) => api.get('/api/admin/bookings', { params }),
 	getEmailConfig: () => api.get('/api/admin/email-config'),
 	updateEmailConfig: (data) => api.patch('/api/admin/email-config', data),
+	getSettings: () => api.get('/api/admin/settings'),
+	updateSettings: (data) => api.patch('/api/admin/settings', data),
 }
 
 export { api }

@@ -7,6 +7,7 @@ import Footer from '../components/Footer'
 import { authAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { getRoleHomePath } from '../utils/roleHome'
+import { Skeleton } from '../components/ui/Skeleton'
 
 const SESSION_PREFIX = 'fixa2an-magic-link:'
 const DONE_PREFIX = 'fixa2an-magic-link-done:'
@@ -135,12 +136,13 @@ export default function MagicLinkVerifyPage() {
 			<div className="list-page-main list-page-main--center">
 				<div className="max-w-md w-full text-center space-y-4">
 					{status === 'loading' && (
-						<>
-							<div className="w-16 h-16 border-4 border-[#38BC54]/20 border-t-[#38BC54] rounded-full animate-spin mx-auto" />
+						<div className="space-y-4 flex flex-col items-center">
+							<Skeleton className="h-16 w-16 rounded-full" />
+							<Skeleton className="h-5 w-48" />
 							<p className="text-[#05324f] font-semibold">
 								{t('upload.form.verifying_link') || 'Verifying your link...'}
 							</p>
-						</>
+						</div>
 					)}
 					{status === 'error' && (
 						<>
@@ -153,7 +155,7 @@ export default function MagicLinkVerifyPage() {
 							<button
 								type="button"
 								onClick={() => navigate('/upload')}
-								className="mt-4 inline-flex items-center justify-center rounded-xl bg-[#38BC54] px-5 py-3 text-white font-semibold hover:bg-[#2eb34f] transition-colors"
+								className="mt-4 inline-flex items-center justify-center rounded-xl bg-brand-btn px-5 py-3 text-white font-semibold  transition-colors"
 							>
 								{t('upload.form.back_to_upload') || 'Back to upload'}
 							</button>

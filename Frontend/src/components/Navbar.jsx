@@ -4,16 +4,13 @@ import { useAuth } from '../context/AuthContext'
 import { Button } from './ui/Button'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitcher } from './LanguageSwitcher'
-import { User, LogOut, Menu, X, Building2, Users, ChevronDown, ArrowLeft } from 'lucide-react'
+import { User, LogOut, Menu, X, Building2, Users, ChevronDown, ChevronRight, ArrowLeft } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/Dialog'
 import RegisterTypeModal from './RegisterTypeModal'
 import Logo from './Logo'
-import { useCustomerOfferCount } from '../context/CustomerOfferCountContext'
-import OfferCountBadge from './OfferCountBadge'
 
 function Navbar() {
 	const { user, loading, logout } = useAuth()
-	const customerOfferCount = useCustomerOfferCount()
 	const navigate = useNavigate()
 	const location = useLocation()
 	const { t } = useTranslation()
@@ -21,8 +18,8 @@ function Navbar() {
 	const [isScrolled, setIsScrolled] = useState(false)
 	const [registerModalOpen, setRegisterModalOpen] = useState(false)
 	const [userDropdownOpen, setUserDropdownOpen] = useState(false)
-	const [registerDropdownOpen, setRegisterDropdownOpen] = useState(false)
 	const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false)
+	const [workshopMenuOpen, setWorkshopMenuOpen] = useState(false)
 
 	// Detect scroll position
 	useEffect(() => {
@@ -38,19 +35,54 @@ function Navbar() {
 	const isActive = (path) => {
 		return location.pathname === path || location.pathname?.startsWith(path + '/')
 	}
+	const isCustomerMessages = location.pathname === '/contract' && new URLSearchParams(location.search).get('view') === 'messages'
+	const isCustomerCases = isActive('/contract') && !isCustomerMessages
+	const isCustomerHome = location.pathname === '/dashboard'
+	const isHowItWorks = isActive('/how-it-works')
+	const isForWorkshops =
+		location.pathname === '/workshop/login' ||
+		location.pathname === '/workshop/signup' ||
+		location.pathname === '/workshop/pending' ||
+		location.pathname === '/workshop/rejected'
+	const isAbout = isActive('/about')
+	const isContact = isActive('/support')
+
+	const guestNavLinkClass = (active) =>
+		`relative inline-flex items-center text-sm font-medium whitespace-nowrap pb-1.5 border-b-2 transition-colors ${
+			active
+				? 'text-[#008037] border-[#008037]'
+				: 'text-[#374151] border-transparent hover:text-[#0B2540]'
+		}`
+
+	const mobileGuestNavLinkClass = (active) =>
+		`flex items-center justify-between gap-3 w-[calc(100%-1rem)] mx-2 px-4 py-3.5 text-left text-[15px] font-semibold rounded-xl transition-colors ${
+			active
+				? 'text-[#05324f] bg-[#E8F0FE]'
+				: 'text-[#05324f] hover:bg-[#F8FAFC]'
+		}`
 
 	const offerRequestId = new URLSearchParams(location.search).get('requestId')
 
+	const uploadParams = new URLSearchParams(location.search)
+	const isUploadFlowStep =
+		location.pathname === '/upload' &&
+		Boolean(
+			uploadParams.get('path') ||
+			uploadParams.get('edit') ||
+			uploadParams.get('requestId') ||
+			uploadParams.get('mode') === 'no-image' ||
+			uploadParams.get('sent') === '1'
+		)
+
 	// Check if navbar should show back button
 	const shouldShowBackButton = (
-		location.pathname === '/upload' ||
-		location.pathname === '/how-it-works' ||
+		isUploadFlowStep ||
 		location.pathname === '/book-appointment' ||
-		location.pathname === '/support' ||
 		location.pathname === '/privacy' ||
 		location.pathname === '/terms' ||
 		location.pathname === '/cookies' ||
 		(location.pathname === '/offers' && Boolean(offerRequestId)) ||
+		(location.pathname === '/contract' && Boolean(new URLSearchParams(location.search).get('case'))) ||
 		(location.pathname.includes('/offer') && location.pathname !== '/offers') ||
 		location.pathname.includes('/workshop/reviews') ||
 		location.pathname.includes('/admin/workshops/')
@@ -65,6 +97,19 @@ function Navbar() {
 	const handleLeftBack = () => {
 		if (isProfileInfoView) {
 			navigate(location.pathname.startsWith('/workshop') ? '/workshop/profile' : '/profile', { replace: true })
+			return
+		}
+		if (location.pathname === '/contract' && new URLSearchParams(location.search).get('case')) {
+			const params = new URLSearchParams(location.search)
+			params.delete('case')
+			params.delete('panel')
+			navigate({ pathname: '/contract', search: params.toString() ? `?${params}` : '' }, { replace: true })
+			return
+		}
+		if (location.pathname === '/upload' && uploadParams.get('path')) {
+			const params = new URLSearchParams(location.search)
+			params.delete('path')
+			navigate({ pathname: '/upload', search: params.toString() ? `?${params}` : '' }, { replace: true })
 			return
 		}
 		navigate(-1)
@@ -87,7 +132,7 @@ function Navbar() {
 	}
 
 	const showHamburgerMenu = !user && !showLeftBackButton
-	const showCenteredCompactLogo = user?.role !== 'ADMIN' && !showHamburgerMenu
+	const showCenteredLogo = user?.role !== 'ADMIN'
 
 	const renderCompactNavbarLeft = () => {
 		if (showLeftBackButton) {
@@ -101,8 +146,8 @@ function Navbar() {
 		if (user?.role === 'ADMIN') {
 			return (
 				<Link to="/admin" className="flex flex-col items-start group">
-					<span className="text-sm font-black bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1 group-hover:from-[#34C759] group-hover:to-[#34C759] transition-all duration-300">
-						Admin <span className="text-[#34C759]">Panel</span>
+					<span className="text-sm font-semibold bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1 group-hover:from-[#008037] group-hover:to-[#008037] transition-all duration-300">
+						Admin <span className="text-[#008037]">Panel</span>
 					</span>
 					<span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">
 						{t('common.admin_tagline')}
@@ -112,11 +157,27 @@ function Navbar() {
 		}
 
 		if (showHamburgerMenu) {
-			return <Logo />
+			return (
+				<button
+					type="button"
+					onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+					className="p-2 -ml-2 text-[#05324f] hover:bg-gray-100 rounded-full transition-colors inline-flex"
+					aria-label={t('common.menu') || 'Menu'}
+					aria-expanded={mobileMenuOpen}
+				>
+					{mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+				</button>
+			)
 		}
 
-		return <div className="w-10" aria-hidden="true" />
+		return null
 	}
+
+	const renderCompactNavbarRight = () => (
+		<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} align="right" iconClassName="h-6 w-6" />
+	)
+
+	if (user?.role === 'CUSTOMER') return null
 
 	return (
 		<header
@@ -135,19 +196,11 @@ function Navbar() {
 					</div>
 
 					<div className="flex items-center justify-center px-2">
-						{showCenteredCompactLogo && <Logo />}
+						{showCenteredLogo && <Logo />}
 					</div>
 
-					<div className="flex items-center justify-end gap-1 shrink-0">
-						<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} />
-						{!user && !showLeftBackButton && (
-							<button
-								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-								className="p-2 -mr-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
-							>
-								{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
-							</button>
-						)}
+					<div className="flex items-center justify-end gap-1.5 shrink-0">
+						{renderCompactNavbarRight()}
 					</div>
 				</div>
 
@@ -158,31 +211,21 @@ function Navbar() {
 					</div>
 
 					<div className="flex items-center justify-center px-2">
-						{showCenteredCompactLogo && <Logo />}
+						{showCenteredLogo && <Logo />}
 					</div>
 
-					<div className="flex items-center justify-end gap-1 shrink-0">
-						<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} iconClassName="h-6 w-6" />
-						{!user && !showLeftBackButton && (
-							<button
-								onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-								className="p-2 -mr-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors inline-flex"
-							>
-								{mobileMenuOpen ? <X className="w-6 h-6 text-[#05324f]" /> : <Menu className="w-6 h-6 text-[#05324f]" />}
-							</button>
-						)}
+					<div className="flex items-center justify-end gap-1.5 shrink-0">
+						{renderCompactNavbarRight()}
 					</div>
 				</div>
 
 				{/* ── Desktop navbar: lg and up only (tablet uses bottom nav) ── */}
-				<div className="hidden lg:flex relative justify-between items-center py-2.5 w-full">
-					{/* Desktop Logo */}
-					<div className="flex items-center justify-start flex-1 min-w-0">
+				<div className="hidden lg:flex items-center justify-between py-2.5 w-full gap-4">
+					<div className="flex items-center justify-start min-w-0 shrink-0">
 						<Logo />
 					</div>
 
-					{/* Right Section: Desktop Navigation & Utilities */}
-					<div className="flex items-center justify-end flex-1">
+					<div className="flex items-center justify-end min-w-0 gap-2">
 
 						{/* Desktop Navigation */}
 						<nav className="hidden md:flex space-x-6 lg:space-x-8 items-center">
@@ -192,42 +235,26 @@ function Navbar() {
 									{user.role === 'CUSTOMER' && (
 										<div className="hidden md:flex items-center space-x-4 lg:space-x-6">
 											<Link
-												to="/offers"
-												className={`relative inline-flex items-center gap-1.5 whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/offers')
-														? shouldUseWhiteNavbar
-															? 'text-[#05324f] font-semibold'
-															: 'text-white font-semibold bg-white/25 shadow-md backdrop-blur-sm'
-														: shouldUseWhiteNavbar
-															? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-50 hover:shadow-sm'
-															: 'text-white/80 hover:text-white hover:bg-white/10'
-													}`}
+												to="/dashboard"
+												className={`whitespace-nowrap text-sm transition-colors ${isCustomerHome ? 'text-[#05324f] font-semibold' : 'text-gray-600 font-medium hover:text-[#05324f]'}`}
 											>
-												<span>{t('navigation.offers')}</span>
-												<OfferCountBadge count={customerOfferCount} className="shrink-0" />
+												{t('navigation.home')}
 											</Link>
 											<Link
 												to="/contract"
-												className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/contract')
-														? shouldUseWhiteNavbar
-															? 'text-[#05324f] font-semibold'
-															: 'text-white font-semibold bg-white/25 shadow-md backdrop-blur-sm'
-														: shouldUseWhiteNavbar
-															? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-50 hover:shadow-sm'
-															: 'text-white/80 hover:text-white hover:bg-white/10'
-													}`}
+												className={`whitespace-nowrap text-sm transition-colors ${isCustomerCases ? 'text-[#05324f] font-semibold' : 'text-gray-600 font-medium hover:text-[#05324f]'}`}
 											>
-												{t('navigation.contract') || 'Contract'}
+												{t('navigation.my_cases') || t('navigation.contract')}
+											</Link>
+											<Link
+												to="/contract?view=messages"
+												className={`whitespace-nowrap text-sm transition-colors ${isCustomerMessages ? 'text-[#05324f] font-semibold' : 'text-gray-600 font-medium hover:text-[#05324f]'}`}
+											>
+												{t('navigation.messages')}
 											</Link>
 											<Link
 												to="/profile"
-												className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/profile')
-														? shouldUseWhiteNavbar
-															? 'text-[#05324f] font-semibold'
-															: 'text-white font-semibold bg-white/25 shadow-md backdrop-blur-sm'
-														: shouldUseWhiteNavbar
-															? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-50 hover:shadow-sm'
-															: 'text-white/80 hover:text-white hover:bg-white/10'
-													}`}
+												className={`whitespace-nowrap text-sm transition-colors ${isActive('/profile') ? 'text-[#05324f] font-semibold' : 'text-gray-600 font-medium hover:text-[#05324f]'}`}
 											>
 												{t('navigation.profile') || 'Profile'}
 											</Link>
@@ -347,80 +374,65 @@ function Navbar() {
 								</>
 							) : (
 								<>
-									<Link
-										to="/auth/signin"
-										className={`relative whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg ${isActive('/auth/signin')
-												? shouldUseWhiteNavbar
-													? 'text-[#05324f] font-semibold'
-													: 'text-white font-semibold bg-white/25 shadow-md backdrop-blur-sm'
-												: shouldUseWhiteNavbar
-													? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-50 hover:shadow-sm'
-													: 'text-white/80 hover:text-white hover:bg-white/10'
-											}`}
-									>
-										{t('navigation.login')}
+									<Link to="/how-it-works" className={guestNavLinkClass(isHowItWorks)}>
+										{t('navigation.how_it_works')}
 									</Link>
 									<div className="relative">
 										<button
-											onClick={() => setRegisterDropdownOpen(!registerDropdownOpen)}
-											className={`flex items-center gap-2 whitespace-nowrap transition-all duration-300 px-4 py-2.5 rounded-lg font-medium ${shouldUseWhiteNavbar
-													? 'text-gray-600 hover:text-[#05324f] hover:bg-gray-50'
-													: 'text-white/80 hover:text-white hover:bg-white/10'
-												}`}
+											type="button"
+											onClick={() => setWorkshopMenuOpen((open) => !open)}
+											className={`${guestNavLinkClass(isForWorkshops)} gap-1`}
 										>
-											<span>{t('navigation.register')}</span>
-											<ChevronDown className={`w-4 h-4 transition-transform duration-200 ${registerDropdownOpen ? 'rotate-180' : ''}`} />
+											{t('navigation.for_workshops')}
+											<ChevronDown className={`w-4 h-4 transition-transform ${workshopMenuOpen ? 'rotate-180' : ''}`} />
 										</button>
-
-										{/* Register Dropdown Menu */}
-										{registerDropdownOpen && (
+										{workshopMenuOpen && (
 											<>
-												<div
-													className="fixed inset-0 z-10"
-													onClick={() => setRegisterDropdownOpen(false)}
-												></div>
-												<div className={`absolute left-0 mt-2 w-56 rounded-xl shadow-2xl border z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${shouldUseWhiteNavbar
-														? 'bg-white border-gray-100'
-														: 'bg-white/95 backdrop-blur-md border-white/10'
-													}`}>
-													<div className="py-1.5 px-1.5 flex flex-col gap-1">
+												<div className="fixed inset-0 z-10" onClick={() => setWorkshopMenuOpen(false)} />
+												<div className="absolute left-1/2 top-full z-20 mt-2 w-64 -translate-x-1/2 rounded-xl border border-[#EEF1F4] bg-white p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+													<div className="grid grid-cols-2 gap-1.5">
 														<Link
-															to="/auth/signup"
-															onClick={() => setRegisterDropdownOpen(false)}
-															className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#05324f] hover:bg-blue-50/50 rounded-lg transition-colors group"
+															to="/workshop/login"
+															onClick={() => setWorkshopMenuOpen(false)}
+															className="flex min-h-[36px] items-center justify-center !rounded-md bg-brand-btn px-2.5 text-xs font-semibold text-white"
 														>
-															<div className="flex flex-col">
-																<span>{t('common.register_as_customer') || 'Register as Customer'}</span>
-																<span className="text-[10px] text-gray-400 font-normal leading-tight">Find trusted workshops</span>
-															</div>
+															{t('navigation.login')}
 														</Link>
-
 														<Link
 															to="/workshop/signup"
-															onClick={() => setRegisterDropdownOpen(false)}
-															className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#05324f] hover:bg-green-50/50 rounded-lg transition-colors group"
+															onClick={() => setWorkshopMenuOpen(false)}
+															className="flex min-h-[36px] items-center justify-center !rounded-md border border-[#008037] px-2.5 text-xs font-semibold text-[#008037] hover:bg-[#F3FBF6]"
 														>
-															<div className="flex flex-col">
-																<span>{t('common.register_as_workshop') || 'Register as Workshop'}</span>
-																<span className="text-[10px] text-gray-400 font-normal leading-tight">Grow your business</span>
-															</div>
+															{t('navigation.register')}
 														</Link>
 													</div>
 												</div>
 											</>
 										)}
 									</div>
+									<Link to="/about" className={guestNavLinkClass(isAbout)}>
+										{t('navigation.about_us')}
+									</Link>
+									<Link to="/support/contact" className={guestNavLinkClass(isContact)}>
+										{t('navigation.contact')}
+									</Link>
+									<Link
+										to="/upload"
+										className="inline-flex items-center justify-center min-h-[40px] px-4 !rounded-md bg-brand-btn text-white text-sm font-semibold whitespace-nowrap"
+									>
+										{t('navigation.create_case')}
+									</Link>
 								</>
 							)}
-							<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} />
 						</nav>
+						<LanguageSwitcher isScrolled={shouldUseWhiteNavbar} align="right" iconClassName="h-6 w-6" />
 					</div>
 				</div>
 
 				{/* Mobile & tablet navigation (hidden on lg+ where desktop nav shows) */}
 				{mobileMenuOpen && (
-					<div className="lg:hidden mt-4 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
-						<div className="px-2 py-3 space-y-1">
+					<div className="lg:hidden mt-2 bg-white rounded-2xl shadow-[0_8px_30px_rgba(15,23,42,0.10)] border border-gray-100 overflow-hidden">
+						<div className={user ? 'px-2 py-3 space-y-1' : 'py-1'}>
 							{user ? (
 								<>
 									{user.role === 'ADMIN' && (
@@ -432,33 +444,40 @@ function Navbar() {
 												}`}
 											onClick={() => setMobileMenuOpen(false)}
 										>
-											<span>Admin <span className="text-[#34C759]">Panel</span></span>
+											<span>Admin <span className="text-[#008037]">Panel</span></span>
 										</Link>
 									)}
 									{user.role === 'CUSTOMER' && (
 										<>
 											<Link
-												to="/offers"
-												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive('/offers')
+												to="/dashboard"
+												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isCustomerHome}
 														? 'text-[#05324f] font-semibold'
 														: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
 													}`}
 												onClick={() => setMobileMenuOpen(false)}
 											>
-												<span className="inline-flex items-center gap-1.5">
-													{t('navigation.offers')}
-													<OfferCountBadge count={customerOfferCount} />
-												</span>
+												<span>{t('navigation.home')}</span>
 											</Link>
 											<Link
 												to="/contract"
-												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive('/contract')
+												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isCustomerCases
 														? 'text-[#05324f] font-semibold'
 														: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
 													}`}
 												onClick={() => setMobileMenuOpen(false)}
 											>
-												<span>{t('navigation.contract') || 'Contract'}</span>
+												<span>{t('navigation.my_cases') || t('navigation.contract')}</span>
+											</Link>
+											<Link
+												to="/contract?view=messages"
+												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isCustomerMessages
+														? 'text-[#05324f] font-semibold'
+														: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
+													}`}
+												onClick={() => setMobileMenuOpen(false)}
+											>
+												<span>{t('navigation.messages')}</span>
 											</Link>
 											<Link
 												to="/profile"
@@ -470,7 +489,6 @@ function Navbar() {
 											>
 												<span>{t('navigation.profile') || 'Profile'}</span>
 											</Link>
-
 										</>
 									)}
 									{user.role === 'WORKSHOP' && (
@@ -565,38 +583,72 @@ function Navbar() {
 									</div>
 								</>
 							) : (
-								<div className="space-y-0">
+								<nav>
 									<Link
-										to="/auth/signin"
-										className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive('/auth/signin')
-												? 'text-[#05324f] font-semibold'
-												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
-											}`}
+										to="/how-it-works"
 										onClick={() => setMobileMenuOpen(false)}
+										className={mobileGuestNavLinkClass(isHowItWorks)}
 									>
-										<span>{t('navigation.login')}</span>
+										<span>{t('navigation.how_it_works')}</span>
+										<ChevronRight className="w-5 h-5 text-[#05324f] shrink-0" strokeWidth={1.75} />
+									</Link>
+									<button
+										type="button"
+										onClick={() => setWorkshopMenuOpen((open) => !open)}
+										className={mobileGuestNavLinkClass(isForWorkshops || workshopMenuOpen)}
+									>
+										<span>{t('navigation.for_workshops')}</span>
+										<ChevronRight
+											className={`w-5 h-5 text-[#05324f] shrink-0 transition-transform ${workshopMenuOpen ? 'rotate-90' : ''}`}
+											strokeWidth={1.75}
+										/>
+									</button>
+									{workshopMenuOpen && (
+										<div className="bg-[#FAFBFC]">
+											<Link
+												to="/workshop/login"
+												onClick={() => setMobileMenuOpen(false)}
+												className="flex items-center justify-between gap-3 w-full px-5 pl-8 py-4 text-[15px] font-semibold text-[#05324f]"
+											>
+												<span>{t('navigation.login')}</span>
+												<ChevronRight className="w-5 h-5 text-[#05324f] shrink-0" strokeWidth={1.75} />
+											</Link>
+											<Link
+												to="/workshop/signup"
+												onClick={() => setMobileMenuOpen(false)}
+												className="flex items-center justify-between gap-3 w-full px-5 pl-8 py-4 text-[15px] font-semibold text-[#05324f]"
+											>
+												<span>{t('navigation.register')}</span>
+												<ChevronRight className="w-5 h-5 text-[#05324f] shrink-0" strokeWidth={1.75} />
+											</Link>
+										</div>
+									)}
+									<Link
+										to="/about"
+										onClick={() => setMobileMenuOpen(false)}
+										className={mobileGuestNavLinkClass(isAbout)}
+									>
+										<span>{t('navigation.about_us')}</span>
+										<ChevronRight className="w-5 h-5 text-[#05324f] shrink-0" strokeWidth={1.75} />
 									</Link>
 									<Link
-										to="/auth/signup"
-										className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive('/auth/signup')
-												? 'text-[#05324f] font-semibold'
-												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
-											}`}
+										to="/support/contact"
 										onClick={() => setMobileMenuOpen(false)}
+										className={mobileGuestNavLinkClass(isContact)}
 									>
-										<span>{t('common.register_as_customer') || 'Register as Customer'}</span>
+										<span>{t('navigation.contact')}</span>
+										<ChevronRight className="w-5 h-5 text-[#05324f] shrink-0" strokeWidth={1.75} />
 									</Link>
-									<Link
-										to="/workshop/signup"
-										className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${isActive('/workshop/signup')
-												? 'text-[#05324f] font-semibold'
-												: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
-											}`}
-										onClick={() => setMobileMenuOpen(false)}
-									>
-										<span>{t('common.register_as_workshop') || 'Register as Workshop'}</span>
-									</Link>
-								</div>
+									<div className="px-4 pt-3 pb-2">
+										<Link
+											to="/upload"
+											onClick={() => setMobileMenuOpen(false)}
+											className="flex w-full items-center justify-center min-h-[44px] rounded-xl bg-brand-btn text-white text-[15px] font-semibold"
+										>
+											{t('navigation.create_case')}
+										</Link>
+									</div>
+								</nav>
 							)}
 						</div>
 					</div>
@@ -630,7 +682,7 @@ function Navbar() {
 						</Button>
 						<Button
 							onClick={confirmLogout}
-							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-[#34C759] hover:bg-[#2eb34f] text-white font-semibold text-sm transition-all shadow-md active:scale-95"
+							className="flex-1 min-w-0 h-11 px-2 sm:px-4 rounded-xl bg-brand-btn text-white font-semibold text-sm transition-all shadow-md active:scale-95"
 						>
 							{t('navigation.logout') || 'Log Out'}
 						</Button>

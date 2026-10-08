@@ -9,8 +9,32 @@ const bookingSchema = new mongoose.Schema({
 	status: { 
 		type: String, 
 		default: 'CONFIRMED', 
-		enum: ['CONFIRMED', 'RESCHEDULED', 'CANCELLED', 'DONE', 'NO_SHOW'] 
+		enum: [
+			'CONFIRMED',
+			'RESCHEDULED',
+			'RECEIVED',
+			'IN_PROGRESS',
+			'READY_PICKUP',
+			'CANCELLED',
+			'DONE',
+			'NO_SHOW',
+		] 
 	},
+	paymentStatus: {
+		type: String,
+		default: 'UNPAID',
+		enum: ['UNPAID', 'PAID'],
+	},
+	paidAt: { type: Date },
+	finalAmount: { type: Number },
+	commissionRate: { type: Number },
+	commissionAmount: { type: Number },
+	extraApprovals: [{
+		description: String,
+		price: Number,
+		status: { type: String, enum: ['PENDING', 'APPROVED', 'DECLINED'], default: 'PENDING' },
+		createdAt: { type: Date, default: Date.now },
+	}],
 	totalAmount: { type: Number, required: true },
 	isAgreedToTerms: { type: Boolean, required: true },
 	notes: { type: String },

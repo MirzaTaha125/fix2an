@@ -44,24 +44,25 @@ export function VehicleRequestInfoLines({
 	const { t } = useTranslation()
 	const vehicle = vehicleProp || getRequestVehicle(request)
 	const vehicleDetails = formatVehicleDetailsLine(vehicle)
+	const lineClass = 'text-[12px] text-[#6B7280] leading-snug'
 
 	return (
 		<div className="space-y-1">
 			{showProblem && (
-				<p className={cn('text-[11px] text-[#05324f]/80 leading-snug line-clamp-2', problemClassName)}>
-					<span className="font-bold">{t('workshop.requests.problem_label') || 'Problem'}:</span>
+				<p className={cn(lineClass, 'line-clamp-2', problemClassName)}>
+					<span className="font-bold text-brand-dark">{t('workshop.requests.problem_label') || 'Problem'}:</span>
 					{request?.description?.trim() ? ` ${request.description.trim()}` : ' —'}
 				</p>
 			)}
 			{showDetails && (
-				<p className="text-[11px] text-[#05324f]/80 leading-snug line-clamp-2">
-					<span className="font-bold">{t('workshop.requests.details_label') || 'Details'}:</span>{' '}
+				<p className={cn(lineClass, 'line-clamp-2')}>
+					<span className="font-bold text-brand-dark">{t('workshop.requests.details_label') || 'Details'}:</span>{' '}
 					{vehicleDetails || '—'}
 				</p>
 			)}
 			{showLocation && request?.city && (
-				<p className="text-[11px] text-[#05324f]/80">
-					<span className="font-bold">{t('workshop.requests.location_label') || 'Location'}:</span> {request.city}
+				<p className={lineClass}>
+					<span className="font-bold text-brand-dark">{t('workshop.requests.location_label') || 'Location'}:</span> {request.city}
 				</p>
 			)}
 			{children}
@@ -111,7 +112,7 @@ export default function VehicleRequestCard({
 				<div className="flex items-start justify-between gap-2 mb-1.5 md:mb-2">
 					<h3
 						className={cn(
-							'text-sm text-[#05324f] leading-snug line-clamp-2 tracking-wide flex-1 min-w-0',
+							'text-sm text-brand-dark leading-snug line-clamp-2 tracking-wide flex-1 min-w-0',
 							titleWeightClass
 						)}
 					>

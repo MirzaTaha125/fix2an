@@ -1,5 +1,7 @@
 import express from 'express'
+import mongoose from 'mongoose'
 import Request from '../models/Request.js'
+import InspectionReport from '../models/InspectionReport.js'
 import Workshop from '../models/Workshop.js'
 import Offer from '../models/Offer.js'
 import Booking from '../models/Booking.js'
@@ -104,7 +106,7 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 				const bookings = await Booking.find({ requestId: request._id })
 					.populate({
 						path: 'workshopId',
-						select: 'companyName rating reviewCount email phone userId address city',
+						select: 'companyName rating reviewCount email phone userId address city postalCode openingHours description about',
 						populate: { path: 'userId', select: 'name image' }
 					})
 					.populate('offerId', '_id id status price')
@@ -123,10 +125,12 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 						note: offer.note,
 						status: offer.status,
 						workshop: {
+							id: offer.workshopId?._id,
 							companyName: offer.workshopId?.companyName,
 							rating: offer.workshopId?.rating || 0,
 							reviewCount: offer.workshopId?.reviewCount || 0,
 							logo: offer.workshopId?.userId?.image,
+							phone: offer.workshopId?.phone || '',
 						},
 					})),
 					bookings: await Promise.all(bookings.map(async (booking) => {
@@ -139,18 +143,32 @@ router.get('/customer/:customerId', authenticate, async (req, res) => {
 							id: booking._id,
 							_id: booking._id,
 							status: booking.status,
+							paymentStatus: booking.paymentStatus || 'UNPAID',
+							paidAt: booking.paidAt,
 							scheduledAt: booking.scheduledAt,
-							totalAmount: booking.totalAmount,
+							totalAmount: booking.finalAmount || booking.totalAmount,
+							finalAmount: booking.finalAmount || null,
 							hasReview: !!review,
+							review: review
+								? { rating: review.rating, comment: review.comment || '', createdAt: review.createdAt }
+								: null,
+							extraApprovals: booking.extraApprovals || [],
 							workshop: {
+								id: booking.workshopId?._id,
+								_id: booking.workshopId?._id,
 								companyName: booking.workshopId?.companyName,
 								rating: booking.workshopId?.rating || 0,
 								reviewCount: booking.workshopId?.reviewCount || 0,
 								logo: workshopImage,
 								image: workshopImage,
-								address: {
-									city: booking.workshopId?.city
-								}
+								phone: booking.workshopId?.phone || '',
+								street: booking.workshopId?.address || '',
+								city: booking.workshopId?.city || '',
+								postalCode: booking.workshopId?.postalCode || '',
+								openingHours: booking.workshopId?.openingHours || '',
+								description: booking.workshopId?.description || '',
+								about: booking.workshopId?.about || '',
+								address: booking.workshopId?.address || '',
 							},
 							workshopId: booking.workshopId,
 						}
@@ -187,7 +205,7 @@ router.get('/available', authenticate, requireRole('WORKSHOP'), async (req, res)
 		})
 			.populate('vehicleId')
 			.populate('reportId')
-			.populate('customerId', 'name')
+			.populate('customerId', 'name email phone')
 			.sort({ createdAt: -1 })
 
 		// Get offers for each request from this workshop
@@ -243,6 +261,51 @@ router.patch('/:id', authenticate, async (req, res) => {
 		const customerId = request.customerId?._id || request.customerId
 		if (customerId.toString() !== req.user._id.toString() && req.user.role !== 'ADMIN') {
 			return res.status(403).json({ message: 'Forbidden' })
+		}
+
+		if (Array.isArray(updateData.addReportIds)) {
+			const ids = [...new Set(updateData.addReportIds.map((value) => String(value)))].filter((value) => mongoose.Types.ObjectId.isValid(value))
+			if (ids.length) {
+				const reports = await InspectionReport.find({ _id: { $in: ids } }).select('_id mimeType')
+				const existing = new Set((request.reportIds || []).map((value) => String(value)))
+				for (const report of reports) {
+					if (!String(report.mimeType || '').startsWith('image/')) continue
+					const reportId = String(report._id)
+					if (existing.has(reportId) || request.reportIds.length >= 12) continue
+					request.reportIds.push(report._id)
+					existing.add(reportId)
+				}
+			}
+			if (Object.keys(updateData).length === 1) {
+				await request.save()
+				const populatedRequest = await Request.findById(id)
+					.populate('customerId', 'name email')
+					.populate('vehicleId')
+					.populate('reportIds')
+					.populate('reportId')
+				return res.json(populatedRequest)
+			}
+		}
+
+		if (Array.isArray(updateData.removeReportIds)) {
+			const ids = new Set(
+				[...new Set(updateData.removeReportIds.map((value) => String(value)))].filter((value) => mongoose.Types.ObjectId.isValid(value))
+			)
+			if (ids.size) {
+				request.reportIds = (request.reportIds || []).filter((value) => !ids.has(String(value._id || value)))
+				if (request.reportId && ids.has(String(request.reportId._id || request.reportId))) {
+					request.reportId = request.reportIds[0] || undefined
+				}
+			}
+			if (Object.keys(updateData).length === 1) {
+				await request.save()
+				const populatedRequest = await Request.findById(id)
+					.populate('customerId', 'name email')
+					.populate('vehicleId')
+					.populate('reportIds')
+					.populate('reportId')
+				return res.json(populatedRequest)
+			}
 		}
 
 		// Status check - only allow edit if NEW or IN_BIDDING
@@ -349,7 +412,8 @@ router.get('/:id', authenticate, async (req, res) => {
 		
 		const request = await Request.findById(id)
 			.populate('vehicleId', 'make model year')
-			.populate('customerId', 'name email')
+			.populate('customerId', 'name email phone')
+			.populate('reportIds')
 			.populate('reportId')
 		
 		if (!request) {
@@ -375,18 +439,22 @@ router.get('/:id', authenticate, async (req, res) => {
 
 			const now = new Date()
 			const isAvailable = (['NEW', 'IN_BIDDING'].includes(request.status) && request.expiresAt > now)
+			const offers = await Offer.find({ requestId: id, workshopId: workshop._id })
+			const bookings = await Booking.find({ requestId: id, workshopId: workshop._id })
+				.populate('offerId')
 			
 			// If not available, check if this workshop has an existing offer or booking for this request
-			if (!isAvailable) {
-				const hasOffer = await Offer.findOne({ requestId: id, workshopId: workshop._id })
-				const hasBooking = await Booking.findOne({ requestId: id, workshopId: workshop._id })
-				
-				if (!hasOffer && !hasBooking) {
-					return res.status(403).json({ message: 'Request is no longer available for bidding' })
-				}
+			if (!isAvailable && offers.length === 0 && bookings.length === 0) {
+				return res.status(403).json({ message: 'Request is no longer available for bidding' })
 			}
-			
-			return res.json(request)
+
+			const payload = request.toObject ? request.toObject() : request
+			return res.json({
+				...payload,
+				id: payload._id,
+				offers,
+				bookings,
+			})
 		}
 		
 		return res.status(403).json({ message: 'Forbidden' })

@@ -6,6 +6,8 @@ const offerSchema = new mongoose.Schema({
 	price: { type: Number, required: true },
 	laborCost: { type: Number, default: 0 },
 	partsCost: { type: Number, default: 0 },
+	vatRate: { type: Number, default: 15, min: 0, max: 100 },
+	commissionRate: { type: Number, min: 0, max: 100 },
 	validityDays: { type: Number, default: 14 },
 	expiresAt: { type: Date },
 	inclusions: { type: String },
@@ -13,6 +15,8 @@ const offerSchema = new mongoose.Schema({
 	availableDates: { type: String },
 	estimatedDuration: { type: Number },
 	warranty: { type: String },
+	loanerCar: { type: Boolean, default: false },
+	originalParts: { type: Boolean, default: false },
 	status: { 
 		type: String, 
 		default: 'SENT', 

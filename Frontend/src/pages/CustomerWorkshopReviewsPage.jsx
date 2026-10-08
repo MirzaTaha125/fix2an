@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Card, CardContent } from '../components/ui/Card'
+import EmptyState from '../components/ui/EmptyState'
 import { Skeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
-import { Star, ArrowLeft, MessageSquare, User } from 'lucide-react'
+import { Star, ArrowLeft, User } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
@@ -123,12 +124,12 @@ export default function CustomerWorkshopReviewsPage() {
 				<div className="mb-8">
 					<button
 						onClick={() => navigate(-1)}
-						className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+						className="hidden lg:inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
 					>
 						<ArrowLeft className="w-4 h-4" />
 						{t('customer_reviews.back_to_booking') || 'Back to Details'}
 					</button>
-					<h1 className="text-xl sm:text-xl font-bold text-[#05324f]">
+					<h1 className="page-title">
 						{workshopName} {t('customer_reviews.title') || 'Reviews'}
 					</h1>
 					<p className="text-gray-600 mt-1">
@@ -165,17 +166,13 @@ export default function CustomerWorkshopReviewsPage() {
 				{/* Reviews List */}
 				{reviews.length === 0 ? (
 					<Card className="border border-gray-200 bg-white rounded-xl shadow-sm">
-						<CardContent className="py-16 text-center">
-							<MessageSquare className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-							<h3 className="text-xl font-bold text-[#05324f] mb-2">
-								{t('customer_reviews.no_reviews') || 'No reviews yet'}
-							</h3>
-							<p className="text-gray-500 max-w-sm mx-auto">
-								{t('customer_reviews.no_reviews_desc') || 'This workshop has not received any reviews yet.'}
-							</p>
-							<Button onClick={() => navigate(-1)} className="mt-6 bg-[#34C759] hover:bg-[#2eaa4e] text-white">
-								{t('customer_reviews.back_to_booking') || 'Back to Details'}
-							</Button>
+						<CardContent className="p-0">
+							<EmptyState
+								title={t('common.empty.reviews_title')}
+								description={t('common.empty.reviews_desc')}
+								actionLabel={t('customer_reviews.back_to_booking') || 'Back to Details'}
+								onAction={() => navigate(-1)}
+							/>
 						</CardContent>
 					</Card>
 				) : (

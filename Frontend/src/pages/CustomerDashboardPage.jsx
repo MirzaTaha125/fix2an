@@ -1,35 +1,39 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import {
-	Camera,
-	FileText,
-	Tag,
-	User,
-	Wallet,
-	Briefcase,
-	CheckCircle2,
-} from 'lucide-react'
+import { ArrowRight, Car, FileText, Star } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { Skeleton } from '../components/ui/Skeleton'
-import StatCard from '../components/ui/StatCard'
-import DashboardQuickAction from '../components/dashboard/DashboardQuickAction'
+import { DashboardPageSkeleton } from '../components/ui/Skeleton'
 import { useAuth } from '../context/AuthContext'
 import { computeCustomerSentOfferCount } from '../context/CustomerOfferCountContext'
 import { requestsAPI, bookingsAPI } from '../services/api'
-import { formatPrice } from '../utils/cn'
 
-function getCompletedBookingAmount(booking) {
-	if (booking?.totalAmount != null && Number(booking.totalAmount) > 0) {
-		return Number(booking.totalAmount)
-	}
-	const offerPrice = booking?.offerId?.price
-	if (offerPrice != null && Number(offerPrice) > 0) {
-		return Number(offerPrice)
-	}
-	return 0
+function OverviewCard({ title, value, meta, icon: Icon, to, seeMore }) {
+	return (
+		<div className="w-full rounded-2xl border border-gray-100 bg-white shadow-sm px-4 py-4 sm:px-6 sm:py-5">
+			<div className="flex items-center gap-3 sm:gap-5">
+				<div className="min-w-0 flex-1">
+					<p className="text-sm sm:text-base font-semibold text-[#05324f] truncate">{title}</p>
+					<p className="text-3xl sm:text-4xl font-bold text-[#008037] leading-none mt-2 tabular-nums">{value}</p>
+				</div>
+				<div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[#F2F9F4] flex items-center justify-center">
+					<Icon className="w-6 h-6 sm:w-7 sm:h-7 text-[#008037]" strokeWidth={1.75} />
+				</div>
+				<div className="min-w-0 flex-1 text-right">
+					<p className="text-xs sm:text-sm text-[#6B7280] truncate">{meta}</p>
+					<Link
+						to={to}
+						className="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-[#008037] hover:text-[#006b28]"
+					>
+						{seeMore}
+						<ArrowRight className="w-4 h-4" strokeWidth={2.25} />
+					</Link>
+				</div>
+			</div>
+		</div>
+	)
 }
 
 export default function CustomerDashboardPage() {
@@ -39,14 +43,11 @@ export default function CustomerDashboardPage() {
 	const { t } = useTranslation()
 	const [loading, setLoading] = useState(true)
 	const [stats, setStats] = useState({
-		totalSpent: 0,
-		activeCases: 0,
-		offersReceived: 0,
-		completedJobs: 0,
-		openRequests: 0,
-		currentCases: 0,
-		pendingOffers: 0,
+		myCases: 0,
+		offers: 0,
+		favouriteWorkshops: 0,
 	})
+	const [offersCaseId, setOffersCaseId] = useState(null)
 
 	useEffect(() => {
 		if (!authLoading) {
@@ -79,43 +80,35 @@ export default function CustomerDashboardPage() {
 				const requests = Array.isArray(requestsRes.data) ? requestsRes.data : []
 				const bookings = Array.isArray(bookingsRes.data) ? bookingsRes.data : []
 
-				const activeCases = requests.filter(
+				const myCases = requests.filter(
 					(r) => !['COMPLETED', 'CANCELLED', 'EXPIRED'].includes(r.status?.toUpperCase())
 				).length
 
-				const openRequests = requests.filter((r) =>
-					['NEW', 'IN_BIDDING'].includes(r.status?.toUpperCase())
-				).length
+				const offers = computeCustomerSentOfferCount(requests)
 
-				const currentCases = requests.filter((r) => {
-					const requestBookings = r.bookings || []
-					return requestBookings.some((b) => ['CONFIRMED', 'RESCHEDULED'].includes(b.status))
-				}).length
+				const workshopIds = new Set()
+				bookings.forEach((booking) => {
+					const raw = booking.workshopId
+					const id = raw && typeof raw === 'object' ? raw._id || raw.id : raw
+					if (id) workshopIds.add(String(id))
+				})
+				let firstOffersCaseId = null
+				requests.forEach((request) => {
+					const requestId = request._id || request.id
+					;(request.offers || []).forEach((offer) => {
+						if (!['SENT', 'ACCEPTED'].includes(String(offer.status || '').toUpperCase())) return
+						const raw = offer.workshopId
+						const id = (raw && typeof raw === 'object' ? raw._id || raw.id : raw) || offer.workshop?.id
+						if (id) workshopIds.add(String(id))
+						if (!firstOffersCaseId && requestId) firstOffersCaseId = String(requestId)
+					})
+				})
 
-				const pendingOffers = computeCustomerSentOfferCount(requests)
-
-				const offersReceived = requests.reduce((total, request) => {
-					const sent = (request.offers || []).filter((o) => o.status === 'SENT').length
-					return total + sent
-				}, 0)
-
-				const completedBookings = bookings.filter((b) => b.status?.toUpperCase() === 'DONE')
-
-				const completedJobs = completedBookings.length
-
-				const totalSpent = completedBookings.reduce(
-					(sum, booking) => sum + getCompletedBookingAmount(booking),
-					0
-				)
-
+				setOffersCaseId(firstOffersCaseId)
 				setStats({
-					totalSpent,
-					activeCases,
-					offersReceived,
-					completedJobs,
-					openRequests,
-					currentCases,
-					pendingOffers,
+					myCases,
+					offers,
+					favouriteWorkshops: workshopIds.size,
 				})
 			} catch (error) {
 				console.error('Failed to fetch customer dashboard:', error)
@@ -132,21 +125,10 @@ export default function CustomerDashboardPage() {
 
 	if (authLoading || loading) {
 		return (
-			<div className="list-page-shell bg-[#F4F7F6]">
+			<div className="list-page-shell bg-white">
 				<Navbar />
-				<div className="list-page-content">
-					<Skeleton className="h-36 w-full rounded-2xl mb-6" />
-					<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
-						{[1, 2, 3, 4].map((i) => (
-							<Skeleton key={i} className="h-28 sm:h-32 rounded-2xl" />
-						))}
-					</div>
-					<Skeleton className="h-6 w-32 mb-4" />
-					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-						{[1, 2, 3, 4].map((i) => (
-							<Skeleton key={i} className="h-20 rounded-2xl" />
-						))}
-					</div>
+				<div className="list-page-content !max-w-3xl">
+					<DashboardPageSkeleton stats={0} rows={3} />
 				</div>
 				<Footer className="max-lg:hidden" />
 			</div>
@@ -156,84 +138,44 @@ export default function CustomerDashboardPage() {
 	if (!user || user.role?.toUpperCase() !== 'CUSTOMER') return null
 
 	return (
-		<div className="list-page-shell bg-[#F4F7F6]">
+		<div className="list-page-shell bg-white">
 			<Navbar />
 
-			<div className="list-page-content">
+			<div className="list-page-content flex-1 flex flex-col !max-w-3xl">
 				<div className="mb-6 sm:mb-8">
-					<p className="inline-flex items-center bg-[#F2F9F4] border border-[#38BC54]/15 rounded-full px-3 py-1 mb-3 text-[10px] sm:text-xs font-semibold text-[#38BC54] uppercase tracking-wider">
-						{t('dashboard.customer.badge') || 'Customer Dashboard'}
-					</p>
-					<h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[#05324f] leading-tight mb-1.5">
-						{t('dashboard.welcome_back', { name: firstName }) || `Welcome back, ${firstName}`}
+					<h1 className="page-title">
+						{t('dashboard.customer.hi_name', { name: firstName })}
 					</h1>
-					<p className="text-sm sm:text-base text-gray-500 max-w-lg leading-relaxed">
-						{t('dashboard.customer.subtitle') || 'Track your cases, offers and bookings in one place.'}
+					<p className="text-sm sm:text-base text-[#6B7280] leading-relaxed">
+						{t('dashboard.customer.overview_subtitle')}
 					</p>
 				</div>
 
-				<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
-					<StatCard
-						icon={Wallet}
-						value={formatPrice(stats.totalSpent)}
-						label={t('dashboard.customer.total_spent') || 'Total spent'}
-						iconColor="#38BC54"
-						iconBg="bg-[#F2F9F4]"
+				<div className="space-y-3 sm:space-y-4">
+					<OverviewCard
+						title={t('navigation.my_cases')}
+						value={stats.myCases}
+						meta={t('dashboard.customer.card_cases_meta')}
+						icon={FileText}
+						to="/contract"
+						seeMore={t('dashboard.customer.see_more')}
 					/>
-					<StatCard
-						icon={Briefcase}
-						value={stats.activeCases}
-						label={t('dashboard.customer.active_cases') || 'Active cases'}
-						iconColor="#38BC54"
-						iconBg="bg-[#F2F9F4]"
+					<OverviewCard
+						title={t('navigation.offers')}
+						value={stats.offers}
+						meta={t('dashboard.customer.card_offers_meta')}
+						icon={Car}
+						to={offersCaseId ? `/contract?case=${offersCaseId}&panel=quotes` : '/contract'}
+						seeMore={t('dashboard.customer.see_more')}
 					/>
-					<StatCard
-						icon={Tag}
-						value={stats.offersReceived}
-						label={t('dashboard.customer.offers_received') || 'Offers received'}
-						iconColor="#38BC54"
-						iconBg="bg-[#F2F9F4]"
+					<OverviewCard
+						title={t('dashboard.customer.favourite_workshops')}
+						value={stats.favouriteWorkshops}
+						meta={t('dashboard.customer.card_favourites_meta')}
+						icon={Star}
+						to="/contract?view=messages"
+						seeMore={t('dashboard.customer.see_more')}
 					/>
-					<StatCard
-						icon={CheckCircle2}
-						value={stats.completedJobs}
-						label={t('dashboard.customer.completed_jobs') || 'Completed jobs'}
-						iconColor="#38BC54"
-						iconBg="bg-[#F2F9F4]"
-					/>
-				</div>
-
-				<div>
-					<h2 className="text-sm sm:text-base font-black text-[#05324f] uppercase tracking-wider mb-3 sm:mb-4">
-						{t('dashboard.quick_actions') || 'Quick actions'}
-					</h2>
-					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-						<DashboardQuickAction
-							to="/upload"
-							icon={Camera}
-							label={t('dashboard.customer.action_new_request') || 'New request'}
-							description={t('dashboard.customer.action_new_request_desc') || 'Upload inspection report and get quotes'}
-						/>
-						<DashboardQuickAction
-							to="/offers"
-							icon={Tag}
-							label={t('navigation.offers') || 'Offers'}
-							description={t('dashboard.customer.action_offers_desc') || 'Compare workshop quotes'}
-							badge={stats.pendingOffers}
-						/>
-						<DashboardQuickAction
-							to="/contract"
-							icon={FileText}
-							label={t('navigation.contract') || 'Contract'}
-							description={t('profile.contract_desc') || 'View your bookings and active contracts'}
-						/>
-						<DashboardQuickAction
-							to="/profile"
-							icon={User}
-							label={t('navigation.profile') || 'Profile'}
-							description={t('dashboard.customer.action_profile_desc') || 'Account settings and preferences'}
-						/>
-					</div>
 				</div>
 			</div>
 

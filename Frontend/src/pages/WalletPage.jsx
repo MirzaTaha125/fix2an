@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Wallet, Plus, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, XCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import DepositModal from '../components/wallet/DepositModal'
 import WithdrawModal from '../components/wallet/WithdrawModal'
+import EmptyState from '../components/ui/EmptyState'
+import { Skeleton, TableRowsSkeleton } from '../components/ui/Skeleton'
 import { walletAPI } from '../services/api'
 import { toast } from 'react-hot-toast'
 import { formatDateTime } from '../utils/cn'
@@ -14,6 +17,7 @@ import { useAuth } from '../context/AuthContext'
 
 export default function WalletPage() {
 	const { user } = useAuth()
+	const { t } = useTranslation()
 	const [balance, setBalance] = useState(0)
 	const [transactions, setTransactions] = useState([])
 	const [loading, setLoading] = useState(true)
@@ -87,7 +91,7 @@ export default function WalletPage() {
 							<div className="flex flex-col items-center md:items-start text-center md:text-left w-full md:w-auto">
 								<h2 className="text-xl text-gray-400 font-semibold uppercase tracking-widest text-xs mb-3">Total Balance</h2>
 								{loading ? (
-									<div className="h-10 sm:h-14 w-48 sm:w-64 bg-gray-50 animate-pulse rounded-full"></div>
+									<Skeleton className="h-10 sm:h-14 w-48 sm:w-64 rounded-full" />
 								) : (
 									<div className="flex items-end justify-center md:justify-start gap-2">
 										<p className="text-5xl md:text-6xl font-extrabold text-[#05324f] tracking-tight leading-none">
@@ -101,14 +105,14 @@ export default function WalletPage() {
 							<div className="flex flex-row items-center justify-center gap-3 w-full md:w-auto">
 								<button
 									onClick={() => setIsDepositOpen(true)}
-									className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-[#34C759] hover:bg-[#2FB350] text-white rounded-xl font-bold transition-all shadow-md shadow-[#34C759]/20"
+									className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-[#008037] hover:bg-[#2FB350] text-white rounded-xl font-semibold transition-all shadow-md shadow-[#008037]/20"
 								>
 									<Plus size={16} />
 									<span>Deposit</span>
 								</button>
 								<button
 									onClick={() => setIsWithdrawOpen(true)}
-									className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-[#05324f] rounded-xl font-bold transition-all shadow-sm shadow-gray-200/50"
+									className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-[#05324f] rounded-lg font-semibold transition-all shadow-sm shadow-gray-200/50"
 								>
 									<ArrowUpRight size={16} />
 									<span>Withdraw</span>
@@ -125,32 +129,31 @@ export default function WalletPage() {
 							{/* Mobile Transactions View */}
 							<div className="md:hidden">
 								{loading ? (
-									<div className="p-4 space-y-4">
+									<div className="p-4 space-y-3">
 										{[...Array(4)].map((_, i) => (
-											<div key={i} className="animate-pulse flex flex-col gap-3 p-5 border border-gray-50 rounded-2xl">
-												<div className="flex justify-between">
-													<div className="h-4 bg-gray-100 rounded w-28"></div>
-													<div className="h-4 bg-gray-100 rounded w-20"></div>
+											<div key={i} className="flex flex-col gap-3 p-5 border border-gray-50 rounded-2xl">
+												<div className="flex justify-between gap-3">
+													<Skeleton className="h-4 w-28" />
+													<Skeleton className="h-4 w-20" />
 												</div>
-												<div className="flex justify-between">
-													<div className="h-4 bg-gray-100 rounded w-20"></div>
-													<div className="h-5 bg-gray-100 rounded w-16"></div>
+												<div className="flex justify-between gap-3">
+													<Skeleton className="h-4 w-20" />
+													<Skeleton className="h-5 w-16" />
 												</div>
 											</div>
 										))}
 									</div>
 								) : transactions.length === 0 ? (
-									<div className="py-16 text-center text-gray-400">
-										<Wallet size={48} className="mx-auto mb-4 text-gray-200 stroke-1" />
-										<p className="text-lg font-medium text-gray-600">No transactions</p>
-										<p className="text-sm">Activity will show up here</p>
-									</div>
+									<EmptyState
+										title={t('common.empty.wallet_title')}
+										description={t('common.empty.wallet_desc')}
+									/>
 								) : (
 									<div className="divide-y divide-gray-50">
 										{transactions.map((tx) => (
 											<div key={tx._id} className="p-5 flex items-center justify-between hover:bg-gray-50/30 transition-colors">
 												<div className="flex items-center gap-4">
-													<div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${tx.type === 'Deposit' || tx.type === 'Refund' ? 'bg-[#34C759]/10 text-[#34C759]' : 'bg-orange-50 text-orange-500'}`}>
+													<div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${tx.type === 'Deposit' || tx.type === 'Refund' ? 'bg-[#008037]/10 text-[#008037]' : 'bg-orange-50 text-orange-500'}`}>
 														{tx.type === 'Deposit' || tx.type === 'Refund' ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
 													</div>
 													<div className="flex flex-col">
@@ -159,7 +162,7 @@ export default function WalletPage() {
 													</div>
 												</div>
 												<div className="flex flex-col items-end gap-1">
-													<span className={`font-bold text-[15px] ${tx.amount > 0 ? 'text-[#34C759]' : 'text-gray-900'}`}>
+													<span className={`font-bold text-[15px] ${tx.amount > 0 ? 'text-[#008037]' : 'text-gray-900'}`}>
 														{tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('sv-SE', { minimumFractionDigits: 2 })}
 													</span>
 													<div className={`text-[10px] uppercase tracking-wider font-bold ${getStatusColor(tx.status).replace('border-', '')} bg-transparent`}>
@@ -185,22 +188,14 @@ export default function WalletPage() {
 									</thead>
 									<tbody>
 										{loading ? (
-											[...Array(5)].map((_, i) => (
-												<tr key={i} className="border-b border-gray-50">
-													<td className="py-5 px-6 animate-pulse"><div className="h-4 bg-gray-100 rounded w-24"></div></td>
-													<td className="py-5 px-6 animate-pulse"><div className="h-4 bg-gray-100 rounded w-48"></div></td>
-													<td className="py-5 px-6 animate-pulse"><div className="h-4 bg-gray-100 rounded w-20"></div></td>
-													<td className="py-5 px-6 animate-pulse origin-right"><div className="h-4 bg-gray-100 rounded w-24 ml-auto"></div></td>
-												</tr>
-											))
+											<TableRowsSkeleton rows={5} cols={4} />
 										) : transactions.length === 0 ? (
 											<tr>
-												<td colSpan="4" className="py-20 text-center text-gray-400">
-													<div className="flex flex-col items-center justify-center gap-3">
-														<Wallet size={48} className="text-gray-200 stroke-1 mb-2" />
-														<p className="text-lg font-medium text-gray-600">No transactions</p>
-														<p className="text-sm">Activity will show up here</p>
-													</div>
+												<td colSpan="4">
+													<EmptyState
+														title={t('common.empty.wallet_title')}
+														description={t('common.empty.wallet_desc')}
+													/>
 												</td>
 											</tr>
 										) : (
@@ -211,7 +206,7 @@ export default function WalletPage() {
 													</td>
 													<td className="py-5 px-6">
 														<div className="flex items-center gap-3">
-															<div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${tx.type === 'Deposit' || tx.type === 'Refund' ? 'bg-[#34C759]/10 text-[#34C759]' : 'bg-orange-50 text-orange-500'}`}>
+															<div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${tx.type === 'Deposit' || tx.type === 'Refund' ? 'bg-[#008037]/10 text-[#008037]' : 'bg-orange-50 text-orange-500'}`}>
 																{tx.type === 'Deposit' || tx.type === 'Refund' ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
 															</div>
 															<span className="font-semibold text-gray-900">{tx.description}</span>
@@ -222,7 +217,7 @@ export default function WalletPage() {
 															{tx.status}
 														</div>
 													</td>
-													<td className={`py-5 px-6 md:px-8 text-right font-bold whitespace-nowrap text-base tracking-tight ${tx.amount > 0 ? 'text-[#34C759]' : 'text-gray-900'}`}>
+													<td className={`py-5 px-6 md:px-8 text-right font-bold whitespace-nowrap text-base tracking-tight ${tx.amount > 0 ? 'text-[#008037]' : 'text-gray-900'}`}>
 														{tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('sv-SE', { minimumFractionDigits: 2 })} SEK
 													</td>
 												</tr>

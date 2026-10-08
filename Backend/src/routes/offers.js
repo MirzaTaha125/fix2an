@@ -4,13 +4,14 @@ import Request from '../models/Request.js'
 import Workshop from '../models/Workshop.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import { notifyNewOffers } from '../services/notificationService.js'
+import { getPlatformRates } from '../utils/platformSettings.js'
 
 const router = express.Router()
 
 // Create an offer
 router.post('/', authenticate, requireRole('WORKSHOP'), async (req, res) => {
 	try {
-		const { requestId, price, laborCost, partsCost, validityDays, inclusions, note, availableDates, estimatedDuration, warranty } = req.body
+		const { requestId, price, laborCost, partsCost, validityDays, inclusions, note, availableDates, estimatedDuration, warranty, loanerCar, originalParts, vatRate, commissionRate } = req.body
 
 		// Calculate expiration date
 		const vDays = parseInt(validityDays) || 14
@@ -48,12 +49,18 @@ router.post('/', authenticate, requireRole('WORKSHOP'), async (req, res) => {
 			return res.status(400).json({ message: 'Offer already exists for this request' })
 		}
 
+		const rates = await getPlatformRates()
+		const offerVat = Number.isFinite(Number(vatRate)) ? Number(vatRate) : rates.vatRate
+		const offerCommission = Number.isFinite(Number(commissionRate)) ? Number(commissionRate) : rates.commissionRate
+
 		const offer = await Offer.create({
 			requestId,
 			workshopId: workshop._id,
 			price: parseFloat(price),
 			laborCost: parseFloat(laborCost) || 0,
 			partsCost: parseFloat(partsCost) || 0,
+			vatRate: offerVat,
+			commissionRate: offerCommission,
 			validityDays: vDays,
 			expiresAt,
 			inclusions,
@@ -61,6 +68,8 @@ router.post('/', authenticate, requireRole('WORKSHOP'), async (req, res) => {
 			availableDates: availableDates ? JSON.stringify(availableDates) : null,
 			estimatedDuration,
 			warranty,
+			loanerCar: Boolean(loanerCar),
+			originalParts: Boolean(originalParts),
 		})
 
 		// Update request status to IN_BIDDING if it's NEW
@@ -139,7 +148,7 @@ router.get('/request/:requestId', authenticate, async (req, res) => {
 router.patch('/:id', authenticate, requireRole('WORKSHOP'), async (req, res) => {
 	try {
 		const { id } = req.params
-		const { price, laborCost, partsCost, validityDays, inclusions, note, availableDates, estimatedDuration, warranty, status } = req.body
+		const { price, laborCost, partsCost, validityDays, inclusions, note, availableDates, estimatedDuration, warranty, loanerCar, originalParts, status, vatRate, commissionRate } = req.body
 
 		// Find workshop for this user
 		const workshop = await Workshop.findOne({ userId: req.user._id })
@@ -160,6 +169,11 @@ router.patch('/:id', authenticate, requireRole('WORKSHOP'), async (req, res) => 
 		if (price !== undefined) updateData.price = parseFloat(price)
 		if (laborCost !== undefined) updateData.laborCost = parseFloat(laborCost)
 		if (partsCost !== undefined) updateData.partsCost = parseFloat(partsCost)
+		if (price !== undefined || vatRate !== undefined || commissionRate !== undefined) {
+			const rates = await getPlatformRates()
+			updateData.vatRate = Number.isFinite(Number(vatRate)) ? Number(vatRate) : rates.vatRate
+			updateData.commissionRate = Number.isFinite(Number(commissionRate)) ? Number(commissionRate) : rates.commissionRate
+		}
 		if (validityDays !== undefined) {
 			const vDays = parseInt(validityDays)
 			updateData.validityDays = vDays
@@ -174,6 +188,8 @@ router.patch('/:id', authenticate, requireRole('WORKSHOP'), async (req, res) => 
 		if (availableDates !== undefined) updateData.availableDates = availableDates ? JSON.stringify(availableDates) : null
 		if (estimatedDuration !== undefined) updateData.estimatedDuration = estimatedDuration
 		if (warranty !== undefined) updateData.warranty = warranty
+		if (loanerCar !== undefined) updateData.loanerCar = Boolean(loanerCar)
+		if (originalParts !== undefined) updateData.originalParts = Boolean(originalParts)
 		if (status !== undefined) updateData.status = status
 
 		// Find and update the offer (only if it belongs to this workshop)
@@ -234,7 +250,7 @@ router.get('/workshop/me', authenticate, requireRole('WORKSHOP'), async (req, re
 		const offers = await Offer.find({ workshopId: workshop._id })
 			.populate({
 				path: 'requestId',
-				select: 'description status createdAt registrationNumber city postalCode',
+				select: 'description status createdAt updatedAt registrationNumber city postalCode reportIds reportId',
 				populate: [
 					{ 
 						path: 'vehicleId', 
@@ -243,7 +259,9 @@ router.get('/workshop/me', authenticate, requireRole('WORKSHOP'), async (req, re
 					{ 
 						path: 'customerId', 
 						select: 'name email phone' 
-					}
+					},
+					{ path: 'reportIds' },
+					{ path: 'reportId' },
 				]
 			})
 			.sort({ createdAt: -1 })
