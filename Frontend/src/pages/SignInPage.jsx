@@ -13,7 +13,7 @@ import { AuthPageSkeleton } from '../components/ui/Skeleton'
 
 export default function SignInPage() {
 	const { t } = useTranslation()
-	const [email, setEmail] = useState('')
+	const [email, setEmail] = useState('info@fixa2an.se')
 	const [isSending, setIsSending] = useState(false)
 	const [sentEmail, setSentEmail] = useState('')
 	const [devMagicLinkUrl, setDevMagicLinkUrl] = useState('')
@@ -67,7 +67,7 @@ export default function SignInPage() {
 	return (
 		<div className="list-page-shell bg-[#F3F5F8]">
 			<Navbar />
-			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-24 pb-12">
+			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 md:pt-36 lg:pt-40 pb-12">
 				<div className="grid gap-6 lg:gap-8 lg:grid-cols-2 lg:items-center">
 					{/* Mobile: image on top; Desktop: image on right */}
 					<div className="order-1 lg:order-2 w-full max-w-md mx-auto lg:max-w-none px-2 sm:px-5 lg:px-8 text-center flex flex-col items-center justify-center">
@@ -83,7 +83,7 @@ export default function SignInPage() {
 							{t('auth.signin.link_sent_to')}
 						</p>
 						<p className="text-sm sm:text-base lg:text-lg text-[#1B8F3E] font-semibold mt-1 max-w-md">
-							{sentEmail || email || t('auth.signin.email_placeholder')}
+							{t('auth.signin.email_placeholder')}
 						</p>
 						<p className="text-sm sm:text-base lg:text-lg text-[#9CA3AF] mt-1.5 leading-relaxed max-w-md">
 							{t('auth.signin.link_valid')}

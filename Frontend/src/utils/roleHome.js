@@ -1,5 +1,5 @@
 export function getRoleHomePath(user) {
-	if (!user) return '/'
+	if (!user) return '/upload'
 
 	const role = user.role?.toUpperCase()
 
@@ -14,11 +14,11 @@ export function getRoleHomePath(user) {
 		return '/workshop/dashboard'
 	}
 
-	return '/dashboard'
+	return '/upload'
 }
 
 export function getRoleLogoPath(user) {
-	if (!user) return '/'
+	if (!user) return '/upload'
 
 	const role = user.role?.toUpperCase()
 
@@ -33,5 +33,5 @@ export function getRoleLogoPath(user) {
 		return '/workshop/dashboard'
 	}
 
-	return '/dashboard'
+	return '/upload'
 }

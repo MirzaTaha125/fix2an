@@ -354,7 +354,7 @@
 			"link_sent_to": "Vi har skickat en länk till",
 			"link_valid": "Länken är giltig i 15 minuter.",
 			"no_password": "Säkert och enkelt. Du behöver inget lösenord.",
-			"email_placeholder": "din@email.se",
+			"email_placeholder": "info@fixa2an.se",
 			"safe_secure": "Tryggt & säkert",
 			"customer_support": "Kundsupport",
 			"verified_workshops": "Verifierade verkstäder",
@@ -498,7 +498,7 @@
 			"trust_secure_line2": "är säkra"
 		},
 		"flow": {
-			"start_title": "Få <hl>offerter</hl> på det som behöver\n<hl>lagas.</hl>",
+			"start_title": "Få <hl>offerter</hl> på det som behöver <hl>lagas.</hl>",
 			"start_subtitle": "Vi matchar dig med verkstäder i närheten. Jämför pris, omdömen och tillgänglighet — enkelt, smidigt och helt gratis.",
 			"failed_eyebrow": "Ladda upp besiktningsprotokollet",
 			"failed_title": "Har du fått underkänt i besiktningen?",

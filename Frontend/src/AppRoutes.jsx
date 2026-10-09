@@ -72,7 +72,7 @@ function PrivateRoute({ children, allowedRoles = [] }) {
 		} else if (userRole === 'WORKSHOP' && !location.pathname.startsWith('/workshop')) {
 			return <Navigate to="/workshop/dashboard" replace />
 		} else if (userRole !== 'ADMIN' && userRole !== 'WORKSHOP' && !['/dashboard', '/contract', '/offers', '/upload', '/profile', '/book-appointment', '/payment'].some((p) => location.pathname.startsWith(p))) {
-			return <Navigate to="/dashboard" replace />
+			return <Navigate to="/upload" replace />
 		}
 	}
     
@@ -118,9 +118,9 @@ function AppRoutes() {
 			<MobileBackProvider>
 			<AppFrame>
 				<Routes>
-				<Route path="/" element={<SignInPage />} />
-				<Route path="/en" element={<SignInPage />} />
-				<Route path="/sv" element={<SignInPage />} />
+				<Route path="/" element={<Navigate to="/upload" replace />} />
+				<Route path="/en" element={<Navigate to="/upload" replace />} />
+				<Route path="/sv" element={<Navigate to="/upload" replace />} />
 				<Route path="/workshop" element={<WorkshopLandingPage />} />
 				<Route path="/how-it-works" element={<HowItWorksPage />} />
 				<Route path="/about" element={<AboutPage />} />

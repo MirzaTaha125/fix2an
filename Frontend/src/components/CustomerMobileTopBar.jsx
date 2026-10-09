@@ -34,8 +34,6 @@ function useRouteMobileBack() {
 		return null
 	}
 
-	if (pathname === '/dashboard' || pathname === '/profile') return null
-
 	const isUploadFlowStep =
 		pathname === '/upload' &&
 		Boolean(
@@ -45,6 +43,8 @@ function useRouteMobileBack() {
 			params.get('mode') === 'no-image' ||
 			params.get('sent') === '1'
 		)
+
+	if (pathname === '/dashboard' || pathname === '/profile' || (pathname === '/upload' && !isUploadFlowStep)) return null
 
 	if (
 		isUploadFlowStep ||
@@ -101,7 +101,7 @@ export default function CustomerMobileTopBar() {
 						</p>
 					</div>
 				) : (
-					<Link to="/dashboard" className="flex items-center justify-center h-11" aria-label="Fixa2an">
+					<Link to="/upload" className="flex items-center justify-center h-11" aria-label="Fixa2an">
 						<img src={mainLogo} alt="Fixa2an" className="h-11 w-auto object-contain" />
 					</Link>
 				)}

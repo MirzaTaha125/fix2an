@@ -42,7 +42,7 @@ export default function CustomerMobileNav() {
 	const params = new URLSearchParams(search)
 	const isMessagesView = pathname === '/contract' && params.get('view') === 'messages'
 
-	const isHome = pathname === '/dashboard'
+	const isHome = pathname === '/upload' && !params.get('path') && !params.get('edit') && !params.get('requestId') && params.get('mode') !== 'no-image' && params.get('sent') !== '1'
 	const isCases = pathname === '/contract' && !isMessagesView
 	const isMessages = isMessagesView
 	const isProfile = pathname === '/profile' || pathname.startsWith('/profile')
@@ -50,7 +50,7 @@ export default function CustomerMobileNav() {
 	return (
 		<div className="flex items-stretch w-full bg-white min-h-[60px]">
 			<NavLinkItem
-				to="/dashboard"
+				to="/upload"
 				icon={NavHomeIcon}
 				label={t('navigation.overview')}
 				active={isHome}

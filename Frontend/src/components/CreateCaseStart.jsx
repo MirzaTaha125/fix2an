@@ -23,7 +23,7 @@ export default function CreateCaseStart({ onSelectPath }) {
 
 	return (
 		<div className="w-full">
-			<h1 className="page-title-hero lg:mb-4 whitespace-pre-line lg:whitespace-normal w-full max-w-none lg:max-w-3xl">
+			<h1 className="page-title-hero !text-[40px] lg:!text-[3.25rem] lg:mb-4 w-full max-w-none lg:max-w-3xl">
 				<Trans
 					i18nKey="upload.flow.start_title"
 					components={{ hl: <span className="text-[#1B8F3E]" /> }}
@@ -40,7 +40,7 @@ export default function CreateCaseStart({ onSelectPath }) {
 						<FileUp className="w-6 h-6 lg:w-8 lg:h-8 text-[#1B8F3E]" strokeWidth={2} />
 					</div>
 					<div className="min-w-0 flex-1 pt-0.5">
-						<p className="font-bold text-brand-dark text-[0.95rem] lg:text-xl leading-snug mb-1">
+						<p className="font-bold text-brand-dark text-base lg:text-2xl leading-snug mb-1">
 							{t('upload.flow.failed_title')}
 						</p>
 						<p className="text-sm lg:text-base text-[#4B5563] leading-snug mb-0.5">

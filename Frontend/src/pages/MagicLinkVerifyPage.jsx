@@ -25,7 +25,7 @@ function readCachedSession(token) {
 
 function resolveRedirectPath(cached) {
 	if (cached?.redirectTo) return cached.redirectTo
-	return getRoleHomePath(cached?.user) || '/dashboard'
+	return getRoleHomePath(cached?.user) || '/upload'
 }
 
 function cacheSession(token, authToken, user, redirectTo) {
@@ -103,7 +103,7 @@ export default function MagicLinkVerifyPage() {
 		verifyMagicLinkOnce(token)
 			.then(async ({ authToken, user, redirectTo }) => {
 				if (!active) return
-				const destination = redirectTo || getRoleHomePath(user) || '/dashboard'
+				const destination = redirectTo || getRoleHomePath(user) || '/upload'
 				if (!claimTokenUi(token)) {
 					navigate(destination, { replace: true })
 					return

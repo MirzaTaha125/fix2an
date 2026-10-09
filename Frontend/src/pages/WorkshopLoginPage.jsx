@@ -65,7 +65,7 @@ export default function WorkshopLoginPage() {
 		<div className="list-page-shell bg-[#F3F5F8]">
 			<Navbar />
 			{/* Sizing copied 1:1 from customer SignInPage (image, card, text, inputs, button) */}
-			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-24 pb-12">
+			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 md:pt-36 lg:pt-40 pb-12">
 				<div className="grid gap-6 lg:gap-8 lg:grid-cols-2 lg:items-center">
 					<div className="order-1 lg:order-2 w-full max-w-md mx-auto lg:max-w-none px-2 sm:px-5 lg:px-8 text-center flex flex-col items-center justify-center">
 						<img

@@ -250,14 +250,6 @@ export default function UploadPage() {
 		}
 	}, [user])
 
-	// Bare /upload (no path): send logged-in users to My Cases. Back from a path uses history pop instead.
-	useEffect(() => {
-		if (authLoading || !isLoggedInCustomer) return
-		if (currentStep === 'start' && !editId && !requestSent) {
-			navigate('/contract', { replace: true })
-		}
-	}, [authLoading, isLoggedInCustomer, currentStep, editId, requestSent, navigate])
-
 	useEffect(() => {
 		if (!isLoggedInCustomer || !user) {
 			setSavedCars([])
@@ -911,7 +903,7 @@ export default function UploadPage() {
 						</button>
 					)}
 
-					{currentStep === 'start' && !isLoggedInCustomer && (
+					{currentStep === 'start' && (
 						<CreateCaseStart onSelectPath={choosePath} />
 					)}
 
