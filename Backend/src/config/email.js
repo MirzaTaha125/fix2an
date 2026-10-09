@@ -327,13 +327,15 @@ export async function sendEmail(to, template) {
 		throw new Error('No email provider available')
 	}
 
-	const tryEmailJsThenSmtp = async () => {
+	const tryEmailJsThenSmtp = async ({ allowSmtpFallback = true } = {}) => {
 		if (emailjs) {
 			try {
 				await tryEmailJs()
 				return
 			} catch (err) {
 				console.error('[Email] EmailJS failed:', err.message)
+				// On DO/VPS, SMTP ports are often firewalled — falling back only hangs the request.
+				if (!allowSmtpFallback) throw err
 				if (smtp) {
 					try {
 						console.log('[Email] Falling back to SMTP...')
@@ -352,8 +354,8 @@ export async function sendEmail(to, template) {
 		return trySmtpThenEmailJs()
 	}
 
-	// Production / EMAIL_PREFER_HTTP: EmailJS first (works when SMTP ports are blocked).
-	// Dev / explicit smtp provider without prefer-http: SMTP first, then EmailJS.
+	// Production / EMAIL_PREFER_HTTP: EmailJS first; skip SMTP fallback (ports often blocked).
+	// Dev: SMTP first is fine (local network usually allows 465/587).
 	const useHttpFirst =
 		preferHttpEmail() && emailjs
 			? true
@@ -362,7 +364,7 @@ export async function sendEmail(to, template) {
 				: false
 
 	if (useHttpFirst) {
-		await tryEmailJsThenSmtp()
+		await tryEmailJsThenSmtp({ allowSmtpFallback: !preferHttpEmail() })
 		return
 	}
 
