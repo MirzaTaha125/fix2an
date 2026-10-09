@@ -43,9 +43,9 @@ function getEnvSmtpConfig() {
 	}
 }
 
-/** EmailJS config from doc (credentials alone — provider field only affects preference order) */
+/** EmailJS config — only used when Admin provider is explicitly `emailjs` (SMTP stays primary otherwise). */
 function getEmailJsConfig(doc) {
-	if (!doc) return null
+	if (!doc || doc.provider !== 'emailjs') return null
 	if (!doc.emailjsUserId || !doc.emailjsServiceId || !doc.emailjsTemplateId) return null
 	return {
 		userId: doc.emailjsUserId,
@@ -190,13 +190,13 @@ const SMTP_SOCKET_TIMEOUT_MS = Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 1500
 const EMAILJS_FETCH_TIMEOUT_MS = Number(process.env.EMAILJS_FETCH_TIMEOUT_MS || 15000)
 
 /**
- * Prefer HTTP EmailJS on production (or when EMAIL_PREFER_HTTP=true).
- * Outbound ports 25/465/587 are often blocked on cloud VPS; HTTPS API still works.
+ * Prefer EmailJS only when Admin provider is `emailjs`, or EMAIL_PREFER_HTTP=true.
+ * Default stays SMTP-first (same as original Admin setup with send.one.com).
  */
-function preferHttpEmail() {
+function preferHttpEmail(doc) {
 	if (process.env.EMAIL_PREFER_HTTP === 'true') return true
 	if (process.env.EMAIL_PREFER_HTTP === 'false') return false
-	return process.env.NODE_ENV === 'production'
+	return doc?.provider === 'emailjs'
 }
 
 /** Send via EmailJS API */
@@ -354,17 +354,11 @@ export async function sendEmail(to, template) {
 		return trySmtpThenEmailJs()
 	}
 
-	// Production / EMAIL_PREFER_HTTP: EmailJS first; skip SMTP fallback (ports often blocked).
-	// Dev: SMTP first is fine (local network usually allows 465/587).
-	const useHttpFirst =
-		preferHttpEmail() && emailjs
-			? true
-			: doc?.provider === 'emailjs' && emailjs
-				? true
-				: false
+	// Admin provider wins: `smtp` → SMTP only/first; `emailjs` → EmailJS first.
+	const useHttpFirst = preferHttpEmail(doc) && emailjs
 
 	if (useHttpFirst) {
-		await tryEmailJsThenSmtp({ allowSmtpFallback: !preferHttpEmail() })
+		await tryEmailJsThenSmtp({ allowSmtpFallback: true })
 		return
 	}
 
