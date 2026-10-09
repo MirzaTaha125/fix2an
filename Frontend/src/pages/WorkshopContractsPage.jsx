@@ -29,7 +29,8 @@ import { useRegisterWorkshopHeaderActions } from '../context/WorkshopHeaderActio
 import WorkshopShell from '../components/workshop/WorkshopShell'
 import { formatRequestRegistration } from '../components/VehicleRequestCard'
 
-import { offersAPI, bookingsAPI, reviewsAPI } from '../services/api'
+import { useRefreshWorkshopUnreadCount } from '../context/WorkshopUnreadCountContext'
+import { offersAPI, bookingsAPI, reviewsAPI, messagesAPI } from '../services/api'
 
 function CustomerScheduleNotice({ t, isScheduled = false }) {
 	return (
@@ -351,8 +352,10 @@ function CostSummary({ t, offer, booking }) {
 
 function OngoingJobDetail({ t, offer, job, updating, onBack, onAdvance, onExtra, onReschedule, onSchedule, onCancel }) {
 	const { i18n } = useTranslation()
+	const refreshWorkshopUnread = useRefreshWorkshopUnreadCount()
 	const [panel, setPanel] = useState('details')
 	const [review, setReview] = useState(null)
+	const [caseUnread, setCaseUnread] = useState(0)
 	const {
 		request,
 		customer,
@@ -365,6 +368,7 @@ function OngoingJobDetail({ t, offer, job, updating, onBack, onAdvance, onExtra,
 		canRequestExtraApproval,
 	} = job
 	const bookingId = booking?._id || booking?.id
+	const requestId = request?._id || request?.id
 	useEffect(() => {
 		if (!bookingId) {
 			setReview(null)
@@ -376,6 +380,31 @@ function OngoingJobDetail({ t, offer, job, updating, onBack, onAdvance, onExtra,
 			.catch(() => { if (!stop) setReview(null) })
 		return () => { stop = true }
 	}, [bookingId])
+	useEffect(() => {
+		if (!requestId) return undefined
+		let stop = false
+		const loadUnread = async () => {
+			if (document.visibilityState === 'hidden') return
+			try {
+				const response = await messagesAPI.list(requestId)
+				if (stop) return
+				const total = (response.data?.conversations || []).reduce(
+					(sum, row) => sum + (Number(row?.unreadCount) || 0),
+					0
+				)
+				setCaseUnread(total)
+				refreshWorkshopUnread()
+			} catch {
+				/* ignore */
+			}
+		}
+		loadUnread()
+		const timer = setInterval(loadUnread, 2000)
+		return () => {
+			stop = true
+			clearInterval(timer)
+		}
+	}, [requestId, refreshWorkshopUnread, panel])
 	const caseNo = String(request._id || request.id || '').slice(-4).toUpperCase()
 	const files = caseFiles(request)
 	const images = files.filter(isImageFile)
@@ -445,9 +474,16 @@ function OngoingJobDetail({ t, offer, job, updating, onBack, onAdvance, onExtra,
 						key={key}
 						type="button"
 						onClick={() => setPanel(key)}
-						className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold ${panel === key ? 'bg-brand-btn text-white' : 'bg-[#F3F4F6] text-[#6B7280]'}`}
+						className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold ${panel === key ? 'bg-brand-btn text-white' : 'bg-[#F3F4F6] text-[#6B7280]'}`}
 					>
 						{t(`my_cases.flow.panel_${key}`)}
+						{key === 'messages' && caseUnread > 0 && panel !== 'messages' ? (
+							<span className={`min-w-[1.1rem] h-[1.1rem] px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${
+								panel === key ? 'bg-white text-[#1B8F3E]' : 'bg-brand-btn text-white'
+							}`}>
+								{caseUnread > 99 ? '99+' : caseUnread}
+							</span>
+						) : null}
 					</button>
 				))}
 			</div>
@@ -474,9 +510,9 @@ function OngoingJobDetail({ t, offer, job, updating, onBack, onAdvance, onExtra,
 					</section>
 					{cardIsOpen && booking && repairAction && (
 						<section className="rounded-2xl bg-[#F5F7F9] p-4">
-							<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-								<div className="min-w-0">
-									<h2 className="text-base font-bold text-brand-dark mb-1.5">{t('my_cases.flow.next_step')}</h2>
+									<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+										<div className="min-w-0">
+											<h2 className="text-base font-bold text-brand-dark mb-1.5">{t('my_cases.flow.next_step')}</h2>
 									<p className="text-sm text-[#4B5563] leading-relaxed">{t(`workshop.contracts.actions.${repairAction.bodyKey}`)}</p>
 								</div>
 								<button

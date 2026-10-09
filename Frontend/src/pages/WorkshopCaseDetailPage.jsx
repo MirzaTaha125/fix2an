@@ -14,7 +14,8 @@ import {
 } from '../components/invoice/InvoiceDocument'
 import { useRegisterMobileBack } from '../context/MobileBackContext'
 import { useAuth } from '../context/AuthContext'
-import { requestsAPI, workshopAPI } from '../services/api'
+import { useRefreshWorkshopUnreadCount } from '../context/WorkshopUnreadCountContext'
+import { messagesAPI, requestsAPI, workshopAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
 import { formatPrice, parseInclusionItems } from '../utils/cn'
 import { getRequestVehicle, formatRequestRegistration } from '../components/VehicleRequestCard'
@@ -109,7 +110,35 @@ export function WorkshopCasePanel({ requestId, onBack, onCreateQuote, embedded =
 	const onBackRef = useRef(onBack)
 	onBackRef.current = onBack
 	const [downloadingInvoice, setDownloadingInvoice] = useState(false)
+	const [caseUnread, setCaseUnread] = useState(0)
+	const refreshWorkshopUnread = useRefreshWorkshopUnreadCount()
 	useRegisterMobileBack(onBack, Boolean(onBack) && !suspendBack)
+
+	useEffect(() => {
+		if (!requestId) return undefined
+		let stop = false
+		const loadUnread = async () => {
+			if (document.visibilityState === 'hidden') return
+			try {
+				const response = await messagesAPI.list(requestId)
+				if (stop) return
+				const total = (response.data?.conversations || []).reduce(
+					(sum, row) => sum + (Number(row?.unreadCount) || 0),
+					0
+				)
+				setCaseUnread(total)
+				refreshWorkshopUnread()
+			} catch {
+				/* ignore */
+			}
+		}
+		loadUnread()
+		const timer = setInterval(loadUnread, 2000)
+		return () => {
+			stop = true
+			clearInterval(timer)
+		}
+	}, [requestId, refreshWorkshopUnread, panel])
 
 	useEffect(() => {
 		if (!requestId) return undefined
@@ -250,9 +279,16 @@ export function WorkshopCasePanel({ requestId, onBack, onCreateQuote, embedded =
 								key={key}
 								type="button"
 								onClick={() => setPanel(key)}
-								className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold ${panel === key ? 'bg-brand-btn text-white' : 'bg-[#F3F4F6] text-[#6B7280]'}`}
+								className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold ${panel === key ? 'bg-brand-btn text-white' : 'bg-[#F3F4F6] text-[#6B7280]'}`}
 							>
 								{t(`my_cases.flow.panel_${key}`)}
+								{key === 'messages' && caseUnread > 0 && panel !== 'messages' ? (
+									<span className={`min-w-[1.1rem] h-[1.1rem] px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${
+										panel === key ? 'bg-white text-[#1B8F3E]' : 'bg-brand-btn text-white'
+									}`}>
+										{caseUnread > 99 ? '99+' : caseUnread}
+									</span>
+								) : null}
 							</button>
 						))}
 					</div>

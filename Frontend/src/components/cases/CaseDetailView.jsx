@@ -37,6 +37,7 @@ import RepairFlow from './RepairFlow'
 import CaseChat from './CaseChat'
 import ExtraActionCard, { approvedBookingExtras, pendingBookingExtras } from './ExtraActionCard'
 import { useRegisterMobileBack } from '../../context/MobileBackContext'
+import { useRefreshCustomerUnreadCount } from '../../context/CustomerUnreadCountContext'
 import { messagesAPI, requestsAPI, reviewsAPI, uploadAPI, workshopAPI } from '../../services/api'
 
 const PANELS = ['details', 'status', 'photos', 'messages']
@@ -127,6 +128,7 @@ export default function CaseDetailView({
 	const [activeChat, setActiveChat] = useState(null)
 	const [directory, setDirectory] = useState([])
 	const [caseReview, setCaseReview] = useState(null)
+	const refreshCustomerUnread = useRefreshCustomerUnreadCount()
 	const requestId = request ? getCaseId(request) : null
 	const reviewBookingId = request ? (getActiveBooking(request)?._id || getActiveBooking(request)?.id) : null
 
@@ -150,7 +152,7 @@ export default function CaseDetailView({
 	}, [panel, initialWorkshopId, request, t])
 
 	useEffect(() => {
-		if (panel !== 'messages' || !requestId) return undefined
+		if (!requestId) return undefined
 		let stop = false
 		const load = async () => {
 			if (document.visibilityState === 'hidden') return
@@ -159,31 +161,33 @@ export default function CaseDetailView({
 				if (!stop) {
 					const list = response.data.conversations || []
 					setThreads(list)
-					setActiveChat((current) => {
-						if (current?.workshopId && list.some((item) => String(item.workshopId) === String(current.workshopId))) {
-							const found = list.find((item) => String(item.workshopId) === String(current.workshopId))
-							return {
-								...current,
-								...found,
-								name: found?.name || current.name || '',
-								logo: found?.logo || current.logo || '',
+					if (panel === 'messages') {
+						setActiveChat((current) => {
+							if (current?.workshopId && list.some((item) => String(item.workshopId) === String(current.workshopId))) {
+								const found = list.find((item) => String(item.workshopId) === String(current.workshopId))
+								return {
+									...current,
+									...found,
+									name: found?.name || current.name || '',
+									logo: found?.logo || current.logo || '',
+								}
 							}
-						}
-						// Don't auto-open a chat — user must pick a conversation
-						return current
-					})
+							return current
+						})
+					}
+					refreshCustomerUnread()
 				}
 			} catch {
-				if (!stop) setThreads(null)
+				if (!stop && panel === 'messages') setThreads(null)
 			}
 		}
 		load()
-		const timer = setInterval(load, 4000)
+		const timer = setInterval(load, 2000)
 		return () => {
 			stop = true
 			clearInterval(timer)
 		}
-	}, [panel, requestId])
+	}, [panel, requestId, refreshCustomerUnread])
 
 	useEffect(() => {
 		if (panel !== 'messages') return undefined
@@ -296,6 +300,7 @@ export default function CaseDetailView({
 			}
 		: null
 	const mobileChatOpen = Boolean(chatWorkshop?.workshopId) && panel === 'messages' && messageTab === 'messages'
+	const caseUnreadTotal = conversations.reduce((sum, row) => sum + (Number(row.unreadCount) || 0), 0)
 
 	return (
 		<div className={`w-full ${mobileChatOpen ? 'case-detail-chat-lock' : ''}`}>
@@ -332,11 +337,18 @@ export default function CaseDetailView({
 						key={key}
 						type="button"
 						onClick={() => setPanel(key)}
-						className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold ${
+						className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold ${
 							panel === key ? 'bg-brand-btn text-white' : 'bg-[#F3F4F6] text-[#6B7280]'
 						}`}
 					>
 						{t(`my_cases.flow.panel_${key}`)}
+						{key === 'messages' && caseUnreadTotal > 0 && panel !== 'messages' ? (
+							<span className={`min-w-[1.1rem] h-[1.1rem] px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${
+								panel === key ? 'bg-white text-[#1B8F3E]' : 'bg-brand-btn text-white'
+							}`}>
+								{caseUnreadTotal > 99 ? '99+' : caseUnreadTotal}
+							</span>
+						) : null}
 					</button>
 				))}
 			</div>

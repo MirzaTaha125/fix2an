@@ -6,6 +6,8 @@ import WorkshopImage from '../WorkshopImage'
 import { Skeleton } from '../ui/Skeleton'
 import ExtraActionCard from './ExtraActionCard'
 import { useRegisterMobileBack } from '../../context/MobileBackContext'
+import { useRefreshCustomerUnreadCount } from '../../context/CustomerUnreadCountContext'
+import { useRefreshWorkshopUnreadCount } from '../../context/WorkshopUnreadCountContext'
 import { getFullUrl } from '../../config/api.js'
 import { messagesAPI, uploadAPI } from '../../services/api'
 
@@ -188,6 +190,8 @@ export default function CaseChat({
 }) {
 	const { t } = useTranslation()
 	const workshopPanel = variant === 'workshop'
+	const refreshCustomerUnread = useRefreshCustomerUnreadCount()
+	const refreshWorkshopUnread = useRefreshWorkshopUnreadCount()
 	const [messages, setMessages] = useState([])
 	const [loading, setLoading] = useState(true)
 	const [draft, setDraft] = useState('')
@@ -197,8 +201,14 @@ export default function CaseChat({
 	const endRef = useRef(null)
 	const fileRef = useRef(null)
 	const seenCount = useRef(0)
+	const lastRemoteCount = useRef(0)
 
 	useRegisterMobileBack(onBack, Boolean(onBack), title ? { title, avatar: logo || undefined } : null)
+
+	const refreshNavUnread = () => {
+		if (viewerRole === 'CUSTOMER') refreshCustomerUnread()
+		else if (viewerRole === 'WORKSHOP') refreshWorkshopUnread()
+	}
 
 	useEffect(() => {
 		const rid = requestId ? String(requestId) : ''
@@ -210,6 +220,7 @@ export default function CaseChat({
 		let stop = false
 		setLoading(true)
 		seenCount.current = 0
+		lastRemoteCount.current = 0
 
 		const load = async (isInitial = false) => {
 			if (document.visibilityState === 'hidden' && !isInitial) return
@@ -218,11 +229,29 @@ export default function CaseChat({
 				const next = response.data.messages || []
 				if (stop) return
 				setMessages((prev) => {
-					if (prev.length === next.length && prev.every((item, index) => String(item._id || item.id) === String(next[index]?._id || next[index]?.id))) {
-						return prev
-					}
-					return next
+					const optimistic = prev.filter((item) => String(item._id || item.id || '').startsWith('temp-'))
+					// Keep in-flight optimistic bubbles until server echoes them
+					const pending = optimistic.filter((item) => {
+						const match = next.some(
+							(server) =>
+								server.senderRole === item.senderRole &&
+								String(server.body || '') === String(item.body || '') &&
+								Math.abs(new Date(server.createdAt) - new Date(item.createdAt)) < 60000
+						)
+						return !match
+					})
+					const merged = [...next, ...pending]
+					const sameLength = prev.length === merged.length
+					const sameIds =
+						sameLength &&
+						prev.every((item, index) => String(item._id || item.id) === String(merged[index]?._id || merged[index]?.id))
+					if (sameIds) return prev
+					return merged
 				})
+				if (isInitial || next.length !== lastRemoteCount.current) {
+					refreshNavUnread()
+				}
+				lastRemoteCount.current = next.length
 			} catch (error) {
 				if (isInitial && error?.response?.status && error.response.status !== 401) {
 					toast.error(error.response?.data?.message || t('my_cases.flow.chat_open_error') || 'Could not open chat')
@@ -233,12 +262,12 @@ export default function CaseChat({
 		}
 
 		load(true)
-		const timer = setInterval(() => load(false), 3000)
+		const timer = setInterval(() => load(false), 1500)
 		return () => {
 			stop = true
 			clearInterval(timer)
 		}
-	}, [requestId, workshopId, t])
+	}, [requestId, workshopId, t, viewerRole, refreshCustomerUnread, refreshWorkshopUnread])
 
 	useEffect(() => {
 		if (loading) return
@@ -282,19 +311,45 @@ export default function CaseChat({
 
 	const send = async () => {
 		const body = draft.trim()
-		if ((!body && attachments.length === 0) || sending || uploading) return
+		const files = attachments
+		if ((!body && files.length === 0) || sending || uploading) return
+
+		const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+		const optimistic = {
+			_id: tempId,
+			id: tempId,
+			senderRole: viewerRole,
+			body,
+			attachments: files,
+			createdAt: new Date().toISOString(),
+			readAt: null,
+		}
+
+		// Show instantly — don't wait for network
+		setMessages((prev) => [...prev, optimistic])
+		setDraft('')
+		setAttachments([])
 		setSending(true)
+
 		try {
 			const response = await messagesAPI.send({
 				requestId,
 				workshopId,
 				body,
-				attachments,
+				attachments: files,
 			})
-			setMessages((prev) => [...prev, response.data.message])
-			setDraft('')
-			setAttachments([])
+			const saved = response.data?.message
+			setMessages((prev) => {
+				const withoutTemp = prev.filter((item) => String(item._id || item.id) !== tempId)
+				if (!saved) return withoutTemp
+				const already = withoutTemp.some((item) => String(item._id || item.id) === String(saved._id || saved.id))
+				return already ? withoutTemp : [...withoutTemp, saved]
+			})
+			refreshNavUnread()
 		} catch (error) {
+			setMessages((prev) => prev.filter((item) => String(item._id || item.id) !== tempId))
+			setDraft(body)
+			setAttachments(files)
 			toast.error(error.response?.data?.message || t('my_cases.flow.chat_send_error'))
 		} finally {
 			setSending(false)

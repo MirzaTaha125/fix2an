@@ -39,12 +39,17 @@ export function CustomerUnreadCountProvider({ children }) {
 
 	useEffect(() => {
 		if (!user || user.role !== 'CUSTOMER') return undefined
-		const timer = setInterval(refresh, 20000)
+		const timer = setInterval(refresh, 4000)
 		const onFocus = () => refresh()
+		const onVisible = () => {
+			if (document.visibilityState === 'visible') refresh()
+		}
 		window.addEventListener('focus', onFocus)
+		document.addEventListener('visibilitychange', onVisible)
 		return () => {
 			clearInterval(timer)
 			window.removeEventListener('focus', onFocus)
+			document.removeEventListener('visibilitychange', onVisible)
 		}
 	}, [user, refresh])
 

@@ -39,7 +39,7 @@ export function WorkshopUnreadCountProvider({ children }) {
 
 	useEffect(() => {
 		if (!user || user.role !== 'WORKSHOP') return undefined
-		const timer = setInterval(refresh, 5000)
+		const timer = setInterval(refresh, 3000)
 		const onFocus = () => refresh()
 		const onVisible = () => {
 			if (document.visibilityState === 'visible') refresh()
