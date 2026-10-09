@@ -13,7 +13,7 @@ import { AuthPageSkeleton } from '../components/ui/Skeleton'
 
 export default function SignInPage() {
 	const { t } = useTranslation()
-	const [email, setEmail] = useState('info@fixa2an.se')
+	const [email, setEmail] = useState('')
 	const [isSending, setIsSending] = useState(false)
 	const [sentEmail, setSentEmail] = useState('')
 	const [devMagicLinkUrl, setDevMagicLinkUrl] = useState('')
@@ -83,7 +83,7 @@ export default function SignInPage() {
 							{t('auth.signin.link_sent_to')}
 						</p>
 						<p className="text-sm sm:text-base lg:text-lg text-[#1B8F3E] font-semibold mt-1 max-w-md">
-							{t('auth.signin.email_placeholder')}
+							info@fixa2an.se
 						</p>
 						<p className="text-sm sm:text-base lg:text-lg text-[#9CA3AF] mt-1.5 leading-relaxed max-w-md">
 							{t('auth.signin.link_valid')}
