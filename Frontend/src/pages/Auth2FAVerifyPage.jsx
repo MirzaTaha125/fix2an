@@ -67,7 +67,7 @@ export default function Auth2FAVerifyPage() {
 			<div className="list-page-main list-page-main--center">
 				<div className="max-w-md w-full space-y-6">
 					<div className="text-center">
-						<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#008037' }}>
+						<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#1B8F3E' }}>
 							<Shield className="w-8 h-8 text-white" />
 						</div>
 						<h2 className="text-xl font-bold mb-2" style={{ color: '#05324f' }}>{t('auth.twofa.title')}</h2>
@@ -86,7 +86,7 @@ export default function Auth2FAVerifyPage() {
 									value={code}
 									onChange={handleCodeChange}
 									placeholder="000000"
-									className="block w-full px-4 py-3 text-center text-xl tracking-[0.5em] font-mono border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#008037] focus:border-[#008037] bg-gray-50/50"
+									className="block w-full px-4 py-3 text-center text-xl tracking-[0.5em] font-mono border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#1B8F3E] focus:border-[#1B8F3E] bg-gray-50/50"
 									autoFocus
 								/>
 								<p className="text-xs text-gray-500 mt-2">{t('auth.twofa.hint')}</p>
@@ -95,7 +95,7 @@ export default function Auth2FAVerifyPage() {
 								type="submit"
 								disabled={isLoading || code.length !== 6}
 								className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-lg font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-								style={{ backgroundColor: '#008037' }}
+								style={{ backgroundColor: '#1B8F3E' }}
 							>
 								{isLoading ? (
 									<>

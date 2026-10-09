@@ -103,7 +103,7 @@ export default function ViewOfferModal({ open, onOpenChange, offer }) {
 								<InfoRow
 									label={t('workshop.proposals.total_price') || 'Total Price'}
 									value={formatPrice(offer.price)}
-									valueClassName="text-[#008037] font-black"
+									valueClassName="text-[#1B8F3E] font-black"
 								/>
 								<InfoRow
 									label={t('workshop.proposals.estimated_duration') || 'Estimated Duration'}
@@ -138,7 +138,7 @@ export default function ViewOfferModal({ open, onOpenChange, offer }) {
 									<div className="space-y-2">
 										{inclusionItems.map((item, index) => (
 											<div key={index} className="flex items-start gap-2">
-												<Check size={14} className="text-[#008037] mt-0.5 shrink-0" strokeWidth={3} />
+												<Check size={14} className="text-[#1B8F3E] mt-0.5 shrink-0" strokeWidth={3} />
 												<span className="text-xs text-[#05324f] font-medium leading-snug">{item}</span>
 											</div>
 										))}

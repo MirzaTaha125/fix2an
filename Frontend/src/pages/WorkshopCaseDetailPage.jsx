@@ -60,7 +60,7 @@ function SentQuote({ t, offer, onDownloadInvoice, downloadingInvoice = false }) 
 			</div>
 			<div className="border-t border-gray-200 pt-3 flex justify-between items-center">
 				<span className="text-sm font-bold text-[#0B2540]">{t('payment.flow.total')}</span>
-				<span className="text-sm font-bold text-[#008037]">{formatPrice(costs.total)}</span>
+				<span className="text-sm font-bold text-[#1B8F3E]">{formatPrice(costs.total)}</span>
 			</div>
 			{inclusions.length > 0 && (
 				<div className="mt-4">
@@ -68,7 +68,7 @@ function SentQuote({ t, offer, onDownloadInvoice, downloadingInvoice = false }) 
 					<ul className="space-y-2">
 						{inclusions.map((item) => (
 							<li key={item} className="flex items-start gap-2 text-sm text-[#111827]">
-								<Check className="w-4 h-4 text-[#008037] shrink-0 mt-0.5" strokeWidth={3} />
+								<Check className="w-4 h-4 text-[#1B8F3E] shrink-0 mt-0.5" strokeWidth={3} />
 								{item}
 							</li>
 						))}
@@ -86,7 +86,7 @@ function SentQuote({ t, offer, onDownloadInvoice, downloadingInvoice = false }) 
 					type="button"
 					onClick={onDownloadInvoice}
 					disabled={downloadingInvoice}
-					className="mt-4 w-full min-h-[48px] rounded-xl border-[1.5px] border-[#9AD4B0] text-[#008037] text-sm font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+					className="mt-4 w-full min-h-[48px] rounded-xl border-[1.5px] border-[#9AD4B0] text-[#1B8F3E] text-sm font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50"
 				>
 					<Download className="w-4 h-4" />
 					{downloadingInvoice ? '...' : t('payment.flow.download_invoice')}
@@ -215,7 +215,7 @@ export function WorkshopCasePanel({ requestId, onBack, onCreateQuote, embedded =
 	return (
 		<div className={`w-full ${messagesOpen ? 'case-detail-chat-lock max-lg:h-[calc(100dvh-3.5rem-env(safe-area-inset-top,0px)-var(--bottom-nav-height)-env(safe-area-inset-bottom,0px))]' : ''}`}>
 			{onBack && (
-				<button type="button" onClick={onBack} className="hidden lg:inline-flex items-center gap-1 text-sm font-semibold text-[#008037] mb-4 shrink-0">
+				<button type="button" onClick={onBack} className="hidden lg:inline-flex items-center gap-1 text-sm font-semibold text-[#1B8F3E] mb-4 shrink-0">
 					<ArrowLeft className="w-4 h-4" />
 					{t('workshop.panel.back')}
 				</button>
@@ -287,7 +287,7 @@ export function WorkshopCasePanel({ requestId, onBack, onCreateQuote, embedded =
 									onClick={() => setPhotoTab(tab.key)}
 									className={`pb-2 text-sm transition-colors ${
 										photoTab === tab.key
-											? 'text-[#008037] font-semibold border-b-2 border-[#008037] -mb-px'
+											? 'text-[#1B8F3E] font-semibold border-b-2 border-[#1B8F3E] -mb-px'
 											: 'text-gray-400 font-medium'
 									}`}
 								>
@@ -366,7 +366,7 @@ export function WorkshopCasePanel({ requestId, onBack, onCreateQuote, embedded =
 													<FileText className="w-4 h-4 text-[#6B7280] shrink-0" />
 													<span className="truncate">{name}</span>
 												</span>
-												<span className="text-sm font-semibold text-[#008037] shrink-0">{t('workshop.panel.download')}</span>
+												<span className="text-sm font-semibold text-[#1B8F3E] shrink-0">{t('workshop.panel.download')}</span>
 											</a>
 										)
 									})}
@@ -407,7 +407,7 @@ export function WorkshopCasePanel({ requestId, onBack, onCreateQuote, embedded =
 										</div>
 									)}
 									<div className="mt-6 rounded-2xl bg-[#E8F5EC] px-4 py-3.5 flex items-start gap-3">
-										<ShieldCheck className="w-5 h-5 text-[#008037] shrink-0 mt-0.5" strokeWidth={2} />
+										<ShieldCheck className="w-5 h-5 text-[#1B8F3E] shrink-0 mt-0.5" strokeWidth={2} />
 										<p className="text-sm text-[#1F2937] leading-snug">{t('my_cases.flow.photos_private')}</p>
 									</div>
 								</>
@@ -430,7 +430,7 @@ export function WorkshopCasePanel({ requestId, onBack, onCreateQuote, embedded =
 														<FileText className="w-4 h-4 text-[#6B7280] shrink-0" />
 														<span className="truncate">{file.fileName || file.name || t('workshop.panel.protocol')}</span>
 													</span>
-													<span className="text-sm font-semibold text-[#008037] shrink-0">{t('workshop.panel.download')}</span>
+													<span className="text-sm font-semibold text-[#1B8F3E] shrink-0">{t('workshop.panel.download')}</span>
 												</a>
 											))}
 										</div>

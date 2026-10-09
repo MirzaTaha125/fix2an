@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { workshopAPI } from '../services/api'
 import { Button } from '../components/ui/Button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/ui/Dialog'
+import { UnderlineTabsSkeleton, Skeleton } from '../components/ui/Skeleton'
 
 const PREFS_KEY = 'fixa2an-workshop-prefs'
 
@@ -24,17 +25,33 @@ export default function WorkshopSettingsPage() {
 	const navigate = useNavigate()
 	const { logout } = useAuth()
 	const [profile, setProfile] = useState(null)
+	const [loading, setLoading] = useState(true)
 	const [prefs, setPrefs] = useState(DEFAULT_PREFS)
 	const [tab, setTab] = useState('account')
 	const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
 
 	useEffect(() => {
-		workshopAPI.getProfile().then((response) => setProfile(response.data || null)).catch(() => {})
+		let active = true
+		setLoading(true)
+		workshopAPI
+			.getProfile()
+			.then((response) => {
+				if (active) setProfile(response.data || null)
+			})
+			.catch(() => {
+				if (active) setProfile(null)
+			})
+			.finally(() => {
+				if (active) setLoading(false)
+			})
 		try {
 			const saved = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}')
 			setPrefs({ ...DEFAULT_PREFS, ...saved })
 		} catch {
 			setPrefs(DEFAULT_PREFS)
+		}
+		return () => {
+			active = false
 		}
 	}, [])
 
@@ -52,9 +69,28 @@ export default function WorkshopSettingsPage() {
 	return (
 		<WorkshopShell>
 			<div className="list-page-shell bg-transparent">
-				<div className="list-page-content !max-w-none">
+				<div className="list-page-content !max-w-none !px-6 sm:!px-8 lg:!px-10">
+					{loading ? (
+						<div className="space-y-5">
+							<Skeleton className="h-8 w-44 max-w-full" />
+							<UnderlineTabsSkeleton count={4} />
+							<div className="space-y-0 pt-2">
+								{[0, 1, 2].map((i) => (
+									<div key={i} className="flex items-center justify-between gap-3 py-4 border-b border-[#F3F4F6]">
+										<div className="space-y-2 flex-1 min-w-0">
+											<Skeleton className="h-3 w-20" />
+											<Skeleton className="h-4 w-40 max-w-full" />
+										</div>
+										<Skeleton className="h-4 w-12 shrink-0" />
+									</div>
+								))}
+								<Skeleton className="mt-8 h-12 w-full rounded-lg" />
+							</div>
+						</div>
+					) : (
+						<>
 					<h1 className="page-title !mb-2">{t('workshop.panel.settings_title')}</h1>
-					<div className="flex w-full border-b border-gray-200 mt-5 mb-2">
+					<div className="grid grid-cols-4 w-full border-b border-gray-200 mt-5 mb-2">
 						{[
 							['account', t('workshop.panel.settings.account')],
 							['notifications', t('workshop.panel.settings.notifications')],
@@ -65,22 +101,22 @@ export default function WorkshopSettingsPage() {
 								key={key}
 								type="button"
 								onClick={() => setTab(key)}
-								className={`flex-1 min-w-0 pb-3 text-sm font-semibold text-center border-b-2 -mb-px truncate ${tab === key ? 'text-[#008037] border-[#008037]' : 'text-[#9CA3AF] border-transparent'}`}
+								className={`min-w-0 w-full px-0.5 pb-3 text-[12px] sm:text-sm font-semibold text-center border-b-2 -mb-px truncate ${tab === key ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'}`}
 							>
 								{label}
 							</button>
 						))}
 					</div>
-					<div className="max-w-xl">
+					<div className="w-full">
 						{tab === 'account' && (
 							<div>
-								<Row label={t('workshop.panel.contact')} value={user?.name} action={<Link to="/workshop/profile?view=info" className="text-[#008037] text-xs font-semibold">{t('workshop.panel.change')}</Link>} />
+								<Row label={t('workshop.panel.contact')} value={user?.name} action={<Link to="/workshop/profile?view=info" className="text-[#1B8F3E] text-xs font-semibold">{t('workshop.panel.change')}</Link>} />
 								<Row label={t('my_cases.email')} value={user?.email || workshop?.email} />
 								<Row label={t('my_cases.phone')} value={user?.phone || workshop?.phone} />
 								<button
 									type="button"
 									onClick={() => setLogoutConfirmOpen(true)}
-									className="mt-8 w-full min-h-[48px] rounded-lg border border-[#008037] text-[#008037] text-sm font-semibold inline-flex items-center justify-center gap-2"
+									className="mt-8 w-full min-h-[48px] rounded-lg border border-[#1B8F3E] text-[#1B8F3E] text-sm font-semibold inline-flex items-center justify-center gap-2"
 								>
 									<LogOut className="w-4 h-4" strokeWidth={2} />
 									{t('workshop.panel.nav.logout')}
@@ -105,6 +141,8 @@ export default function WorkshopSettingsPage() {
 							<p className="text-sm text-[#6B7280] py-5">{t('workshop.panel.integrations_body')}</p>
 						)}
 					</div>
+						</>
+					)}
 				</div>
 			</div>
 
@@ -159,7 +197,7 @@ function Toggle({ label, on, onClick }) {
 	return (
 		<button type="button" onClick={onClick} className="w-full flex items-center justify-between gap-3 py-4 border-b border-[#F3F4F6] text-left">
 			<span className="text-sm font-medium text-[#0B2540]">{label}</span>
-			<span className={`w-11 h-6 rounded-full p-0.5 transition-colors ${on ? 'bg-[#008037]' : 'bg-gray-200'}`}>
+			<span className={`w-11 h-6 rounded-full p-0.5 transition-colors ${on ? 'bg-[#1B8F3E]' : 'bg-gray-200'}`}>
 				<span className={`block w-5 h-5 rounded-full bg-white transition-transform ${on ? 'translate-x-5' : ''}`} />
 			</span>
 		</button>

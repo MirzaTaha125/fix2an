@@ -107,7 +107,7 @@ export default function SearchableSelect({
 											? t('common.search_or_type') || 'Search or type...'
 											: searchPlaceholder
 									}
-									className="h-9 w-full rounded-2xl border border-gray-200 bg-white pl-8 pr-3 text-sm outline-none focus:border-[#008037] focus:ring-1 focus:ring-[#008037]"
+									className="h-9 w-full rounded-2xl border border-gray-200 bg-white pl-8 pr-3 text-sm outline-none focus:border-[#1B8F3E] focus:ring-1 focus:ring-[#1B8F3E]"
 								/>
 							</div>
 						</div>
@@ -116,7 +116,7 @@ export default function SearchableSelect({
 								<button
 									type="button"
 									onClick={commitCustom}
-									className="relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 px-3 text-left text-sm outline-none hover:bg-[#E8F5EC] text-[#008037] font-semibold"
+									className="relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 px-3 text-left text-sm outline-none hover:bg-[#E8F5EC] text-[#1B8F3E] font-semibold"
 								>
 									{t('common.use_custom', { value: trimmedQuery }) || `Use "${trimmedQuery}"`}
 								</button>
@@ -138,7 +138,7 @@ export default function SearchableSelect({
 										>
 											{isSelected && (
 												<span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-													<Check className="h-4 w-4 text-[#008037]" />
+													<Check className="h-4 w-4 text-[#1B8F3E]" />
 												</span>
 											)}
 											{option.label}

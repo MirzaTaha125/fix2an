@@ -69,7 +69,7 @@ export default function CustomerWorkshopReviewsPage() {
 		return (
 			<div className="list-page-shell bg-gray-50">
 				<Navbar />
-				<div className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 w-full space-y-6">
+				<div className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20 w-full space-y-6">
 					<div className="mb-8">
 						<Skeleton className="h-4 w-28 mb-4 rounded-lg" />
 						<Skeleton className="h-8 w-64 mb-2 rounded-lg" />
@@ -119,7 +119,7 @@ export default function CustomerWorkshopReviewsPage() {
 	return (
 		<div className="min-h-screen bg-gray-50">
 			<Navbar />
-			<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
+			<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">
 				{/* Header */}
 				<div className="mb-8">
 					<button

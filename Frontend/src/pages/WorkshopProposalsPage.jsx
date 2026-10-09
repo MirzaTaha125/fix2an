@@ -196,7 +196,7 @@ export default function WorkshopProposalsPage() {
 									request={request}
 									className="items-start"
 									headerEnd={
-										<p className="text-base font-black text-[#008037] shrink-0 leading-tight">
+										<p className="text-base font-black text-[#1B8F3E] shrink-0 leading-tight">
 											{formatPrice(offer.price)}
 										</p>
 									}

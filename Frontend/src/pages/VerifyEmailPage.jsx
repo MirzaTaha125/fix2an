@@ -79,7 +79,7 @@ export default function VerifyEmailPage() {
 			<div className="list-page-main list-page-main--center">
 				<div className="max-w-md w-full space-y-6">
 					<div className="text-center">
-						<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#008037' }}>
+						<div className="inline-flex items-center justify-center w-16 h-16 rounded-card mb-5 shadow-card" style={{ backgroundColor: '#1B8F3E' }}>
 							<Mail className="w-8 h-8 text-white" />
 						</div>
 						<h2 className="text-2xl md:text-5xl font-bold mb-6" style={{ color: '#05324f' }}>{t('auth.verify_email.title')}</h2>
@@ -100,7 +100,7 @@ export default function VerifyEmailPage() {
 										value={digits[i]}
 										onChange={(e) => handleChange(i, e.target.value)}
 										onKeyDown={(e) => handleKeyDown(i, e)}
-										className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-bold border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#008037] focus:border-[#008037]"
+										className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-bold border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#1B8F3E] focus:border-[#1B8F3E]"
 									/>
 								))}
 							</div>
@@ -109,7 +109,7 @@ export default function VerifyEmailPage() {
 								type="submit"
 								disabled={isLoading || code.length !== CODE_LENGTH}
 								className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-lg font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-								style={{ backgroundColor: '#008037' }}
+								style={{ backgroundColor: '#1B8F3E' }}
 							>
 								{isLoading ? t('common.loading') : t('auth.verify_email.submit')}
 							</button>

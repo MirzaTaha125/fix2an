@@ -83,7 +83,7 @@ export default function WorkshopRejectedPage() {
 				<div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
 					<Button
 						onClick={handleReApply}
-						className="w-full sm:w-auto bg-brand-btn text-white px-8 py-7 rounded-xl font-semibold flex items-center gap-3 shadow-lg shadow-[#008037]/20 transition-all hover:scale-[1.02]"
+						className="w-full sm:w-auto bg-brand-btn text-white px-8 py-7 rounded-xl font-semibold flex items-center gap-3 shadow-lg shadow-[#1B8F3E]/20 transition-all hover:scale-[1.02]"
 					>
 						<RefreshCw className="w-5 h-5" />
 						{t('workshop.rejected.reapply') || 'Re-apply Now'}

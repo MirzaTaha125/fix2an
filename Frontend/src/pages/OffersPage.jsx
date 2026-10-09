@@ -249,7 +249,7 @@ export default function OffersPage() {
 																		setSelectedReport(report)
 																		setShowReportDialog(true)
 																	}}
-																	className="text-[#008037] hover:underline font-semibold"
+																	className="text-[#1B8F3E] hover:underline font-semibold"
 																>
 																	{t('workshop.requests.view_report') || 'View report'}
 																</button>

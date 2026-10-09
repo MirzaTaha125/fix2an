@@ -14,9 +14,9 @@ const STATUS_PILL = {
 	rescheduled: 'bg-[#EFF6FF] text-[#2563EB] border-[#93C5FD]',
 	received: 'bg-[#EFF6FF] text-[#2563EB] border-[#93C5FD]',
 	repair: 'bg-[#EFF6FF] text-[#2563EB] border-[#93C5FD]',
-	ready: 'bg-[#ECFDF5] text-[#008037] border-[#86EFAC]',
-	pickup: 'bg-[#ECFDF5] text-[#008037] border-[#86EFAC]',
-	closed: 'bg-[#ECFDF5] text-[#008037] border-[#86EFAC]',
+	ready: 'bg-[#ECFDF5] text-[#1B8F3E] border-[#86EFAC]',
+	pickup: 'bg-[#ECFDF5] text-[#1B8F3E] border-[#86EFAC]',
+	closed: 'bg-[#ECFDF5] text-[#1B8F3E] border-[#86EFAC]',
 	expired: 'bg-gray-50 text-gray-500 border-gray-200',
 }
 
@@ -71,7 +71,7 @@ export default function CaseListView({
 						onClick={() => onTabChange(key)}
 						className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${
 							activeTab === key
-								? 'text-[#008037] border-[#008037]'
+								? 'text-[#1B8F3E] border-[#1B8F3E]'
 								: 'text-[#9CA3AF] border-transparent'
 						}`}
 					>
@@ -124,7 +124,7 @@ export default function CaseListView({
 								type="button"
 								onClick={() => onOpenCase(id)}
 								className={`w-full text-left rounded-2xl border bg-white p-4 flex items-center gap-2 transition-colors ${
-									selected ? 'border-[#008037]/40 bg-[#F0F7F2]' : 'border-gray-100 hover:border-gray-200'
+									selected ? 'border-[#1B8F3E]/40 bg-[#F0F7F2]' : 'border-gray-100 hover:border-gray-200'
 								}`}
 							>
 								<div className="min-w-0 flex-1 pr-1">

@@ -71,7 +71,7 @@ function ConversationRow({ row, selectedId, onSelect, t }) {
 				</div>
 			)}
 			<div className="min-w-0 flex-1 py-0.5">
-				<p className="text-xs text-[#008037] truncate leading-snug">
+				<p className="text-xs text-[#1B8F3E] truncate leading-snug">
 					{t('workshop.panel.case_no', { id: row.caseNo })}
 				</p>
 				<p className="text-sm font-bold text-[#05324f] truncate leading-snug mt-0.5">
@@ -182,7 +182,7 @@ export default function WorkshopMessagesPage() {
 										setTab('all')
 										setShowAllMessages(false)
 									}}
-									className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${tab === 'all' ? 'text-[#008037] border-[#008037]' : 'text-[#9CA3AF] border-transparent'}`}
+									className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${tab === 'all' ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'}`}
 								>
 									{t('workshop.panel.filter_all')}
 								</button>
@@ -192,7 +192,7 @@ export default function WorkshopMessagesPage() {
 										setTab('unread')
 										setShowAllMessages(false)
 									}}
-									className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${tab === 'unread' ? 'text-[#008037] border-[#008037]' : 'text-[#9CA3AF] border-transparent'}`}
+									className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${tab === 'unread' ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'}`}
 								>
 									{t('workshop.panel.unread')} ({unreadRows.length})
 								</button>
@@ -230,7 +230,7 @@ export default function WorkshopMessagesPage() {
 								<button
 									type="button"
 									onClick={() => setShowAllMessages(true)}
-									className="shrink-0 w-full mt-3 mb-1 min-h-[52px] rounded-xl border border-[#008037] bg-white text-sm font-semibold text-[#008037] hover:bg-[#F3FBF6]"
+									className="shrink-0 w-full mt-3 mb-1 min-h-[52px] rounded-xl border border-[#1B8F3E] bg-white text-sm font-semibold text-[#1B8F3E] hover:bg-[#F3FBF6]"
 								>
 									{t('workshop.panel.view_all')}
 								</button>

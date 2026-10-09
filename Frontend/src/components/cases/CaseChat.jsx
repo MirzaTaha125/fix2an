@@ -62,7 +62,7 @@ function MessageAttachments({ attachments }) {
 						rel="noreferrer"
 						className="flex items-center gap-2 rounded-xl bg-white/80 border border-black/5 px-3 py-2 text-sm text-[#1F2937] hover:bg-white"
 					>
-						<FileText className="w-4 h-4 text-[#008037] shrink-0" strokeWidth={1.75} />
+						<FileText className="w-4 h-4 text-[#1B8F3E] shrink-0" strokeWidth={1.75} />
 						<span className="truncate">{file.fileName || 'File'}</span>
 					</a>
 				)
@@ -138,7 +138,7 @@ function MessageBubble({
 			{mine && (
 				<div className="flex justify-end mt-1.5">
 					<CheckCheck
-						className={`w-3.5 h-3.5 ${readAt ? 'text-[#008037]' : 'text-[#9CA3AF]'}`}
+						className={`w-3.5 h-3.5 ${readAt ? 'text-[#1B8F3E]' : 'text-[#9CA3AF]'}`}
 						strokeWidth={2.25}
 					/>
 				</div>
@@ -404,7 +404,7 @@ export default function CaseChat({
 							{isImageAttachment(file) ? (
 								<img src={getFullUrl(file.fileUrl)} alt="" className="w-5 h-5 rounded object-cover" />
 							) : (
-								<FileText className="w-3.5 h-3.5 text-[#008037] shrink-0" />
+								<FileText className="w-3.5 h-3.5 text-[#1B8F3E] shrink-0" />
 							)}
 							<span className="truncate max-w-[140px]">{file.fileName}</span>
 							<button
@@ -446,7 +446,7 @@ export default function CaseChat({
 						type="button"
 						onClick={() => fileRef.current?.click()}
 						disabled={uploading || sending || attachments.length >= 5}
-						className="p-1 text-[#008037] disabled:opacity-40 shrink-0"
+						className="p-1 text-[#1B8F3E] disabled:opacity-40 shrink-0"
 						aria-label={t('my_cases.flow.chat_attach')}
 						title={t('my_cases.flow.chat_attach')}
 					>
@@ -455,10 +455,10 @@ export default function CaseChat({
 					<button
 						type="submit"
 						disabled={!canSend}
-						className="p-1 flex items-center justify-center shrink-0 text-[#008037] disabled:opacity-100"
+						className="p-1 flex items-center justify-center shrink-0 text-[#1B8F3E] disabled:opacity-100"
 						aria-label={t('my_cases.flow.chat_send')}
 					>
-						<Send className="w-[18px] h-[18px] text-[#008037]" strokeWidth={2.25} />
+						<Send className="w-[18px] h-[18px] text-[#1B8F3E]" strokeWidth={2.25} />
 					</button>
 				</div>
 			</form>

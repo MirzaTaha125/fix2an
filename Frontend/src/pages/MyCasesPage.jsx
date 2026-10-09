@@ -636,7 +636,7 @@ export default function MyCasesPage() {
 						<div className="flex justify-center gap-1.5 sm:gap-2">
 							{[1, 2, 3, 4, 5].map(star => (
 								<button key={star} type="button" onClick={() => setCompleteRating(star)} className="focus:outline-none">
-									<Star className={`w-8 h-8 sm:w-9 sm:h-9 ${star <= completeRating ? 'fill-[#008037] text-[#008037]' : 'text-gray-200'}`} />
+									<Star className={`w-8 h-8 sm:w-9 sm:h-9 ${star <= completeRating ? 'fill-[#1B8F3E] text-[#1B8F3E]' : 'text-gray-200'}`} />
 								</button>
 							))}
 						</div>
@@ -672,7 +672,7 @@ export default function MyCasesPage() {
 			{/* Review Modal (from list) */}
 			<Dialog open={reviewModalOpen} onOpenChange={setReviewModalOpen}>
 				<DialogContent className="max-w-md p-0 overflow-hidden rounded-[2.5rem]">
-					<div className="bg-[#008037]/5 p-8 text-center">
+					<div className="bg-[#1B8F3E]/5 p-8 text-center">
 						<DialogTitle className="text-2xl font-black text-[#05324f]">Rate Service</DialogTitle>
 						<DialogDescription>How was your experience?</DialogDescription>
 					</div>
@@ -680,7 +680,7 @@ export default function MyCasesPage() {
 						<div className="flex justify-center gap-2">
 							{[1, 2, 3, 4, 5].map(star => (
 								<button key={star} onClick={() => setRating(star)} className="focus:outline-none">
-									<Star className={`w-10 h-10 ${star <= rating ? 'fill-[#008037] text-[#008037]' : 'text-gray-200'}`} />
+									<Star className={`w-10 h-10 ${star <= rating ? 'fill-[#1B8F3E] text-[#1B8F3E]' : 'text-gray-200'}`} />
 								</button>
 							))}
 						</div>
@@ -826,8 +826,8 @@ export default function MyCasesPage() {
 									</DialogHeader>
 
 									<div className="mt-4 sm:mt-5 flex gap-2.5 sm:gap-3 md:gap-4 p-3 sm:p-3.5 md:p-4 bg-gray-50 rounded-xl border border-gray-100">
-										<div className="w-[4.5rem] h-[4.5rem] sm:w-20 sm:h-20 md:w-[5.25rem] md:h-[5.25rem] rounded-2xl bg-[#008037] overflow-hidden flex items-start justify-center shrink-0 border border-[#008037]/20">
-											<WorkshopImage workshop={ws} alt={ws.companyName} className="w-full h-full" fallbackClassName="bg-[#008037]" />
+										<div className="w-[4.5rem] h-[4.5rem] sm:w-20 sm:h-20 md:w-[5.25rem] md:h-[5.25rem] rounded-2xl bg-[#1B8F3E] overflow-hidden flex items-start justify-center shrink-0 border border-[#1B8F3E]/20">
+											<WorkshopImage workshop={ws} alt={ws.companyName} className="w-full h-full" fallbackClassName="bg-[#1B8F3E]" />
 										</div>
 										<div className="flex-1 min-w-0">
 											<div className="flex items-start justify-between gap-2 mb-1.5">
@@ -836,11 +836,11 @@ export default function MyCasesPage() {
 														{ws.companyName || 'N/A'}
 													</h3>
 													{ws.isVerified && (
-														<ShieldCheck size={14} className="inline-block mt-1 text-[#008037] shrink-0" fill="#008037" fillOpacity={0.15} />
+														<ShieldCheck size={14} className="inline-block mt-1 text-[#1B8F3E] shrink-0" fill="#1B8F3E" fillOpacity={0.15} />
 													)}
 												</div>
 												{selectedBookingForDetails.totalAmount != null && (
-													<p className="text-base font-black text-[#008037] shrink-0 leading-tight">
+													<p className="text-base font-black text-[#1B8F3E] shrink-0 leading-tight">
 														{formatPrice(selectedBookingForDetails.totalAmount)}
 													</p>
 												)}

@@ -449,20 +449,20 @@ export default function WorkshopRequestsPage() {
 				</p>
 			</div>
 
-			<div className="shrink-0 flex w-full border-b border-gray-200 mb-2 pt-2">
+			<div className="shrink-0 grid grid-cols-4 w-full border-b border-gray-200 mb-2 pt-2">
 				{[
-					['all', t('workshop.panel.filter_all'), allList.length],
-					['waiting', t('workshop.panel.filter_waiting'), waitingList.length],
-					['draft', t('workshop.panel.filter_draft'), draftList.length],
-					['closed', t('workshop.panel.filter_closed'), closedList.length],
-				].map(([key, label, count]) => (
+					['all', t('workshop.panel.filter_all')],
+					['waiting', t('workshop.panel.filter_waiting')],
+					['draft', t('workshop.panel.filter_draft')],
+					['closed', t('workshop.panel.filter_closed')],
+				].map(([key, label]) => (
 					<button
 						key={key}
 						type="button"
 						onClick={() => setCaseFilter(key)}
-						className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${caseFilter === key ? 'text-[#008037] border-[#008037]' : 'text-[#9CA3AF] border-transparent'}`}
+						className={`min-w-0 w-full px-0.5 pb-3 text-[12px] sm:text-[13px] font-semibold text-center border-b-2 -mb-px truncate ${caseFilter === key ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'}`}
 					>
-						<span className="block truncate">{label} ({count})</span>
+						{label}
 					</button>
 				))}
 			</div>
@@ -505,7 +505,7 @@ export default function WorkshopRequestsPage() {
 								type="button"
 								onClick={() => openCase(requestId)}
 								className={`w-full text-left rounded-2xl border bg-white p-4 flex items-center gap-3 transition-colors ${
-									selected ? 'border-[#008037] bg-[#F0F7F2]' : 'border-gray-100 hover:border-gray-200'
+									selected ? 'border-[#1B8F3E] bg-[#F0F7F2]' : 'border-gray-100 hover:border-gray-200'
 								}`}
 							>
 								<div className="min-w-0 flex-1">
@@ -517,7 +517,7 @@ export default function WorkshopRequestsPage() {
 								<div className="shrink-0 self-stretch relative flex items-center pl-1 min-w-[5.5rem]">
 									<span className={`absolute top-0 right-0 whitespace-nowrap text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
 										isCompleted
-											? 'bg-[#ECFDF5] text-[#008037] border-[#86EFAC]'
+											? 'bg-[#ECFDF5] text-[#1B8F3E] border-[#86EFAC]'
 											: hasOffer
 												? 'bg-[#EFF6FF] text-[#2563EB] border-[#93C5FD]'
 												: isDraft
@@ -543,7 +543,7 @@ export default function WorkshopRequestsPage() {
 				<button
 					type="button"
 					onClick={() => setShowAllCases(true)}
-					className="shrink-0 w-full mt-4 min-h-[52px] rounded-xl border border-[#008037] bg-white text-sm font-semibold text-[#008037] hover:bg-[#F3FBF6]"
+					className="shrink-0 w-full mt-4 min-h-[52px] rounded-xl border border-[#1B8F3E] bg-white text-sm font-semibold text-[#1B8F3E] hover:bg-[#F3FBF6]"
 				>
 					{t('workshop.panel.view_all_cases')}
 				</button>
@@ -630,7 +630,7 @@ export default function WorkshopRequestsPage() {
 									</div>
 									<Button
 										asChild
-										className="bg-[#008037] hover:bg-[#2EB04F] text-white px-8 py-6 rounded-xl shadow-xl shadow-[#008037]/20 font-semibold uppercase tracking-widest text-xs transition-all active:scale-95"
+										className="bg-[#1B8F3E] hover:bg-[#2EB04F] text-white px-8 py-6 rounded-xl shadow-xl shadow-[#1B8F3E]/20 font-semibold uppercase tracking-widest text-xs transition-all active:scale-95"
 									>
 										<a
 											href={getFullUrl(selectedReport.fileUrl)}

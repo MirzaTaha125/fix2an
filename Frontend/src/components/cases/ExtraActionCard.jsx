@@ -22,7 +22,7 @@ export default function ExtraActionCard({ extra, onDecide }) {
 				<button
 					type="button"
 					onClick={() => onDecide?.(extra.booking, extra.index, 'DECLINED')}
-					className="flex-1 h-9 rounded-sm border border-[#008037] text-[#008037] text-xs font-semibold bg-white"
+					className="flex-1 h-9 rounded-sm border border-[#1B8F3E] text-[#1B8F3E] text-xs font-semibold bg-white"
 				>
 					{t('my_cases.flow.repair_decline')}
 				</button>

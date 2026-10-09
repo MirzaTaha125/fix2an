@@ -46,11 +46,14 @@ function Navbar() {
 		location.pathname === '/workshop/rejected'
 	const isAbout = isActive('/about')
 	const isContact = isActive('/support')
+	const isLogin =
+		location.pathname === '/auth/signin' ||
+		location.pathname === '/signin'
 
 	const guestNavLinkClass = (active) =>
 		`relative inline-flex items-center text-sm font-medium whitespace-nowrap pb-1.5 border-b-2 transition-colors ${
 			active
-				? 'text-[#008037] border-[#008037]'
+				? 'text-[#1B8F3E] border-[#1B8F3E]'
 				: 'text-[#374151] border-transparent hover:text-[#0B2540]'
 		}`
 
@@ -146,8 +149,8 @@ function Navbar() {
 		if (user?.role === 'ADMIN') {
 			return (
 				<Link to="/admin" className="flex flex-col items-start group">
-					<span className="text-sm font-semibold bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1 group-hover:from-[#008037] group-hover:to-[#008037] transition-all duration-300">
-						Admin <span className="text-[#008037]">Panel</span>
+					<span className="text-sm font-semibold bg-gradient-to-r from-[#05324f] to-gray-600 bg-clip-text text-transparent tracking-tight uppercase leading-none mb-1 group-hover:from-[#1B8F3E] group-hover:to-[#1B8F3E] transition-all duration-300">
+						Admin <span className="text-[#1B8F3E]">Panel</span>
 					</span>
 					<span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">
 						{t('common.admin_tagline')}
@@ -401,7 +404,7 @@ function Navbar() {
 														<Link
 															to="/workshop/signup"
 															onClick={() => setWorkshopMenuOpen(false)}
-															className="flex min-h-[36px] items-center justify-center !rounded-md border border-[#008037] px-2.5 text-xs font-semibold text-[#008037] hover:bg-[#F3FBF6]"
+															className="flex min-h-[36px] items-center justify-center !rounded-md border border-[#1B8F3E] px-2.5 text-xs font-semibold text-[#1B8F3E] hover:bg-[#F3FBF6]"
 														>
 															{t('navigation.register')}
 														</Link>
@@ -444,7 +447,7 @@ function Navbar() {
 												}`}
 											onClick={() => setMobileMenuOpen(false)}
 										>
-											<span>Admin <span className="text-[#008037]">Panel</span></span>
+											<span>Admin <span className="text-[#1B8F3E]">Panel</span></span>
 										</Link>
 									)}
 									{user.role === 'CUSTOMER' && (
@@ -584,6 +587,14 @@ function Navbar() {
 								</>
 							) : (
 								<nav>
+									<Link
+										to="/auth/signin"
+										onClick={() => setMobileMenuOpen(false)}
+										className={mobileGuestNavLinkClass(isLogin)}
+									>
+										<span>{t('navigation.login')}</span>
+										<ChevronRight className="w-5 h-5 text-[#05324f] shrink-0" strokeWidth={1.75} />
+									</Link>
 									<Link
 										to="/how-it-works"
 										onClick={() => setMobileMenuOpen(false)}

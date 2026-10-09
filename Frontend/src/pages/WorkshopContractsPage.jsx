@@ -33,12 +33,12 @@ import { offersAPI, bookingsAPI, reviewsAPI } from '../services/api'
 
 function CustomerScheduleNotice({ t, isScheduled = false }) {
 	return (
-		<div className="bg-[#F8FAF9] rounded-2xl border border-[#008037]/10 p-3 flex gap-2.5 mt-4">
+		<div className="bg-[#F8FAF9] rounded-2xl border border-[#1B8F3E]/10 p-3 flex gap-2.5 mt-4">
 			<div className="shrink-0 pt-0.5">
 				{isScheduled ? (
-					<Calendar className="w-5 h-5 text-[#008037]" strokeWidth={2} />
+					<Calendar className="w-5 h-5 text-[#1B8F3E]" strokeWidth={2} />
 				) : (
-					<Phone className="w-5 h-5 text-[#008037]" strokeWidth={2} />
+					<Phone className="w-5 h-5 text-[#1B8F3E]" strokeWidth={2} />
 				)}
 			</div>
 			<div className="flex-1 min-w-0">
@@ -62,7 +62,7 @@ function ChatBubbleIcon({ className = 'w-4 h-4' }) {
 		<svg viewBox="0 0 40 32" fill="none" className={className} aria-hidden>
 			<path
 				d="M20 3C11.16 3 4 8.82 4 16c0 3.56 1.67 6.76 4.32 8.88L6 29l5.4-3.24C13.4 26.56 16.58 27.5 20 27.5c8.84 0 16-5.82 16-13S28.84 3 20 3z"
-				stroke="#008037"
+				stroke="#1B8F3E"
 				strokeWidth="2"
 				strokeLinecap="round"
 				strokeLinejoin="round"
@@ -207,10 +207,10 @@ function JobTimeline({ t, timeline }) {
 				return (
 					<li key={step.label} className="flex gap-3">
 						<div className="flex flex-col items-center">
-							<div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${step.done ? 'bg-brand-btn text-white' : current ? 'border-2 border-[#008037] bg-white' : 'border border-gray-300 bg-white'}`}>
+							<div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${step.done ? 'bg-brand-btn text-white' : current ? 'border-2 border-[#1B8F3E] bg-white' : 'border border-gray-300 bg-white'}`}>
 								{step.done ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : null}
 							</div>
-							{index < arr.length - 1 && <div className={`w-0.5 flex-1 min-h-[28px] ${step.done ? 'bg-[#008037]' : 'bg-gray-200'}`} />}
+							{index < arr.length - 1 && <div className={`w-0.5 flex-1 min-h-[28px] ${step.done ? 'bg-[#1B8F3E]' : 'bg-gray-200'}`} />}
 						</div>
 						<div className="pb-5">
 							<p className={`text-sm font-medium ${step.done || current ? 'text-brand-dark' : 'text-gray-400'}`}>{step.label}</p>
@@ -265,7 +265,7 @@ function WorkshopReview({ review, t }) {
 			<h3 className="text-sm font-bold text-brand-dark mb-2">{t('workshop.contracts.customer_review')}</h3>
 			<div className="flex gap-1 mb-2">
 				{[1, 2, 3, 4, 5].map((n) => (
-					<Star key={n} className={`w-4 h-4 ${n <= Number(review.rating) ? 'fill-[#008037] text-[#008037]' : 'text-gray-200'}`} />
+					<Star key={n} className={`w-4 h-4 ${n <= Number(review.rating) ? 'fill-[#1B8F3E] text-[#1B8F3E]' : 'text-gray-200'}`} />
 				))}
 			</div>
 			{text && <p className="text-sm text-[#374151] leading-relaxed">{text}</p>}
@@ -343,7 +343,7 @@ function CostSummary({ t, offer, booking }) {
 			</div>
 			<div className="border-t border-gray-100 pt-3 flex justify-between items-center">
 				<span className="text-sm font-bold text-[#0B2540]">{t('payment.flow.total')}</span>
-				<span className="text-sm font-bold text-[#008037]">{kr(costs.total)}</span>
+				<span className="text-sm font-bold text-[#1B8F3E]">{kr(costs.total)}</span>
 			</div>
 		</section>
 	)
@@ -388,9 +388,9 @@ function OngoingJobDetail({ t, offer, job, updating, onBack, onAdvance, onExtra,
 		offers: [{ status: offer?.status || 'ACCEPTED' }],
 	})
 	const statusText = flowStatusLabel(timeline.status, t)
-	const statusAccent = timeline.status === 'closed' || timeline.status === 'ready' ? 'text-[#008037]' : timeline.status === 'new' || timeline.status === 'offers' ? 'text-[#E67E22]' : 'text-[#2563EB]'
+	const statusAccent = timeline.status === 'closed' || timeline.status === 'ready' ? 'text-[#1B8F3E]' : timeline.status === 'new' || timeline.status === 'offers' ? 'text-[#E67E22]' : 'text-[#2563EB]'
 	const statusPill = timeline.status === 'closed' || timeline.status === 'ready' || timeline.status === 'pickup'
-		? 'bg-[#ECFDF5] text-[#008037] border-[#86EFAC]'
+		? 'bg-[#ECFDF5] text-[#1B8F3E] border-[#86EFAC]'
 		: timeline.status === 'expired'
 			? 'bg-gray-50 text-gray-500 border-gray-200'
 			: timeline.status === 'new' || timeline.status === 'offers'
@@ -572,7 +572,7 @@ function OngoingJobDetail({ t, offer, job, updating, onBack, onAdvance, onExtra,
 							{documents.map((file, index) => (
 								<a key={file._id || index} href={getFullUrl(file.fileUrl || file.url)} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-xl bg-[#F3F4F6] px-3 py-3 text-sm">
 									<span className="truncate">{file.fileName || t('my_cases.flow.documents')}</span>
-									<span className="text-[#008037] font-semibold shrink-0">{t('workshop.panel.download')}</span>
+									<span className="text-[#1B8F3E] font-semibold shrink-0">{t('workshop.panel.download')}</span>
 								</a>
 							))}
 						</div>
@@ -1038,7 +1038,7 @@ const [cancellationReason, setCancellationReason] = useState('')
 					<CustomerScheduleNotice t={t} isScheduled={scheduleDialogMode === 'reschedule'} />
 					<button
 						type="button"
-						className="w-full mt-2.5 h-10 border border-[#008037] rounded-xl text-[#008037] font-semibold text-xs flex items-center justify-center gap-1.5 hover:bg-[#F2F9F4] transition-all active:scale-[0.98]"
+						className="w-full mt-2.5 h-10 border border-[#1B8F3E] rounded-xl text-[#1B8F3E] font-semibold text-xs flex items-center justify-center gap-1.5 hover:bg-[#F2F9F4] transition-all active:scale-[0.98]"
 						onClick={() => {
 							if (!scheduleDialogContact) {
 								toast.error(t('my_cases.contact_unavailable') || 'Contact details unavailable')
@@ -1124,12 +1124,12 @@ const [cancellationReason, setCancellationReason] = useState('')
 							value={cancellationReason}
 							onChange={(e) => setCancellationReason(e.target.value)}
 							placeholder={t('workshop.contracts.cancel_reason_placeholder') || 'Please explain why you need to cancel this contract.'}
-							className="w-full min-w-0 min-h-[100px] p-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 focus:ring-2 focus:ring-[#008037] focus:border-transparent transition-all outline-none resize-none box-border"
+							className="w-full min-w-0 min-h-[100px] p-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 focus:ring-2 focus:ring-[#1B8F3E] focus:border-transparent transition-all outline-none resize-none box-border"
 							required
 						/>
 						<p className="text-xs text-gray-400 text-center leading-relaxed px-1">
 							{t('workshop.contracts.cancel_policy_note') || 'By cancelling, you agree to our'}{' '}
-							<a href="https://fixa2an.se/policy" target="_blank" rel="noopener noreferrer" className="text-[#008037] hover:underline font-semibold">
+							<a href="https://fixa2an.se/policy" target="_blank" rel="noopener noreferrer" className="text-[#1B8F3E] hover:underline font-semibold">
 								{t('workshop.contracts.cancellation_policy') || 'Cancellation Policy'}
 							</a>
 						</p>
@@ -1182,7 +1182,7 @@ const [cancellationReason, setCancellationReason] = useState('')
 							setShowAllJobs(false)
 							setExpandedJobId(null)
 						}}
-						className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${jobFilter === key ? 'text-[#008037] border-[#008037]' : 'text-[#9CA3AF] border-transparent'}`}
+						className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${jobFilter === key ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'}`}
 					>
 						<span className="block truncate">{label} ({count})</span>
 					</button>
@@ -1208,7 +1208,7 @@ const [cancellationReason, setCancellationReason] = useState('')
 						const cardStatus = {
 							label: flowStatusLabel(cardTimeline.status, t),
 							pill: cardTimeline.status === 'closed' || cardTimeline.status === 'ready' || cardTimeline.status === 'pickup'
-								? 'bg-[#ECFDF5] text-[#008037] border-[#86EFAC]'
+								? 'bg-[#ECFDF5] text-[#1B8F3E] border-[#86EFAC]'
 								: cardTimeline.status === 'expired'
 									? 'bg-gray-50 text-gray-500 border-gray-200'
 									: cardTimeline.status === 'new' || cardTimeline.status === 'offers'
@@ -1222,7 +1222,7 @@ const [cancellationReason, setCancellationReason] = useState('')
 								type="button"
 								onClick={() => setExpandedJobId(String(job.offerId))}
 								className={`w-full text-left rounded-2xl border bg-white p-4 flex items-center gap-3 transition-colors ${
-									selected ? 'border-[#008037] bg-[#F0F7F2]' : 'border-gray-100 hover:border-gray-200'
+									selected ? 'border-[#1B8F3E] bg-[#F0F7F2]' : 'border-gray-100 hover:border-gray-200'
 								}`}
 							>
 								<div className="min-w-0 flex-1">
@@ -1244,7 +1244,7 @@ const [cancellationReason, setCancellationReason] = useState('')
 				<button
 					type="button"
 					onClick={() => setShowAllJobs(true)}
-					className="shrink-0 w-full mt-4 min-h-[52px] rounded-xl border border-[#008037] bg-white text-sm font-semibold text-[#008037] hover:bg-[#F3FBF6]"
+					className="shrink-0 w-full mt-4 min-h-[52px] rounded-xl border border-[#1B8F3E] bg-white text-sm font-semibold text-[#1B8F3E] hover:bg-[#F3FBF6]"
 				>
 					{t('workshop.panel.view_all')}
 				</button>
@@ -1301,7 +1301,7 @@ const [cancellationReason, setCancellationReason] = useState('')
 								value={extraApprovalDescription}
 								onChange={(e) => setExtraApprovalDescription(e.target.value)}
 								placeholder={t('workshop.contracts.extra_approval.description_placeholder')}
-								className="w-full min-h-[88px] p-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 focus:ring-2 focus:ring-[#008037] focus:border-transparent transition-all outline-none resize-none"
+								className="w-full min-h-[88px] p-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 focus:ring-2 focus:ring-[#1B8F3E] focus:border-transparent transition-all outline-none resize-none"
 							/>
 						</div>
 						<div className="space-y-2">

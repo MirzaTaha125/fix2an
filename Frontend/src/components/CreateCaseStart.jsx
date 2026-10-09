@@ -23,10 +23,10 @@ export default function CreateCaseStart({ onSelectPath }) {
 
 	return (
 		<div className="w-full">
-			<h1 className="page-title lg:text-[2.75rem] lg:mb-4 whitespace-pre-line lg:whitespace-normal w-full max-w-none lg:max-w-3xl">
+			<h1 className="page-title-hero lg:mb-4 whitespace-pre-line lg:whitespace-normal w-full max-w-none lg:max-w-3xl">
 				<Trans
 					i18nKey="upload.flow.start_title"
-					components={{ hl: <span className="text-[#008037]" /> }}
+					components={{ hl: <span className="text-[#1B8F3E]" /> }}
 				/>
 			</h1>
 			<p className="text-sm lg:text-lg text-[#6B7280] leading-relaxed mb-6 lg:mb-8 w-full max-w-none lg:max-w-2xl">
@@ -36,8 +36,8 @@ export default function CreateCaseStart({ onSelectPath }) {
 			{/* Primary protocol card */}
 			<div className="rounded-xl lg:rounded-2xl bg-[#F0F7F2] p-5 lg:p-8 mb-5 lg:mb-6 lg:flex lg:items-center lg:gap-8">
 				<div className="flex items-start gap-3 lg:gap-5 mb-4 lg:mb-0 min-w-0 flex-1">
-					<div className="w-12 h-12 lg:w-[4.5rem] lg:h-[4.5rem] rounded-full bg-white border border-[#008037]/25 flex items-center justify-center shrink-0">
-						<FileUp className="w-6 h-6 lg:w-8 lg:h-8 text-[#008037]" strokeWidth={2} />
+					<div className="w-12 h-12 lg:w-[4.5rem] lg:h-[4.5rem] rounded-full bg-white border border-[#1B8F3E]/25 flex items-center justify-center shrink-0">
+						<FileUp className="w-6 h-6 lg:w-8 lg:h-8 text-[#1B8F3E]" strokeWidth={2} />
 					</div>
 					<div className="min-w-0 flex-1 pt-0.5">
 						<p className="font-bold text-brand-dark text-[0.95rem] lg:text-xl leading-snug mb-1">
@@ -72,10 +72,10 @@ export default function CreateCaseStart({ onSelectPath }) {
 				{...(onSelectPath
 					? { type: 'button', onClick: () => onSelectPath('known') }
 					: { to: '/upload?path=known' })}
-				className="w-full text-left rounded-xl lg:rounded-2xl border border-gray-100 bg-white shadow-sm p-4 lg:p-6 mb-3 lg:mb-4 flex items-center gap-3 lg:gap-5 hover:border-[#008037]/30 transition-colors"
+				className="w-full text-left rounded-xl lg:rounded-2xl border border-gray-100 bg-white shadow-sm p-4 lg:p-6 mb-3 lg:mb-4 flex items-center gap-3 lg:gap-5 hover:border-[#1B8F3E]/30 transition-colors"
 			>
 				<div className="w-12 h-12 lg:w-[4.5rem] lg:h-[4.5rem] rounded-full bg-[#E8F5EC] flex items-center justify-center shrink-0">
-					<Wrench className="w-6 h-6 lg:w-8 lg:h-8 text-[#008037]" strokeWidth={1.75} />
+					<Wrench className="w-6 h-6 lg:w-8 lg:h-8 text-[#1B8F3E]" strokeWidth={1.75} />
 				</div>
 				<div className="min-w-0 flex-1">
 					<p className="font-bold text-brand-dark text-sm lg:text-lg leading-snug">{t('upload.flow.known_title')}</p>
@@ -89,7 +89,7 @@ export default function CreateCaseStart({ onSelectPath }) {
 				{...(onSelectPath
 					? { type: 'button', onClick: () => onSelectPath('unknown') }
 					: { to: '/upload?path=unknown' })}
-				className="w-full text-left rounded-xl lg:rounded-2xl border border-gray-100 bg-white shadow-sm p-4 lg:p-6 flex items-center gap-3 lg:gap-5 hover:border-[#008037]/30 transition-colors"
+				className="w-full text-left rounded-xl lg:rounded-2xl border border-gray-100 bg-white shadow-sm p-4 lg:p-6 flex items-center gap-3 lg:gap-5 hover:border-[#1B8F3E]/30 transition-colors"
 			>
 				<div className="w-12 h-12 lg:w-[4.5rem] lg:h-[4.5rem] rounded-full bg-[#E8F0FE] flex items-center justify-center shrink-0">
 					<Search className="w-6 h-6 lg:w-8 lg:h-8 text-[#1C3F94]" strokeWidth={1.75} />
@@ -106,19 +106,19 @@ export default function CreateCaseStart({ onSelectPath }) {
 				{[
 					{
 						key: 'verified',
-						icon: <ShieldCheck className="w-9 h-9 lg:w-14 lg:h-14 text-[#008037]" strokeWidth={1.75} />,
+						icon: <ShieldCheck className="w-9 h-9 lg:w-14 lg:h-14 text-[#1B8F3E]" strokeWidth={1.75} />,
 					},
 					{
 						key: 'free',
 						icon: (
-							<span className="w-11 h-11 lg:w-16 lg:h-16 rounded-full border-2 border-[#008037] text-[#008037] text-xs lg:text-lg font-semibold flex items-center justify-center leading-none">
+							<span className="w-11 h-11 lg:w-16 lg:h-16 rounded-full border-2 border-[#1B8F3E] text-[#1B8F3E] text-xs lg:text-lg font-semibold flex items-center justify-center leading-none">
 								0kr
 							</span>
 						),
 					},
 					{
 						key: 'fast',
-						icon: <Zap className="w-9 h-9 lg:w-14 lg:h-14 text-[#008037]" strokeWidth={1.75} />,
+						icon: <Zap className="w-9 h-9 lg:w-14 lg:h-14 text-[#1B8F3E]" strokeWidth={1.75} />,
 					},
 				].map(({ key, icon }) => (
 					<div key={key} className="flex flex-col items-center text-center px-1">

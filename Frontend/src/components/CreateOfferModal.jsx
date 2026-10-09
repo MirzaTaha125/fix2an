@@ -258,7 +258,7 @@ export default function CreateOfferModal({ open, onOpenChange, requestId, onSucc
 									value={formData.estimatedDuration}
 									onChange={(e) => setFormData({ ...formData, estimatedDuration: e.target.value })}
 									required
-									className="w-full h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm text-[#111827] outline-none focus:border-[#008037]"
+									className="w-full h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm text-[#111827] outline-none focus:border-[#1B8F3E]"
 								>
 									<option value="">{t('common.select') || 'Select'}</option>
 									<option value="2">1–2 {t('quotes.flow.hours')}</option>
@@ -277,7 +277,7 @@ export default function CreateOfferModal({ open, onOpenChange, requestId, onSucc
 									id="offer-warranty"
 									value={formData.warranty}
 									onChange={(e) => setFormData({ ...formData, warranty: e.target.value })}
-									className="w-full h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm text-[#111827] outline-none focus:border-[#008037]"
+									className="w-full h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm text-[#111827] outline-none focus:border-[#1B8F3E]"
 								>
 									<option value="">{t('common.select') || 'Select'}</option>
 									<option value="3 months">{t('workshop.offer.warranty_3m') || '3 months'}</option>
@@ -294,7 +294,7 @@ export default function CreateOfferModal({ open, onOpenChange, requestId, onSucc
 									onClick={() => setFormData({ ...formData, loanerCar: !formData.loanerCar })}
 									className={`h-11 rounded-xl border text-sm font-semibold transition-colors ${
 										formData.loanerCar
-											? 'border-[#008037] bg-[#E8F5EC] text-[#008037]'
+											? 'border-[#1B8F3E] bg-[#E8F5EC] text-[#1B8F3E]'
 											: 'border-gray-200 bg-white text-[#6B7280]'
 									}`}
 								>
@@ -305,7 +305,7 @@ export default function CreateOfferModal({ open, onOpenChange, requestId, onSucc
 									onClick={() => setFormData({ ...formData, originalParts: !formData.originalParts })}
 									className={`h-11 rounded-xl border text-sm font-semibold transition-colors ${
 										formData.originalParts
-											? 'border-[#008037] bg-[#E8F5EC] text-[#008037]'
+											? 'border-[#1B8F3E] bg-[#E8F5EC] text-[#1B8F3E]'
 											: 'border-gray-200 bg-white text-[#6B7280]'
 									}`}
 								>

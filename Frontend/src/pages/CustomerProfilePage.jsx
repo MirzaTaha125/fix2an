@@ -704,7 +704,7 @@ export default function CustomerProfilePage() {
 							{t('profile.why_save_cars_desc') || 'It makes it easier to create new cases.'}
 						</p>
 					</div>
-					<Car className="w-10 h-10 text-[#008037] shrink-0" strokeWidth={1.5} />
+					<Car className="w-10 h-10 text-[#1B8F3E] shrink-0" strokeWidth={1.5} />
 				</div>
 			</div>
 			)}
@@ -791,7 +791,7 @@ export default function CustomerProfilePage() {
 					<StatCard
 						value={stats.completedBookings}
 						label={t('profile.completed_cases') || 'Finished'}
-						iconColor="#008037"
+						iconColor="#1B8F3E"
 						iconBg="bg-green-50"
 					/>
 
@@ -1145,7 +1145,7 @@ export default function CustomerProfilePage() {
 									}}
 									className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
 										i18n.language === lang.code
-											? 'border-[#008037] bg-[#F2F9F4] text-[#008037]'
+											? 'border-[#1B8F3E] bg-[#F2F9F4] text-[#1B8F3E]'
 											: 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
 									}`}
 								>

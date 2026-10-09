@@ -89,7 +89,7 @@ function SideNav({ onNavigate, workshop, onLogoutClick }) {
 							{({ isActive }) => (
 								<>
 									<Icon
-										className={`w-5 h-5 shrink-0 ${isActive ? 'text-[#008037]' : 'text-[#6B7280]'}`}
+										className={`w-5 h-5 shrink-0 ${isActive ? 'text-[#1B8F3E]' : 'text-[#6B7280]'}`}
 										strokeWidth={1.75}
 									/>
 									<span className="flex-1 truncate">{t(`workshop.panel.nav.${item.key}`)}</span>

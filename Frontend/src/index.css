@@ -8,7 +8,7 @@
 	:root {
 		--bottom-nav-height: 4.25rem;
 		--brand-blue: #1C3F94;
-		--brand-green: #008037;
+		--brand-green: #1B8F3E;
 		--background: 0 0% 100%;
 		--foreground: 222.2 84% 4.9%;
 		--card: 0 0% 100%;
@@ -149,6 +149,22 @@
 		line-height: 1.25;
 		color: #05324f;
 		margin-bottom: 0.375rem;
+	}
+
+	/* Slightly larger titles for key marketing / create-case flow screens */
+	.page-title-hero {
+		font-size: 26px;
+		font-weight: 600;
+		letter-spacing: -0.3px;
+		line-height: 1.25;
+		color: #05324f;
+		margin-bottom: 0.375rem;
+	}
+
+	@media (min-width: 1024px) {
+		.page-title-hero {
+			font-size: 2rem;
+		}
 	}
 
 	.text-body-lg,
@@ -295,17 +311,17 @@ a[class*='font-bold'] {
 }
 
 @layer components {
-	/* Primary CTA fill — brand green (#008037) */
+	/* Primary CTA fill — brand green (#1B8F3E, logo-matched) */
 	.bg-brand-btn {
-		background-color: #008037;
+		background-color: #1B8F3E;
 		background-image: none;
 		color: #fff;
 	}
 	.bg-brand-btn:hover:not(:disabled):not([aria-disabled='true']) {
-		background-color: #006b28;
+		background-color: #177A35;
 	}
 	.bg-brand-btn:active:not(:disabled):not([aria-disabled='true']) {
-		background-color: #005c22;
+		background-color: #146B2E;
 	}
 	.bg-brand-btn:disabled,
 	.bg-brand-btn[disabled],
@@ -475,7 +491,7 @@ a[class*='font-bold'] {
 
 	/* Short auth pages — centered on desktop; top-aligned + scroll on mobile (avoids navbar clip) */
 	.list-page-main--center {
-		@apply flex flex-col items-center w-full px-4 pt-24 md:pt-28 pb-8 sm:pb-12 md:py-20;
+		@apply flex flex-col items-center w-full px-4 pt-20 md:pt-24 pb-8 sm:pb-12 md:py-20;
 		min-height: auto;
 		justify-content: flex-start;
 	}
@@ -489,7 +505,7 @@ a[class*='font-bold'] {
 
 	/* Tall forms (sign-up, workshop signup) — top-aligned, page scrolls normally */
 	.list-page-main--scroll {
-		@apply flex flex-col items-center w-full px-4 pt-24 md:pt-28 pb-8 sm:pb-12;
+		@apply flex flex-col items-center w-full px-4 pt-20 md:pt-24 pb-8 sm:pb-12;
 		min-height: auto;
 		justify-content: flex-start;
 	}
@@ -497,7 +513,7 @@ a[class*='font-bold'] {
 	.list-page-content,
 	.list-page-shell > .app-page-container,
 	.list-page-main > .app-page-container {
-		@apply mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-2xl md:max-w-5xl lg:max-w-7xl pt-24 md:pt-32;
+		@apply mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-2xl md:max-w-5xl lg:max-w-7xl pt-20 md:pt-28;
 		padding-bottom: 2rem;
 		min-height: auto;
 	}
@@ -572,7 +588,7 @@ a[class*='font-bold'] {
 
 	.workshop-pill-tab-active {
 		@apply text-white shadow-md active:scale-95 border-transparent;
-		background-color: #008037;
+		background-color: #1B8F3E;
 		background-image: none;
 	}
 
@@ -737,7 +753,19 @@ html.customer-menu-layout .list-page-main > .app-page-container {
 		letter-spacing: -0.2px !important;
 		line-height: 1.25 !important;
 		color: #05324f !important;
-		margin-top: 0.875rem !important;
+		margin-top: 0.5rem !important;
+		margin-bottom: 0.25rem !important;
+		font-family: 'Poppins', 'Inter', sans-serif !important;
+	}
+
+	.customer-app .page-title-hero,
+	.workshop-app .page-title-hero {
+		font-size: 26px !important;
+		font-weight: 600 !important;
+		letter-spacing: -0.3px !important;
+		line-height: 1.25 !important;
+		color: #05324f !important;
+		margin-top: 0.5rem !important;
 		margin-bottom: 0.25rem !important;
 		font-family: 'Poppins', 'Inter', sans-serif !important;
 	}

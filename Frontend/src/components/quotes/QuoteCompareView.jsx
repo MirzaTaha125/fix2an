@@ -44,11 +44,11 @@ export default function QuoteCompareView({ offers, onShowDetails, onBack }) {
 		},
 		{
 			label: t('quotes.flow.compare_loaner'),
-			render: (o) => (hasLoaner(o) ? <Check className="w-5 h-5 text-[#008037] mx-auto" /> : <X className="w-5 h-5 text-gray-300 mx-auto" />),
+			render: (o) => (hasLoaner(o) ? <Check className="w-5 h-5 text-[#1B8F3E] mx-auto" /> : <X className="w-5 h-5 text-gray-300 mx-auto" />),
 		},
 		{
 			label: t('quotes.flow.compare_parts'),
-			render: (o) => (hasOriginalParts(o) ? <Check className="w-5 h-5 text-[#008037] mx-auto" /> : <X className="w-5 h-5 text-gray-300 mx-auto" />),
+			render: (o) => (hasOriginalParts(o) ? <Check className="w-5 h-5 text-[#1B8F3E] mx-auto" /> : <X className="w-5 h-5 text-gray-300 mx-auto" />),
 		},
 		{
 			label: t('quotes.flow.compare_rating'),
@@ -125,7 +125,7 @@ export function QuoteConfirmView({ offer, onConfirm, onBack, confirming }) {
 	return (
 		<div className="w-full max-w-md mx-auto text-center">
 			<div className="w-16 h-16 rounded-full bg-[#F2F9F4] flex items-center justify-center mx-auto mb-4">
-				<Check className="w-8 h-8 text-[#008037]" strokeWidth={3} />
+				<Check className="w-8 h-8 text-[#1B8F3E]" strokeWidth={3} />
 			</div>
 			<h1 className="text-xl font-semibold text-[#05324f] mb-2">
 				{t('quotes.flow.confirm_title', { name, price: formatPrice(offer.price) })}
@@ -161,7 +161,7 @@ export function QuoteConfirmView({ offer, onConfirm, onBack, confirming }) {
 			>
 				{t('quotes.flow.confirm_continue')}
 			</button>
-			<button type="button" onClick={onBack} className="w-full h-12 border border-[#008037] text-[#008037] rounded-xl font-medium">
+			<button type="button" onClick={onBack} className="w-full h-12 border border-[#1B8F3E] text-[#1B8F3E] rounded-xl font-medium">
 				{t('quotes.flow.back_to_quotes')}
 			</button>
 		</div>

@@ -158,10 +158,10 @@ function RequestSentMark() {
 	return (
 		<div className="relative w-36 h-36 mx-auto mb-2">
 			{dots.map((dot) => (
-				<span key={dot} className={`absolute rounded-full bg-[#008037]/75 ${dot}`} />
+				<span key={dot} className={`absolute rounded-full bg-[#1B8F3E]/75 ${dot}`} />
 			))}
 			<div className="absolute inset-5 rounded-full bg-[#E7F6EC] flex items-center justify-center">
-				<Check className="w-12 h-12 text-[#008037]" strokeWidth={2.75} />
+				<Check className="w-12 h-12 text-[#1B8F3E]" strokeWidth={2.75} />
 			</div>
 		</div>
 	)
@@ -884,9 +884,9 @@ export default function UploadPage() {
 	const primaryBtn =
 		'w-full !rounded-2xl lg:!min-h-[64px] lg:!text-lg bg-brand-btn !text-white !font-semibold !shadow-none disabled:!bg-gray-300'
 	const outlineBtn =
-		'w-full !rounded-2xl lg:!min-h-[64px] lg:!text-lg !bg-white hover:!bg-[#E8F5EC] !text-[#008037] !border-[1.5px] !border-[#008037] !font-semibold !shadow-none'
+		'w-full !rounded-2xl lg:!min-h-[64px] lg:!text-lg !bg-white hover:!bg-[#E8F5EC] !text-[#1B8F3E] !border-[1.5px] !border-[#1B8F3E] !font-semibold !shadow-none'
 	const fieldClass =
-		'h-12 lg:h-14 text-sm lg:text-base border border-[#D7DEE8] rounded-xl bg-white text-[#05324f] placeholder:text-[#9CA3AF] focus-visible:ring-[#008037]/30'
+		'h-12 lg:h-14 text-sm lg:text-base border border-[#D7DEE8] rounded-xl bg-white text-[#05324f] placeholder:text-[#9CA3AF] focus-visible:ring-[#1B8F3E]/30'
 	const selectTriggerClass = `${fieldClass} px-3.5 justify-between [&_svg]:text-[#05324f] [&_svg]:opacity-100`
 
 	const carLine = [vehicleData.make, vehicleData.model, vehicleData.year].filter(Boolean).join(' · ') || '—'
@@ -917,7 +917,7 @@ export default function UploadPage() {
 
 					{currentStep === 'protocol' && (
 						<div>
-							<h1 className="page-title lg:text-[2.75rem] lg:mb-4">
+							<h1 className="page-title-hero lg:mb-4">
 								{t('upload.flow.protocol_title')}
 							</h1>
 							<p className="text-sm lg:text-lg text-[#374151] leading-relaxed mb-6 lg:mb-8 max-w-md">
@@ -928,12 +928,12 @@ export default function UploadPage() {
 								{...getRootProps()}
 								className={`border-2 border-dashed rounded-xl lg:rounded-2xl px-5 py-7 lg:px-8 lg:py-10 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
 									isDragActive
-										? 'border-[#008037] bg-[#E8F8EC]'
-										: 'border-[#86C59A] hover:border-[#008037] hover:bg-[#F3FBF6]'
+										? 'border-[#1B8F3E] bg-[#E8F8EC]'
+										: 'border-[#86C59A] hover:border-[#1B8F3E] hover:bg-[#F3FBF6]'
 								}`}
 							>
 								<input {...getInputProps()} />
-								<FileDown className="w-14 h-14 lg:w-[4.25rem] lg:h-[4.25rem] mb-3 lg:mb-4 text-[#008037]" strokeWidth={1.5} />
+								<FileDown className="w-14 h-14 lg:w-[4.25rem] lg:h-[4.25rem] mb-3 lg:mb-4 text-[#1B8F3E]" strokeWidth={1.5} />
 								<p className="text-sm lg:text-lg font-bold text-brand-dark mb-1">
 									{t('upload.flow.drag_drop')}
 								</p>
@@ -985,7 +985,7 @@ export default function UploadPage() {
 							<button
 								type="button"
 								onClick={() => setShowProtocolRemarks((prev) => !prev)}
-								className="w-full text-center text-sm lg:text-base font-medium text-brand-dark hover:text-[#008037] mb-4"
+								className="w-full text-center text-sm lg:text-base font-medium text-brand-dark hover:text-[#1B8F3E] mb-4"
 							>
 								{t('upload.flow.extra_remarks')}
 							</button>
@@ -1022,7 +1022,7 @@ export default function UploadPage() {
 								className="w-full flex items-center gap-3 rounded-xl bg-[#F3F4F6] px-4 py-3.5 text-left hover:bg-[#ECEEF1] transition-colors"
 							>
 								<div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0">
-									<Camera className="w-5 h-5 text-[#008037]" strokeWidth={1.75} />
+									<Camera className="w-5 h-5 text-[#1B8F3E]" strokeWidth={1.75} />
 								</div>
 								<div className="min-w-0 flex-1">
 									<p className="text-sm font-bold text-brand-dark leading-snug">
@@ -1058,7 +1058,7 @@ export default function UploadPage() {
 
 					{currentStep === 'known' && (
 						<div>
-							<h1 className="page-title lg:text-[2.75rem] lg:mb-4">
+							<h1 className="page-title-hero lg:mb-4">
 								{t('upload.flow.known_page_title')}
 							</h1>
 							<p className="text-sm lg:text-lg text-gray-500 lg:text-[#374151] leading-relaxed mb-5 lg:mb-8">{t('upload.flow.known_page_subtitle')}</p>
@@ -1093,7 +1093,7 @@ export default function UploadPage() {
 
 					{currentStep === 'unknown' && (
 						<div>
-							<h1 className="page-title lg:text-[2.75rem] lg:mb-4">
+							<h1 className="page-title-hero lg:mb-4">
 								{t('upload.flow.unknown_page_title')}
 							</h1>
 							<p className="text-sm lg:text-lg text-gray-500 lg:text-[#374151] leading-relaxed mb-5 lg:mb-8">{t('upload.flow.unknown_page_subtitle')}</p>
@@ -1149,7 +1149,7 @@ export default function UploadPage() {
 
 					{currentStep === 'details' && (
 						<div>
-							<h1 className="page-title !font-semibold lg:text-[2.75rem] lg:mb-3 text-[#05324f]">
+							<h1 className="page-title-hero lg:mb-3 text-[#05324f]">
 								{t('upload.flow.details_title')}
 							</h1>
 							<p className="text-sm lg:text-base text-[#4B5563] leading-relaxed mb-6 lg:mb-8 max-w-md">
@@ -1198,7 +1198,7 @@ export default function UploadPage() {
 										maxLength={7}
 										autoComplete="off"
 										spellCheck={false}
-										className="w-full h-12 lg:h-14 rounded-xl border border-[#D7DEE8] bg-white px-3.5 text-sm lg:text-base font-normal uppercase tracking-[0.08em] text-[#05324f] outline-none placeholder:font-normal placeholder:tracking-normal placeholder:normal-case placeholder:text-[#9CA3AF] focus:border-[#008037]"
+										className="w-full h-12 lg:h-14 rounded-xl border border-[#D7DEE8] bg-white px-3.5 text-sm lg:text-base font-normal uppercase tracking-[0.08em] text-[#05324f] outline-none placeholder:font-normal placeholder:tracking-normal placeholder:normal-case placeholder:text-[#9CA3AF] focus:border-[#1B8F3E]"
 									/>
 									<p className="mt-1.5 text-xs text-[#9CA3AF]">{t('upload.form.regnr_label')}</p>
 								</div>
@@ -1311,7 +1311,7 @@ export default function UploadPage() {
 
 					{currentStep === 'confirm' && (
 						<div>
-							<h1 className="page-title lg:text-[2.75rem] lg:mb-4">
+							<h1 className="page-title-hero lg:mb-4">
 								{t('upload.flow.confirm_title')}
 							</h1>
 							<p className="text-sm lg:text-lg text-gray-500 lg:text-[#374151] leading-relaxed mb-5 lg:mb-8">
@@ -1324,7 +1324,7 @@ export default function UploadPage() {
 									<button
 										type="button"
 										onClick={() => goTo('details')}
-										className="text-sm lg:text-base font-semibold text-[#008037] hover:brightness-95"
+										className="text-sm lg:text-base font-semibold text-[#1B8F3E] hover:brightness-95"
 									>
 										{t('upload.flow.edit')}
 									</button>
@@ -1355,7 +1355,7 @@ export default function UploadPage() {
 							</div>
 
 							<div className="mt-4 lg:mt-6 mb-5 lg:mb-6 flex items-start gap-2.5 lg:gap-3 rounded-2xl bg-[#E8F8EC] px-3.5 py-3 lg:px-5 lg:py-4">
-								<Lock className="w-4 h-4 lg:w-5 lg:h-5 text-[#008037] shrink-0 mt-0.5" strokeWidth={2} />
+								<Lock className="w-4 h-4 lg:w-5 lg:h-5 text-[#1B8F3E] shrink-0 mt-0.5" strokeWidth={2} />
 								<p className="text-xs lg:text-base text-[#05324f] leading-relaxed">{t('upload.flow.consent')}</p>
 							</div>
 
@@ -1387,7 +1387,7 @@ export default function UploadPage() {
 					{currentStep === 'success' && (
 						<div className="max-w-md mx-auto text-center pt-4 lg:pt-10">
 							<RequestSentMark />
-							<h1 className="page-title lg:text-[2.75rem] !mb-3">
+							<h1 className="page-title-hero !mb-3">
 								{t('upload.flow.success_title')}
 							</h1>
 							<p className="text-sm lg:text-lg text-gray-500 leading-relaxed mb-6">
@@ -1400,7 +1400,7 @@ export default function UploadPage() {
 									{ icon: MapPin, text: t('upload.flow.success_follow') },
 								].map(({ icon: Icon, text }) => (
 									<div key={text} className="flex items-start gap-3">
-										<Icon className="w-5 h-5 text-[#008037] shrink-0 mt-0.5" strokeWidth={1.75} />
+										<Icon className="w-5 h-5 text-[#1B8F3E] shrink-0 mt-0.5" strokeWidth={1.75} />
 										<p className="text-sm lg:text-base text-[#374151] leading-snug">{text}</p>
 									</div>
 								))}

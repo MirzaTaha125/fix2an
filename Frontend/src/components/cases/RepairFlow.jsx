@@ -200,7 +200,7 @@ function ReceivedScreen({ t, workshop, name, address, pendingExtras, onExtraDeci
 		<div className="w-full max-w-md mx-auto">
 			<div className="text-center pt-2 mb-6">
 				<div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#E8F5EC] flex items-center justify-center">
-					<Check className="w-8 h-8 text-[#008037]" strokeWidth={2.5} />
+					<Check className="w-8 h-8 text-[#1B8F3E]" strokeWidth={2.5} />
 				</div>
 				<h1 className="page-title !mb-2 text-center">{t('my_cases.flow.repair_received_title')}</h1>
 				<p className="text-sm text-[#6B7280] leading-relaxed text-center max-w-[300px] mx-auto">
@@ -218,7 +218,7 @@ function ReceivedScreen({ t, workshop, name, address, pendingExtras, onExtraDeci
 				<div className="min-w-0 flex-1">
 					<p className="text-sm font-bold text-[#05324f]">{name}</p>
 					{address ? <p className="text-xs text-[#6B7280] mt-0.5 truncate">{address}</p> : null}
-					<p className="text-sm font-semibold text-[#008037] mt-1">{t('my_cases.flow.repair_show_workshop')}</p>
+					<p className="text-sm font-semibold text-[#1B8F3E] mt-1">{t('my_cases.flow.repair_show_workshop')}</p>
 				</div>
 				<ChevronRight className="w-4 h-4 text-[#9CA3AF] shrink-0" />
 			</button>
@@ -261,9 +261,9 @@ function ProgressScreen({ t, shortId, title, vehicle, booking, statusKey, pendin
 				onClick={onShowDetails}
 				className="w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3.5 flex items-center gap-3 text-left mb-4"
 			>
-				<MessageCircle className="w-5 h-5 text-[#008037] shrink-0" strokeWidth={2} />
+				<MessageCircle className="w-5 h-5 text-[#1B8F3E] shrink-0" strokeWidth={2} />
 				<div className="min-w-0 flex-1">
-					<p className="text-xs font-semibold text-[#008037]">#{shortId}</p>
+					<p className="text-xs font-semibold text-[#1B8F3E]">#{shortId}</p>
 					<p className="text-sm font-bold text-[#05324f] leading-snug">{title}</p>
 					<p className="text-xs text-[#6B7280] mt-0.5">{vehicle}</p>
 				</div>
@@ -295,7 +295,7 @@ function ProgressScreen({ t, shortId, title, vehicle, booking, statusKey, pendin
 			<div className="space-y-3 mb-5">
 				{steps.map((step) => (
 					<div key={step.key} className="flex items-center gap-3">
-						<span className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${step.done ? 'bg-[#008037]' : 'bg-[#E5E7EB]'}`}>
+						<span className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${step.done ? 'bg-[#1B8F3E]' : 'bg-[#E5E7EB]'}`}>
 							{step.done ? <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} /> : null}
 						</span>
 						<p className={`text-sm ${step.done ? 'text-[#05324f] font-medium' : 'text-[#9CA3AF]'}`}>{step.label}</p>
@@ -304,7 +304,7 @@ function ProgressScreen({ t, shortId, title, vehicle, booking, statusKey, pendin
 			</div>
 
 			<button type="button" onClick={onMessages} className="w-full rounded-xl bg-[#F3FBF6] px-4 py-3.5 flex items-start gap-3 text-left">
-				<MessageCircle className="w-5 h-5 text-[#008037] shrink-0 mt-0.5" />
+				<MessageCircle className="w-5 h-5 text-[#1B8F3E] shrink-0 mt-0.5" />
 				<p className="text-sm text-[#05324f]">{t('my_cases.flow.repair_chat_note')}</p>
 			</button>
 		</div>
@@ -316,7 +316,7 @@ function ReadyForPickupScreen({ t, locale, workshop, name, address, booking, onC
 	const when = formatReadyWhen(booking?.updatedAt || booking?.scheduledAt || booking?.createdAt, locale)
 	const directions = mapsUrl(address, name)
 	const btnOutline =
-		'w-full min-h-[52px] rounded-lg font-semibold flex items-center justify-center border border-[#9AD4B0] text-[#008037] bg-white'
+		'w-full min-h-[52px] rounded-lg font-semibold flex items-center justify-center border border-[#9AD4B0] text-[#1B8F3E] bg-white'
 
 	return (
 		<div className="w-full max-w-md mx-auto px-4 sm:px-5">
@@ -333,14 +333,14 @@ function ReadyForPickupScreen({ t, locale, workshop, name, address, booking, onC
 					<p className="text-sm font-bold text-[#05324f]">{t('my_cases.flow.repair_at_workshop')}</p>
 				</div>
 				<div className="px-4 py-3 flex items-start gap-3">
-					<Calendar className="w-5 h-5 text-[#008037] shrink-0 mt-0.5" strokeWidth={1.75} />
+					<Calendar className="w-5 h-5 text-[#1B8F3E] shrink-0 mt-0.5" strokeWidth={1.75} />
 					<div className="min-w-0">
 						<p className="text-sm font-semibold text-[#05324f] leading-snug">{when.day}</p>
 						{when.time ? <p className="text-sm text-[#6B7280] mt-0.5">{when.time}</p> : null}
 					</div>
 				</div>
 				<div className="px-4 py-3 flex items-start gap-3 border-t border-[#F3F4F6]">
-					<MapPin className="w-5 h-5 text-[#008037] shrink-0 mt-0.5" strokeWidth={1.75} />
+					<MapPin className="w-5 h-5 text-[#1B8F3E] shrink-0 mt-0.5" strokeWidth={1.75} />
 					<div className="min-w-0">
 						<p className="text-sm font-bold text-[#05324f] leading-snug">{name}</p>
 						{address ? <p className="text-sm text-[#6B7280] mt-0.5 leading-snug">{address}</p> : null}
@@ -349,7 +349,7 @@ function ReadyForPickupScreen({ t, locale, workshop, name, address, booking, onC
 								href={directions}
 								target="_blank"
 								rel="noreferrer"
-								className="inline-block text-sm font-semibold text-[#008037] mt-1.5"
+								className="inline-block text-sm font-semibold text-[#1B8F3E] mt-1.5"
 							>
 								{t('my_cases.flow.repair_directions')}
 							</a>
@@ -402,7 +402,7 @@ function PickupScreen({ t, workshop, name, address, title, vehicle, onDone, onCa
 			<ul className="space-y-3 mb-5">
 				{checks.map((item) => (
 					<li key={item} className="flex items-start gap-2.5 text-sm text-[#05324f]">
-						<span className="w-5 h-5 rounded-full bg-[#008037] flex items-center justify-center shrink-0 mt-0.5">
+						<span className="w-5 h-5 rounded-full bg-[#1B8F3E] flex items-center justify-center shrink-0 mt-0.5">
 							<Check className="w-3 h-3 text-white" strokeWidth={3} />
 						</span>
 						{item}
@@ -415,7 +415,7 @@ function PickupScreen({ t, workshop, name, address, title, vehicle, onDone, onCa
 					onClick={onShowDetails}
 					className="w-full px-4 py-3.5 flex items-center gap-3 text-left hover:bg-gray-50 transition-colors"
 				>
-					<MessageCircle className="w-5 h-5 text-[#008037] shrink-0" strokeWidth={2} />
+					<MessageCircle className="w-5 h-5 text-[#1B8F3E] shrink-0" strokeWidth={2} />
 					<div className="min-w-0 flex-1">
 						<p className="text-sm font-bold text-[#05324f] leading-snug">{title}</p>
 						<p className="text-xs text-[#6B7280] mt-0.5">{carLine}</p>
@@ -432,7 +432,7 @@ function PickupScreen({ t, workshop, name, address, title, vehicle, onDone, onCa
 							<p className="text-sm font-bold text-[#05324f] leading-snug">{name}</p>
 							{place && <p className="text-xs text-[#6B7280] mt-0.5">{place}</p>}
 						</button>
-						<button type="button" onClick={onCall} className="text-sm font-semibold text-[#008037] mt-1">
+						<button type="button" onClick={onCall} className="text-sm font-semibold text-[#1B8F3E] mt-1">
 							{t('my_cases.flow.repair_call')}
 						</button>
 					</div>
@@ -442,7 +442,7 @@ function PickupScreen({ t, workshop, name, address, title, vehicle, onDone, onCa
 				</div>
 			</div>
 			<div className="rounded-2xl bg-[#F3FBF6] px-4 py-3.5 flex items-start gap-3 mb-6">
-				<ShieldCheck className="w-5 h-5 text-[#008037] shrink-0 mt-0.5" />
+				<ShieldCheck className="w-5 h-5 text-[#1B8F3E] shrink-0 mt-0.5" />
 				<p className="text-sm text-[#05324f] leading-relaxed">{t('my_cases.flow.repair_thanks')}</p>
 			</div>
 			<button type="button" onClick={handleDone} disabled={closing} className={`${btn} disabled:opacity-60`}>
@@ -455,7 +455,7 @@ function PickupScreen({ t, workshop, name, address, title, vehicle, onDone, onCa
 function MessagesScreen({ t, workshop, name, pending, booking, onExtraDecision, onBack }) {
 	return (
 		<div className="w-full">
-			<button type="button" onClick={onBack} className="hidden lg:inline-flex text-sm font-semibold text-[#008037] mb-4">{t('common.back')}</button>
+			<button type="button" onClick={onBack} className="hidden lg:inline-flex text-sm font-semibold text-[#1B8F3E] mb-4">{t('common.back')}</button>
 			<div className="flex items-center gap-3 mb-4">
 				<div className="w-11 h-11 rounded-full overflow-hidden bg-[#F3F4F6]">
 					<WorkshopImage workshop={workshop} className="w-full h-full" />
@@ -472,7 +472,7 @@ function MessagesScreen({ t, workshop, name, pending, booking, onExtraDecision, 
 							<p className="text-sm text-[#05324f] mb-1">{extra.description}</p>
 							<p className="text-sm font-bold text-[#05324f] mb-3">{extra.price} kr</p>
 							<div className="flex gap-2">
-								<button type="button" onClick={() => onExtraDecision?.(booking, index, 'DECLINED')} className="flex-1 h-10 border border-[#008037] text-[#008037] rounded-lg text-sm font-semibold">
+								<button type="button" onClick={() => onExtraDecision?.(booking, index, 'DECLINED')} className="flex-1 h-10 border border-[#1B8F3E] text-[#1B8F3E] rounded-lg text-sm font-semibold">
 									{t('my_cases.flow.repair_decline')}
 								</button>
 								<button type="button" onClick={() => onExtraDecision?.(booking, index, 'APPROVED')} className="flex-1 h-10 bg-brand-btn text-white rounded-lg text-sm font-semibold">

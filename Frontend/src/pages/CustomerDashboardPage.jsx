@@ -16,16 +16,16 @@ function OverviewCard({ title, value, meta, icon: Icon, to, seeMore }) {
 			<div className="flex items-center gap-3 sm:gap-5">
 				<div className="min-w-0 flex-1">
 					<p className="text-sm sm:text-base font-semibold text-[#05324f] truncate">{title}</p>
-					<p className="text-3xl sm:text-4xl font-bold text-[#008037] leading-none mt-2 tabular-nums">{value}</p>
+					<p className="text-3xl sm:text-4xl font-bold text-[#1B8F3E] leading-none mt-2 tabular-nums">{value}</p>
 				</div>
 				<div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[#F2F9F4] flex items-center justify-center">
-					<Icon className="w-6 h-6 sm:w-7 sm:h-7 text-[#008037]" strokeWidth={1.75} />
+					<Icon className="w-6 h-6 sm:w-7 sm:h-7 text-[#1B8F3E]" strokeWidth={1.75} />
 				</div>
 				<div className="min-w-0 flex-1 text-right">
 					<p className="text-xs sm:text-sm text-[#6B7280] truncate">{meta}</p>
 					<Link
 						to={to}
-						className="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-[#008037] hover:text-[#006b28]"
+						className="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-[#1B8F3E] hover:text-[#006b28]"
 					>
 						{seeMore}
 						<ArrowRight className="w-4 h-4" strokeWidth={2.25} />

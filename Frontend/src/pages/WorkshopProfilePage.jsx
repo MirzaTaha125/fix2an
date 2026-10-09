@@ -406,11 +406,11 @@ export default function WorkshopProfilePage() {
 								{[...Array(5)].map((_, index) => (
 									<Star
 										key={index}
-										className={`w-4 h-4 ${index < Math.round(Number(stats.rating) || 0) ? 'text-[#008037] fill-[#008037]' : 'text-[#D1D5DB]'}`}
+										className={`w-4 h-4 ${index < Math.round(Number(stats.rating) || 0) ? 'text-[#1B8F3E] fill-[#1B8F3E]' : 'text-[#D1D5DB]'}`}
 									/>
 								))}
 							</div>
-							<span className="text-sm font-semibold text-[#008037]">{Number(stats.rating || 0).toFixed(1)}</span>
+							<span className="text-sm font-semibold text-[#1B8F3E]">{Number(stats.rating || 0).toFixed(1)}</span>
 							<span className="text-sm text-[#9CA3AF]">{t('workshop.panel.review_count', { count: stats.reviewCount || 0 })}</span>
 						</div>
 						<div className="flex flex-wrap gap-3 mt-5">
@@ -806,7 +806,7 @@ export default function WorkshopProfilePage() {
 												key={day}
 												className={`p-3 rounded-xl border border-gray-100 ${enabled ? '' : 'bg-[#F9FAFB]'}`}
 											>
-												<div className="flex items-center justify-between gap-3 mb-2">
+												<div className="flex items-center justify-between gap-3 mb-3">
 													<Label className="text-sm font-semibold text-brand-dark">
 														{t(`workshop.signup.opening_hours.days.${day}`)}
 													</Label>
@@ -837,7 +837,7 @@ export default function WorkshopProfilePage() {
 																})
 															}}
 															className={`relative w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 disabled:opacity-50 ${
-																enabled ? 'bg-[#008037]' : 'bg-gray-200'
+																enabled ? 'bg-[#1B8F3E]' : 'bg-gray-200'
 															}`}
 														>
 															<span
@@ -847,7 +847,7 @@ export default function WorkshopProfilePage() {
 															/>
 														</button>
 													) : (
-														<span className={`text-xs font-semibold ${enabled ? 'text-[#008037]' : 'text-gray-400'}`}>
+														<span className={`text-xs font-semibold ${enabled ? 'text-[#1B8F3E]' : 'text-gray-400'}`}>
 															{enabled
 																? t('workshop.signup.opening_hours.day_on')
 																: t('workshop.signup.opening_hours.day_off')}
@@ -856,40 +856,44 @@ export default function WorkshopProfilePage() {
 												</div>
 												{enabled ? (
 													isEditing ? (
-														<div className="grid grid-cols-2 gap-3">
+														<div className="grid w-full grid-cols-2 gap-3">
 															<div className="min-w-0">
-																<Label className="block text-xs font-semibold text-brand-dark mb-1.5">
+																<Label className="block text-[11px] font-semibold text-brand-dark mb-1">
 																	{t('workshop.signup.opening_hours.open')}
 																</Label>
-																<Input
-																	type="time"
-																	value={open}
-																	disabled={isSaving}
-																	onChange={(e) =>
-																		setOpeningHours((prev) => ({
-																			...prev,
-																			[day]: { ...prev[day], open: e.target.value },
-																		}))
-																	}
-																	className="w-full h-11 text-center"
-																/>
+																<div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+																	<input
+																		type="time"
+																		value={open}
+																		disabled={isSaving}
+																		onChange={(e) =>
+																			setOpeningHours((prev) => ({
+																				...prev,
+																				[day]: { ...prev[day], open: e.target.value },
+																			}))
+																		}
+																		className="h-9 w-full max-w-full bg-transparent border-0 px-1.5 text-xs text-center text-brand-dark outline-none focus:ring-0 disabled:opacity-50"
+																	/>
+																</div>
 															</div>
 															<div className="min-w-0">
-																<Label className="block text-xs font-semibold text-brand-dark mb-1.5">
+																<Label className="block text-[11px] font-semibold text-brand-dark mb-1">
 																	{t('workshop.signup.opening_hours.close')}
 																</Label>
-																<Input
-																	type="time"
-																	value={close}
-																	disabled={isSaving}
-																	onChange={(e) =>
-																		setOpeningHours((prev) => ({
-																			...prev,
-																			[day]: { ...prev[day], close: e.target.value },
-																		}))
-																	}
-																	className="w-full h-11 text-center"
-																/>
+																<div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+																	<input
+																		type="time"
+																		value={close}
+																		disabled={isSaving}
+																		onChange={(e) =>
+																			setOpeningHours((prev) => ({
+																				...prev,
+																				[day]: { ...prev[day], close: e.target.value },
+																			}))
+																		}
+																		className="h-9 w-full max-w-full bg-transparent border-0 px-1.5 text-xs text-center text-brand-dark outline-none focus:ring-0 disabled:opacity-50"
+																	/>
+																</div>
 															</div>
 														</div>
 													) : (
@@ -915,7 +919,7 @@ export default function WorkshopProfilePage() {
 						<Card className="bg-white border border-gray-100 shadow-sm rounded-2xl">
 							<CardHeader className="border-b border-gray-100 bg-white px-4 py-3">
 								<CardTitle className="text-sm font-semibold text-[#05324f] flex items-center gap-2">
-									<Star className="w-4 h-4 text-[#008037] fill-[#008037]" />
+									<Star className="w-4 h-4 text-[#1B8F3E] fill-[#1B8F3E]" />
 									{t('workshop.profile.quick_stats') || 'Quick Stats'}
 								</CardTitle>
 							</CardHeader>
@@ -935,7 +939,7 @@ export default function WorkshopProfilePage() {
 														key={i}
 														className={`w-4 h-4 ${
 															i < Math.round(stats.rating)
-																? 'text-[#008037] fill-[#008037]'
+																? 'text-[#1B8F3E] fill-[#1B8F3E]'
 																: 'text-gray-300'
 														}`}
 													/>
@@ -951,7 +955,7 @@ export default function WorkshopProfilePage() {
 											<span className="text-[11px] font-semibold text-gray-400">{t('workshop.profile.reviews')}</span>
 											<span className="text-sm font-semibold text-[#05324f]">{stats.reviewCount}</span>
 										</div>
-										<span className="text-[11px] text-[#008037] font-medium mt-0.5 block">
+										<span className="text-[11px] text-[#1B8F3E] font-medium mt-0.5 block">
 											{t('workshop.profile.view_all_reviews') || 'View all reviews →'}
 										</span>
 									</Link>
@@ -990,7 +994,7 @@ export default function WorkshopProfilePage() {
 									}}
 									className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold transition-all ${
 										i18n.language === lang.code
-											? 'border-[#008037] bg-[#F2F9F4] text-[#008037]'
+											? 'border-[#1B8F3E] bg-[#F2F9F4] text-[#1B8F3E]'
 											: 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
 									}`}
 								>

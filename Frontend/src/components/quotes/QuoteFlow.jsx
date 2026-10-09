@@ -112,7 +112,7 @@ function openHoursLabel(workshop, t) {
 function YesNo({ yes }) {
 	const { t } = useTranslation()
 	return yes ? (
-		<span className="text-[#008037] font-semibold text-sm">{t('common.yes')}</span>
+		<span className="text-[#1B8F3E] font-semibold text-sm">{t('common.yes')}</span>
 	) : (
 		<span className="text-[#05324f] font-semibold text-sm">{t('common.no')}</span>
 	)
@@ -121,7 +121,7 @@ function YesNo({ yes }) {
 const btnPrimary =
 	'w-full min-h-[52px] bg-brand-btn text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-60'
 const btnSecondary =
-	'w-full min-h-[52px] border-[1.5px] border-[#008037] text-[#008037] rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors'
+	'w-full min-h-[52px] border-[1.5px] border-[#1B8F3E] text-[#1B8F3E] rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors'
 
 export default function QuoteFlow({
 	offers = [],
@@ -285,7 +285,7 @@ export default function QuoteFlow({
 					/>
 					<h1 className="text-[1.55rem] font-bold leading-[1.2] tracking-tight mb-2">
 						<span className="block text-[#12244C] lg:inline">{t('quotes.flow.received_lead')}</span>
-						<span className="block text-[#008037] lg:inline lg:ml-2">
+						<span className="block text-[#1B8F3E] lg:inline lg:ml-2">
 							{sorted.length === 1
 								? t('quotes.flow.received_count_one')
 								: t('quotes.flow.received_count', { count: sorted.length })}
@@ -323,7 +323,7 @@ export default function QuoteFlow({
 								}}
 							className={`w-full text-left rounded-xl px-3 py-2.5 bg-white transition-colors ${
 								isSelected
-									? 'border-2 border-[#008037]'
+									? 'border-2 border-[#1B8F3E]'
 									: 'border border-[#E5E7EB] hover:border-gray-300'
 							}`}
 						>
@@ -353,7 +353,7 @@ export default function QuoteFlow({
 										</span>
 										{offer.distance != null && (
 											<span className="inline-flex items-center gap-1 text-xs text-[#6B7280] shrink-0">
-												<MapPin className="w-3 h-3 text-[#008037]" />
+												<MapPin className="w-3 h-3 text-[#1B8F3E]" />
 												{Number(offer.distance).toFixed(1).replace('.', ',')} km
 											</span>
 										)}
@@ -375,9 +375,9 @@ export default function QuoteFlow({
 					</button>
 					<Link
 						to="/how-it-works"
-						className="mt-2 w-full flex items-center justify-center gap-1.5 text-[14px] font-semibold text-[#008037] py-1.5"
+						className="mt-2 w-full flex items-center justify-center gap-1.5 text-[14px] font-semibold text-[#1B8F3E] py-1.5"
 					>
-						<span className="w-4 h-4 rounded-full border border-[#008037] flex items-center justify-center shrink-0">
+						<span className="w-4 h-4 rounded-full border border-[#1B8F3E] flex items-center justify-center shrink-0">
 							<Info className="w-2.5 h-2.5" strokeWidth={2.5} />
 						</span>
 						{t('quotes.flow.how_it_works')}
@@ -396,7 +396,7 @@ function CompareStep({ offers, cheapestId, onBack, onShowDetails }) {
 			render: (o) => {
 				const isCheapest = (o._id || o.id) === cheapestId
 				return (
-					<span className={`font-bold text-[13px] ${isCheapest ? 'text-[#008037]' : 'text-[#05324f]'}`}>
+					<span className={`font-bold text-[13px] ${isCheapest ? 'text-[#1B8F3E]' : 'text-[#05324f]'}`}>
 						{formatPrice(o.price)}
 					</span>
 				)
@@ -552,7 +552,7 @@ function DetailStep({ offer, onBack, onChoose, onContact, onWorkshop }) {
 					<button
 						type="button"
 						onClick={onWorkshop}
-						className="mt-1.5 text-[13px] font-semibold text-[#008037]"
+						className="mt-1.5 text-[13px] font-semibold text-[#1B8F3E]"
 					>
 						{t('quotes.flow.view_profile')}
 					</button>
@@ -578,7 +578,7 @@ function DetailStep({ offer, onBack, onChoose, onContact, onWorkshop }) {
 					<ul className="space-y-3">
 						{inclusions.map((item) => (
 							<li key={item} className="flex items-start gap-3 text-sm text-[#05324f]">
-								<span className="w-5 h-5 rounded-full border-[1.5px] border-[#008037] text-[#008037] flex items-center justify-center shrink-0 mt-0.5">
+								<span className="w-5 h-5 rounded-full border-[1.5px] border-[#1B8F3E] text-[#1B8F3E] flex items-center justify-center shrink-0 mt-0.5">
 									<Check className="w-3 h-3" strokeWidth={3} />
 								</span>
 								<span className="leading-snug">{item}</span>
@@ -621,7 +621,7 @@ function DetailStep({ offer, onBack, onChoose, onContact, onWorkshop }) {
 					<button
 						type="button"
 						onClick={onContact}
-						className="w-full min-h-[52px] border-[1.5px] border-[#008037] text-[#008037] rounded-xl font-semibold flex items-center justify-center gap-2"
+						className="w-full min-h-[52px] border-[1.5px] border-[#1B8F3E] text-[#1B8F3E] rounded-xl font-semibold flex items-center justify-center gap-2"
 					>
 						{t('quotes.flow.contact_workshop')}
 					</button>
@@ -672,7 +672,7 @@ function ConfirmStep({ offer, onConfirm, onBack, confirming }) {
 			<div className="w-full text-center pt-4">
 			<div>
 			<div className="w-[88px] h-[88px] rounded-full bg-[#F3FBF6] ring-8 ring-[#E7F6EC] flex items-center justify-center mx-auto mb-5">
-				<Check className="w-9 h-9 text-[#008037]" strokeWidth={2.75} />
+				<Check className="w-9 h-9 text-[#1B8F3E]" strokeWidth={2.75} />
 			</div>
 			<h1 className="page-title !mb-2 px-2">
 				{t('quotes.flow.confirm_title', { name, price: formatPrice(offer.price) })}
@@ -714,7 +714,7 @@ function ConfirmStep({ offer, onConfirm, onBack, confirming }) {
 			</div>
 
 			<div className="rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3.5 mb-6 flex items-start gap-2.5 text-left">
-				<Lock className="w-4 h-4 text-[#008037] shrink-0 mt-0.5" />
+				<Lock className="w-4 h-4 text-[#1B8F3E] shrink-0 mt-0.5" />
 				<p className="text-[13px] text-[#4B5563] leading-snug">{t('quotes.flow.can_change')}</p>
 			</div>
 

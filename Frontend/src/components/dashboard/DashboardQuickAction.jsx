@@ -18,7 +18,7 @@ export default function DashboardQuickAction({
 			to={to}
 			className={cn(
 				'group flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl border border-gray-100 bg-white shadow-sm',
-				'hover:shadow-md hover:border-[#008037]/25 transition-all duration-200 active:scale-[0.98]',
+				'hover:shadow-md hover:border-[#1B8F3E]/25 transition-all duration-200 active:scale-[0.98]',
 				className
 			)}
 		>
@@ -28,7 +28,7 @@ export default function DashboardQuickAction({
 					iconBgClassName
 				)}
 			>
-				<Icon className={cn('w-5 h-5 sm:w-[22px] sm:h-[22px] text-[#008037]', iconClassName)} strokeWidth={2} />
+				<Icon className={cn('w-5 h-5 sm:w-[22px] sm:h-[22px] text-[#1B8F3E]', iconClassName)} strokeWidth={2} />
 			</div>
 			<div className="flex-1 min-w-0">
 				<div className="flex items-center gap-2">
@@ -39,7 +39,7 @@ export default function DashboardQuickAction({
 					<p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 line-clamp-2 leading-snug">{description}</p>
 				)}
 			</div>
-			<ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#008037] shrink-0 transition-colors" />
+			<ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#1B8F3E] shrink-0 transition-colors" />
 		</Link>
 	)
 }

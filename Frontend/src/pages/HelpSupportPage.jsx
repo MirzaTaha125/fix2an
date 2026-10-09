@@ -38,7 +38,7 @@ export default function HelpSupportPage() {
 			<Navbar />
 			<div className="list-page-content">
 				<div className="mb-5 lg:mb-8">
-					<h1 className="page-title lg:text-[2.75rem] lg:mb-4">
+					<h1 className="page-title lg:mb-4">
 						{active === 'faq' && (t('help.faq_page_title') || 'Frequently asked questions')}
 						{active === 'contact' && (t('help.contact_page_title') || 'Help & contact')}
 						{active === 'policy' && (t('help.policy_page_title') || 'Policy & terms')}
@@ -78,7 +78,7 @@ export function FaqPanel() {
 						onClick={() => setOpenFaq(openFaq === i ? null : i)}
 						className="w-full flex items-center gap-3 p-4 text-left active:bg-gray-50"
 					>
-						<HelpCircle className="w-4 h-4 text-[#008037] shrink-0" />
+						<HelpCircle className="w-4 h-4 text-[#1B8F3E] shrink-0" />
 						<span className="flex-1 text-sm font-medium text-[#05324f]">{faq.q}</span>
 						<ChevronDown className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
 					</button>
@@ -99,21 +99,21 @@ export function PolicyPanel({ onSelect } = {}) {
 		{
 			key: 'privacy',
 			to: '/privacy',
-			icon: <Lock className="w-5 h-5 text-[#008037]" />,
+			icon: <Lock className="w-5 h-5 text-[#1B8F3E]" />,
 			title: t('help.policy_privacy') || 'Privacy policy',
 			desc: t('help.policy_privacy_desc') || 'How we collect and protect your data.',
 		},
 		{
 			key: 'terms',
 			to: '/terms',
-			icon: <FileText className="w-5 h-5 text-[#008037]" />,
+			icon: <FileText className="w-5 h-5 text-[#1B8F3E]" />,
 			title: t('help.policy_terms') || 'Terms of use',
 			desc: t('help.policy_terms_desc') || 'Rules for using Fixa2an.',
 		},
 		{
 			key: 'cookies',
 			to: '/cookies',
-			icon: <Shield className="w-5 h-5 text-[#008037]" />,
+			icon: <Shield className="w-5 h-5 text-[#1B8F3E]" />,
 			title: t('help.policy_cookies') || 'Cookies',
 			desc: t('help.policy_cookies_desc') || 'How cookies are used on the platform.',
 		},
@@ -326,7 +326,7 @@ export function ContactPanel() {
 						<select
 							value={subject}
 							onChange={(e) => setSubject(e.target.value)}
-							className="w-full h-12 px-3.5 rounded-xl border border-gray-200 bg-white text-sm font-normal text-[#05324f] outline-none focus:border-[#008037]"
+							className="w-full h-12 px-3.5 rounded-xl border border-gray-200 bg-white text-sm font-normal text-[#05324f] outline-none focus:border-[#1B8F3E]"
 						>
 							<option value="" disabled>
 								{t('help.subject_placeholder')}
@@ -344,7 +344,7 @@ export function ContactPanel() {
 							rows={6}
 							maxLength={2000}
 							placeholder={t('help.message_placeholder')}
-							className="w-full px-3.5 py-3 rounded-xl border border-gray-200 text-sm font-normal text-[#05324f] placeholder:text-[#9CA3AF] resize-none outline-none focus:border-[#008037]"
+							className="w-full px-3.5 py-3 rounded-xl border border-gray-200 text-sm font-normal text-[#05324f] placeholder:text-[#9CA3AF] resize-none outline-none focus:border-[#1B8F3E]"
 						/>
 					</label>
 					<button
@@ -389,7 +389,7 @@ export function ContactPanel() {
 						<p className="text-sm font-normal text-[#05324f] leading-snug flex-1 min-w-0">
 							{t('help.faq_tip')}
 						</p>
-						<Lightbulb className="w-6 h-6 text-[#008037] shrink-0" strokeWidth={1.75} />
+						<Lightbulb className="w-6 h-6 text-[#1B8F3E] shrink-0" strokeWidth={1.75} />
 					</div>
 				</div>
 			</div>

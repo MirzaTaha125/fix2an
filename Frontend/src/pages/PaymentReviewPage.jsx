@@ -230,7 +230,7 @@ export default function PaymentReviewPage({ embedded = false, bookingId: booking
 						</div>
 						<div className="border-t border-gray-100 pt-3 mb-5 flex justify-between items-center">
 							<span className="text-sm font-bold text-[#0B2540]">{t('payment.flow.total')}</span>
-							<span className="text-sm font-bold text-[#008037]">{money(total)}</span>
+							<span className="text-sm font-bold text-[#1B8F3E]">{money(total)}</span>
 						</div>
 						{booking.status === 'DONE' && !hasReview && (
 							<button type="button" onClick={() => setStep('rate')} className={btn}>
@@ -256,10 +256,10 @@ export default function PaymentReviewPage({ embedded = false, bookingId: booking
 						<p className="text-sm text-[#6B7280] mb-5">{t('payment.flow.thanks_paid')}</p>
 						<div className="rounded-2xl border border-[#E5E7EB] bg-white px-5 py-6 text-center mb-6">
 							<div className="w-16 h-16 rounded-full bg-[#E7F6EC] flex items-center justify-center mx-auto mb-3">
-								<Check className="w-8 h-8 text-[#008037]" strokeWidth={2.75} />
+								<Check className="w-8 h-8 text-[#1B8F3E]" strokeWidth={2.75} />
 							</div>
 							<p className="text-base font-bold text-[#0B2540]">{t('payment.flow.paid_success')}</p>
-							<p className="text-[1.85rem] font-bold text-[#008037] mt-1 mb-5">{money(total)}</p>
+							<p className="text-[1.85rem] font-bold text-[#1B8F3E] mt-1 mb-5">{money(total)}</p>
 							<div className="flex items-end justify-between text-left gap-3">
 								<div>
 									<p className="text-xs text-[#9CA3AF]">{t('payment.flow.paid_success')}</p>
@@ -290,7 +290,7 @@ export default function PaymentReviewPage({ embedded = false, bookingId: booking
 											receiptRef,
 										}).catch(() => toast.error(t('payment.flow.pay_failed')))
 									}}
-									className="font-semibold text-[#008037]"
+									className="font-semibold text-[#1B8F3E]"
 								>
 									{t('payment.flow.download_pdf')}
 								</button>
@@ -313,7 +313,7 @@ export default function PaymentReviewPage({ embedded = false, bookingId: booking
 						<div className="flex gap-2 mb-6">
 							{[1, 2, 3, 4, 5].map((n) => (
 								<button key={n} type="button" onClick={() => setRating(n)} aria-label={String(n)}>
-									<Star className={`w-7 h-7 ${n <= rating ? 'fill-[#008037] text-[#008037]' : 'text-[#008037]'}`} strokeWidth={1.6} />
+									<Star className={`w-7 h-7 ${n <= rating ? 'fill-[#1B8F3E] text-[#1B8F3E]' : 'text-[#1B8F3E]'}`} strokeWidth={1.6} />
 								</button>
 							))}
 						</div>
@@ -325,7 +325,7 @@ export default function PaymentReviewPage({ embedded = false, bookingId: booking
 									type="button"
 									onClick={() => toggleTag(tag)}
 									className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${
-										tags.includes(tag) ? 'bg-[#E8F5EC] border-[#008037] text-[#008037]' : 'border-gray-200 text-[#0B2540] bg-white'
+										tags.includes(tag) ? 'bg-[#E8F5EC] border-[#1B8F3E] text-[#1B8F3E]' : 'border-gray-200 text-[#0B2540] bg-white'
 									}`}
 								>
 									{t(`payment.flow.tag_${tag}`)}
@@ -363,14 +363,14 @@ export default function PaymentReviewPage({ embedded = false, bookingId: booking
 						<p className="text-sm font-bold text-[#0B2540] mb-2">{ratingLabel}</p>
 						<div className="flex gap-1.5 mb-5">
 							{[1, 2, 3, 4, 5].map((n) => (
-								<Star key={n} className={`w-6 h-6 ${n <= rating ? 'fill-[#008037] text-[#008037]' : 'text-gray-200'}`} />
+								<Star key={n} className={`w-6 h-6 ${n <= rating ? 'fill-[#1B8F3E] text-[#1B8F3E]' : 'text-gray-200'}`} />
 							))}
 						</div>
 						<p className="text-sm font-bold text-[#0B2540] mb-2">{t('payment.flow.your_comment')}</p>
 						<div className="rounded-2xl bg-[#F3FBF6] px-4 py-3.5 flex items-center gap-3 mb-5">
-							<Calendar className="w-5 h-5 text-[#008037] shrink-0" />
-							<p className="text-sm text-[#008037] flex-1 min-w-0 line-clamp-2">{comment || '—'}</p>
-							<button type="button" onClick={() => setStep('rate')} className="text-sm font-semibold text-[#008037] shrink-0">{t('payment.flow.edit')}</button>
+							<Calendar className="w-5 h-5 text-[#1B8F3E] shrink-0" />
+							<p className="text-sm text-[#1B8F3E] flex-1 min-w-0 line-clamp-2">{comment || '—'}</p>
+							<button type="button" onClick={() => setStep('rate')} className="text-sm font-semibold text-[#1B8F3E] shrink-0">{t('payment.flow.edit')}</button>
 						</div>
 						<p className="text-sm font-bold text-[#0B2540] mb-2">{t('payment.flow.your_choices')}</p>
 						<div className="flex flex-wrap gap-2 mb-6">
@@ -392,13 +392,13 @@ export default function PaymentReviewPage({ embedded = false, bookingId: booking
 				{step === 'thanks' && (
 					<div className="max-w-xl mx-auto text-center">
 						<div className="w-[88px] h-[88px] rounded-full bg-[#F3FBF6] ring-8 ring-[#E7F6EC] flex items-center justify-center mx-auto mb-5">
-							<Check className="w-9 h-9 text-[#008037]" strokeWidth={2.75} />
+							<Check className="w-9 h-9 text-[#1B8F3E]" strokeWidth={2.75} />
 						</div>
 						<h1 className="page-title !mb-2">{t('payment.flow.thanks_title')}</h1>
 						<p className="text-sm text-[#6B7280] mb-6 max-w-xs mx-auto">{t('payment.flow.thanks_sub')}</p>
 						<ThanksWorkshop workshop={workshop} rating={rating} language={i18n.language} reviewsLabel={t('payment.flow.reviews_count', { count: Math.max(1, Number(workshop?.reviewCount || 0) + 1) })} />
 						<div className="rounded-2xl bg-[#F3FBF6] px-4 py-3.5 flex items-start gap-3 text-left mb-6">
-							<Heart className="w-5 h-5 text-[#008037] shrink-0 mt-0.5" />
+							<Heart className="w-5 h-5 text-[#1B8F3E] shrink-0 mt-0.5" />
 							<p className="text-sm text-[#0B2540]">{t('payment.flow.together')}</p>
 						</div>
 						<button type="button" onClick={finish} className={btn}>{t('payment.flow.to_cases')}</button>
@@ -420,7 +420,7 @@ export default function PaymentReviewPage({ embedded = false, bookingId: booking
 }
 
 const btn = 'w-full min-h-[52px] bg-brand-btn disabled:opacity-40 text-white rounded-lg font-semibold flex items-center justify-center gap-2'
-const btnOutline = 'w-full min-h-[52px] border-[1.5px] border-[#008037] text-[#008037] rounded-lg font-semibold flex items-center justify-center gap-2'
+const btnOutline = 'w-full min-h-[52px] border-[1.5px] border-[#1B8F3E] text-[#1B8F3E] rounded-lg font-semibold flex items-center justify-center gap-2'
 
 function approvedExtrasOf(booking) {
 	return (booking?.extraApprovals || []).filter((item) => String(item.status).toUpperCase() === 'APPROVED')

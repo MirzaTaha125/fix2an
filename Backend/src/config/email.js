@@ -43,9 +43,9 @@ function getEnvSmtpConfig() {
 	}
 }
 
-/** EmailJS config from doc */
+/** EmailJS config from doc (credentials alone — provider field only affects preference order) */
 function getEmailJsConfig(doc) {
-	if (!doc || doc.provider !== 'emailjs') return null
+	if (!doc) return null
 	if (!doc.emailjsUserId || !doc.emailjsServiceId || !doc.emailjsTemplateId) return null
 	return {
 		userId: doc.emailjsUserId,
@@ -184,6 +184,21 @@ export const emailTemplates = {
 	}),
 }
 
+/** DigitalOcean / many VPS block outbound SMTP — fail fast instead of hanging until client timeout. */
+const SMTP_CONNECTION_TIMEOUT_MS = Number(process.env.SMTP_CONNECTION_TIMEOUT_MS || 8000)
+const SMTP_SOCKET_TIMEOUT_MS = Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 15000)
+const EMAILJS_FETCH_TIMEOUT_MS = Number(process.env.EMAILJS_FETCH_TIMEOUT_MS || 15000)
+
+/**
+ * Prefer HTTP EmailJS on production (or when EMAIL_PREFER_HTTP=true).
+ * Outbound ports 25/465/587 are often blocked on cloud VPS; HTTPS API still works.
+ */
+function preferHttpEmail() {
+	if (process.env.EMAIL_PREFER_HTTP === 'true') return true
+	if (process.env.EMAIL_PREFER_HTTP === 'false') return false
+	return process.env.NODE_ENV === 'production'
+}
+
 /** Send via EmailJS API */
 async function sendViaEmailJS(to, template, cfg) {
 	const body = {
@@ -199,15 +214,27 @@ async function sendViaEmailJS(to, template, cfg) {
 	}
 	if (cfg.privateKey) body.accessToken = cfg.privateKey
 
-	const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(body),
-	})
-	const txt = await res.text()
-	if (!res.ok) {
-		console.error('[EmailJS]', res.status, txt)
-		throw new Error(`EmailJS ${res.status}: ${txt}`)
+	const controller = new AbortController()
+	const timer = setTimeout(() => controller.abort(), EMAILJS_FETCH_TIMEOUT_MS)
+	try {
+		const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body),
+			signal: controller.signal,
+		})
+		const txt = await res.text()
+		if (!res.ok) {
+			console.error('[EmailJS]', res.status, txt)
+			throw new Error(`EmailJS ${res.status}: ${txt}`)
+		}
+	} catch (err) {
+		if (err?.name === 'AbortError') {
+			throw new Error(`EmailJS timed out after ${EMAILJS_FETCH_TIMEOUT_MS}ms`)
+		}
+		throw err
+	} finally {
+		clearTimeout(timer)
 	}
 }
 
@@ -222,13 +249,20 @@ ${template.body}
 		port: cfg.port,
 		secure: cfg.secure,
 		auth: cfg.auth,
+		connectionTimeout: SMTP_CONNECTION_TIMEOUT_MS,
+		greetingTimeout: SMTP_CONNECTION_TIMEOUT_MS,
+		socketTimeout: SMTP_SOCKET_TIMEOUT_MS,
 	})
-	await transporter.sendMail({
-		from: cfg.from,
-		to,
-		subject: template.subject,
-		html,
-	})
+	try {
+		await transporter.sendMail({
+			from: cfg.from,
+			to,
+			subject: template.subject,
+			html,
+		})
+	} finally {
+		transporter.close()
+	}
 }
 
 export async function sendEmail(to, template) {
@@ -243,11 +277,13 @@ export async function sendEmail(to, template) {
 	}
 
 	const tryEmailJs = async () => {
+		if (!emailjs) throw new Error('EmailJS is not configured')
 		await sendViaEmailJS(to, template, emailjs)
 		console.log('[Email] Sent via EmailJS:', template.subject, 'to', to)
 	}
 
 	const trySmtp = async (cfg = smtp) => {
+		if (!cfg) throw new Error('SMTP is not configured')
 		await sendViaSmtp(to, template, cfg)
 		console.log('[Email] Sent via SMTP:', template.subject, 'to', to)
 	}
@@ -261,7 +297,7 @@ export async function sendEmail(to, template) {
 		return false
 	}
 
-	if (doc?.provider === 'smtp') {
+	const trySmtpThenEmailJs = async () => {
 		if (smtp) {
 			try {
 				await trySmtp()
@@ -284,45 +320,54 @@ export async function sendEmail(to, template) {
 			}
 		}
 		if (emailjs) {
+			await tryEmailJs()
+			return
+		}
+		if (await tryEnvSmtpFallback()) return
+		throw new Error('No email provider available')
+	}
+
+	const tryEmailJsThenSmtp = async () => {
+		if (emailjs) {
 			try {
 				await tryEmailJs()
 				return
 			} catch (err) {
+				console.error('[Email] EmailJS failed:', err.message)
+				if (smtp) {
+					try {
+						console.log('[Email] Falling back to SMTP...')
+						await trySmtp()
+						return
+					} catch (smtpErr) {
+						console.error('[Email] SMTP failed:', smtpErr.message)
+						if (await tryEnvSmtpFallback(smtpErr)) return
+						throw smtpErr
+					}
+				}
 				if (await tryEnvSmtpFallback(err)) return
 				throw err
 			}
 		}
-	} else if (emailjs) {
-		try {
-			await tryEmailJs()
-			return
-		} catch (err) {
-			console.error('[Email] EmailJS failed:', err.message)
-			if (smtp) {
-				try {
-					console.log('[Email] Falling back to SMTP...')
-					await trySmtp()
-					return
-				} catch (smtpErr) {
-					console.error('[Email] SMTP failed:', smtpErr.message)
-					if (await tryEnvSmtpFallback(smtpErr)) return
-					throw smtpErr
-				}
-			}
-			if (await tryEnvSmtpFallback(err)) return
-			throw err
-		}
-	} else if (smtp) {
-		try {
-			await trySmtp()
-		} catch (err) {
-			console.error('[Email] SMTP failed:', err.message)
-			if (await tryEnvSmtpFallback(err)) return
-			throw err
-		}
+		return trySmtpThenEmailJs()
+	}
+
+	// Production / EMAIL_PREFER_HTTP: EmailJS first (works when SMTP ports are blocked).
+	// Dev / explicit smtp provider without prefer-http: SMTP first, then EmailJS.
+	const useHttpFirst =
+		preferHttpEmail() && emailjs
+			? true
+			: doc?.provider === 'emailjs' && emailjs
+				? true
+				: false
+
+	if (useHttpFirst) {
+		await tryEmailJsThenSmtp()
 		return
-	} else if (envSmtp) {
-		await trySmtp(envSmtp)
+	}
+
+	if (doc?.provider === 'smtp' || smtp || emailjs || envSmtp) {
+		await trySmtpThenEmailJs()
 		return
 	}
 

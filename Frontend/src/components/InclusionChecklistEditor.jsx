@@ -31,7 +31,7 @@ export default function InclusionChecklistEditor({ items, onChange, disabled = f
 			<div className="space-y-2">
 				{items.map((item, index) => (
 					<div key={index} className="flex items-center gap-2">
-						<Check size={16} className="text-[#008037] shrink-0" strokeWidth={3} />
+						<Check size={16} className="text-[#1B8F3E] shrink-0" strokeWidth={3} />
 						<Input
 							value={item}
 							disabled={disabled}

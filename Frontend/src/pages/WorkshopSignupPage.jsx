@@ -19,8 +19,8 @@ export default function WorkshopSignupPage() {
 	const { t } = useTranslation()
 	const fieldLabel = 'block text-sm lg:text-base font-semibold text-brand-dark mb-2.5'
 	const fieldInput =
-		'h-12 lg:h-16 w-full min-w-0 rounded-xl lg:rounded-2xl border border-gray-200 bg-white text-sm lg:text-base shadow-none focus:ring-0 focus:border-[#008037] hover:bg-white'
-	const timeLabel = 'block text-sm font-semibold text-brand-dark mb-1.5'
+		'h-12 lg:h-16 w-full min-w-0 rounded-xl lg:rounded-2xl border border-gray-200 bg-white text-sm lg:text-base shadow-none focus:ring-0 focus:border-[#1B8F3E] hover:bg-white'
+	const timeLabel = 'block text-[11px] font-semibold text-brand-dark mb-1'
 	
 	const [formData, setFormData] = useState({
 		// User info
@@ -305,11 +305,11 @@ export default function WorkshopSignupPage() {
 	return (
 		<div className="list-page-shell bg-[#F3F5F8]">
 			<Navbar />
-			<section id="signup-form" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-32 pb-12">
+			<section id="signup-form" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-28 pb-12">
 				<form onSubmit={handleSubmit} className="flex flex-col gap-4 lg:gap-0" noValidate>
 				<div className="grid gap-4 lg:gap-8 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] lg:items-stretch">
 					<div className="min-w-0 lg:h-full flex flex-col bg-white rounded-2xl lg:rounded-3xl border border-[#EEF1F4] shadow-[0_8px_30px_rgba(15,23,42,0.04)] p-4 sm:p-5 lg:p-8">
-						<h1 className="page-title !mt-0 lg:text-[2.75rem]">{t('workshop.signup.title')}</h1>
+						<h1 className="page-title !mt-0">{t('workshop.signup.title')}</h1>
 						<p className="text-[0.95rem] lg:text-lg text-[#374151] leading-relaxed mt-3 lg:mt-4 mb-6 lg:mb-8">
 							{t('workshop.signup.subtitle')}
 						</p>
@@ -503,7 +503,7 @@ export default function WorkshopSignupPage() {
 							<div
 								{...getRootProps()}
 								className={`${fieldInput} flex items-center px-4 cursor-pointer text-[#6B7280] overflow-hidden ${
-									isDragActive ? 'border-[#008037]' : ''
+									isDragActive ? 'border-[#1B8F3E]' : ''
 								}`}
 							>
 								<input {...getInputProps()} />
@@ -544,7 +544,7 @@ export default function WorkshopSignupPage() {
 							</Button>
 							<p className="text-sm text-gray-600 text-center mt-5">
 								{t('workshop.signup.already_account')}{' '}
-								<Link to="/workshop/login" className="font-medium text-[#008037] hover:underline">
+								<Link to="/workshop/login" className="font-medium text-[#1B8F3E] hover:underline">
 									{t('workshop.signup.sign_in_here')}
 								</Link>
 							</p>
@@ -552,10 +552,10 @@ export default function WorkshopSignupPage() {
 					</div>
 
 					<div className="min-w-0 lg:h-full flex flex-col bg-white rounded-2xl lg:rounded-3xl border border-[#EEF1F4] shadow-[0_8px_30px_rgba(15,23,42,0.04)] p-4 sm:p-5 lg:p-8">
-						<h2 className="page-title !mt-0 lg:text-[2.75rem] shrink-0">
+						<h2 className="page-title !mt-0 shrink-0">
 							{t('workshop.signup.opening_hours.title')}
 						</h2>
-						<p className="text-[0.95rem] lg:text-lg text-[#374151] leading-relaxed mt-2 lg:mt-4 mb-4 lg:mb-5 shrink-0">
+						<p className="text-sm text-[#6B7280] leading-relaxed mt-2 mb-4 shrink-0">
 							{t('workshop.signup.opening_hours.description')}
 						</p>
 						<div className="flex flex-col gap-3 lg:flex-1 lg:justify-between lg:min-h-0">
@@ -566,7 +566,7 @@ export default function WorkshopSignupPage() {
 										key={day}
 										className={`p-3 rounded-xl border border-gray-100 ${enabled ? '' : 'bg-[#F9FAFB]'}`}
 									>
-										<div className="flex items-center justify-between gap-3 mb-2">
+										<div className="flex items-center justify-between gap-3 mb-3">
 											<Label className="text-sm font-semibold text-brand-dark">
 												{t(`workshop.signup.opening_hours.days.${day}`)}
 											</Label>
@@ -594,7 +594,7 @@ export default function WorkshopSignupPage() {
 													})
 												}}
 												className={`relative w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 ${
-													enabled ? 'bg-[#008037]' : 'bg-gray-200'
+													enabled ? 'bg-[#1B8F3E]' : 'bg-gray-200'
 												}`}
 											>
 												<span
@@ -605,28 +605,32 @@ export default function WorkshopSignupPage() {
 											</button>
 										</div>
 										{enabled ? (
-											<div className="grid grid-cols-2 gap-4">
+											<div className="grid w-full grid-cols-2 gap-3">
 												<div className="min-w-0">
 													<Label className={timeLabel}>{t('workshop.signup.opening_hours.open')}</Label>
-													<Input
-														type="time"
-														value={formData[`${day}Open`]}
-														onChange={(e) =>
-															setFormData((prev) => ({ ...prev, [`${day}Open`]: e.target.value }))
-														}
-														className={`${fieldInput} !h-12 lg:!h-16 text-center px-2`}
-													/>
+													<div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+														<input
+															type="time"
+															value={formData[`${day}Open`]}
+															onChange={(e) =>
+																setFormData((prev) => ({ ...prev, [`${day}Open`]: e.target.value }))
+															}
+															className="h-9 w-full max-w-full bg-transparent border-0 px-1.5 text-xs text-center text-brand-dark outline-none focus:ring-0"
+														/>
+													</div>
 												</div>
 												<div className="min-w-0">
 													<Label className={timeLabel}>{t('workshop.signup.opening_hours.close')}</Label>
-													<Input
-														type="time"
-														value={formData[`${day}Close`]}
-														onChange={(e) =>
-															setFormData((prev) => ({ ...prev, [`${day}Close`]: e.target.value }))
-														}
-														className={`${fieldInput} !h-12 lg:!h-16 text-center px-2`}
-													/>
+													<div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+														<input
+															type="time"
+															value={formData[`${day}Close`]}
+															onChange={(e) =>
+																setFormData((prev) => ({ ...prev, [`${day}Close`]: e.target.value }))
+															}
+															className="h-9 w-full max-w-full bg-transparent border-0 px-1.5 text-xs text-center text-brand-dark outline-none focus:ring-0"
+														/>
+													</div>
 												</div>
 											</div>
 										) : (
@@ -651,7 +655,7 @@ export default function WorkshopSignupPage() {
 						</Button>
 						<p className="text-sm text-gray-600 text-center mt-5">
 							{t('workshop.signup.already_account')}{' '}
-							<Link to="/workshop/login" className="font-medium text-[#008037] hover:underline">
+							<Link to="/workshop/login" className="font-medium text-[#1B8F3E] hover:underline">
 								{t('workshop.signup.sign_in_here')}
 							</Link>
 						</p>

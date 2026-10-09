@@ -40,8 +40,8 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         brand: {
-          green: '#008037',
-          btn: '#008037',
+          green: '#1B8F3E',
+          btn: '#1B8F3E',
           blue: '#1C3F94',
           navy: '#0D1B2A',
           dark: '#05324f',

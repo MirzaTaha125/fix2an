@@ -259,7 +259,7 @@ export default function InvoiceDocument({
 		<div className="w-full max-w-lg">
 			{showBack && onBack ? (
 				<button type="button" onClick={onBack} className="mb-4 -ml-1 p-1 text-[#0B2540] hover:opacity-70 max-lg:hidden" aria-label={t('common.back')}>
-					<span className="text-sm font-semibold text-[#008037]">{t('common.back')}</span>
+					<span className="text-sm font-semibold text-[#1B8F3E]">{t('common.back')}</span>
 				</button>
 			) : null}
 
@@ -270,7 +270,7 @@ export default function InvoiceDocument({
 							<p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">{t('payment.flow.issued_by')}</p>
 							<p className="text-xl font-bold mt-1">{t('payment.flow.invoice')}</p>
 						</div>
-						<div className="w-11 h-11 rounded-2xl bg-[#008037] flex items-center justify-center shrink-0">
+						<div className="w-11 h-11 rounded-2xl bg-[#1B8F3E] flex items-center justify-center shrink-0">
 							<FileText className="w-5 h-5 text-white" strokeWidth={2} />
 						</div>
 					</div>
@@ -294,7 +294,7 @@ export default function InvoiceDocument({
 
 				<div className="px-5 py-4 grid sm:grid-cols-2 gap-3">
 					<div className="rounded-2xl border border-[#E8F5EC] bg-[#F3FBF6] p-3.5">
-						<p className="text-[11px] font-semibold text-[#008037] uppercase tracking-wide mb-2 flex items-center gap-1.5">
+						<p className="text-[11px] font-semibold text-[#1B8F3E] uppercase tracking-wide mb-2 flex items-center gap-1.5">
 							<Building2 className="w-3.5 h-3.5" />
 							{t('payment.flow.workshop_details')}
 						</p>
@@ -302,23 +302,23 @@ export default function InvoiceDocument({
 						{workshopAddress ? <p className="text-xs text-[#6B7280] mt-1 leading-relaxed">{workshopAddress}</p> : null}
 						{workshopPhone ? (
 							<p className="text-xs text-[#6B7280] mt-1.5 flex items-center gap-1.5">
-								<Phone className="w-3 h-3 text-[#008037]" />
+								<Phone className="w-3 h-3 text-[#1B8F3E]" />
 								{workshopPhone}
 							</p>
 						) : null}
 					</div>
 					<div className="rounded-2xl border border-[#E5E7EB] bg-white p-3.5">
-						<p className="text-[11px] font-semibold text-[#008037] uppercase tracking-wide mb-2 flex items-center gap-1.5">
+						<p className="text-[11px] font-semibold text-[#1B8F3E] uppercase tracking-wide mb-2 flex items-center gap-1.5">
 							<User className="w-3.5 h-3.5" />
 							{t('payment.flow.bill_to')}
 						</p>
 						<p className="text-sm font-bold text-[#0B2540]">{customerName}</p>
 						<p className="text-xs text-[#6B7280] mt-1.5 flex items-center gap-1.5">
-							<Phone className="w-3 h-3 text-[#008037]" />
+							<Phone className="w-3 h-3 text-[#1B8F3E]" />
 							{customerPhone}
 						</p>
 						<p className="text-xs text-[#6B7280] mt-1 flex items-start gap-1.5 break-all">
-							<Mail className="w-3 h-3 text-[#008037] shrink-0 mt-0.5" />
+							<Mail className="w-3 h-3 text-[#1B8F3E] shrink-0 mt-0.5" />
 							{customerEmail}
 						</p>
 					</div>
@@ -330,7 +330,7 @@ export default function InvoiceDocument({
 					<p className="text-xs text-[#6B7280] mt-0.5">{t('payment.flow.case_ref')}: {caseRef}</p>
 					<div className="mt-3 flex items-end justify-between gap-3">
 						<span className="text-sm font-bold text-[#0B2540]">{t('payment.flow.total_short')}</span>
-						<span className="text-[1.75rem] font-bold text-[#008037] leading-none">{money(costs.total)}</span>
+						<span className="text-[1.75rem] font-bold text-[#1B8F3E] leading-none">{money(costs.total)}</span>
 					</div>
 				</div>
 
@@ -348,7 +348,7 @@ export default function InvoiceDocument({
 						))}
 						<div className="border-t border-gray-100 pt-3 flex justify-between items-center">
 							<span className="text-sm font-bold text-[#0B2540]">{t('payment.flow.total_short')}</span>
-							<span className="text-sm font-bold text-[#008037]">{money(costs.total)}</span>
+							<span className="text-sm font-bold text-[#1B8F3E]">{money(costs.total)}</span>
 						</div>
 					</div>
 				</div>
@@ -362,7 +362,7 @@ export default function InvoiceDocument({
 									<ul className="space-y-1.5">
 										{inclusions.map((item) => (
 											<li key={item} className="flex items-start gap-2 text-xs text-[#0B2540]">
-												<Check className="w-3.5 h-3.5 text-[#008037] shrink-0 mt-0.5" strokeWidth={3} />
+												<Check className="w-3.5 h-3.5 text-[#1B8F3E] shrink-0 mt-0.5" strokeWidth={3} />
 												{item}
 											</li>
 										))}
@@ -393,7 +393,7 @@ export default function InvoiceDocument({
 				<button
 					type="button"
 					onClick={onBack}
-					className="w-full min-h-[52px] border-[1.5px] border-[#9AD4B0] text-[#008037] rounded-lg font-semibold flex items-center justify-center gap-2 max-lg:hidden"
+					className="w-full min-h-[52px] border-[1.5px] border-[#9AD4B0] text-[#1B8F3E] rounded-lg font-semibold flex items-center justify-center gap-2 max-lg:hidden"
 				>
 					{t('common.back')}
 				</button>

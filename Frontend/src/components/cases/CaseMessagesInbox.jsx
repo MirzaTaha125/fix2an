@@ -208,7 +208,7 @@ export default function CaseMessagesInbox({ requests, onExtraDecision }) {
 							}}
 							className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${
 								mainTab === tab.key
-									? 'text-[#008037] border-[#008037]'
+									? 'text-[#1B8F3E] border-[#1B8F3E]'
 									: 'text-[#9CA3AF] border-transparent'
 							}`}
 						>
@@ -234,7 +234,7 @@ export default function CaseMessagesInbox({ requests, onExtraDecision }) {
 								}}
 								className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${
 									mainTab === tab.key
-										? 'text-[#008037] border-[#008037]'
+										? 'text-[#1B8F3E] border-[#1B8F3E]'
 										: 'text-[#9CA3AF] border-transparent'
 								}`}
 							>
@@ -367,7 +367,7 @@ export default function CaseMessagesInbox({ requests, onExtraDecision }) {
 															}
 															setMainTab('messages')
 														}}
-														className="shrink-0 w-9 h-9 flex items-center justify-center text-[#008037] hover:opacity-70"
+														className="shrink-0 w-9 h-9 flex items-center justify-center text-[#1B8F3E] hover:opacity-70"
 														aria-label={t('my_cases.flow.message_workshop')}
 														title={t('my_cases.flow.message_workshop')}
 													>

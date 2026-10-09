@@ -5,9 +5,9 @@ import { ShieldCheck, Users, Car, Wrench, MapPin, Hand } from 'lucide-react'
 
 function AboutCard({ icon: Icon, title, desc }) {
 	return (
-		<div className="rounded-2xl border border-[#008037]/25 bg-[#F8FCF9] p-5 flex items-start gap-3 h-full">
+		<div className="rounded-2xl border border-[#1B8F3E]/25 bg-[#F8FCF9] p-5 flex items-start gap-3 h-full">
 			<div className="w-9 h-9 rounded-xl bg-[#E8F8EE] flex items-center justify-center shrink-0">
-				<Icon className="w-5 h-5 text-[#008037]" />
+				<Icon className="w-5 h-5 text-[#1B8F3E]" />
 			</div>
 			<div className="min-w-0">
 				<p className="text-sm lg:text-xl font-bold text-[#05324f] leading-[1.4] mb-2">{title}</p>
@@ -34,9 +34,9 @@ export default function AboutPage() {
 		<div className="list-page-shell bg-white">
 			<Navbar />
 
-			<main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-28 pb-10">
+			<main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-24 pb-10">
 				<div className="text-center mb-8 mt-4 sm:mt-5 max-w-3xl mx-auto">
-					<h1 className="page-title lg:text-[2.75rem] lg:mb-5">
+					<h1 className="page-title-hero lg:mb-5">
 						{t(`${prefix}.title`)}
 					</h1>
 					<p className="text-[0.95rem] lg:text-lg text-[#374151] leading-[1.75] mb-4">

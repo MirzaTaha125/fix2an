@@ -225,13 +225,13 @@ export function CreateQuotePanel({ requestId, onBack }) {
 
 	if (authLoading || loading) {
 		return (
-			<div className="max-w-xl space-y-4">
-				<Skeleton className="h-8 w-48" />
-				<Skeleton className="h-4 w-64" />
+			<div className="w-full space-y-4">
+				<Skeleton className="h-8 w-48 max-w-full" />
+				<Skeleton className="h-4 w-64 max-w-full" />
 				<Skeleton className="h-28 w-full rounded-xl" />
-				<Skeleton className="h-11 w-full" />
-				<Skeleton className="h-11 w-full" />
-				<Skeleton className="h-11 w-full" />
+				<Skeleton className="h-11 w-full rounded-xl" />
+				<Skeleton className="h-11 w-full rounded-xl" />
+				<Skeleton className="h-11 w-full rounded-xl" />
 			</div>
 		)
 	}
@@ -246,7 +246,7 @@ export function CreateQuotePanel({ requestId, onBack }) {
 			<div className="w-full py-8 text-center">
 					<div className="mb-6 flex justify-center">
 						<div className="p-4 bg-gray-50 rounded-full">
-							<Shield className="w-12 h-12 text-[#008037]" />
+							<Shield className="w-12 h-12 text-[#1B8F3E]" />
 						</div>
 					</div>
 					<h2 className="text-2xl font-bold text-[#05324f] mb-4">
@@ -290,15 +290,15 @@ export function CreateQuotePanel({ requestId, onBack }) {
 	]
 
 	return (
-				<div className="w-full">
-				<button type="button" onClick={handleBack} className="hidden lg:inline-flex items-center gap-1.5 text-sm font-semibold text-[#008037] mb-5">
+				<div className="w-full max-w-none">
+				<button type="button" onClick={handleBack} className="hidden lg:inline-flex items-center gap-1.5 text-sm font-semibold text-[#1B8F3E] mb-5">
 					<ArrowLeft className="w-4 h-4" strokeWidth={2.25} />
 					{t('workshop.panel.back')}
 				</button>
-				<h1 className="text-[1.7rem] font-semibold text-[#0B2540] leading-tight">
+				<h1 className="page-title !mt-0">
 					{existingOffer ? t('workshop.offer.edit_title') : t('workshop.offer.title')}
 				</h1>
-				<p className="text-sm text-[#6B7280] mt-1.5 mb-8">
+				<p className="text-sm text-[#6B7280] mt-2 mb-6">
 					{t('workshop.panel.case_no', { id: caseNo })}
 					{vehicleName ? ` · ${vehicleName}` : ''}
 				</p>
@@ -356,21 +356,21 @@ export function CreateQuotePanel({ requestId, onBack }) {
 						disabled={viewMode}
 						onChange={(e) => setFormData({ ...formData, note: e.target.value })}
 						rows={4}
-						className="w-full rounded-xl border border-[#E5E7EB] px-4 py-3 text-sm text-[#374151] leading-relaxed outline-none focus:border-[#008037] resize-y min-h-[108px]"
+						className="w-full rounded-xl border border-[#E5E7EB] px-4 py-3 text-sm text-[#374151] leading-relaxed outline-none focus:border-[#1B8F3E] resize-y min-h-[108px]"
 					/>
 
 					<div className="mt-8 space-y-4">
-						<div className="flex items-center justify-between gap-6">
+						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
 							<label htmlFor="estimatedDuration" className="text-sm font-semibold text-[#1F2937]">
 								{t('quotes.flow.compare_time')} <span className="text-red-500">*</span>
 							</label>
-							<div className="relative w-44 shrink-0">
+							<div className="relative w-full sm:w-52 sm:shrink-0">
 								<select
 									id="estimatedDuration"
 									disabled={viewMode}
 									value={formData.estimatedDuration}
 									onChange={(e) => setFormData({ ...formData, estimatedDuration: e.target.value })}
-									className="w-full h-11 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-8 text-sm text-[#111827] outline-none focus:border-[#008037] appearance-none"
+									className="w-full h-12 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-8 text-sm text-[#111827] outline-none focus:border-[#1B8F3E] appearance-none"
 								>
 									<option value="">{t('common.select') || 'Select'}</option>
 									<option value="2">1–2 {t('quotes.flow.hours')}</option>
@@ -382,17 +382,17 @@ export function CreateQuotePanel({ requestId, onBack }) {
 							</div>
 						</div>
 
-						<div className="flex items-center justify-between gap-6">
+						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
 							<label htmlFor="warranty" className="text-sm font-semibold text-[#1F2937]">
 								{t('quotes.flow.compare_warranty')}
 							</label>
-							<div className="relative w-44 shrink-0">
+							<div className="relative w-full sm:w-52 sm:shrink-0">
 								<select
 									id="warranty"
 									disabled={viewMode}
 									value={formData.warranty}
 									onChange={(e) => setFormData({ ...formData, warranty: e.target.value })}
-									className="w-full h-11 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-8 text-sm text-[#111827] outline-none focus:border-[#008037] appearance-none"
+									className="w-full h-12 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-8 text-sm text-[#111827] outline-none focus:border-[#1B8F3E] appearance-none"
 								>
 									<option value="">{t('common.select') || 'Select'}</option>
 									<option value="3 months">{t('workshop.offer.warranty_3m') || '3 months'}</option>
@@ -413,7 +413,7 @@ export function CreateQuotePanel({ requestId, onBack }) {
 								disabled={viewMode}
 								onClick={() => setFormData({ ...formData, loanerCar: !formData.loanerCar })}
 								className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-									formData.loanerCar ? 'bg-[#008037]' : 'bg-[#D1D5DB]'
+									formData.loanerCar ? 'bg-[#1B8F3E]' : 'bg-[#D1D5DB]'
 								} disabled:opacity-60`}
 							>
 								<span
@@ -433,7 +433,7 @@ export function CreateQuotePanel({ requestId, onBack }) {
 								disabled={viewMode}
 								onClick={() => setFormData({ ...formData, originalParts: !formData.originalParts })}
 								className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-									formData.originalParts ? 'bg-[#008037]' : 'bg-[#D1D5DB]'
+									formData.originalParts ? 'bg-[#1B8F3E]' : 'bg-[#D1D5DB]'
 								} disabled:opacity-60`}
 							>
 								<span
@@ -447,9 +447,9 @@ export function CreateQuotePanel({ requestId, onBack }) {
 
 					<div className="mt-8 space-y-4">
 						{priceRows.map(([key, label]) => (
-							<div key={key} className="flex items-center justify-between gap-6">
+							<div key={key} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
 								<label htmlFor={key} className="text-sm font-semibold text-[#1F2937]">{label}</label>
-								<div className="relative w-44 shrink-0">
+								<div className="relative w-full sm:w-52 sm:shrink-0">
 									<input
 										id={key}
 										type="number"
@@ -460,21 +460,21 @@ export function CreateQuotePanel({ requestId, onBack }) {
 										value={formData[key]}
 										onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
 										placeholder="0"
-										className="w-full h-11 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-10 text-right text-sm text-[#111827] outline-none focus:border-[#008037]"
+										className="w-full h-12 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-10 text-right text-sm text-[#111827] outline-none focus:border-[#1B8F3E]"
 									/>
 									<span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#6B7280]">kr</span>
 								</div>
 							</div>
 						))}
-						<div className="flex items-center justify-between gap-6">
+						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
 							<span className="text-sm font-semibold text-[#1F2937]">
 								{t('workshop.offer.vat_rate', { rate: vatRate })}
 							</span>
-							<div className="relative w-44 shrink-0">
+							<div className="relative w-full sm:w-52 sm:shrink-0">
 								<input
 									readOnly
 									value={new Intl.NumberFormat('sv-SE').format(totals.vat)}
-									className="w-full h-11 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-10 text-right text-sm text-[#111827] outline-none"
+									className="w-full h-12 rounded-xl border border-[#E5E7EB] bg-white pl-3 pr-10 text-right text-sm text-[#111827] outline-none"
 								/>
 								<span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#6B7280]">kr</span>
 							</div>
@@ -483,7 +483,7 @@ export function CreateQuotePanel({ requestId, onBack }) {
 
 					<div className="flex items-center justify-between gap-6 border-t border-[#E5E7EB] mt-6 pt-5">
 						<p className="text-base font-bold text-[#0B2540]">{t('workshop.offer.total_price')}</p>
-						<p className="text-[1.65rem] font-semibold text-[#008037] leading-none">{formatKr(totals.total)}</p>
+						<p className="text-[1.65rem] font-semibold text-[#1B8F3E] leading-none">{formatKr(totals.total)}</p>
 					</div>
 
 					{totals.total > 0 && (
@@ -505,13 +505,13 @@ export function CreateQuotePanel({ requestId, onBack }) {
 
 					<div className="flex flex-col gap-3 mt-8 lg:flex-row">
 						{viewMode ? (
-							<button type="button" onClick={onBack || (() => navigate('/workshop/requests'))} className="w-full lg:flex-1 min-h-[48px] rounded-lg border border-[#008037] text-[#008037] text-sm font-semibold inline-flex items-center justify-center">
+							<button type="button" onClick={onBack || (() => navigate('/workshop/requests'))} className="w-full lg:flex-1 min-h-[48px] rounded-lg border border-[#1B8F3E] text-[#1B8F3E] text-sm font-semibold inline-flex items-center justify-center">
 								{t('common.close') || 'Close'}
 							</button>
 						) : (
 							<button
 								type="button"
-								className="w-full lg:flex-1 min-h-[48px] rounded-lg border border-[#008037] text-[#008037] text-sm font-semibold bg-white"
+								className="w-full lg:flex-1 min-h-[48px] rounded-lg border border-[#1B8F3E] text-[#1B8F3E] text-sm font-semibold bg-white"
 								onClick={() => {
 									sessionStorage.setItem(`offer-draft-${requestId}`, JSON.stringify(formData))
 									toast.success(t('workshop.panel.draft_saved'))

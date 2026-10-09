@@ -304,11 +304,11 @@ export default function SignUpPage() {
 								disabled={isLoading}
 								className="w-full flex items-center justify-center gap-2 py-4 px-6 border border-transparent rounded-xl shadow-lg text-base font-normal text-white focus:outline-none focus:ring-4 disabled:opacity-50 transition-all transform hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
 								style={{ 
-									backgroundColor: '#008037',
+									backgroundColor: '#1B8F3E',
 									backgroundImage: 'none',
 								}}
 								onMouseEnter={(e) => e.target.style.backgroundColor = '#2db04a'}
-								onMouseLeave={(e) => e.target.style.backgroundColor = '#008037'}
+								onMouseLeave={(e) => e.target.style.backgroundColor = '#1B8F3E'}
 								onFocus={(e) => e.target.style.boxShadow = '0 0 0 4px rgba(52, 199, 89, 0.3)'}
 								onBlur={(e) => e.target.style.boxShadow = ''}
 							>

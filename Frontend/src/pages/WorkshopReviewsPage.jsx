@@ -113,7 +113,7 @@ export default function WorkshopReviewsPage() {
 										key={star}
 										className={`w-5 h-5 ${
 											star <= Math.round(stats.rating)
-												? 'text-[#008037] fill-[#008037]'
+												? 'text-[#1B8F3E] fill-[#1B8F3E]'
 												: 'text-gray-300'
 										}`}
 									/>
@@ -157,7 +157,7 @@ export default function WorkshopReviewsPage() {
 											<div className="flex-1 min-w-0">
 												<div className="flex items-center gap-2 mb-2">
 													<div className="w-8 h-8 rounded-full bg-[#E8F5EC] flex items-center justify-center flex-shrink-0">
-														<User className="w-4 h-4 text-[#008037]" />
+														<User className="w-4 h-4 text-[#1B8F3E]" />
 													</div>
 													<div>
 														<p className="font-semibold text-gray-900">{customerName}</p>
@@ -172,7 +172,7 @@ export default function WorkshopReviewsPage() {
 															key={star}
 															className={`w-4 h-4 ${
 																star <= (review.rating || 0)
-																	? 'text-[#008037] fill-[#008037]'
+																	? 'text-[#1B8F3E] fill-[#1B8F3E]'
 																	: 'text-gray-300'
 															}`}
 														/>

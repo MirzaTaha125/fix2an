@@ -5,7 +5,7 @@ const VARIANTS = {
 	success: {
 		bg: '#E8F5EC',
 		border: '#C6E5D0',
-		iconBg: '#008037',
+		iconBg: '#1B8F3E',
 		Icon: Check,
 	},
 	error: {

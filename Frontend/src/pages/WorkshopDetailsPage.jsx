@@ -129,7 +129,7 @@ export default function WorkshopDetailsPage() {
 		return (
 			<div className="list-page-shell bg-white">
 				<Navbar />
-				<div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12 sm:pb-16 w-full">
+				<div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 sm:pb-16 w-full">
 					{/* Header Skeleton */}
 					<div className="mb-6">
 						<Skeleton className="h-4 w-32 mb-4" />
@@ -244,7 +244,7 @@ export default function WorkshopDetailsPage() {
 	return (
 		<div className="list-page-shell bg-white">
 			<Navbar />
-			<div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-12 sm:pb-16 w-full">
+			<div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 sm:pb-16 w-full">
 				{/* Header */}
 				<div className="mb-6">
 					<Link to="/admin" className="inline-flex items-center gap-2 mb-4 text-sm text-gray-600 hover:text-[#05324f] transition-colors">
@@ -266,7 +266,7 @@ export default function WorkshopDetailsPage() {
 									onClick={() => handleWorkshopAction('approve')}
 									size="sm"
 									className="font-semibold w-full sm:w-auto"
-									style={{ backgroundColor: '#008037', color: '#FFFFFF' }}
+									style={{ backgroundColor: '#1B8F3E', color: '#FFFFFF' }}
 								>
 									<CheckCircle className="w-4 h-4 mr-2" />
 									{t('admin.workshops.approve')}
@@ -287,7 +287,7 @@ export default function WorkshopDetailsPage() {
 									onClick={() => handleWorkshopAction('unblock')}
 									size="sm"
 									className="font-semibold w-full sm:w-auto"
-									style={{ backgroundColor: '#008037', color: '#FFFFFF' }}
+									style={{ backgroundColor: '#1B8F3E', color: '#FFFFFF' }}
 								>
 									<CheckCircle className="w-4 h-4 mr-2" />
 									{t('admin.workshops.unblock')}
@@ -299,7 +299,7 @@ export default function WorkshopDetailsPage() {
 					{/* Status Badges */}
 					<div className="flex flex-wrap gap-2">
 						{workshop.isVerified ? (
-							<Badge className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#008037', color: '#FFFFFF' }}>
+							<Badge className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#1B8F3E', color: '#FFFFFF' }}>
 								{t('admin.workshops.details.verified')}
 							</Badge>
 						) : (
@@ -308,7 +308,7 @@ export default function WorkshopDetailsPage() {
 							</Badge>
 						)}
 						{workshop.isActive ? (
-							<Badge className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#008037', color: '#FFFFFF' }}>
+							<Badge className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#1B8F3E', color: '#FFFFFF' }}>
 								{t('admin.workshops.details.active')}
 							</Badge>
 						) : (

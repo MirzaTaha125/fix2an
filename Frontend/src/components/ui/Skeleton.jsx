@@ -173,7 +173,7 @@ function PageHeaderSkeleton({ titleClassName = 'h-9 w-40', descClassName = 'h-4 
 /** Profile menu (mobile/tablet/web unified layout). */
 function ProfileMenuSkeleton({ menuRows = 3, avatarClassName = 'rounded-full' }) {
   return (
-    <div className="app-page-container max-w-2xl md:max-w-5xl lg:max-w-7xl pt-24 md:pt-32 pb-24 max-lg:pb-24 flex-1">
+    <div className="app-page-container max-w-2xl md:max-w-5xl lg:max-w-7xl pt-20 md:pt-28 pb-24 max-lg:pb-24 flex-1">
       <PageHeaderSkeleton titleClassName="h-8 w-40 max-w-full" descClassName="h-4 w-64 max-w-full" />
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 mb-5 flex items-center gap-3">
         <Skeleton className={`w-14 h-14 shrink-0 ${avatarClassName}`} />
@@ -225,7 +225,7 @@ function AuthPageSkeleton() {
 function RouteLoadingSkeleton({ cards = 6 } = {}) {
   return (
     <div className="list-page-shell bg-white">
-      <div className="list-page-content max-w-7xl pt-24 md:pt-28">
+      <div className="list-page-content max-w-7xl pt-20 md:pt-24">
         <Skeleton className="h-9 w-48 max-w-full mb-6" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {Array.from({ length: cards }).map((_, i) => (

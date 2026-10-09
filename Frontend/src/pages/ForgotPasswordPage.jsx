@@ -119,7 +119,7 @@ export default function ForgotPasswordPage() {
 										value={email}
 										onChange={(e) => setEmail(e.target.value)}
 										required
-										className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#008037] focus:border-[#008037] transition-all bg-gray-50/50 hover:bg-white"
+										className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1B8F3E] focus:border-[#1B8F3E] transition-all bg-gray-50/50 hover:bg-white"
 										placeholder="name@example.com"
 									/>
 								</div>
@@ -130,11 +130,11 @@ export default function ForgotPasswordPage() {
 										cursor: isLoading ? 'not-allowed' : 'pointer',
 										zIndex: 10,
 										position: 'relative',
-										backgroundColor: '#008037',
+										backgroundColor: '#1B8F3E',
 									}}
 									className="w-full flex items-center justify-center gap-2 py-4 px-6 border border-transparent rounded-lg shadow-lg text-base font-semibold text-white focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
 									onMouseEnter={(e) => (e.target.style.backgroundColor = '#2db04a')}
-									onMouseLeave={(e) => (e.target.style.backgroundColor = '#008037')}
+									onMouseLeave={(e) => (e.target.style.backgroundColor = '#1B8F3E')}
 								>
 									{isLoading ? (
 										<div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
@@ -160,7 +160,7 @@ export default function ForgotPasswordPage() {
 										maxLength="6"
 										value={code}
 										onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-										className="mt-1 block w-full text-center tracking-widest text-2xl px-4 py-3 border-2 border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#008037] focus:border-[#008037] transition-all bg-gray-50/50 hover:bg-white"
+										className="mt-1 block w-full text-center tracking-widest text-2xl px-4 py-3 border-2 border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1B8F3E] focus:border-[#1B8F3E] transition-all bg-gray-50/50 hover:bg-white"
 										placeholder="000000"
 										required
 									/>
@@ -168,10 +168,10 @@ export default function ForgotPasswordPage() {
 								<button
 									type="submit"
 									disabled={isLoading || code.length !== 6}
-									style={{ backgroundColor: '#008037' }}
+									style={{ backgroundColor: '#1B8F3E' }}
 									className="w-full flex items-center justify-center gap-2 py-4 px-6 border border-transparent rounded-lg shadow-lg text-base font-semibold text-white focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
 									onMouseEnter={(e) => (e.target.style.backgroundColor = '#2db04a')}
-									onMouseLeave={(e) => (e.target.style.backgroundColor = '#008037')}
+									onMouseLeave={(e) => (e.target.style.backgroundColor = '#1B8F3E')}
 								>
 									{isLoading ? (
 										<div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
@@ -207,7 +207,7 @@ export default function ForgotPasswordPage() {
 											value={newPassword}
 											onChange={(e) => setNewPassword(e.target.value)}
 											required
-											className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#008037] focus:border-[#008037] transition-all pr-12 bg-gray-50/50 hover:bg-white"
+											className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1B8F3E] focus:border-[#1B8F3E] transition-all pr-12 bg-gray-50/50 hover:bg-white"
 											placeholder="••••••••"
 										/>
 										<button
@@ -234,7 +234,7 @@ export default function ForgotPasswordPage() {
 											value={confirmPassword}
 											onChange={(e) => setConfirmPassword(e.target.value)}
 											required
-											className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#008037] focus:border-[#008037] transition-all pr-12 bg-gray-50/50 hover:bg-white"
+											className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1B8F3E] focus:border-[#1B8F3E] transition-all pr-12 bg-gray-50/50 hover:bg-white"
 											placeholder="••••••••"
 										/>
 										<button
@@ -250,10 +250,10 @@ export default function ForgotPasswordPage() {
 								<button
 									type="submit"
 									disabled={isLoading}
-									style={{ backgroundColor: '#008037' }}
+									style={{ backgroundColor: '#1B8F3E' }}
 									className="w-full flex items-center justify-center gap-2 py-4 px-6 border border-transparent rounded-lg shadow-lg text-base font-semibold text-white focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]"
 									onMouseEnter={(e) => (e.target.style.backgroundColor = '#2db04a')}
-									onMouseLeave={(e) => (e.target.style.backgroundColor = '#008037')}
+									onMouseLeave={(e) => (e.target.style.backgroundColor = '#1B8F3E')}
 								>
 									{isLoading ? (
 										<div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>

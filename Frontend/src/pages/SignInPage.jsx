@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Shield, ShieldCheck, Headphones, Star } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { ShieldCheck } from 'lucide-react'
 import loginEmail from '../assets/login-email-clear.png'
 import toast from 'react-hot-toast'
 import Navbar from '../components/Navbar'
@@ -67,19 +67,55 @@ export default function SignInPage() {
 	return (
 		<div className="list-page-shell bg-[#F3F5F8]">
 			<Navbar />
-			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-28 pb-12">
-				<div className="grid gap-4 lg:gap-8 lg:grid-cols-2 lg:items-center">
-					<form onSubmit={handleSend} className="bg-white rounded-2xl lg:rounded-3xl border border-[#EEF1F4] shadow-[0_8px_30px_rgba(15,23,42,0.04)] px-5 py-6 sm:p-6 lg:px-8 lg:py-9 flex flex-col justify-center w-full">
-						<h1 className="page-title !mt-0 lg:text-[2.75rem] text-left">{t('auth.signin.magic_title')}</h1>
-						<p className="text-[0.95rem] lg:text-lg text-[#374151] leading-relaxed mt-2 lg:mt-3 mb-5 lg:mb-6 text-left">{t('auth.signin.magic_subtitle')}</p>
-						<label htmlFor="email" className="block text-sm lg:text-base font-medium text-[#111827] mb-2.5 leading-normal">{t('auth.signin.email')}</label>
+			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-24 pb-12">
+				<div className="grid gap-6 lg:gap-8 lg:grid-cols-2 lg:items-center">
+					{/* Mobile: image on top; Desktop: image on right */}
+					<div className="order-1 lg:order-2 px-2 sm:px-5 lg:px-8 text-center flex flex-col items-center justify-center">
+						<img
+							src={loginEmail}
+							alt=""
+							className="w-44 h-44 sm:w-56 sm:h-56 lg:w-[28rem] lg:h-[28rem] max-w-full object-contain -mb-6 sm:-mb-8 lg:-mb-12"
+						/>
+						<h2 className="text-xl sm:text-2xl lg:text-[2rem] font-semibold text-brand-dark">
+							{t('auth.signin.check_email')}
+						</h2>
+						<p className="text-sm sm:text-base lg:text-lg text-[#6B7280] mt-3 lg:mt-5 leading-relaxed max-w-md">
+							{t('auth.signin.link_sent_to')}
+						</p>
+						<p className="text-sm sm:text-base lg:text-lg text-[#1B8F3E] font-semibold mt-1 max-w-md">
+							{sentEmail || email || t('auth.signin.email_placeholder')}
+						</p>
+						<p className="text-sm sm:text-base lg:text-lg text-[#9CA3AF] mt-2 leading-relaxed max-w-md">
+							{t('auth.signin.link_valid')}
+						</p>
+						{devMagicLinkUrl && (
+							<a
+								href={devMagicLinkUrl}
+								className="mt-4 lg:mt-5 inline-flex min-h-[40px] items-center px-5 rounded-lg bg-brand-btn text-white text-sm font-semibold"
+							>
+								{t('auth.signin.magic_link_open')}
+							</a>
+						)}
+					</div>
+
+					<form
+						onSubmit={handleSend}
+						className="order-2 lg:order-1 bg-white rounded-2xl lg:rounded-3xl border border-[#EEF1F4] shadow-[0_8px_30px_rgba(15,23,42,0.04)] px-5 py-6 sm:p-6 lg:px-8 lg:py-9 flex flex-col justify-center w-full"
+					>
+						<h1 className="page-title !mt-0 text-left">{t('auth.signin.magic_title')}</h1>
+						<p className="text-[0.95rem] lg:text-lg text-[#374151] leading-relaxed mt-2 lg:mt-3 mb-5 lg:mb-6 text-left">
+							{t('auth.signin.magic_subtitle')}
+						</p>
+						<label htmlFor="email" className="block text-sm lg:text-base font-medium text-[#111827] mb-2.5 leading-normal">
+							{t('auth.signin.email')}
+						</label>
 						<input
 							id="email"
 							type="email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							placeholder={t('auth.signin.email_placeholder')}
-							className="w-full h-12 lg:h-16 !rounded-md border border-gray-200 bg-white px-4 text-sm lg:text-base outline-none focus:border-[#008037] placeholder:text-[#C4C9D1]"
+							className="w-full h-12 lg:h-16 !rounded-md border border-gray-200 bg-white px-4 text-sm lg:text-base outline-none focus:border-[#1B8F3E] placeholder:text-[#C4C9D1]"
 						/>
 						<button
 							type="submit"
@@ -93,25 +129,6 @@ export default function SignInPage() {
 							{t('auth.signin.no_password')}
 						</p>
 					</form>
-
-					<div className="hidden lg:flex px-8 h-full text-center flex-col items-center justify-end pt-0 pb-16">
-						<img src={loginEmail} alt="" className="w-[32rem] h-[32rem] object-contain -mb-20" />
-						<h2 className="text-[2rem] font-bold text-brand-dark">{t('auth.signin.check_email')}</h2>
-						<p className="text-lg text-[#6B7280] mt-7 leading-relaxed">{t('auth.signin.link_sent_to')}</p>
-						<p className="text-lg text-[#008037] font-semibold mt-1">{sentEmail || email || t('auth.signin.email_placeholder')}</p>
-						<p className="text-base text-[#9CA3AF] mt-4">{t('auth.signin.link_valid')}</p>
-						{devMagicLinkUrl && (
-							<a href={devMagicLinkUrl} className="mt-5 inline-flex min-h-[40px] items-center px-5 rounded-lg bg-brand-btn text-white text-sm font-semibold">
-								{t('auth.signin.magic_link_open')}
-							</a>
-						)}
-					</div>
-				</div>
-
-				<div className="flex flex-wrap items-center justify-center gap-x-14 gap-y-4 mt-14 text-base leading-relaxed text-[#6B7280]">
-					<span className="inline-flex items-center gap-2.5"><Shield className="w-5 h-5 text-[#6B7280]" strokeWidth={1.75} />{t('auth.signin.safe_secure')}</span>
-					<Link to="/support" className="inline-flex items-center gap-2.5 hover:text-[#0B2540]"><Headphones className="w-5 h-5 text-[#6B7280]" strokeWidth={1.75} />{t('auth.signin.customer_support')}</Link>
-					<span className="inline-flex items-center gap-2.5"><Star className="w-5 h-5 text-[#6B7280]" strokeWidth={1.75} />{t('auth.signin.verified_workshops')}</span>
 				</div>
 			</div>
 			<Footer />

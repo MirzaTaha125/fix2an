@@ -41,7 +41,7 @@ export default function WorkshopImage({
 		return (
 			<div
 				className={cn(
-					'w-full h-full bg-[#008037] flex items-center justify-center',
+					'w-full h-full bg-[#1B8F3E] flex items-center justify-center',
 					className,
 					fallbackClassName
 				)}

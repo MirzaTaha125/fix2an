@@ -8,7 +8,7 @@ export const Input = React.forwardRef(({ className, type, ...props }, ref) => {
 		<input
 			type={type}
 			className={cn(
-				'flex h-12 w-full rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 py-3 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#008037] focus:border-[#008037] hover:bg-white transition-all disabled:cursor-not-allowed disabled:opacity-50',
+				'flex h-12 w-full rounded-xl border-2 border-gray-200 bg-gray-50/50 px-4 py-3 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1B8F3E] focus:border-[#1B8F3E] hover:bg-white transition-all disabled:cursor-not-allowed disabled:opacity-50',
 				className,
 			)}
 			ref={ref}

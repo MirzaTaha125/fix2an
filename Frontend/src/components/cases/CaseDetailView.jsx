@@ -49,9 +49,9 @@ const STATUS_PILL = {
 	rescheduled: 'bg-white text-[#2563EB] border-[#2563EB]',
 	received: 'bg-white text-[#2563EB] border-[#2563EB]',
 	repair: 'bg-white text-[#2563EB] border-[#2563EB]',
-	ready: 'bg-white text-[#008037] border-[#008037]',
-	pickup: 'bg-white text-[#008037] border-[#008037]',
-	closed: 'bg-white text-[#008037] border-[#008037]',
+	ready: 'bg-white text-[#1B8F3E] border-[#1B8F3E]',
+	pickup: 'bg-white text-[#1B8F3E] border-[#1B8F3E]',
+	closed: 'bg-white text-[#1B8F3E] border-[#1B8F3E]',
 	expired: 'bg-white text-gray-500 border-gray-300',
 }
 
@@ -83,7 +83,7 @@ function ReviewSummary({ review, t }) {
 			<h3 className="text-sm font-bold text-brand-dark mb-2">{t('my_cases.flow.summary_review')}</h3>
 			<div className="flex gap-1 mb-2">
 				{[1, 2, 3, 4, 5].map((n) => (
-					<Star key={n} className={`w-4 h-4 ${n <= Number(review.rating) ? 'fill-[#008037] text-[#008037]' : 'text-gray-200'}`} />
+					<Star key={n} className={`w-4 h-4 ${n <= Number(review.rating) ? 'fill-[#1B8F3E] text-[#1B8F3E]' : 'text-gray-200'}`} />
 				))}
 			</div>
 			{text && <p className="text-sm text-[#374151] leading-relaxed">{text}</p>}
@@ -456,7 +456,7 @@ export default function CaseDetailView({
 								<button
 									type="button"
 									onClick={() => onGoPayment?.(booking, 'payment')}
-									className="w-full min-h-[48px] rounded-xl border border-[#008037] text-[#008037] text-sm font-semibold"
+									className="w-full min-h-[48px] rounded-xl border border-[#1B8F3E] text-[#1B8F3E] text-sm font-semibold"
 								>
 									{t('payment.flow.overview_title')}
 								</button>
@@ -491,10 +491,10 @@ export default function CaseDetailView({
 							return (
 								<li key={step.label} className="flex gap-3">
 									<div className="flex flex-col items-center">
-										<div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${step.done ? 'bg-brand-btn text-white' : current ? 'border-2 border-[#008037] bg-white' : 'border border-gray-300 bg-white'}`}>
+										<div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${step.done ? 'bg-brand-btn text-white' : current ? 'border-2 border-[#1B8F3E] bg-white' : 'border border-gray-300 bg-white'}`}>
 											{step.done ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : null}
 										</div>
-										{index < arr.length - 1 && <div className={`w-0.5 flex-1 min-h-[28px] ${step.done ? 'bg-[#008037]' : 'bg-gray-200'}`} />}
+										{index < arr.length - 1 && <div className={`w-0.5 flex-1 min-h-[28px] ${step.done ? 'bg-[#1B8F3E]' : 'bg-gray-200'}`} />}
 									</div>
 									<div className="pb-5">
 										<p className={`text-sm font-medium ${step.done || current ? 'text-brand-dark' : 'text-gray-400'}`}>{step.label}</p>
@@ -515,7 +515,7 @@ export default function CaseDetailView({
 							<p className="text-sm font-bold text-brand-dark">{t('my_cases.flow.have_questions_title')}</p>
 							<p className="text-sm text-[#1F2937] leading-snug mt-0.5">{t('my_cases.flow.have_questions_body')}</p>
 						</div>
-						<MessageCircle className="w-7 h-7 text-[#008037] shrink-0" strokeWidth={1.75} />
+						<MessageCircle className="w-7 h-7 text-[#1B8F3E] shrink-0" strokeWidth={1.75} />
 					</button>
 				</div>
 			)}
@@ -588,7 +588,7 @@ export default function CaseDetailView({
 										</div>
 									)
 								})}
-								<label className={`aspect-square rounded-xl lg:rounded-2xl border border-dashed border-gray-300 flex flex-col items-center justify-center gap-1.5 hover:border-[#008037]/50 transition-colors cursor-pointer ${uploadingPhoto ? 'opacity-60 pointer-events-none' : ''}`}>
+								<label className={`aspect-square rounded-xl lg:rounded-2xl border border-dashed border-gray-300 flex flex-col items-center justify-center gap-1.5 hover:border-[#1B8F3E]/50 transition-colors cursor-pointer ${uploadingPhoto ? 'opacity-60 pointer-events-none' : ''}`}>
 									<input
 										type="file"
 										accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
@@ -604,7 +604,7 @@ export default function CaseDetailView({
 								</label>
 							</div>
 							<div className="mt-5 rounded-lg lg:rounded-2xl bg-[#E8F5EC] px-4 py-3.5 flex items-start gap-3">
-								<ShieldCheck className="w-5 h-5 text-[#008037] shrink-0 mt-0.5" strokeWidth={2} />
+								<ShieldCheck className="w-5 h-5 text-[#1B8F3E] shrink-0 mt-0.5" strokeWidth={2} />
 								<p className="text-sm text-[#1F2937] leading-snug">{t('my_cases.flow.photos_private')}</p>
 							</div>
 							{photoMenuId ? (
@@ -826,7 +826,7 @@ function ExpandableText({ text }) {
 				{longDesc && !open ? `${text.slice(0, 120)}…` : text || '—'}
 			</p>
 			{longDesc && (
-				<button type="button" onClick={() => setOpen((v) => !v)} className="mt-2 w-full flex items-center justify-end gap-1 text-sm font-semibold text-[#008037]">
+				<button type="button" onClick={() => setOpen((v) => !v)} className="mt-2 w-full flex items-center justify-end gap-1 text-sm font-semibold text-[#1B8F3E]">
 					{open ? t('common.show_less') : t('my_cases.flow.show_more')}
 					<ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />
 				</button>
@@ -847,7 +847,7 @@ function PanelTabs({ tabs, active, onChange }) {
 						type={onChange ? 'button' : undefined}
 						onClick={onChange ? () => onChange(tab.key) : undefined}
 						className={`flex-1 min-w-0 pb-3 text-[13px] font-semibold text-center border-b-2 -mb-px ${
-							isActive ? 'text-[#008037] border-[#008037]' : 'text-[#9CA3AF] border-transparent'
+							isActive ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'
 						}`}
 					>
 						{tab.label}
@@ -860,7 +860,7 @@ function PanelTabs({ tabs, active, onChange }) {
 
 function Row({ label, value, accent, bullet }) {
 	const valueClass =
-		accent === 'orange' ? 'text-[#E67E22]' : accent === 'green' ? 'text-[#008037]' : accent === 'blue' ? 'text-[#2563EB]' : 'text-[#4B5563]'
+		accent === 'orange' ? 'text-[#E67E22]' : accent === 'green' ? 'text-[#1B8F3E]' : accent === 'blue' ? 'text-[#2563EB]' : 'text-[#4B5563]'
 	return (
 		<div className="py-3.5 flex justify-between gap-3 text-sm">
 			<span className="text-brand-dark font-medium">{label}</span>

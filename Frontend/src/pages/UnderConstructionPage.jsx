@@ -20,7 +20,7 @@ export default function UnderConstructionPage() {
 					className="mx-auto h-16 sm:h-20 w-auto object-contain mb-10"
 				/>
 
-				<p className="text-sm font-semibold tracking-wide uppercase text-[#008037] mb-3">
+				<p className="text-sm font-semibold tracking-wide uppercase text-[#1B8F3E] mb-3">
 					Kommer snart
 				</p>
 

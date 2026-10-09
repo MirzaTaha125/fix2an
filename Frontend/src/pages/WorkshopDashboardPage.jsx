@@ -155,19 +155,19 @@ export default function WorkshopDashboardPage() {
 				<div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
 					<div className="bg-white rounded-2xl border border-[#EEF0F4] px-5 py-4">
 						<p className="text-xs text-[#6B7280]">{t('workshop.panel.new_cases')}</p>
-						<p className="text-[2rem] leading-none font-semibold text-[#008037] mt-2">{stats.totalRequests}</p>
-						<p className="text-[11px] text-[#008037] mt-2">{t('workshop.panel.this_week')}</p>
+						<p className="text-[2rem] leading-none font-semibold text-[#1B8F3E] mt-2">{stats.totalRequests}</p>
+						<p className="text-[11px] text-[#1B8F3E] mt-2">{t('workshop.panel.this_week')}</p>
 					</div>
 					<div className="bg-white rounded-2xl border border-[#EEF0F4] px-5 py-4">
 						<p className="text-xs text-[#6B7280]">{t('workshop.panel.quotes_sent')}</p>
-						<p className="text-[2rem] leading-none font-semibold text-[#008037] mt-2">{stats.proposalsSent}</p>
-						<p className="text-[11px] text-[#008037] mt-2">{t('workshop.panel.this_week')}</p>
+						<p className="text-[2rem] leading-none font-semibold text-[#1B8F3E] mt-2">{stats.proposalsSent}</p>
+						<p className="text-[11px] text-[#1B8F3E] mt-2">{t('workshop.panel.this_week')}</p>
 					</div>
 					<div className="bg-white rounded-2xl border border-[#86EFAC] px-5 py-4">
 						<p className="text-xs text-[#6B7280]">{t('workshop.panel.booked_jobs')}</p>
-						<p className="text-[2rem] leading-none font-semibold text-[#008037] mt-2 inline-flex items-center gap-1">
+						<p className="text-[2rem] leading-none font-semibold text-[#1B8F3E] mt-2 inline-flex items-center gap-1">
 							{rating}
-							<Star className="w-4 h-4 fill-[#008037] text-[#008037]" />
+							<Star className="w-4 h-4 fill-[#1B8F3E] text-[#1B8F3E]" />
 						</p>
 						<p className="text-[11px] text-[#6B7280] mt-2">{t('workshop.panel.based_on_reviews', { count: stats.reviewCount || 0 })}</p>
 					</div>

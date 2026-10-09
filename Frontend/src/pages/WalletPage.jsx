@@ -105,7 +105,7 @@ export default function WalletPage() {
 							<div className="flex flex-row items-center justify-center gap-3 w-full md:w-auto">
 								<button
 									onClick={() => setIsDepositOpen(true)}
-									className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-[#008037] hover:bg-[#2FB350] text-white rounded-xl font-semibold transition-all shadow-md shadow-[#008037]/20"
+									className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 text-sm bg-[#1B8F3E] hover:bg-[#2FB350] text-white rounded-xl font-semibold transition-all shadow-md shadow-[#1B8F3E]/20"
 								>
 									<Plus size={16} />
 									<span>Deposit</span>
@@ -153,7 +153,7 @@ export default function WalletPage() {
 										{transactions.map((tx) => (
 											<div key={tx._id} className="p-5 flex items-center justify-between hover:bg-gray-50/30 transition-colors">
 												<div className="flex items-center gap-4">
-													<div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${tx.type === 'Deposit' || tx.type === 'Refund' ? 'bg-[#008037]/10 text-[#008037]' : 'bg-orange-50 text-orange-500'}`}>
+													<div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${tx.type === 'Deposit' || tx.type === 'Refund' ? 'bg-[#1B8F3E]/10 text-[#1B8F3E]' : 'bg-orange-50 text-orange-500'}`}>
 														{tx.type === 'Deposit' || tx.type === 'Refund' ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
 													</div>
 													<div className="flex flex-col">
@@ -162,7 +162,7 @@ export default function WalletPage() {
 													</div>
 												</div>
 												<div className="flex flex-col items-end gap-1">
-													<span className={`font-bold text-[15px] ${tx.amount > 0 ? 'text-[#008037]' : 'text-gray-900'}`}>
+													<span className={`font-bold text-[15px] ${tx.amount > 0 ? 'text-[#1B8F3E]' : 'text-gray-900'}`}>
 														{tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('sv-SE', { minimumFractionDigits: 2 })}
 													</span>
 													<div className={`text-[10px] uppercase tracking-wider font-bold ${getStatusColor(tx.status).replace('border-', '')} bg-transparent`}>
@@ -206,7 +206,7 @@ export default function WalletPage() {
 													</td>
 													<td className="py-5 px-6">
 														<div className="flex items-center gap-3">
-															<div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${tx.type === 'Deposit' || tx.type === 'Refund' ? 'bg-[#008037]/10 text-[#008037]' : 'bg-orange-50 text-orange-500'}`}>
+															<div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${tx.type === 'Deposit' || tx.type === 'Refund' ? 'bg-[#1B8F3E]/10 text-[#1B8F3E]' : 'bg-orange-50 text-orange-500'}`}>
 																{tx.type === 'Deposit' || tx.type === 'Refund' ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
 															</div>
 															<span className="font-semibold text-gray-900">{tx.description}</span>
@@ -217,7 +217,7 @@ export default function WalletPage() {
 															{tx.status}
 														</div>
 													</td>
-													<td className={`py-5 px-6 md:px-8 text-right font-bold whitespace-nowrap text-base tracking-tight ${tx.amount > 0 ? 'text-[#008037]' : 'text-gray-900'}`}>
+													<td className={`py-5 px-6 md:px-8 text-right font-bold whitespace-nowrap text-base tracking-tight ${tx.amount > 0 ? 'text-[#1B8F3E]' : 'text-gray-900'}`}>
 														{tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString('sv-SE', { minimumFractionDigits: 2 })} SEK
 													</td>
 												</tr>

@@ -165,7 +165,7 @@ export default function WorkshopStatisticsPage() {
 							<div key={card.label} className="rounded-2xl border border-[#E6E8EC] bg-white px-5 py-4">
 								<p className="text-sm text-[#6B7280]">{card.label}</p>
 								<p className="text-[1.75rem] leading-none font-bold text-[#0B2540] mt-3">{card.value}</p>
-								<p className={`text-sm font-semibold mt-2 min-h-[1.25rem] ${card.change == null ? '' : card.change < 0 ? 'text-red-500' : 'text-[#008037]'}`}>
+								<p className={`text-sm font-semibold mt-2 min-h-[1.25rem] ${card.change == null ? '' : card.change < 0 ? 'text-red-500' : 'text-[#1B8F3E]'}`}>
 									{card.change == null ? '' : `${card.change > 0 ? '+' : ''}${card.change}%`}
 								</p>
 							</div>
@@ -183,8 +183,8 @@ export default function WorkshopStatisticsPage() {
 									{yTicks.map((_, index) => (
 										<line key={index} x1="0" x2={chartWidth} y1={(chartHeight / 4) * index} y2={(chartHeight / 4) * index} stroke="#F3F4F6" />
 									))}
-									{area && <polygon points={area} fill="#008037" opacity="0.12" />}
-									{line && <polyline fill="none" stroke="#008037" strokeWidth="3" points={line} strokeLinejoin="round" strokeLinecap="round" />}
+									{area && <polygon points={area} fill="#1B8F3E" opacity="0.12" />}
+									{line && <polyline fill="none" stroke="#1B8F3E" strokeWidth="3" points={line} strokeLinejoin="round" strokeLinecap="round" />}
 								</svg>
 								<div className="flex justify-between text-[11px] text-[#9CA3AF] mt-1">
 									{weeks.map((item) => <span key={item.label}>{item.label}</span>)}

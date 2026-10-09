@@ -11,7 +11,7 @@ export function StatCard({
 	prefix, 
 	suffix, 
 	className, 
-	iconColor = '#008037', 
+	iconColor = '#1B8F3E', 
 	iconBg = 'bg-green-50/50' 
 }) {
 	const isPositive = trend >= 0
@@ -55,7 +55,7 @@ export function StatCard({
 					<div className={cn(
 						'flex items-center gap-0.5 text-[11px] sm:text-xs font-bold px-1.5 py-0.5 rounded-md',
 						isPositive
-							? 'text-[#008037]'
+							? 'text-[#1B8F3E]'
 							: 'text-red-500'
 					)}>
 						{isPositive ? (

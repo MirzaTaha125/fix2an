@@ -555,7 +555,7 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
-						<User className="w-5 h-5 text-[#008037]" />
+						<User className="w-5 h-5 text-[#1B8F3E]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{customer.name || 'User'}</h4>
@@ -564,7 +564,7 @@ export default function AdminPage() {
 				</div>
 				<Badge 
 					className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm"
-					style={customer.isActive ? { backgroundColor: '#008037', color: '#FFFFFF' } : { backgroundColor: '#E5E7EB', color: '#6B7280' }}
+					style={customer.isActive ? { backgroundColor: '#1B8F3E', color: '#FFFFFF' } : { backgroundColor: '#E5E7EB', color: '#6B7280' }}
 				>
 					{customer.isActive ? t('admin.customers.active') : t('admin.customers.inactive')}
 				</Badge>
@@ -602,7 +602,7 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
-						<Building2 className="w-5 h-5 text-[#008037]" />
+						<Building2 className="w-5 h-5 text-[#1B8F3E]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
@@ -650,12 +650,12 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
-						<Building2 className="w-5 h-5 text-[#008037]" />
+						<Building2 className="w-5 h-5 text-[#1B8F3E]" />
 					</div>
 					<div className="min-w-0">
 						<div className="flex items-center gap-1.5">
 							<h4 className="font-semibold text-gray-900 leading-tight truncate">{workshop.companyName}</h4>
-							{workshop.isVerified && <CheckCircle className="w-3.5 h-3.5 text-[#008037] flex-shrink-0" />}
+							{workshop.isVerified && <CheckCircle className="w-3.5 h-3.5 text-[#1B8F3E] flex-shrink-0" />}
 						</div>
 						<p className="text-[10px] text-gray-400 font-medium tracking-tight uppercase">Org: {workshop.organizationNumber}</p>
 					</div>
@@ -663,7 +663,7 @@ export default function AdminPage() {
 				<div className="flex flex-col items-end gap-1">
 					<Badge 
 						className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider"
-						style={workshop.isActive ? { backgroundColor: '#008037', color: '#FFFFFF' } : { backgroundColor: '#EF4444', color: '#FFFFFF' }}
+						style={workshop.isActive ? { backgroundColor: '#1B8F3E', color: '#FFFFFF' } : { backgroundColor: '#EF4444', color: '#FFFFFF' }}
 					>
 						{workshop.isActive ? t('admin.workshops.active') : t('admin.workshops.blocked')}
 					</Badge>
@@ -709,7 +709,7 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-9 h-9 rounded-full bg-[#EDFBF1] flex items-center justify-center">
-						<FileText className="w-5 h-5 text-[#008037]" />
+						<FileText className="w-5 h-5 text-[#1B8F3E]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">
@@ -722,7 +722,7 @@ export default function AdminPage() {
 					<Button 
 						variant="outline" 
 						size="sm" 
-						className="h-8 px-4 text-[10px] font-semibold border-gray-100 uppercase tracking-widest hover:bg-[#008037] hover:text-white hover:border-[#008037] transition-all"
+						className="h-8 px-4 text-[10px] font-semibold border-gray-100 uppercase tracking-widest hover:bg-[#1B8F3E] hover:text-white hover:border-[#1B8F3E] transition-all"
 						onClick={(e) => {
 							e.stopPropagation()
 							setSelectedRequest(request)
@@ -791,11 +791,11 @@ export default function AdminPage() {
 
 			<div className="flex items-center justify-between pt-3 border-t border-gray-50">
 				<div className="flex items-center gap-1.5">
-					<div className="w-2 h-2 rounded-full bg-[#008037]"></div>
-					<span className="text-[10px] font-semibold text-[#008037] uppercase tracking-widest">{request._count?.offers || 0} {t('admin.requests.offers')}</span>
+					<div className="w-2 h-2 rounded-full bg-[#1B8F3E]"></div>
+					<span className="text-[10px] font-semibold text-[#1B8F3E] uppercase tracking-widest">{request._count?.offers || 0} {t('admin.requests.offers')}</span>
 				</div>
 				<div 
-					className="flex items-center gap-1.5 text-[9px] font-bold text-[#008037] uppercase tracking-widest cursor-pointer hover:translate-x-1 transition-transform"
+					className="flex items-center gap-1.5 text-[9px] font-bold text-[#1B8F3E] uppercase tracking-widest cursor-pointer hover:translate-x-1 transition-transform"
 					onClick={() => {
 						setSelectedRequest(request)
 						setRequestDetailModalOpen(true)
@@ -901,7 +901,7 @@ export default function AdminPage() {
 										</div>
 										<div>
 											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.production_cycle') || 'Production Cycle'}</p>
-											<p className="text-sm font-semibold" style={{ color: '#008037' }}>{vehicle.year}</p>
+											<p className="text-sm font-semibold" style={{ color: '#1B8F3E' }}>{vehicle.year}</p>
 										</div>
 									</div>
 								</CardContent>
@@ -951,7 +951,7 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-8 h-8 rounded-full bg-[#EDFBF1] flex items-center justify-center">
-						<Package className="w-4 h-4 text-[#008037]" />
+						<Package className="w-4 h-4 text-[#1B8F3E]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{offer.workshop?.companyName}</h4>
@@ -1021,7 +1021,7 @@ export default function AdminPage() {
 			<div className="space-y-2.5 mb-4">
 				<div className="flex justify-between items-center bg-gray-50/50 p-2 rounded-lg border border-gray-50">
 					<span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('workshop.proposals.total_price')}</span>
-					<span className="text-lg font-black text-[#008037] tracking-tighter">
+					<span className="text-lg font-black text-[#1B8F3E] tracking-tighter">
 						{formatPrice(offer.price)}
 					</span>
 				</div>
@@ -1155,7 +1155,7 @@ export default function AdminPage() {
 											</div>
 											<div>
 												<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.production_cycle') || 'Production Cycle'}</p>
-												<p className="text-sm font-semibold" style={{ color: '#008037' }}>{vehicle.year}</p>
+												<p className="text-sm font-semibold" style={{ color: '#1B8F3E' }}>{vehicle.year}</p>
 											</div>
 										</div>
 									</CardContent>
@@ -1185,7 +1185,7 @@ export default function AdminPage() {
 									</h2>
 									<div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-50">
 										<span className="text-sm font-bold text-[#05324f]">{t('admin.oversight.total_bid_amount')}</span>
-										<span className="text-3xl font-black text-[#008037] tracking-tighter">
+										<span className="text-3xl font-black text-[#1B8F3E] tracking-tighter">
 											{formatPrice(selectedOffer.price)}
 										</span>
 									</div>
@@ -1249,7 +1249,7 @@ export default function AdminPage() {
 			<div className="flex items-start justify-between mb-3">
 				<div className="flex items-center gap-3">
 					<div className="w-8 h-8 rounded-full bg-[#EDFBF1] flex items-center justify-center group-hover:scale-110 transition-transform">
-						<Calendar className="w-4 h-4 text-[#008037]" />
+						<Calendar className="w-4 h-4 text-[#1B8F3E]" />
 					</div>
 					<div className="min-w-0">
 						<h4 className="font-semibold text-gray-900 leading-tight truncate">{booking.workshop?.companyName}</h4>
@@ -1456,7 +1456,7 @@ export default function AdminPage() {
 										</div>
 										<div>
 											<p className="text-xs font-medium text-gray-500 mb-1">{t('admin.oversight.production_cycle') || 'Production Cycle'}</p>
-											<p className="text-sm font-semibold" style={{ color: '#008037' }}>{vehicle.year}</p>
+											<p className="text-sm font-semibold" style={{ color: '#1B8F3E' }}>{vehicle.year}</p>
 										</div>
 									</div>
 								</CardContent>
@@ -1472,7 +1472,7 @@ export default function AdminPage() {
 								<div className="flex flex-col md:flex-row items-center justify-between gap-10">
 									<div className="flex-1 w-full">
 										<p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">{t('workshop.proposals.total_price')}</p>
-										<p className="text-5xl font-black text-[#008037] tracking-tighter">
+										<p className="text-5xl font-black text-[#1B8F3E] tracking-tighter">
 											{formatPrice(selectedBooking.totalAmount)}
 										</p>
 									</div>
@@ -1781,7 +1781,7 @@ export default function AdminPage() {
 							onClick={() => handleWorkshopAction(workshopActionConfirm.workshopId, workshopActionConfirm.action)}
 							className={`flex-1 text-white rounded-xl h-12 font-semibold text-xs shadow-md border-none transition-all ${
 								workshopActionConfirm.action === 'approve' 
-									? 'bg-brand-btn shadow-[#008037]/10 ' 
+									? 'bg-brand-btn shadow-[#1B8F3E]/10 ' 
 									: 'bg-red-500 shadow-red-500/10 hover:bg-red-600'
 							}`}
 						>

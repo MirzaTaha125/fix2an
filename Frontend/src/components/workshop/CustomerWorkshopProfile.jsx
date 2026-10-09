@@ -211,7 +211,7 @@ export default function CustomerWorkshopProfile({
 					<ul className="space-y-3">
 						{badges.map((badge) => (
 							<li key={badge} className="flex items-center gap-3 text-sm text-[#05324f]">
-								<span className="w-5 h-5 rounded-full bg-[#008037] text-white flex items-center justify-center shrink-0">
+								<span className="w-5 h-5 rounded-full bg-[#1B8F3E] text-white flex items-center justify-center shrink-0">
 									<Check className="w-3 h-3" strokeWidth={3} />
 								</span>
 								<span className="leading-snug font-medium">{badge}</span>
@@ -238,7 +238,7 @@ export default function CustomerWorkshopProfile({
 							)}
 						</div>
 						{onOpenReviews ? (
-							<button type="button" onClick={onOpenReviews} className="text-sm font-semibold text-[#008037] shrink-0">
+							<button type="button" onClick={onOpenReviews} className="text-sm font-semibold text-[#1B8F3E] shrink-0">
 								{t('quotes.flow.show_all')}
 							</button>
 						) : null}
@@ -254,7 +254,7 @@ export default function CustomerWorkshopProfile({
 								<div key={review.id} className="min-w-full w-full max-w-full shrink-0 snap-center px-0.5 box-border">
 									<div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
 										<div className="flex items-start gap-3 mb-2">
-											<div className="w-10 h-10 rounded-full bg-[#E8F5EC] text-[#008037] text-sm font-bold flex items-center justify-center shrink-0 overflow-hidden">
+											<div className="w-10 h-10 rounded-full bg-[#E8F5EC] text-[#1B8F3E] text-sm font-bold flex items-center justify-center shrink-0 overflow-hidden">
 												{review.initial}
 											</div>
 											<div className="min-w-0 flex-1">
@@ -265,7 +265,7 @@ export default function CustomerWorkshopProfile({
 												{[1, 2, 3, 4, 5].map((star) => (
 													<Star
 														key={star}
-														className={`w-3.5 h-3.5 ${star <= review.rating ? 'text-[#008037] fill-[#008037]' : 'text-gray-200 fill-gray-200'}`}
+														className={`w-3.5 h-3.5 ${star <= review.rating ? 'text-[#1B8F3E] fill-[#1B8F3E]' : 'text-gray-200 fill-gray-200'}`}
 													/>
 												))}
 											</div>
@@ -291,7 +291,7 @@ export default function CustomerWorkshopProfile({
 										setReviewIndex(index)
 									}}
 									className={`h-1.5 rounded-full transition-all ${
-										index === reviewIndex ? 'w-4 bg-[#008037]' : 'w-1.5 bg-[#D1D5DB]'
+										index === reviewIndex ? 'w-4 bg-[#1B8F3E]' : 'w-1.5 bg-[#D1D5DB]'
 									}`}
 								/>
 							))}

@@ -57,7 +57,7 @@ function changePercent(current, previous) {
 
 function Pill({ children, tone = 'gray' }) {
 	const tones = {
-		green: 'bg-[#E7F6EC] text-[#008037]',
+		green: 'bg-[#E7F6EC] text-[#1B8F3E]',
 		amber: 'bg-[#FFF6E8] text-[#C4841D]',
 		red: 'bg-[#FDECEC] text-[#D64545]',
 		blue: 'bg-[#EEF2FF] text-[#3B5BDB]',
@@ -204,7 +204,7 @@ export default function AdminPanelView({
 		const groups = [
 			{ key: 'new', match: ['NEW'], tone: '#3DDC84' },
 			{ key: 'quotes', match: ['IN_BIDDING', 'BIDDING_CLOSED'], tone: '#5B8DEF' },
-			{ key: 'booked', match: ['BOOKED'], tone: '#008037' },
+			{ key: 'booked', match: ['BOOKED'], tone: '#1B8F3E' },
 			{ key: 'ongoing', match: ['IN_PROGRESS'], tone: '#F0A04B' },
 			{ key: 'done', match: ['COMPLETED'], tone: '#E4C15A' },
 		]
@@ -483,7 +483,7 @@ function ChipRow({ children }) {
 
 function Delta({ value }) {
 	if (value == null) return null
-	return <p className={`text-xs font-semibold mt-1 ${value < 0 ? 'text-red-500' : 'text-[#008037]'}`}>{value > 0 ? '+' : ''}{value}%</p>
+	return <p className={`text-xs font-semibold mt-1 ${value < 0 ? 'text-red-500' : 'text-[#1B8F3E]'}`}>{value > 0 ? '+' : ''}{value}%</p>
 }
 
 function Overview({ label, stats, rangeLabel, newThisWeek, revenueTotal, weekChange, weekDays, slices }) {
@@ -522,8 +522,8 @@ function Overview({ label, stats, rangeLabel, newThisWeek, revenueTotal, weekCha
 				{cards.map((card) => (
 					<div key={card.name} className="rounded-2xl border border-[#E6E8EC] bg-white px-3.5 sm:px-5 py-3.5 sm:py-4 min-w-0">
 						<p className="text-xs sm:text-sm text-[#6B7280] leading-snug">{card.name}</p>
-						<p className="text-[1.35rem] sm:text-[1.7rem] font-bold text-[#008037] mt-2 leading-none break-words">{card.value}</p>
-						<p className={`text-[11px] sm:text-xs font-semibold mt-2 leading-snug ${card.change < 0 ? 'text-red-500' : 'text-[#008037]'}`}>
+						<p className="text-[1.35rem] sm:text-[1.7rem] font-bold text-[#1B8F3E] mt-2 leading-none break-words">{card.value}</p>
+						<p className={`text-[11px] sm:text-xs font-semibold mt-2 leading-snug ${card.change < 0 ? 'text-red-500' : 'text-[#1B8F3E]'}`}>
 							{card.change > 0 ? '+' : ''}{card.change}% <span className="hidden sm:inline">{label('from_last_week')}</span>
 						</p>
 					</div>
@@ -544,7 +544,7 @@ function Overview({ label, stats, rangeLabel, newThisWeek, revenueTotal, weekCha
 								{yTicks.map((_, index) => (
 									<line key={index} x1="0" x2={width} y1={(height / 4) * index} y2={(height / 4) * index} stroke="#F3F4F6" />
 								))}
-								<polyline fill="none" stroke="#008037" strokeWidth="3" points={line} strokeLinejoin="round" strokeLinecap="round" />
+								<polyline fill="none" stroke="#1B8F3E" strokeWidth="3" points={line} strokeLinejoin="round" strokeLinecap="round" />
 							</svg>
 							<div className="flex justify-between text-[9px] sm:text-[11px] text-[#9CA3AF] mt-1 gap-0.5">
 								{weekDays.map((item) => <span key={item.key} className="truncate text-center flex-1">{item.label}</span>)}
@@ -610,9 +610,9 @@ function caseWhen(value, locale) {
 }
 
 function caseStatusClass(status) {
-	if (status === 'NEW') return 'bg-white text-[#008037] border border-[#008037]'
+	if (status === 'NEW') return 'bg-white text-[#1B8F3E] border border-[#1B8F3E]'
 	if (status === 'IN_BIDDING' || status === 'BIDDING_CLOSED') return 'bg-[#EEF2FF] text-[#3B5BDB]'
-	if (status === 'BOOKED') return 'bg-[#E7F6EC] text-[#008037]'
+	if (status === 'BOOKED') return 'bg-[#E7F6EC] text-[#1B8F3E]'
 	if (status === 'COMPLETED') return 'bg-[#F3F4F6] text-[#6B7280]'
 	if (status === 'CANCELLED' || status === 'EXPIRED') return 'bg-[#FDECEC] text-[#D64545]'
 	return 'bg-[#FFF6E8] text-[#C4841D]'
@@ -655,7 +655,7 @@ function CasesTable({ label, rows, loading, searchQuery, onSearch, statusFilter,
 				<div className="admin-h-scroll overflow-x-auto flex gap-2 -mx-1 px-1">
 					<FilterChip>{label('all_workshops')}</FilterChip>
 					<FilterChip>{label('all_dates')}</FilterChip>
-					<button type="button" className="h-10 px-4 rounded-xl border border-[#008037] text-[#008037] text-sm font-semibold inline-flex items-center gap-2 shrink-0 whitespace-nowrap">
+					<button type="button" className="h-10 px-4 rounded-xl border border-[#1B8F3E] text-[#1B8F3E] text-sm font-semibold inline-flex items-center gap-2 shrink-0 whitespace-nowrap">
 						<Download className="w-4 h-4" />
 						{label('export')}
 					</button>
@@ -702,7 +702,7 @@ function CasesTable({ label, rows, loading, searchQuery, onSearch, statusFilter,
 									</td>
 									<td className="py-3.5 pr-3 text-[#6B7280] whitespace-nowrap">{caseWhen(row.createdAt, locale)}</td>
 									<td className="py-3.5 pr-3 text-[#6B7280]">—</td>
-									<td className="py-3.5"><button type="button" onClick={() => onView(row)} className="text-[#008037] font-semibold">{label('view')}</button></td>
+									<td className="py-3.5"><button type="button" onClick={() => onView(row)} className="text-[#1B8F3E] font-semibold">{label('view')}</button></td>
 								</tr>
 							)
 						})}
@@ -815,7 +815,7 @@ function WorkshopsTable({ label, rows, loading, searchQuery, onSearch, dateLabel
 											</span>
 										) : '—'}
 									</td>
-									<td className="py-3.5"><button type="button" onClick={() => onView(row)} className="text-[#008037] font-semibold">{label('view')}</button></td>
+									<td className="py-3.5"><button type="button" onClick={() => onView(row)} className="text-[#1B8F3E] font-semibold">{label('view')}</button></td>
 								</tr>
 							)
 						})}
@@ -861,7 +861,7 @@ function CustomersTable({ label, rows, loading, searchQuery, onSearch, dateLabel
 								<td className="py-4 pr-4 text-[#6B7280] whitespace-nowrap">{formatSwedishPhone(row.phone) || '—'}</td>
 								<td className="py-4 pr-4 text-[#6B7280] whitespace-nowrap">{dateLabel(row.createdAt)}</td>
 								<td className="py-4 pr-4 text-[#111827]">{row._count?.requests || 0}</td>
-								<td className="py-4"><span className="text-[#008037] font-semibold">{label('view')}</span></td>
+								<td className="py-4"><span className="text-[#1B8F3E] font-semibold">{label('view')}</span></td>
 							</tr>
 						))}
 					</tbody>
@@ -945,7 +945,7 @@ function SupportView({ label }) {
 						key={key}
 						type="button"
 						onClick={() => { setStatusTab(key); setSelectedId(null) }}
-						className={`pb-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap shrink-0 ${statusTab === key ? 'text-[#008037] border-[#008037]' : 'text-[#9CA3AF] border-transparent'}`}
+						className={`pb-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap shrink-0 ${statusTab === key ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'}`}
 					>
 						{label(key)}
 					</button>
@@ -960,7 +960,7 @@ function SupportView({ label }) {
 								<p className="text-sm font-semibold text-[#0B2540] truncate">{ticket.subject}</p>
 								<p className="text-xs text-[#9CA3AF] truncate">{ticket.customerId?.name || ticket.customerId?.email || '—'}</p>
 							</div>
-							<button type="button" onClick={() => setSelectedId(null)} className="text-sm font-semibold text-[#008037] shrink-0">{label('back') || 'Back'}</button>
+							<button type="button" onClick={() => setSelectedId(null)} className="text-sm font-semibold text-[#1B8F3E] shrink-0">{label('back') || 'Back'}</button>
 						</div>
 						<div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-2 bg-[#FAFBFC]">
 							{(ticket.messages || []).map((msg) => {
@@ -994,7 +994,7 @@ function SupportView({ label }) {
 									key={status}
 									type="button"
 									onClick={() => setStatus(status)}
-									className={`w-full h-10 rounded-xl border text-sm font-semibold ${ticket.status === status ? 'border-[#008037] bg-[#F2F9F4] text-[#008037]' : 'border-[#E5E7EB] text-[#374151]'}`}
+									className={`w-full h-10 rounded-xl border text-sm font-semibold ${ticket.status === status ? 'border-[#1B8F3E] bg-[#F2F9F4] text-[#1B8F3E]' : 'border-[#E5E7EB] text-[#374151]'}`}
 								>
 									{status}
 								</button>
@@ -1031,7 +1031,7 @@ function SupportView({ label }) {
 									<td className="py-4 pr-4 text-[#6B7280]">{row.status}</td>
 									<td className="py-4 pr-4 text-[#6B7280] whitespace-nowrap">{row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '—'}</td>
 									<td className="py-4">
-										<button type="button" onClick={() => setSelectedId(row.id)} className="text-[#008037] font-semibold">
+										<button type="button" onClick={() => setSelectedId(row.id)} className="text-[#1B8F3E] font-semibold">
 											{label('view')}
 										</button>
 									</td>
@@ -1080,7 +1080,7 @@ function PaymentsView({ label, bookings, payTab, setPayTab, dateLabel, caseNo, o
 			</PageTitle>
 			<div className="admin-h-scroll overflow-x-auto flex gap-6 sm:gap-8 border-b border-[#EEF0F4] mb-5 -mx-1 px-1">
 				{tabs.map(([id, key]) => (
-					<button key={id} type="button" onClick={() => setPayTab(id)} className={`pb-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap shrink-0 ${payTab === id ? 'text-[#008037] border-[#008037]' : 'text-[#9CA3AF] border-transparent'}`}>
+					<button key={id} type="button" onClick={() => setPayTab(id)} className={`pb-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap shrink-0 ${payTab === id ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'}`}>
 						{label(key)}
 					</button>
 				))}
@@ -1091,7 +1091,7 @@ function PaymentsView({ label, bookings, payTab, setPayTab, dateLabel, caseNo, o
 						<div key={card.name} className="rounded-2xl border border-[#E6E8EC] px-4 sm:px-5 py-4 min-w-0">
 							<p className="text-sm text-[#6B7280]">{card.name}</p>
 							<p className="text-[1.25rem] sm:text-[1.45rem] font-bold text-[#0B2540] mt-2 break-words">{formatPrice(card.value || 0)}</p>
-							<p className={`text-xs font-semibold mt-2 ${card.change < 0 ? 'text-red-500' : 'text-[#008037]'}`}>
+							<p className={`text-xs font-semibold mt-2 ${card.change < 0 ? 'text-red-500' : 'text-[#1B8F3E]'}`}>
 								{card.change > 0 ? '+' : ''}{card.change}% {label('from_prev_month')}
 							</p>
 						</div>
@@ -1123,7 +1123,7 @@ function PaymentsView({ label, bookings, payTab, setPayTab, dateLabel, caseNo, o
 									<td className="py-3.5 pr-3 text-[#6B7280]">{car || '—'}</td>
 									<td className="py-3.5 pr-3"><span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${paid ? 'bg-[#E7F6EC] text-[#3DAA62]' : 'bg-[#FFF6E8] text-[#C4841D]'}`}>{label(paid ? 'paid' : 'waiting')}</span></td>
 									<td className="py-3.5 pr-3 whitespace-nowrap">{formatPrice(row.totalAmount || 0)}</td>
-									<td className="py-3.5"><button type="button" onClick={() => onView(row)} className="text-[#008037] font-semibold">{label('receipt')}</button></td>
+									<td className="py-3.5"><button type="button" onClick={() => onView(row)} className="text-[#1B8F3E] font-semibold">{label('receipt')}</button></td>
 								</tr>
 							) : (
 								<tr key={row.id || row._id} className="border-b border-[#F3F4F6]">
@@ -1131,7 +1131,7 @@ function PaymentsView({ label, bookings, payTab, setPayTab, dateLabel, caseNo, o
 									<td className="py-3.5 pr-3 font-semibold text-[#111827]">{row.workshop?.companyName || '—'}</td>
 									<td className="py-3.5 pr-3 whitespace-nowrap">{formatPrice(row.totalAmount || 0)}</td>
 									<td className="py-3.5 pr-3"><span className="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold bg-[#E7F6EC] text-[#3DAA62]">{label('paid')}</span></td>
-									<td className="py-3.5"><button type="button" onClick={() => onView(row)} className="text-[#008037] font-semibold">{label('receipt')}</button></td>
+									<td className="py-3.5"><button type="button" onClick={() => onView(row)} className="text-[#1B8F3E] font-semibold">{label('receipt')}</button></td>
 								</tr>
 							)
 						})}
@@ -1227,8 +1227,8 @@ function StatisticsView({ label, period, setPeriod, requests, bookings, locale }
 				{cards.map(([name, value, change]) => (
 					<div key={name} className="rounded-2xl border border-[#E8EAEE] px-3.5 sm:px-5 py-3.5 sm:py-4 min-h-[96px] sm:min-h-[108px] min-w-0">
 						<p className="text-xs sm:text-sm text-[#6B7280] leading-snug">{name}</p>
-						<p className="text-[1.35rem] sm:text-[1.7rem] font-bold text-[#008037] mt-2 sm:mt-3 leading-none break-words">{typeof value === 'number' ? value.toLocaleString('sv-SE') : value}</p>
-						<p className={`text-xs sm:text-sm font-semibold mt-2 ${change < 0 ? 'text-red-500' : 'text-[#008037]'}`}>
+						<p className="text-[1.35rem] sm:text-[1.7rem] font-bold text-[#1B8F3E] mt-2 sm:mt-3 leading-none break-words">{typeof value === 'number' ? value.toLocaleString('sv-SE') : value}</p>
+						<p className={`text-xs sm:text-sm font-semibold mt-2 ${change < 0 ? 'text-red-500' : 'text-[#1B8F3E]'}`}>
 							{change > 0 ? '+' : ''}{change}%
 						</p>
 					</div>
@@ -1246,7 +1246,7 @@ function StatisticsView({ label, period, setPeriod, requests, bookings, locale }
 								{bars.map((bar) => (
 									<div key={bar.key} className="flex-1 flex items-end justify-center h-full min-w-0">
 										<div
-											className="w-[5px] sm:w-[7px] max-w-full rounded-t-[3px] bg-[#008037]"
+											className="w-[5px] sm:w-[7px] max-w-full rounded-t-[3px] bg-[#1B8F3E]"
 											style={{ height: bar.total ? `${Math.max(8, (bar.total / yMax) * 100)}%` : '0%' }}
 										/>
 									</div>
@@ -1268,7 +1268,7 @@ function StatisticsView({ label, period, setPeriod, requests, bookings, locale }
 							<div key={name} className="flex items-center gap-2 sm:gap-3 mb-4 last:mb-0">
 								<span className="w-20 sm:w-28 shrink-0 text-sm text-[#111827] truncate">{name}</span>
 								<div className="flex-1 h-2.5 rounded-full bg-[#F3F4F6] min-w-0">
-									<div className="h-2.5 rounded-full bg-[#008037]" style={{ width: `${Math.max(pct, 4)}%` }} />
+									<div className="h-2.5 rounded-full bg-[#1B8F3E]" style={{ width: `${Math.max(pct, 4)}%` }} />
 								</div>
 								<span className="w-9 sm:w-10 text-right text-sm text-[#6B7280] shrink-0">{pct}%</span>
 							</div>
@@ -1290,7 +1290,7 @@ function ContentView({ label, tab, setTab, onOpen }) {
 			</PageTitle>
 			<div className="admin-h-scroll overflow-x-auto flex gap-5 sm:gap-6 border-b border-[#EEF0F4] mb-4 -mx-1 px-1">
 				{tabs.map((key) => (
-					<button key={key} type="button" onClick={() => setTab(key)} className={`pb-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap shrink-0 ${tab === key ? 'text-[#008037] border-[#008037]' : 'text-[#9CA3AF] border-transparent'}`}>
+					<button key={key} type="button" onClick={() => setTab(key)} className={`pb-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap shrink-0 ${tab === key ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'}`}>
 						{label(key)}
 					</button>
 				))}
@@ -1309,7 +1309,7 @@ function ContentView({ label, tab, setTab, onOpen }) {
 							<tr key={page.path} className="border-b border-[#F3F4F6]">
 								<td className="py-3.5 pr-3 font-semibold text-[#0B2540]">{page.title}</td>
 								<td className="py-3.5 pr-3"><Pill tone="green">{label('published')}</Pill></td>
-								<td className="py-3.5"><button type="button" onClick={() => onOpen(page.path)} className="text-[#008037] font-semibold">{label('edit')}</button></td>
+								<td className="py-3.5"><button type="button" onClick={() => onOpen(page.path)} className="text-[#1B8F3E] font-semibold">{label('edit')}</button></td>
 							</tr>
 						))}
 					</tbody>
@@ -1358,7 +1358,7 @@ function SettingsView({
 				<PageTitle>{label('settings')}</PageTitle>
 				<div className="admin-h-scroll overflow-x-auto flex gap-5 sm:gap-6 border-b border-[#EEF0F4] mb-2 -mx-1 px-1">
 					{tabs.map((key) => (
-						<button key={key} type="button" onClick={() => setTab(key)} className={`pb-3 text-sm font-semibold whitespace-nowrap shrink-0 border-b-2 -mb-px ${tab === key ? 'text-[#008037] border-[#008037]' : 'text-[#9CA3AF] border-transparent'}`}>
+						<button key={key} type="button" onClick={() => setTab(key)} className={`pb-3 text-sm font-semibold whitespace-nowrap shrink-0 border-b-2 -mb-px ${tab === key ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'}`}>
 							{label(key)}
 						</button>
 					))}
@@ -1390,9 +1390,9 @@ function SettingsView({
 						<div className="pt-6 mt-2 border-t border-[#F3F4F6]">
 							<p className="text-sm font-semibold text-[#0B2540]">{t('admin.settings.twofa_title')}</p>
 							<p className="text-xs text-[#9CA3AF] mt-1">{t('admin.settings.twofa_desc')}</p>
-							<p className="text-sm text-[#008037] font-medium mt-3">{twoFactorEnabled ? t('admin.settings.twofa_enabled') : t('admin.settings.twofa_disabled')}</p>
+							<p className="text-sm text-[#1B8F3E] font-medium mt-3">{twoFactorEnabled ? t('admin.settings.twofa_enabled') : t('admin.settings.twofa_disabled')}</p>
 							{!twoFactorEnabled && !twoFactorSetup?.qrCode && (
-								<button type="button" onClick={onStart2FA} disabled={twoFactorLoading} className="mt-3 h-10 px-5 rounded-xl border border-[#008037] text-[#008037] text-sm font-semibold disabled:opacity-60">
+								<button type="button" onClick={onStart2FA} disabled={twoFactorLoading} className="mt-3 h-10 px-5 rounded-xl border border-[#1B8F3E] text-[#1B8F3E] text-sm font-semibold disabled:opacity-60">
 									{t('admin.settings.twofa_enable')}
 								</button>
 							)}
@@ -1452,7 +1452,7 @@ function SettingsView({
 						{notices.map(([key, name]) => (
 							<button key={key} type="button" onClick={() => togglePref(key)} className="w-full flex items-center justify-between py-4 border-b border-[#F3F4F6] text-left">
 								<span className="text-sm font-medium text-[#0B2540]">{label(name)}</span>
-								<span className={`w-11 h-6 rounded-full p-0.5 ${prefs[key] ? 'bg-[#008037]' : 'bg-gray-200'}`}>
+								<span className={`w-11 h-6 rounded-full p-0.5 ${prefs[key] ? 'bg-[#1B8F3E]' : 'bg-gray-200'}`}>
 									<span className={`block w-5 h-5 rounded-full bg-white transition-transform ${prefs[key] ? 'translate-x-5' : ''}`} />
 								</span>
 							</button>
@@ -1476,7 +1476,7 @@ function SettingsView({
 			</div>
 			<div className="rounded-2xl border border-[#E6E8EC] p-5 h-fit text-center">
 				<div className="w-16 h-16 mx-auto rounded-full bg-[#E7F6EC] flex items-center justify-center mb-3">
-					<LifeBuoy className="w-8 h-8 text-[#008037]" />
+					<LifeBuoy className="w-8 h-8 text-[#1B8F3E]" />
 				</div>
 				<p className="text-base font-bold text-[#0B2540]">{label('help_title')}</p>
 				<p className="text-sm text-[#6B7280] mt-1">{label('help_body')}</p>

@@ -17,7 +17,7 @@ export default function WorkshopLandingPage() {
 		<div className="list-page-shell bg-white">
 			<Navbar />
 
-			<main className="list-page-main w-full max-w-2xl md:max-w-5xl mx-auto px-4 pt-24 md:pt-28 pb-10 md:pb-12 lg:pb-16">
+			<main className="list-page-main w-full max-w-2xl md:max-w-5xl mx-auto px-4 pt-20 md:pt-24 pb-10 md:pb-12 lg:pb-16">
 				<section className="w-full">
 					<div className="text-center mb-8 md:mb-10">
 						<h1 className="text-[2rem] md:text-5xl lg:text-[3.35rem] font-black text-[#05324f] leading-[1.15] md:leading-tight lg:leading-[1.2] mb-5 tracking-tight">
@@ -31,7 +31,7 @@ export default function WorkshopLandingPage() {
 					<div className="flex justify-center mb-10 md:mb-12">
 						<Link
 							to="/workshop/signup"
-							className="w-full max-w-[340px] sm:max-w-[360px] bg-[#008037] rounded-xl text-white flex items-center justify-center px-4 py-4 lg:py-5 shadow-sm font-semibold text-sm lg:text-base active:scale-95 transition-transform hover:brightness-105"
+							className="w-full max-w-[340px] sm:max-w-[360px] bg-[#1B8F3E] rounded-xl text-white flex items-center justify-center px-4 py-4 lg:py-5 shadow-sm font-semibold text-sm lg:text-base active:scale-95 transition-transform hover:brightness-105"
 						>
 							{t('homepage.workshop.cta')}
 						</Link>
@@ -42,9 +42,9 @@ export default function WorkshopLandingPage() {
 							{BENEFIT_ITEMS.map(({ key, descKey, Icon }) => (
 								<div key={key} className="flex flex-col items-center text-center">
 									<Icon
-										className="w-9 h-9 sm:w-10 sm:h-10 text-[#008037] mb-4 sm:mb-5"
+										className="w-9 h-9 sm:w-10 sm:h-10 text-[#1B8F3E] mb-4 sm:mb-5"
 										fill="none"
-										stroke="#008037"
+										stroke="#1B8F3E"
 										strokeWidth={2}
 									/>
 									<p className="text-sm sm:text-base font-semibold text-[#05324f] leading-tight mb-2 sm:mb-2.5">
@@ -57,15 +57,15 @@ export default function WorkshopLandingPage() {
 							))}
 						</div>
 
-						<div className="w-full rounded-2xl sm:rounded-2xl border border-[#008037]/20 bg-[#F2F9F4] px-4 sm:px-5 py-4 sm:py-5 flex items-start gap-3">
+						<div className="w-full rounded-2xl sm:rounded-2xl border border-[#1B8F3E]/20 bg-[#F2F9F4] px-4 sm:px-5 py-4 sm:py-5 flex items-start gap-3">
 							<ShieldCheck
-								className="w-7 h-7 sm:w-8 sm:h-8 text-[#008037] shrink-0"
+								className="w-7 h-7 sm:w-8 sm:h-8 text-[#1B8F3E] shrink-0"
 								fill="none"
-								stroke="#008037"
+								stroke="#1B8F3E"
 								strokeWidth={2}
 							/>
 							<div className="min-w-0">
-								<p className="text-[#008037] font-semibold text-base sm:text-lg leading-snug">
+								<p className="text-[#1B8F3E] font-semibold text-base sm:text-lg leading-snug">
 									{t('homepage.workshop.certified')}
 								</p>
 								<p className="text-[#05324f] text-xs sm:text-sm leading-relaxed mt-1.5">
@@ -77,7 +77,7 @@ export default function WorkshopLandingPage() {
 						<div className="w-full rounded-2xl sm:rounded-3xl border border-gray-200 bg-white px-6 sm:px-8 py-7 sm:py-8 text-center">
 							<div className="flex items-center justify-center gap-1.5 mb-4">
 								{[...Array(5)].map((_, i) => (
-									<Star key={i} className="w-6 h-6 sm:w-7 sm:h-7 text-[#008037]" fill="#008037" stroke="#008037" />
+									<Star key={i} className="w-6 h-6 sm:w-7 sm:h-7 text-[#1B8F3E]" fill="#1B8F3E" stroke="#1B8F3E" />
 								))}
 							</div>
 							<p className="text-lg sm:text-xl font-bold text-[#05324f] leading-snug">
@@ -91,7 +91,7 @@ export default function WorkshopLandingPage() {
 						<div className="text-center pt-2 pb-2">
 							<Link
 								to="/workshop/signup"
-								className="text-[#008037] font-bold text-base sm:text-lg inline-flex items-center justify-center gap-2 hover:opacity-80 active:opacity-70 transition-opacity"
+								className="text-[#1B8F3E] font-bold text-base sm:text-lg inline-flex items-center justify-center gap-2 hover:opacity-80 active:opacity-70 transition-opacity"
 							>
 								Get started now
 								<ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />

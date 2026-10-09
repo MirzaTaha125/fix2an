@@ -315,7 +315,7 @@ export default function BookAppointmentPage({
 							</div>
 							<div className="flex flex-wrap gap-x-4 gap-y-2 mt-4 text-[12px] text-[#6B7280]">
 								<span className="inline-flex items-center gap-1.5">
-									<span className="w-2 h-2 rounded-full bg-[#008037]" />
+									<span className="w-2 h-2 rounded-full bg-[#1B8F3E]" />
 									{t('booking.flow.available')}
 								</span>
 								<span className="inline-flex items-center gap-1.5">
@@ -337,7 +337,7 @@ export default function BookAppointmentPage({
 							>
 								<span className="flex items-center gap-3 min-w-0">
 									<span className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0">
-										<Calendar className="w-5 h-5 text-[#008037]" />
+										<Calendar className="w-5 h-5 text-[#1B8F3E]" />
 									</span>
 									<span className="text-left min-w-0">
 										<p className="font-bold text-[#05324f] capitalize truncate">{formatDayShort(selectedDate, i18n.language)}</p>
@@ -348,7 +348,7 @@ export default function BookAppointmentPage({
 							</button>
 						) : (
 							<div className="mt-6 flex items-center gap-3 rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3.5">
-								<Calendar className="w-5 h-5 text-[#008037] shrink-0" />
+								<Calendar className="w-5 h-5 text-[#1B8F3E] shrink-0" />
 								<p className="text-sm text-[#4B5563] leading-snug">{t('booking.flow.select_date_hint')}</p>
 							</div>
 						)}
@@ -392,7 +392,7 @@ export default function BookAppointmentPage({
 							<InfoCard
 								icon={
 									<span className="w-10 h-10 rounded-full bg-[#E7F6EC] flex items-center justify-center">
-										<Calendar className="w-5 h-5 text-[#008037]" />
+										<Calendar className="w-5 h-5 text-[#1B8F3E]" />
 									</span>
 								}
 								title={formatDayLabel(selectedDate, i18n.language)}
@@ -426,7 +426,7 @@ export default function BookAppointmentPage({
 										t('booking.flow.tip_reminder'),
 									].map((tip) => (
 										<li key={tip} className="flex items-center gap-2.5">
-											<span className="w-5 h-5 rounded-full bg-[#008037] flex items-center justify-center shrink-0">
+											<span className="w-5 h-5 rounded-full bg-[#1B8F3E] flex items-center justify-center shrink-0">
 												<Check className="w-3 h-3 text-white" strokeWidth={3} />
 											</span>
 											{tip}
@@ -480,7 +480,7 @@ export default function BookAppointmentPage({
 							/>
 						</div>
 						<div className="mb-6 rounded-2xl bg-[#F3FBF6] px-4 py-3.5 flex items-center gap-3 text-left">
-							<Bell className="w-5 h-5 text-[#008037] shrink-0" />
+							<Bell className="w-5 h-5 text-[#1B8F3E] shrink-0" />
 							<p className="text-sm text-[#05324f]">{t('booking.flow.reminder_note')}</p>
 						</div>
 						<button type="button" onClick={leaveCases} className="w-full min-h-[52px] bg-brand-btn text-white rounded-lg font-semibold mb-3">
@@ -503,7 +503,7 @@ export default function BookAppointmentPage({
 								a.click()
 								URL.revokeObjectURL(url)
 							}}
-							className="w-full min-h-[52px] border-[1.5px] border-[#008037] text-[#008037] rounded-lg font-semibold"
+							className="w-full min-h-[52px] border-[1.5px] border-[#1B8F3E] text-[#1B8F3E] rounded-lg font-semibold"
 						>
 							{t('booking.flow.add_to_calendar')}
 						</button>
@@ -533,7 +533,7 @@ function WorkshopMini({ workshop, distance, t, onChange }) {
 					{until ? ` · ${t('booking.flow.open_until', { time: until })}` : ''}
 				</p>
 				{onChange && (
-					<button type="button" onClick={onChange} className="text-xs font-semibold text-[#008037] mt-0.5">
+					<button type="button" onClick={onChange} className="text-xs font-semibold text-[#1B8F3E] mt-0.5">
 						{t('booking.flow.change_workshop')}
 					</button>
 				)}
@@ -561,14 +561,14 @@ function TimeSection({ title, times, selected, onSelect }) {
 							onClick={() => onSelect(time)}
 							className={`h-11 rounded-xl text-sm font-semibold border ${
 								active
-									? 'bg-[#008037] border-[#008037] text-white'
+									? 'bg-[#1B8F3E] border-[#1B8F3E] text-white'
 									: 'bg-white border-gray-200 text-[#05324f]'
 							}`}
 						>
 							{active ? (
 								<span className="inline-flex items-center gap-1.5">
 									<span className="w-4 h-4 rounded-full bg-white flex items-center justify-center shrink-0">
-										<Check className="w-2.5 h-2.5 text-[#008037]" strokeWidth={3.5} />
+										<Check className="w-2.5 h-2.5 text-[#1B8F3E]" strokeWidth={3.5} />
 									</span>
 									{time}
 								</span>
@@ -593,7 +593,7 @@ function InfoCard({ icon, title, sub, lines, link }) {
 				{rows.map((line) => (
 					<p key={line} className="text-xs text-[#6B7280] mt-0.5">{line}</p>
 				))}
-				{link && <p className="text-xs font-semibold text-[#008037] mt-1">{link}</p>}
+				{link && <p className="text-xs font-semibold text-[#1B8F3E] mt-1">{link}</p>}
 			</div>
 		</div>
 	)
