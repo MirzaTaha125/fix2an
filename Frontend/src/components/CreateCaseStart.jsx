@@ -23,7 +23,7 @@ export default function CreateCaseStart({ onSelectPath }) {
 
 	return (
 		<div className="w-full">
-			<h1 className="page-title-hero !text-[40px] lg:!text-[3.25rem] lg:mb-4 w-full max-w-none lg:max-w-3xl">
+			<h1 className="page-title-hero !text-[40px] lg:!text-[2.5rem] lg:mb-4 w-full max-w-none">
 				<Trans
 					i18nKey="upload.flow.start_title"
 					components={{ hl: <span className="text-[#1B8F3E]" /> }}

@@ -83,7 +83,7 @@ export default function SignInPage() {
 							{t('auth.signin.link_sent_to')}
 						</p>
 						<p className="text-sm sm:text-base lg:text-lg text-[#1B8F3E] font-semibold mt-1 max-w-md">
-							info@fixa2an.se
+							{t('footer.email')}
 						</p>
 						<p className="text-sm sm:text-base lg:text-lg text-[#9CA3AF] mt-1.5 leading-relaxed max-w-md">
 							{t('auth.signin.link_valid')}
