@@ -354,11 +354,15 @@ export async function sendEmail(to, template) {
 		return trySmtpThenEmailJs()
 	}
 
-	// Admin provider wins: `smtp` → SMTP only/first; `emailjs` → EmailJS first.
+	// Admin provider wins: `smtp` → SMTP first; `emailjs` → EmailJS only (no SMTP fallback —
+	// DO/VPS often firewalls SMTP and the hang causes client request timeouts).
 	const useHttpFirst = preferHttpEmail(doc) && emailjs
 
-	if (useHttpFirst) {
-		await tryEmailJsThenSmtp({ allowSmtpFallback: true })
+	if (useHttpFirst || doc?.provider === 'emailjs') {
+		if (!emailjs) {
+			throw new Error('EmailJS is selected but User ID / Service ID / Template ID are missing')
+		}
+		await tryEmailJsThenSmtp({ allowSmtpFallback: false })
 		return
 	}
 
