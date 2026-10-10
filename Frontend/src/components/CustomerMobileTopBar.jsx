@@ -101,7 +101,7 @@ export default function CustomerMobileTopBar() {
 						</p>
 					</div>
 				) : (
-					<Link to="/upload" className="flex items-center justify-center h-11" aria-label="Fixa2an">
+					<Link to="/dashboard" className="flex items-center justify-center h-11" aria-label="Fixa2an">
 						<img src={mainLogo} alt="Fixa2an" className="h-11 w-auto object-contain" />
 					</Link>
 				)}

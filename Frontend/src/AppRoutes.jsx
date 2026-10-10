@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
+import { getRoleHomePath } from './utils/roleHome'
 import { CustomerOfferCountProvider } from './context/CustomerOfferCountContext'
 import { CustomerUnreadCountProvider } from './context/CustomerUnreadCountContext'
 import { WorkshopUnreadCountProvider } from './context/WorkshopUnreadCountContext'
@@ -72,7 +73,7 @@ function PrivateRoute({ children, allowedRoles = [] }) {
 		} else if (userRole === 'WORKSHOP' && !location.pathname.startsWith('/workshop')) {
 			return <Navigate to="/workshop/dashboard" replace />
 		} else if (userRole !== 'ADMIN' && userRole !== 'WORKSHOP' && !['/dashboard', '/contract', '/offers', '/upload', '/profile', '/book-appointment', '/payment'].some((p) => location.pathname.startsWith(p))) {
-			return <Navigate to="/upload" replace />
+			return <Navigate to="/dashboard" replace />
 		}
 	}
     
@@ -94,6 +95,13 @@ function PrivateRoute({ children, allowedRoles = [] }) {
     }
 
 	return children
+}
+
+function RootRedirect() {
+	const { user, loading } = useAuth()
+	if (loading) return <RouteLoadingSkeleton />
+	if (user) return <Navigate to={getRoleHomePath(user)} replace />
+	return <Navigate to="/upload" replace />
 }
 
 function RequestRedirect() {
@@ -118,9 +126,9 @@ function AppRoutes() {
 			<MobileBackProvider>
 			<AppFrame>
 				<Routes>
-				<Route path="/" element={<Navigate to="/upload" replace />} />
-				<Route path="/en" element={<Navigate to="/upload" replace />} />
-				<Route path="/sv" element={<Navigate to="/upload" replace />} />
+				<Route path="/" element={<RootRedirect />} />
+				<Route path="/en" element={<RootRedirect />} />
+				<Route path="/sv" element={<RootRedirect />} />
 				<Route path="/workshop" element={<WorkshopLandingPage />} />
 				<Route path="/how-it-works" element={<HowItWorksPage />} />
 				<Route path="/about" element={<AboutPage />} />

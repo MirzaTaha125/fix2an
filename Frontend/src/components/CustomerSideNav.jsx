@@ -13,7 +13,7 @@ import {
 import mainLogo from '../assets/sidebar_logo.png'
 
 const ITEMS = [
-	{ id: 'home', to: '/upload', icon: NavHomeIcon },
+	{ id: 'home', to: '/dashboard', icon: NavHomeIcon },
 	{ id: 'cases', to: '/contract', icon: NavCasesIcon },
 	{ id: 'messages', to: '/contract?view=messages', icon: NavMessagesIcon },
 	{ id: 'profile', to: '/profile', icon: NavProfileIcon },
@@ -27,20 +27,11 @@ export default function CustomerSideNav() {
 	const unreadCount = useCustomerUnreadCount()
 	const isMessages = pathname === '/contract' && new URLSearchParams(search).get('view') === 'messages'
 
-	const uploadParams = new URLSearchParams(search)
-	const isUploadHome =
-		pathname === '/upload' &&
-		!uploadParams.get('path') &&
-		!uploadParams.get('edit') &&
-		!uploadParams.get('requestId') &&
-		uploadParams.get('mode') !== 'no-image' &&
-		uploadParams.get('sent') !== '1'
-
 	const activeId = isMessages
 		? 'messages'
 		: pathname === '/contract'
 			? 'cases'
-			: isUploadHome
+			: pathname === '/dashboard'
 				? 'home'
 				: pathname.startsWith('/profile')
 					? 'profile'
@@ -56,7 +47,7 @@ export default function CustomerSideNav() {
 	return (
 		<aside className="customer-side-nav hidden lg:flex fixed inset-y-0 left-0 w-[260px] bg-[#12244C] z-40 flex-col overflow-hidden">
 			<div className="px-5 pt-6 pb-4">
-				<Link to="/upload" className="inline-flex" aria-label="Fixa2an">
+				<Link to="/dashboard" className="inline-flex" aria-label="Fixa2an">
 					<img src={mainLogo} alt="Fixa2an" className="h-11 w-auto object-contain" />
 				</Link>
 			</div>

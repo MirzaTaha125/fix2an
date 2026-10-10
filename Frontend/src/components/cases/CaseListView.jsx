@@ -87,12 +87,12 @@ export default function CaseListView({
 						title={
 							activeTab === 'closed'
 								? t('common.empty.cases_closed_title')
-								: t('common.empty.cases_current_title')
+								: t('common.empty.cases_title')
 						}
 						description={
 							activeTab === 'closed'
 								? t('common.empty.cases_closed_desc')
-								: t('common.empty.cases_current_desc')
+								: t('common.empty.cases_desc')
 						}
 					/>
 					<div className="w-full max-w-[200px] -mt-2">

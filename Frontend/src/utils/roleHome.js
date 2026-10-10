@@ -14,7 +14,7 @@ export function getRoleHomePath(user) {
 		return '/workshop/dashboard'
 	}
 
-	return '/upload'
+	return '/dashboard'
 }
 
 export function getRoleLogoPath(user) {
@@ -33,5 +33,5 @@ export function getRoleLogoPath(user) {
 		return '/workshop/dashboard'
 	}
 
-	return '/upload'
+	return '/dashboard'
 }

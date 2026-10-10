@@ -37,13 +37,7 @@ function Navbar() {
 	}
 	const isCustomerMessages = location.pathname === '/contract' && new URLSearchParams(location.search).get('view') === 'messages'
 	const isCustomerCases = isActive('/contract') && !isCustomerMessages
-	const isCustomerHome =
-		location.pathname === '/upload' &&
-		!new URLSearchParams(location.search).get('path') &&
-		!new URLSearchParams(location.search).get('edit') &&
-		!new URLSearchParams(location.search).get('requestId') &&
-		new URLSearchParams(location.search).get('mode') !== 'no-image' &&
-		new URLSearchParams(location.search).get('sent') !== '1'
+	const isCustomerHome = location.pathname === '/dashboard'
 	const isHowItWorks = isActive('/how-it-works')
 	const isForWorkshops =
 		location.pathname === '/workshop/login' ||
@@ -246,7 +240,7 @@ function Navbar() {
 									{user.role === 'CUSTOMER' && (
 										<div className="hidden md:flex items-center space-x-4 lg:space-x-6">
 											<Link
-												to="/upload"
+												to="/dashboard"
 												className={`whitespace-nowrap text-sm transition-colors ${isCustomerHome ? 'text-[#05324f] font-semibold' : 'text-gray-600 font-medium hover:text-[#05324f]'}`}
 											>
 												{t('navigation.home')}
@@ -464,7 +458,7 @@ function Navbar() {
 									{user.role === 'CUSTOMER' && (
 										<>
 											<Link
-												to="/upload"
+												to="/dashboard"
 												className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isCustomerHome}
 														? 'text-[#05324f] font-semibold'
 														: 'text-gray-700 hover:text-[#05324f] hover:bg-gray-50'
