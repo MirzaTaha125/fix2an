@@ -57,18 +57,18 @@ api.interceptors.response.use(
 			return Promise.reject({
 				...error,
 				response: {
-					data: { message: 'Cannot connect to server. Please make sure the backend is running and ngrok tunnel is active.' }
+					data: { message: 'Cannot connect to server. Please make sure the backend is running.' }
 				}
 			})
 		}
 		
 		// Handle timeout errors
 		if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-			console.error('Request timeout - server may be slow or ngrok tunnel may be inactive', error)
+			console.error('Request timeout - API did not respond in time', error)
 			return Promise.reject({
 				...error,
 				response: {
-					data: { message: 'Request timed out. Please check your ngrok tunnel and try again.' }
+					data: { message: 'Request timed out. The server took too long — try again, or check that the API is running.' }
 				}
 			})
 		}
