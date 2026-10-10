@@ -1461,12 +1461,52 @@ function SettingsView({
 				)}
 				{tab === 'integrations' && (
 					<div className="max-w-xl space-y-3 pt-4">
-						<label className="block text-xs text-[#9CA3AF]">{label('email_host')}
-							<input value={emailConfig?.host || ''} onChange={(event) => onEmailChange({ ...emailConfig, host: event.target.value })} className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540]" />
+						<p className="text-sm font-semibold text-[#0B2540]">{t('admin.settings.email_config')}</p>
+						<p className="text-xs text-[#9CA3AF]">{t('admin.settings.email_desc')}</p>
+						<label className="block text-xs text-[#9CA3AF]">{t('admin.settings.email_provider')}
+							<select
+								value={emailConfig?.provider || 'smtp'}
+								onChange={(event) => onEmailChange({ ...emailConfig, provider: event.target.value })}
+								className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540] bg-white"
+							>
+								<option value="emailjs">{t('admin.settings.provider_emailjs')}</option>
+								<option value="smtp">{t('admin.settings.provider_smtp')}</option>
+							</select>
 						</label>
-						<label className="block text-xs text-[#9CA3AF]">{label('support_email')}
-							<input value={emailConfig?.from || ''} onChange={(event) => onEmailChange({ ...emailConfig, from: event.target.value })} className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540]" />
-						</label>
+						{(emailConfig?.provider || 'smtp') === 'emailjs' ? (
+							<>
+								<label className="block text-xs text-[#9CA3AF]">{t('admin.settings.emailjs_user_id')}
+									<input value={emailConfig?.emailjsUserId || ''} onChange={(event) => onEmailChange({ ...emailConfig, emailjsUserId: event.target.value })} className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540]" autoComplete="off" />
+								</label>
+								<label className="block text-xs text-[#9CA3AF]">{t('admin.settings.emailjs_service_id')}
+									<input value={emailConfig?.emailjsServiceId || ''} onChange={(event) => onEmailChange({ ...emailConfig, emailjsServiceId: event.target.value })} className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540]" autoComplete="off" />
+								</label>
+								<label className="block text-xs text-[#9CA3AF]">{t('admin.settings.emailjs_template_id')}
+									<input value={emailConfig?.emailjsTemplateId || ''} onChange={(event) => onEmailChange({ ...emailConfig, emailjsTemplateId: event.target.value })} className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540]" autoComplete="off" />
+								</label>
+								<label className="block text-xs text-[#9CA3AF]">{t('admin.settings.emailjs_private_key')}
+									<input type="password" value={emailConfig?.emailjsPrivateKey || ''} onChange={(event) => onEmailChange({ ...emailConfig, emailjsPrivateKey: event.target.value })} placeholder={t('admin.settings.password_placeholder')} className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540]" autoComplete="new-password" />
+								</label>
+							</>
+						) : (
+							<>
+								<label className="block text-xs text-[#9CA3AF]">{t('admin.settings.smtp_host')}
+									<input value={emailConfig?.host || ''} onChange={(event) => onEmailChange({ ...emailConfig, host: event.target.value })} className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540]" />
+								</label>
+								<label className="block text-xs text-[#9CA3AF]">{t('admin.settings.smtp_port')}
+									<input type="number" value={emailConfig?.port ?? 587} onChange={(event) => onEmailChange({ ...emailConfig, port: event.target.value })} className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540]" />
+								</label>
+								<label className="block text-xs text-[#9CA3AF]">{t('admin.settings.smtp_user')}
+									<input value={emailConfig?.user || ''} onChange={(event) => onEmailChange({ ...emailConfig, user: event.target.value })} className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540]" autoComplete="off" />
+								</label>
+								<label className="block text-xs text-[#9CA3AF]">{t('admin.settings.smtp_password')}
+									<input type="password" value={emailConfig?.password || ''} onChange={(event) => onEmailChange({ ...emailConfig, password: event.target.value })} placeholder={t('admin.settings.password_placeholder')} className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540]" autoComplete="new-password" />
+								</label>
+								<label className="block text-xs text-[#9CA3AF]">{t('admin.settings.from_address')}
+									<input value={emailConfig?.from || ''} onChange={(event) => onEmailChange({ ...emailConfig, from: event.target.value })} className="mt-1 w-full h-11 rounded-xl border border-[#E5E7EB] px-3 text-sm text-[#0B2540]" />
+								</label>
+							</>
+						)}
 						<button type="button" onClick={onSaveEmail} disabled={emailSaving} className="h-10 px-5 rounded-xl bg-brand-btn text-white text-sm font-semibold disabled:opacity-60">
 							{label('save')}
 						</button>
