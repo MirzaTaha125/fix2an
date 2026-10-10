@@ -92,7 +92,7 @@ export default function ForgotPasswordPage() {
 			<Navbar />
 			<div className="list-page-main list-page-main--center relative z-10">
 				<div className="max-w-md w-full space-y-8 animate-fade-in-up">
-					<div className="text-center">
+					<div className="text-center max-lg:mt-4">
 						<h2 className="text-2xl md:text-5xl font-bold mb-6" style={{ color: '#05324f' }}>
 							{t('auth.forgot_password.title', 'Reset Password')}
 						</h2>

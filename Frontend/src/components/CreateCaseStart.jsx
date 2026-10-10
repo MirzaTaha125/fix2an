@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import {
+	ArrowUp,
 	FileUp,
 	Wrench,
 	Search,
@@ -21,12 +22,113 @@ export default function CreateCaseStart({ onSelectPath }) {
 
 	const OptionAction = onSelectPath ? 'button' : Link
 
+	const unknownProps = onSelectPath
+		? { type: 'button', onClick: () => onSelectPath('unknown') }
+		: { to: '/upload?path=unknown' }
+
 	return (
 		<div className="w-full">
+			{/* Mobile landing */}
+			<div className="lg:hidden">
+				<h1 className="page-title-hero start-title-mobile !text-[30px] !leading-[1.15] text-center mb-3">
+					<Trans
+						i18nKey="upload.flow.start_title_mobile"
+						components={{
+							hl: <span className="text-[#1B8F3E]" />,
+							sec: <span className="text-[#05324f]" />,
+							br: <br />,
+						}}
+					/>
+				</h1>
+				<p className="text-[15px] text-[#6B7280] leading-relaxed text-center mb-5 max-w-[240px] mx-auto">
+					{t('upload.flow.start_subtitle_mobile')}
+				</p>
+
+				<div className="rounded-2xl border border-[#E6EAEF] bg-white shadow-[0_4px_18px_rgba(15,23,42,0.05)] p-4 mb-5 text-left">
+					<div className="flex items-start gap-3">
+						<div className="w-11 h-11 rounded-full bg-[#E7F6EC] flex items-center justify-center shrink-0">
+							<FileUp className="w-5 h-5 text-[#1B8F3E]" strokeWidth={2} />
+						</div>
+						<div className="min-w-0 flex-1">
+							<p className="font-bold text-[#05324f] text-[15px] leading-snug">
+								<Trans
+									i18nKey="upload.flow.failed_title_mobile"
+									components={{ hl: <span className="text-[#1B8F3E]" /> }}
+								/>
+							</p>
+							<p className="text-[13px] text-[#4B5563] leading-relaxed mt-1">
+								{t('upload.flow.failed_line_mobile')}
+							</p>
+							<p className="text-[13px] text-[#6B7280] leading-relaxed mt-1">
+								{t('upload.flow.failed_desc_mobile')}
+							</p>
+						</div>
+					</div>
+					<ProtocolAction
+						{...protocolProps}
+						className="mt-3 w-full min-h-[48px] px-3 rounded-lg border border-[#1B8F3E] text-[#1B8F3E] text-sm font-semibold inline-flex items-center justify-center gap-2"
+					>
+						<span>{t('upload.flow.upload_protocol_mobile')}</span>
+						<ArrowUp className="w-4 h-4 shrink-0" strokeWidth={2.25} />
+					</ProtocolAction>
+					<div className="h-px bg-[#EEF1F4] my-3.5" />
+					<OptionAction
+						{...unknownProps}
+						className="w-full text-center text-[13px] text-[#05324f] leading-snug"
+					>
+						{t('upload.flow.no_protocol')}{' '}
+						<span className="text-[#1B8F3E] font-semibold">
+							{t('upload.flow.describe_instead')} →
+						</span>
+					</OptionAction>
+				</div>
+
+				<div className="flex items-center justify-center gap-3 mb-4">
+					<div className="h-px w-12 bg-[#C5CAD1]" />
+					<span className="text-xs text-[#6B7280] whitespace-nowrap shrink-0">{t('upload.flow.or_choose')}</span>
+					<div className="h-px w-12 bg-[#C5CAD1]" />
+				</div>
+
+				<OptionAction
+					{...(onSelectPath
+						? { type: 'button', onClick: () => onSelectPath('known') }
+						: { to: '/upload?path=known' })}
+					className="w-full text-left rounded-xl border border-[#E6EAEF] border-l-[3px] border-l-[#1B8F3E] bg-white shadow-sm p-3.5 mb-3 flex items-center gap-3"
+				>
+					<div className="w-12 h-12 rounded-full bg-[#E7F6EC] flex items-center justify-center shrink-0">
+						<Wrench className="w-7 h-7 text-[#1B8F3E]" strokeWidth={1.75} />
+					</div>
+					<div className="min-w-0 flex-1">
+						<p className="font-bold text-[#05324f] text-[15px] leading-snug">{t('upload.flow.known_title')}</p>
+						<p className="text-[13px] text-[#6B7280] mt-1 leading-relaxed">{t('upload.flow.known_desc_mobile')}</p>
+					</div>
+					<ChevronRight className="w-5 h-5 text-[#9CA3AF] shrink-0" />
+				</OptionAction>
+
+				<OptionAction
+					{...unknownProps}
+					className="w-full text-left rounded-xl border border-[#E6EAEF] border-l-[3px] border-l-[#2563EB] bg-white shadow-sm p-3.5 flex items-center gap-3"
+				>
+					<div className="w-12 h-12 rounded-full bg-[#E8F0FE] flex items-center justify-center shrink-0">
+						<Search className="w-7 h-7 text-[#2563EB]" strokeWidth={1.75} />
+					</div>
+					<div className="min-w-0 flex-1">
+						<p className="font-bold text-[#05324f] text-[15px] leading-snug">{t('upload.flow.unknown_title')}</p>
+						<p className="text-[13px] text-[#6B7280] mt-1 leading-relaxed">{t('upload.flow.unknown_desc_mobile')}</p>
+					</div>
+					<ChevronRight className="w-5 h-5 text-[#9CA3AF] shrink-0" />
+				</OptionAction>
+			</div>
+
+			{/* Desktop — unchanged */}
+			<div className="hidden lg:block">
 			<h1 className="page-title-hero !text-[40px] lg:!text-[2.5rem] lg:mb-4 w-full max-w-none">
 				<Trans
 					i18nKey="upload.flow.start_title"
-					components={{ hl: <span className="text-[#1B8F3E]" /> }}
+					components={{
+						hl: <span className="text-[#1B8F3E]" />,
+						sec: <span className="text-[#1B8F3E]" />,
+					}}
 				/>
 			</h1>
 			<p className="text-sm lg:text-lg text-[#6B7280] leading-relaxed mb-6 lg:mb-8 w-full max-w-none lg:max-w-2xl">
@@ -128,6 +230,7 @@ export default function CreateCaseStart({ onSelectPath }) {
 						</p>
 					</div>
 				))}
+			</div>
 			</div>
 		</div>
 	)

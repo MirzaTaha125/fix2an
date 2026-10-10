@@ -873,8 +873,20 @@ export default function UploadPage() {
 	}
 	handleBackRef.current = handleBack
 
+	const showBackArrow = currentStep !== 'start' && currentStep !== 'success'
+	const backArrow = showBackArrow ? (
+		<button
+			type="button"
+			onClick={handleBack}
+			className="hidden lg:inline-flex items-center justify-center h-8 w-8 -ml-1 shrink-0 text-brand-navy hover:opacity-70"
+			aria-label={t('common.back') || 'Back'}
+		>
+			<ArrowRight className="w-5 h-5 rotate-180" />
+		</button>
+	) : null
+
 	const primaryBtn =
-		'w-full !rounded-2xl lg:!min-h-[64px] lg:!text-lg bg-brand-btn !text-white !font-semibold !shadow-none disabled:!bg-gray-300'
+		'w-full min-h-[52px] lg:min-h-[64px] !rounded-md bg-brand-btn !text-white font-semibold text-base lg:text-lg leading-normal !shadow-none disabled:!bg-gray-300 disabled:opacity-60'
 	const outlineBtn =
 		'w-full !rounded-2xl lg:!min-h-[64px] lg:!text-lg !bg-white hover:!bg-[#E8F5EC] !text-[#1B8F3E] !border-[1.5px] !border-[#1B8F3E] !font-semibold !shadow-none'
 	const fieldClass =
@@ -892,26 +904,18 @@ export default function UploadPage() {
 			<Navbar />
 			<div className="list-page-content lg:!max-w-7xl">
 				<div className={`w-full ${isLoggedInCustomer && currentStep === 'start' ? 'pb-2' : 'pb-8'} ${currentStep === 'start' ? '' : 'max-w-md mx-auto lg:max-w-none'}`}>
-					{currentStep !== 'start' && currentStep !== 'success' && (
-						<button
-							type="button"
-							onClick={handleBack}
-							className="mb-4 lg:mb-6 -ml-1 hidden lg:inline-flex items-center gap-1 text-sm lg:text-base font-medium text-brand-navy hover:opacity-70"
-						>
-							<ArrowRight className="w-4 h-4 rotate-180" />
-							{t('common.back') || 'Back'}
-						</button>
-					)}
-
 					{currentStep === 'start' && (
 						<CreateCaseStart onSelectPath={choosePath} />
 					)}
 
 					{currentStep === 'protocol' && (
 						<div>
-							<h1 className="page-title-hero lg:mb-4">
-								{t('upload.flow.protocol_title')}
-							</h1>
+							<div className="flex items-center gap-1.5 lg:mb-4">
+								{backArrow}
+								<h1 className="page-title-hero !mb-0">
+									{t('upload.flow.protocol_title')}
+								</h1>
+							</div>
 							<p className="text-sm lg:text-lg text-[#374151] leading-relaxed mb-6 lg:mb-8 max-w-md">
 								{t('upload.flow.protocol_subtitle')}
 							</p>
@@ -1050,9 +1054,12 @@ export default function UploadPage() {
 
 					{currentStep === 'known' && (
 						<div>
-							<h1 className="page-title-hero lg:mb-4">
-								{t('upload.flow.known_page_title')}
-							</h1>
+							<div className="flex items-center gap-1.5 lg:mb-4">
+								{backArrow}
+								<h1 className="page-title-hero !mb-0">
+									{t('upload.flow.known_page_title')}
+								</h1>
+							</div>
 							<p className="text-sm lg:text-lg text-gray-500 lg:text-[#374151] leading-relaxed mb-5 lg:mb-8">{t('upload.flow.known_page_subtitle')}</p>
 							<Label className="text-sm font-semibold text-brand-navy mb-2 block">
 								{t('upload.flow.what_needs_doing')}
@@ -1085,9 +1092,12 @@ export default function UploadPage() {
 
 					{currentStep === 'unknown' && (
 						<div>
-							<h1 className="page-title-hero lg:mb-4">
-								{t('upload.flow.unknown_page_title')}
-							</h1>
+							<div className="flex items-center gap-1.5 lg:mb-4">
+								{backArrow}
+								<h1 className="page-title-hero !mb-0">
+									{t('upload.flow.unknown_page_title')}
+								</h1>
+							</div>
 							<p className="text-sm lg:text-lg text-gray-500 lg:text-[#374151] leading-relaxed mb-5 lg:mb-8">{t('upload.flow.unknown_page_subtitle')}</p>
 							<Label className="text-sm font-semibold text-brand-navy mb-2 block">
 								{t('upload.flow.describe_problem')}
@@ -1141,9 +1151,12 @@ export default function UploadPage() {
 
 					{currentStep === 'details' && (
 						<div>
-							<h1 className="page-title-hero lg:mb-3 text-[#05324f]">
-								{t('upload.flow.details_title')}
-							</h1>
+							<div className="flex items-center gap-1.5 lg:mb-3">
+								{backArrow}
+								<h1 className="page-title-hero !mb-0 text-[#05324f]">
+									{t('upload.flow.details_title')}
+								</h1>
+							</div>
 							<p className="text-sm lg:text-base text-[#4B5563] leading-relaxed mb-6 lg:mb-8 max-w-md">
 								{t('upload.flow.details_subtitle')}
 							</p>
@@ -1303,9 +1316,12 @@ export default function UploadPage() {
 
 					{currentStep === 'confirm' && (
 						<div>
-							<h1 className="page-title-hero lg:mb-4">
-								{t('upload.flow.confirm_title')}
-							</h1>
+							<div className="flex items-center gap-1.5 lg:mb-4">
+								{backArrow}
+								<h1 className="page-title-hero !mb-0">
+									{t('upload.flow.confirm_title')}
+								</h1>
+							</div>
 							<p className="text-sm lg:text-lg text-gray-500 lg:text-[#374151] leading-relaxed mb-5 lg:mb-8">
 								{t('upload.flow.confirm_subtitle')}
 							</p>
@@ -1359,9 +1375,12 @@ export default function UploadPage() {
 
 					{currentStep === 'inbox' && (
 						<div className="max-w-md mx-auto text-center pt-8">
-							<h1 className="page-title !mb-3">
-								{t('upload.flow.guest_success_title')}
-							</h1>
+							<div className="flex items-center justify-center gap-1.5 mb-3">
+								{backArrow}
+								<h1 className="page-title !mb-0">
+									{t('upload.flow.guest_success_title')}
+								</h1>
+							</div>
 							<p className="text-sm text-gray-500 leading-relaxed mb-4">
 								{t('upload.flow.guest_success_subtitle')}
 							</p>

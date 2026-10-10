@@ -67,7 +67,7 @@ export default function SignInPage() {
 	return (
 		<div className="list-page-shell bg-[#F3F5F8]">
 			<Navbar />
-			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 md:pt-36 lg:pt-40 pb-12">
+			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-36 lg:pt-40 pb-12">
 				<div className="grid gap-6 lg:gap-8 lg:grid-cols-2 lg:items-center">
 					{/* Mobile: image on top; Desktop: image on right */}
 					<div className="order-1 lg:order-2 w-full max-w-md mx-auto lg:max-w-none px-2 sm:px-5 lg:px-8 text-center flex flex-col items-center justify-center">
@@ -76,16 +76,16 @@ export default function SignInPage() {
 							alt=""
 							className="w-36 h-36 sm:w-48 sm:h-48 lg:w-[28rem] lg:h-[28rem] max-w-full object-contain -mb-4 sm:-mb-6 lg:-mb-12"
 						/>
-						<h2 className="text-lg sm:text-xl lg:text-[2rem] font-semibold text-brand-dark">
+						<h2 className="text-2xl lg:text-[2rem] font-semibold text-brand-dark">
 							{t('auth.signin.check_email')}
 						</h2>
-						<p className="text-sm sm:text-base lg:text-lg text-[#6B7280] mt-2 lg:mt-5 leading-relaxed max-w-md">
+						<p className="text-[0.95rem] lg:text-lg text-[#6B7280] mt-2 lg:mt-5 leading-relaxed max-w-md">
 							{t('auth.signin.link_sent_to')}
 						</p>
-						<p className="text-sm sm:text-base lg:text-lg text-[#1B8F3E] font-semibold mt-1 max-w-md">
-							{sentEmail || t('footer.email')}
+						<p className="text-[0.95rem] lg:text-lg text-[#1B8F3E] font-semibold mt-1 max-w-md">
+							{sentEmail || t('auth.signin.sender_email')}
 						</p>
-						<p className="text-sm sm:text-base lg:text-lg text-[#9CA3AF] mt-1.5 leading-relaxed max-w-md">
+						<p className="text-[0.95rem] lg:text-lg text-[#9CA3AF] mt-1.5 leading-relaxed max-w-md">
 							{t('auth.signin.link_valid')}
 						</p>
 						{devMagicLinkUrl && (
@@ -100,7 +100,7 @@ export default function SignInPage() {
 
 					<form
 						onSubmit={handleSend}
-						className="order-2 lg:order-1 w-full max-w-md mx-auto lg:max-w-none bg-white rounded-2xl lg:rounded-3xl border border-[#EEF1F4] shadow-[0_8px_30px_rgba(15,23,42,0.04)] px-5 py-5 sm:p-6 lg:px-8 lg:py-9 flex flex-col justify-center"
+						className="order-2 lg:order-1 lg:translate-y-8 w-full max-w-md mx-auto lg:max-w-none bg-white rounded-2xl lg:rounded-3xl border border-[#EEF1F4] shadow-[0_8px_30px_rgba(15,23,42,0.04)] px-5 py-5 sm:p-6 lg:px-8 lg:py-9 flex flex-col justify-center"
 					>
 						<h1 className="page-title !mt-0 text-left">{t('auth.signin.magic_title')}</h1>
 						<p className="text-[0.95rem] lg:text-lg text-[#374151] leading-relaxed mt-2 lg:mt-3 mb-5 lg:mb-6 text-left">

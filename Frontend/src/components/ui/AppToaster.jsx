@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Toaster, ToastBar, toast } from 'react-hot-toast'
 import { Check, Info, X } from 'lucide-react'
 
@@ -28,16 +29,30 @@ function resolveVariant(type) {
 	return VARIANTS.info
 }
 
+function useIsDesktop() {
+	const [isDesktop, setIsDesktop] = useState(() =>
+		typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
+	)
+
+	useEffect(() => {
+		const media = window.matchMedia('(min-width: 1024px)')
+		const onChange = () => setIsDesktop(media.matches)
+		onChange()
+		media.addEventListener('change', onChange)
+		return () => media.removeEventListener('change', onChange)
+	}, [])
+
+	return isDesktop
+}
+
 export default function AppToaster() {
+	const isDesktop = useIsDesktop()
+
 	return (
 		<Toaster
-			position="top-center"
+			position={isDesktop ? 'top-right' : 'top-center'}
 			gutter={10}
-			containerStyle={{
-				top: 16,
-				left: 12,
-				right: 12,
-			}}
+			containerStyle={isDesktop ? { top: 20, right: 20 } : { top: 16, left: 12, right: 12 }}
 			toastOptions={{
 				duration: 4000,
 				className: 'fixa-toast',
@@ -46,8 +61,8 @@ export default function AppToaster() {
 					boxShadow: 'none',
 					padding: 0,
 					border: 'none',
-					maxWidth: 'min(420px, calc(100vw - 24px))',
-					width: '100%',
+					maxWidth: isDesktop ? 420 : 'min(420px, calc(100vw - 24px))',
+					width: isDesktop ? 420 : '100%',
 				},
 			}}
 		>
@@ -63,8 +78,8 @@ export default function AppToaster() {
 							boxShadow: 'none',
 							padding: 0,
 							border: 'none',
-							maxWidth: 'min(420px, calc(100vw - 24px))',
-							width: '100%',
+							maxWidth: isDesktop ? 420 : 'min(420px, calc(100vw - 24px))',
+							width: isDesktop ? 420 : '100%',
 						}}
 					>
 						{({ message }) => (

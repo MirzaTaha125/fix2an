@@ -82,7 +82,6 @@ function Navbar() {
 			uploadParams.get('mode') === 'no-image' ||
 			uploadParams.get('sent') === '1'
 		)
-
 	// Check if navbar should show back button
 	const shouldShowBackButton = (
 		isUploadFlowStep ||
@@ -165,21 +164,22 @@ function Navbar() {
 			)
 		}
 
-		if (showHamburgerMenu) {
-			return (
-				<button
-					type="button"
-					onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-					className="p-2 -ml-2 text-[#05324f] hover:bg-gray-100 rounded-full transition-colors inline-flex"
-					aria-label={t('common.menu') || 'Menu'}
-					aria-expanded={mobileMenuOpen}
-				>
-					{mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-				</button>
-			)
-		}
-
 		return null
+	}
+
+	const renderHamburgerButton = () => {
+		if (!showHamburgerMenu) return null
+		return (
+			<button
+				type="button"
+				onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+				className="p-2 -mr-2 text-[#05324f] hover:bg-gray-100 rounded-full transition-colors inline-flex"
+				aria-label={t('common.menu') || 'Menu'}
+				aria-expanded={mobileMenuOpen}
+			>
+				{mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+			</button>
+		)
 	}
 
 	const renderCompactNavbarRight = () => (
@@ -201,22 +201,23 @@ function Navbar() {
 				{/* ── Mobile navbar ── */}
 				<div className="md:hidden grid grid-cols-[1fr_auto_1fr] items-center py-2 w-full min-h-[3rem]">
 					<div className="flex items-center justify-start min-w-0">
-						{renderCompactNavbarLeft()}
+						{showLeftBackButton || user?.role === 'ADMIN' ? renderCompactNavbarLeft() : null}
 					</div>
 
 					<div className="flex items-center justify-center px-2">
 						{showCenteredLogo && <Logo />}
 					</div>
 
-					<div className="flex items-center justify-end gap-1.5 shrink-0">
+					<div className="flex items-center justify-end gap-1 shrink-0">
 						{renderCompactNavbarRight()}
+						{renderHamburgerButton()}
 					</div>
 				</div>
 
 				{/* ── Tablet navbar (md–lg) ── */}
 				<div className="hidden md:grid lg:hidden grid-cols-[1fr_auto_1fr] items-center py-2.5 w-full min-h-[3.25rem]">
 					<div className="flex items-center justify-start min-w-0">
-						{renderCompactNavbarLeft()}
+						{showLeftBackButton || user?.role === 'ADMIN' ? renderCompactNavbarLeft() : null}
 					</div>
 
 					<div className="flex items-center justify-center px-2">
@@ -225,6 +226,7 @@ function Navbar() {
 
 					<div className="flex items-center justify-end gap-1.5 shrink-0">
 						{renderCompactNavbarRight()}
+						{renderHamburgerButton()}
 					</div>
 				</div>
 
@@ -386,6 +388,9 @@ function Navbar() {
 									<Link to="/how-it-works" className={guestNavLinkClass(isHowItWorks)}>
 										{t('navigation.how_it_works')}
 									</Link>
+									<Link to="/about" className={guestNavLinkClass(isAbout)}>
+										{t('navigation.about_us')}
+									</Link>
 									<div className="relative">
 										<button
 											type="button"
@@ -419,14 +424,11 @@ function Navbar() {
 											</>
 										)}
 									</div>
-									<Link to="/about" className={guestNavLinkClass(isAbout)}>
-										{t('navigation.about_us')}
+									<Link to="/auth/signin" className={guestNavLinkClass(isLogin)}>
+										{t('navigation.login')}
 									</Link>
 									<Link to="/support/contact" className={guestNavLinkClass(isContact)}>
 										{t('navigation.contact')}
-									</Link>
-									<Link to="/auth/signin" className={guestNavLinkClass(isLogin)}>
-										{t('navigation.login')}
 									</Link>
 									<Link
 										to="/upload"
@@ -597,19 +599,19 @@ function Navbar() {
 							) : (
 								<nav>
 									<Link
-										to="/auth/signin"
-										onClick={() => setMobileMenuOpen(false)}
-										className={mobileGuestNavLinkClass(isLogin)}
-									>
-										<span>{t('navigation.login')}</span>
-										<ChevronRight className="w-5 h-5 text-[#05324f] shrink-0" strokeWidth={1.75} />
-									</Link>
-									<Link
 										to="/how-it-works"
 										onClick={() => setMobileMenuOpen(false)}
 										className={mobileGuestNavLinkClass(isHowItWorks)}
 									>
 										<span>{t('navigation.how_it_works')}</span>
+										<ChevronRight className="w-5 h-5 text-[#05324f] shrink-0" strokeWidth={1.75} />
+									</Link>
+									<Link
+										to="/about"
+										onClick={() => setMobileMenuOpen(false)}
+										className={mobileGuestNavLinkClass(isAbout)}
+									>
+										<span>{t('navigation.about_us')}</span>
 										<ChevronRight className="w-5 h-5 text-[#05324f] shrink-0" strokeWidth={1.75} />
 									</Link>
 									<button
@@ -644,11 +646,11 @@ function Navbar() {
 										</div>
 									)}
 									<Link
-										to="/about"
+										to="/auth/signin"
 										onClick={() => setMobileMenuOpen(false)}
-										className={mobileGuestNavLinkClass(isAbout)}
+										className={mobileGuestNavLinkClass(isLogin)}
 									>
-										<span>{t('navigation.about_us')}</span>
+										<span>{t('navigation.login')}</span>
 										<ChevronRight className="w-5 h-5 text-[#05324f] shrink-0" strokeWidth={1.75} />
 									</Link>
 									<Link

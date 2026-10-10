@@ -162,8 +162,10 @@
 	}
 
 	@media (min-width: 1024px) {
-		.page-title-hero {
+		.page-title-hero,
+		.support-page-title {
 			font-size: 2rem;
+			letter-spacing: -0.3px;
 		}
 	}
 
@@ -768,6 +770,12 @@ html.customer-menu-layout .list-page-main > .app-page-container {
 		margin-top: 0.5rem !important;
 		margin-bottom: 0.25rem !important;
 		font-family: 'Poppins', 'Inter', sans-serif !important;
+	}
+
+	.customer-app .start-title-mobile {
+		font-size: 30px !important;
+		line-height: 1.15 !important;
+		margin-bottom: 1rem !important;
 	}
 
 	/* Messages list titles → H3 (20/600) */

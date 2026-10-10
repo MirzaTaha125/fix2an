@@ -38,7 +38,7 @@ export default function HelpSupportPage() {
 			<Navbar />
 			<div className="list-page-content">
 				<div className="mb-5 lg:mb-8">
-					<h1 className="page-title lg:mb-4">
+					<h1 className={`page-title lg:mb-4${active === 'contact' ? ' support-page-title' : ''}`}>
 						{active === 'faq' && (t('help.faq_page_title') || 'Frequently asked questions')}
 						{active === 'contact' && (t('help.contact_page_title') || 'Help & contact')}
 						{active === 'policy' && (t('help.policy_page_title') || 'Policy & terms')}
