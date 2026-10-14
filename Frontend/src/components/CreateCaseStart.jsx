@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import {
-	ArrowUp,
+	ArrowRight,
 	FileUp,
+	MapPin,
 	Wrench,
 	Search,
 	ShieldCheck,
@@ -46,8 +47,8 @@ export default function CreateCaseStart({ onSelectPath }) {
 
 				<div className="rounded-2xl border border-[#E6EAEF] bg-white shadow-[0_4px_18px_rgba(15,23,42,0.05)] p-4 mb-5 text-left">
 					<div className="flex items-start gap-3">
-						<div className="w-11 h-11 rounded-full bg-[#E7F6EC] flex items-center justify-center shrink-0">
-							<FileUp className="w-5 h-5 text-[#1B8F3E]" strokeWidth={2} />
+						<div className="w-12 h-12 rounded-full bg-[#E7F6EC] flex items-center justify-center shrink-0">
+							<FileUp className="w-6 h-6 text-[#1B8F3E]" strokeWidth={2} />
 						</div>
 						<div className="min-w-0 flex-1">
 							<p className="font-bold text-[#05324f] text-[15px] leading-snug">
@@ -56,9 +57,6 @@ export default function CreateCaseStart({ onSelectPath }) {
 									components={{ hl: <span className="text-[#1B8F3E]" /> }}
 								/>
 							</p>
-							<p className="text-[13px] text-[#4B5563] leading-relaxed mt-1">
-								{t('upload.flow.failed_line_mobile')}
-							</p>
 							<p className="text-[13px] text-[#6B7280] leading-relaxed mt-1">
 								{t('upload.flow.failed_desc_mobile')}
 							</p>
@@ -66,10 +64,16 @@ export default function CreateCaseStart({ onSelectPath }) {
 					</div>
 					<ProtocolAction
 						{...protocolProps}
-						className="mt-3 w-full min-h-[48px] px-3 rounded-lg border border-[#1B8F3E] text-[#1B8F3E] text-sm font-semibold inline-flex items-center justify-center gap-2"
+						className="relative mt-4 w-full min-h-[48px] pl-4 pr-10 rounded-lg bg-brand-btn text-white text-sm font-semibold inline-flex items-center justify-center gap-2"
 					>
+						<svg viewBox="0 0 24 24" className="w-[22px] h-[22px] shrink-0" fill="currentColor" aria-hidden="true">
+							<path
+								fillRule="evenodd"
+								d="M6.7 6.5 8.05 3.85h4.7l1.35 2.65h5.15A2.25 2.25 0 0 1 21.5 8.75v8.7a2.25 2.25 0 0 1-2.25 2.25H4.75A2.25 2.25 0 0 1 2.5 17.45v-8.7A2.25 2.25 0 0 1 4.75 6.5H6.7Zm5.3 10.35a3.85 3.85 0 1 0 0-7.7 3.85 3.85 0 1 0 0 7.7Z"
+							/>
+						</svg>
 						<span>{t('upload.flow.upload_protocol_mobile')}</span>
-						<ArrowUp className="w-4 h-4 shrink-0" strokeWidth={2.25} />
+						<ArrowRight className="w-4 h-4 shrink-0 absolute right-4" strokeWidth={2.25} />
 					</ProtocolAction>
 					<div className="h-px bg-[#EEF1F4] my-3.5" />
 					<OptionAction
@@ -81,12 +85,6 @@ export default function CreateCaseStart({ onSelectPath }) {
 							{t('upload.flow.describe_instead')} →
 						</span>
 					</OptionAction>
-				</div>
-
-				<div className="flex items-center justify-center gap-3 mb-4">
-					<div className="h-px w-12 bg-[#C5CAD1]" />
-					<span className="text-xs text-[#6B7280] whitespace-nowrap shrink-0">{t('upload.flow.or_choose')}</span>
-					<div className="h-px w-12 bg-[#C5CAD1]" />
 				</div>
 
 				<OptionAction
@@ -118,6 +116,33 @@ export default function CreateCaseStart({ onSelectPath }) {
 					</div>
 					<ChevronRight className="w-5 h-5 text-[#9CA3AF] shrink-0" />
 				</OptionAction>
+
+				<div className="mt-6 grid grid-cols-3">
+					{[
+						{
+							key: 'area',
+							icon: <ShieldCheck className="w-7 h-7 text-[#1B8F3E]" strokeWidth={1.75} />,
+						},
+						{
+							key: 'free',
+							icon: <span className="text-[28px] leading-none font-medium text-[#1B8F3E]">%</span>,
+						},
+						{
+							key: 'nearby',
+							icon: <MapPin className="w-7 h-7 text-[#1B8F3E]" strokeWidth={1.75} />,
+						},
+					].map(({ key, icon }, index) => (
+						<div
+							key={key}
+							className={`flex flex-col items-center text-center px-2 ${index > 0 ? 'border-l border-[#E6EAEF]' : ''}`}
+						>
+							<div className="h-9 flex items-center justify-center">{icon}</div>
+							<p className="text-[11px] text-[#05324f] leading-snug mt-2">
+								{t(`upload.flow.trust_mobile_${key}`)}
+							</p>
+						</div>
+					))}
+				</div>
 			</div>
 
 			{/* Desktop — unchanged */}
