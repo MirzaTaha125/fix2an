@@ -66,10 +66,10 @@ export default function CreateCaseStart({ onSelectPath }) {
 						{...protocolProps}
 						className="relative mt-4 w-full min-h-[48px] pl-4 pr-10 rounded-lg bg-brand-btn text-white text-sm font-semibold inline-flex items-center justify-center gap-2"
 					>
-						<svg viewBox="0 0 24 24" className="w-[22px] h-[22px] shrink-0" fill="currentColor" aria-hidden="true">
+						<svg viewBox="0 0 24 24" className="w-6 h-6 shrink-0" fill="currentColor" aria-hidden="true">
 							<path
 								fillRule="evenodd"
-								d="M6.7 6.5 8.05 3.85h4.7l1.35 2.65h5.15A2.25 2.25 0 0 1 21.5 8.75v8.7a2.25 2.25 0 0 1-2.25 2.25H4.75A2.25 2.25 0 0 1 2.5 17.45v-8.7A2.25 2.25 0 0 1 4.75 6.5H6.7Zm5.3 10.35a3.85 3.85 0 1 0 0-7.7 3.85 3.85 0 1 0 0 7.7Z"
+								d="M8.1 3.8h7.8l1.45 2.7H19.5A2.5 2.5 0 0 1 22 9v9.5a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 18.5V9a2.5 2.5 0 0 1 2.5-2.5h2.15L8.1 3.8Zm3.9 13.85a3.85 3.85 0 1 0 0-7.7 3.85 3.85 0 0 0 0 7.7Zm5.35-7.55a1.1 1.1 0 1 0 0-2.2 1.1 1.1 0 0 0 0 2.2Z"
 							/>
 						</svg>
 						<span>{t('upload.flow.upload_protocol_mobile')}</span>
