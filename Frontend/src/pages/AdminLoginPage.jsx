@@ -73,8 +73,8 @@ export default function AdminLoginPage() {
 
 	return (
 		<div className="list-page-shell bg-[#F3F5F8]">
-			<div className="flex justify-center pt-[max(0.75rem,env(safe-area-inset-top))] sm:pt-4 px-4">
-				<img src={mainLogo} alt="Fixa2an" className="h-16 sm:h-20 lg:h-24 w-auto object-contain" />
+			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[max(0.75rem,env(safe-area-inset-top))] sm:pt-4">
+				<img src={mainLogo} alt="Fixa2an" className="h-12 sm:h-14 lg:h-16 w-auto object-contain" />
 			</div>
 			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-10 lg:pt-12 pb-12">
 				<div className="grid gap-6 lg:gap-8 lg:grid-cols-2 lg:items-center">
