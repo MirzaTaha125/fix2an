@@ -152,7 +152,7 @@ router.get('/pending-workshops', async (req, res) => {
 // Get all workshops
 router.get('/workshops', async (req, res) => {
 	try {
-		const { search, page = 1, limit = 20, verified, active } = req.query
+		const { search, page = 1, limit = 20, verified, active, city, status } = req.query
 		const query = {}
 
 		if (verified !== undefined) {
@@ -160,6 +160,24 @@ router.get('/workshops', async (req, res) => {
 		}
 		if (active !== undefined) {
 			query.isActive = active === 'true'
+		}
+		if (city && city !== 'all') {
+			query.city = { $regex: `^${String(city).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+		}
+		if (status && status !== 'all') {
+			if (status === 'active') {
+				query.isVerified = true
+				query.isActive = { $ne: false }
+				query.verificationStatus = { $ne: 'REJECTED' }
+			} else if (status === 'pending' || status === 'awaiting') {
+				query.isVerified = false
+				query.verificationStatus = { $ne: 'REJECTED' }
+			} else if (status === 'paused') {
+				query.isActive = false
+				query.verificationStatus = { $ne: 'REJECTED' }
+			} else if (status === 'rejected') {
+				query.verificationStatus = 'REJECTED'
+			}
 		}
 		if (search) {
 			query.$or = [
@@ -274,11 +292,28 @@ router.get('/requests', async (req, res) => {
 		// Mark any newly-expired requests before returning
 		await expireRequests()
 
-		const { search, page = 1, limit = 20, status } = req.query
+		const { search, page = 1, limit = 20, status, workshopId, from, to } = req.query
 		const query = {}
 
 		if (status && status !== 'all') {
-			query.status = status
+			if (status === 'ONGOING') {
+				query.status = { $in: ['IN_PROGRESS', 'BOOKED'] }
+			} else {
+				query.status = status
+			}
+		}
+		if (from || to) {
+			query.createdAt = {}
+			if (from) query.createdAt.$gte = new Date(from)
+			if (to) query.createdAt.$lte = new Date(to)
+		}
+		if (workshopId && workshopId !== 'all') {
+			const [offerIds, bookingIds] = await Promise.all([
+				Offer.find({ workshopId }).distinct('requestId'),
+				Booking.find({ workshopId }).distinct('requestId'),
+			])
+			const ids = [...new Set([...offerIds, ...bookingIds].map((id) => String(id)))]
+			query._id = { $in: ids }
 		}
 		if (search) {
 			query.$or = [
@@ -296,15 +331,22 @@ router.get('/requests', async (req, res) => {
 			.limit(parseInt(limit))
 			.lean()
 
-		// Get offer counts
+		// Get offer counts + linked workshop name when booked
 		const requestsWithCounts = await Promise.all(
 			requests.map(async (request) => {
-				const offerCount = await Offer.countDocuments({ requestId: request._id })
+				const [offerCount, booking] = await Promise.all([
+					Offer.countDocuments({ requestId: request._id }),
+					Booking.findOne({ requestId: request._id })
+						.sort({ createdAt: -1 })
+						.populate('workshopId', 'companyName')
+						.lean(),
+				])
 				return {
 					...request,
 					id: request._id,
 					customer: request.customerId,
 					vehicle: request.vehicleId,
+					workshop: booking?.workshopId || null,
 					_count: {
 						offers: offerCount,
 					},

@@ -1,5 +1,5 @@
 // Default app language when no saved preference exists.
-export const DEFAULT_LANGUAGE = 'sv'
+export const DEFAULT_LANGUAGE = 'en'
 
 // Set to true to show the globe language switcher in the navbar.
 export const SHOW_NAVBAR_LANGUAGE_SWITCHER = false

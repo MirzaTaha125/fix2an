@@ -85,6 +85,10 @@ export default function AdminPage() {
 	// Filter states
 	const [searchQuery, setSearchQuery] = useState('')
 	const [statusFilter, setStatusFilter] = useState('all')
+	const [workshopFilter, setWorkshopFilter] = useState('all')
+	const [dateFilter, setDateFilter] = useState('all')
+	const [cityFilter, setCityFilter] = useState('all')
+	const [filterWorkshops, setFilterWorkshops] = useState([])
 	const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0 })
 	
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -188,7 +192,30 @@ export default function AdminPage() {
 			}
 			fetchTabData()
 		}
-	}, [activeTab, searchQuery, statusFilter, pagination.page, user])
+	}, [activeTab, searchQuery, statusFilter, workshopFilter, dateFilter, cityFilter, pagination.page, user])
+
+	const dateBounds = (filter) => {
+		if (!filter || filter === 'all') return {}
+		const end = new Date()
+		const start = new Date()
+		start.setHours(0, 0, 0, 0)
+		if (filter === 'today') {
+			return { from: start.toISOString(), to: end.toISOString() }
+		}
+		if (filter === 'week') {
+			start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
+			return { from: start.toISOString(), to: end.toISOString() }
+		}
+		if (filter === 'month') {
+			start.setDate(1)
+			return { from: start.toISOString(), to: end.toISOString() }
+		}
+		if (filter === '30d') {
+			start.setDate(start.getDate() - 30)
+			return { from: start.toISOString(), to: end.toISOString() }
+		}
+		return {}
+	}
 
 	const fetchStats = async () => {
 		try {
@@ -391,11 +418,18 @@ export default function AdminPage() {
 				if (activeTab === 'customers') {
 					if (statusFilter === 'active') params.isActive = 'true'
 					else if (statusFilter === 'inactive') params.isActive = 'false'
-				} else if (activeTab === 'workshops' && statusFilter === 'pending') {
-					params.verified = 'false'
+				} else if (activeTab === 'workshops') {
+					params.status = statusFilter
 				} else {
 					params.status = statusFilter
 				}
+			}
+			if (activeTab === 'workshops' && cityFilter !== 'all') {
+				params.city = cityFilter
+			}
+			if (activeTab === 'requests') {
+				if (workshopFilter !== 'all') params.workshopId = workshopFilter
+				Object.assign(params, dateBounds(dateFilter))
 			}
 			params.page = pagination.page
 			params.limit = pagination.limit
@@ -415,12 +449,21 @@ export default function AdminPage() {
 						setWorkshops(response.data.workshops || [])
 						setPagination((p) => ({ ...p, total: response.data.total || 0 }))
 					}
+					{
+						const citiesRes = await adminAPI.getWorkshops({ page: 1, limit: 200 })
+						const shops = citiesRes.data?.workshops || []
+						setFilterWorkshops(shops)
+					}
 					break
 				case 'requests':
 					response = await adminAPI.getRequests(params)
 					if (response.data) {
 						setRequests(response.data.requests || [])
 						setPagination((p) => ({ ...p, total: response.data.total || 0 }))
+					}
+					if (!filterWorkshops.length) {
+						const shopsRes = await adminAPI.getWorkshops({ page: 1, limit: 200 })
+						setFilterWorkshops(shopsRes.data?.workshops || [])
 					}
 					break
 				case 'offers':
@@ -1694,6 +1737,9 @@ export default function AdminPage() {
 					setSearchParams({ tab })
 					setSearchQuery('')
 					setStatusFilter('all')
+					setWorkshopFilter('all')
+					setDateFilter('all')
+					setCityFilter('all')
 					setPagination((current) => ({ ...current, page: 1 }))
 				}}
 				onLogout={() => setIsLogoutConfirmOpen(true)}
@@ -1701,6 +1747,7 @@ export default function AdminPage() {
 				requests={requests}
 				bookings={bookings}
 				workshops={workshops}
+				filterWorkshops={filterWorkshops}
 				customers={customers}
 				listLoading={listLoading}
 				searchQuery={searchQuery}
@@ -1708,6 +1755,21 @@ export default function AdminPage() {
 				statusFilter={statusFilter}
 				onStatus={(value) => {
 					setStatusFilter(value)
+					setPagination((current) => ({ ...current, page: 1 }))
+				}}
+				workshopFilter={workshopFilter}
+				onWorkshopFilter={(value) => {
+					setWorkshopFilter(value)
+					setPagination((current) => ({ ...current, page: 1 }))
+				}}
+				dateFilter={dateFilter}
+				onDateFilter={(value) => {
+					setDateFilter(value)
+					setPagination((current) => ({ ...current, page: 1 }))
+				}}
+				cityFilter={cityFilter}
+				onCityFilter={(value) => {
+					setCityFilter(value)
 					setPagination((current) => ({ ...current, page: 1 }))
 				}}
 				pagination={pagination}

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -46,10 +47,6 @@ const CMS_PAGES = [
 	{ title: 'Terms', path: '/terms', key: 'terms' },
 ]
 
-function monthKey(date) {
-	return `${date.getFullYear()}-${date.getMonth()}`
-}
-
 function changePercent(current, previous) {
 	if (!previous) return current ? 100 : 0
 	return Math.round(((current - previous) / previous) * 100)
@@ -83,12 +80,19 @@ export default function AdminPanelView({
 	requests,
 	bookings,
 	workshops,
+	filterWorkshops = [],
 	customers,
 	listLoading,
 	searchQuery,
 	onSearch,
 	statusFilter,
 	onStatus,
+	workshopFilter = 'all',
+	onWorkshopFilter,
+	dateFilter = 'all',
+	onDateFilter,
+	cityFilter = 'all',
+	onCityFilter,
 	pagination,
 	onPage,
 	onViewRequest,
@@ -163,42 +167,9 @@ export default function AdminPanelView({
 		})
 	}
 
-	const now = new Date()
-	const thisKey = monthKey(now)
-	const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-	const prevKey = monthKey(prev)
-	const inMonth = (value, key) => {
-		const date = new Date(value)
-		return !Number.isNaN(date.getTime()) && monthKey(date) === key
-	}
-	const casesNow = requests.filter((row) => inMonth(row.createdAt, thisKey)).length
-	const casesPrev = requests.filter((row) => inMonth(row.createdAt, prevKey)).length
-	const bookedNow = bookings.filter((row) => inMonth(row.createdAt, thisKey)).length
-	const bookedPrev = bookings.filter((row) => inMonth(row.createdAt, prevKey)).length
 	const revenueOf = (rows) => rows.reduce((sum, row) => sum + (Number(row.totalAmount) || 0), 0)
-	const revenueNow = revenueOf(bookings.filter((row) => inMonth(row.createdAt, thisKey)))
-	const revenuePrev = revenueOf(bookings.filter((row) => inMonth(row.createdAt, prevKey)))
 	const paidTotal = revenueOf(bookings.filter((row) => row.status === 'DONE'))
 	const waitingTotal = revenueOf(bookings.filter((row) => row.status !== 'DONE' && row.status !== 'CANCELLED'))
-
-	const months = useMemo(() => {
-		const buckets = []
-		for (let i = 5; i >= 0; i -= 1) {
-			const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-			buckets.push({
-				key: monthKey(date),
-				label: date.toLocaleDateString(locale, { month: 'short' }),
-				total: 0,
-			})
-		}
-		requests.forEach((row) => {
-			const date = new Date(row.createdAt)
-			if (Number.isNaN(date.getTime())) return
-			const bucket = buckets.find((item) => item.key === monthKey(date))
-			if (bucket) bucket.total += 1
-		})
-		return buckets
-	}, [requests, locale])
 
 	const statusSlices = useMemo(() => {
 		const groups = [
@@ -216,53 +187,10 @@ export default function AdminPanelView({
 		return counts.map((item) => ({ ...item, pct: Math.round((item.total / sum) * 100) }))
 	}, [requests])
 
-	const weekStart = new Date(now)
-	weekStart.setDate(now.getDate() - ((now.getDay() + 6) % 7))
-	weekStart.setHours(0, 0, 0, 0)
-	const weekEnd = new Date(weekStart)
-	weekEnd.setDate(weekStart.getDate() + 6)
-	const sameMonth = weekStart.getMonth() === weekEnd.getMonth()
-	const rangeLabel = sameMonth
-		? `${weekStart.getDate()} – ${weekEnd.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}`
-		: `${weekStart.toLocaleDateString(locale, { day: 'numeric', month: 'short' })} – ${weekEnd.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}`
-	const weekDays = useMemo(() => {
-		const days = []
-		for (let i = 0; i < 7; i += 1) {
-			const date = new Date(weekStart)
-			date.setDate(weekStart.getDate() + i)
-			days.push({
-				key: date.toDateString(),
-				label: date.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
-				total: 0,
-			})
-		}
-		requests.forEach((row) => {
-			const date = new Date(row.createdAt)
-			if (Number.isNaN(date.getTime())) return
-			const bucket = days.find((item) => item.key === date.toDateString())
-			if (bucket) bucket.total += 1
-		})
-		return days
-	}, [requests, locale, weekStart.getTime()])
-	const lastWeekStart = new Date(weekStart)
-	lastWeekStart.setDate(weekStart.getDate() - 7)
-	const inRange = (value, start, end) => {
-		const date = new Date(value)
-		return !Number.isNaN(date.getTime()) && date >= start && date < end
-	}
-	const thisWeekEnd = new Date(weekEnd)
-	thisWeekEnd.setDate(weekEnd.getDate() + 1)
-	const newThisWeek = requests.filter((row) => inRange(row.createdAt, weekStart, thisWeekEnd)).length
-	const newLastWeek = requests.filter((row) => inRange(row.createdAt, lastWeekStart, weekStart)).length
-	const bookedThisWeek = bookings.filter((row) => inRange(row.createdAt, weekStart, thisWeekEnd)).length
-	const bookedLastWeek = bookings.filter((row) => inRange(row.createdAt, lastWeekStart, weekStart)).length
-	const revenueThisWeek = revenueOf(bookings.filter((row) => inRange(row.createdAt, weekStart, thisWeekEnd)))
-	const revenueLastWeek = revenueOf(bookings.filter((row) => inRange(row.createdAt, lastWeekStart, weekStart)))
-
 	return (
 		<div className="admin-app h-[100dvh] max-h-[100dvh] bg-[#F3F5F8] flex overflow-hidden">
 			<aside className="hidden lg:flex w-[248px] shrink-0 m-2 mr-0 bg-[#0B2540] text-white rounded-3xl flex-col py-6 px-4">
-				<img src={mainLogo} alt="Fixa2an" className="h-8 w-auto object-contain brightness-0 invert px-3" />
+				<img src={mainLogo} alt="Fixa2an" className="h-10 w-auto object-contain brightness-0 invert px-3" />
 				<nav className="mt-8 flex-1 space-y-1 overflow-y-auto">
 					{NAV.map((item) => {
 						const Icon = item.icon
@@ -293,7 +221,7 @@ export default function AdminPanelView({
 						<button type="button" onClick={() => setOpen(false)} className="absolute top-[max(1rem,env(safe-area-inset-top))] right-3 text-white/70 p-1" aria-label="Close">
 							<X className="w-5 h-5" />
 						</button>
-						<img src={mainLogo} alt="Fixa2an" className="h-8 w-auto object-contain brightness-0 invert px-3 mt-1" />
+						<img src={mainLogo} alt="Fixa2an" className="h-10 w-auto object-contain brightness-0 invert px-3 mt-1" />
 						<nav className="mt-8 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-1">
 							{NAV.map((item) => {
 								const Icon = item.icon
@@ -315,26 +243,21 @@ export default function AdminPanelView({
 			)}
 
 			<main className="flex-1 min-w-0 lg:m-2 bg-white lg:rounded-3xl overflow-y-auto overflow-x-hidden">
-				<div className="lg:hidden sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-[#EEF0F4] px-4 py-3 flex items-center gap-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-					<button type="button" onClick={() => setOpen(true)} aria-label="Menu" className="p-1 -ml-1 shrink-0">
+				<div className="lg:hidden sticky top-0 z-20 relative bg-white/95 backdrop-blur-sm border-b border-[#EEF0F4] px-4 py-3 flex items-center justify-between pt-[max(0.75rem,env(safe-area-inset-top))]">
+					<button type="button" onClick={() => setOpen(true)} aria-label="Menu" className="p-1 -ml-1 shrink-0 w-9 h-9 inline-flex items-center justify-center">
 						<Menu className="w-5 h-5 text-[#0B2540]" />
 					</button>
-					<p className="font-bold text-[#0B2540] truncate">{label(NAV.find((item) => item.id === activeTab)?.key || 'overview')}</p>
+					<img src={mainLogo} alt="Fixa2an" className="h-8 w-auto object-contain absolute left-1/2 -translate-x-1/2 pointer-events-none" />
+					<span className="w-9 h-9 shrink-0" aria-hidden="true" />
 				</div>
 				<div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
 					{activeTab === 'dashboard' && (
 						<Overview
 							label={label}
 							stats={stats}
-							rangeLabel={rangeLabel}
-							newThisWeek={newThisWeek}
-							revenueTotal={revenueOf(bookings)}
-							weekChange={{
-								cases: changePercent(newThisWeek, newLastWeek),
-								booked: changePercent(bookedThisWeek, bookedLastWeek),
-								revenue: changePercent(revenueThisWeek, revenueLastWeek),
-							}}
-							weekDays={weekDays}
+							requests={requests}
+							bookings={bookings}
+							locale={locale}
 							slices={statusSlices}
 						/>
 					)}
@@ -347,6 +270,11 @@ export default function AdminPanelView({
 							onSearch={onSearch}
 							statusFilter={statusFilter}
 							onStatus={onStatus}
+							workshopFilter={workshopFilter}
+							onWorkshopFilter={onWorkshopFilter}
+							dateFilter={dateFilter}
+							onDateFilter={onDateFilter}
+							filterWorkshops={filterWorkshops}
 							stats={stats}
 							pagination={pagination}
 							onPage={onPage}
@@ -363,6 +291,11 @@ export default function AdminPanelView({
 							loading={listLoading}
 							searchQuery={searchQuery}
 							onSearch={onSearch}
+							statusFilter={statusFilter}
+							onStatus={onStatus}
+							cityFilter={cityFilter}
+							onCityFilter={onCityFilter}
+							filterWorkshops={filterWorkshops}
 							dateLabel={dateLabel}
 							onView={(workshop) => navigate(`/admin/workshops/${workshop.id || workshop._id}`)}
 							pagination={pagination}
@@ -376,6 +309,8 @@ export default function AdminPanelView({
 							loading={listLoading}
 							searchQuery={searchQuery}
 							onSearch={onSearch}
+							statusFilter={statusFilter}
+							onStatus={onStatus}
 							dateLabel={dateLabel}
 							pagination={pagination}
 							onPage={onPage}
@@ -403,13 +338,7 @@ export default function AdminPanelView({
 							setPeriod={setPeriod}
 							requests={requests}
 							bookings={bookings}
-							workshops={workshops}
 							locale={locale}
-							revenueNow={revenueNow}
-							casesNow={casesNow}
-							bookedNow={bookedNow}
-							caseChange={changePercent(casesNow, casesPrev)}
-							revenueChange={changePercent(revenueNow, revenuePrev)}
 						/>
 					)}
 					{activeTab === 'content' && (
@@ -486,19 +415,81 @@ function Delta({ value }) {
 	return <p className={`text-xs font-semibold mt-1 ${value < 0 ? 'text-red-500' : 'text-[#1B8F3E]'}`}>{value > 0 ? '+' : ''}{value}%</p>
 }
 
-function Overview({ label, stats, rangeLabel, newThisWeek, revenueTotal, weekChange, weekDays, slices }) {
+function overviewSpan(period) {
+	const end = new Date()
+	end.setHours(23, 59, 59, 999)
+	const start = new Date()
+	start.setHours(0, 0, 0, 0)
+	if (period === 'month') {
+		start.setDate(1)
+	} else if (period === 'seven_days') {
+		start.setDate(start.getDate() - 6)
+	} else if (period === 'this_year') {
+		start.setMonth(0, 1)
+	} else {
+		start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
+	}
+	return { start, end }
+}
+
+function Overview({ label, stats, requests = [], bookings = [], locale, slices }) {
+	const [rangePeriod, setRangePeriod] = useState('week')
+	const [chartPeriod, setChartPeriod] = useState('week')
+	const revenueOf = (rows) => rows.reduce((sum, row) => sum + (Number(row.totalAmount) || 0), 0)
+	const inSpan = (value, start, end) => {
+		const date = new Date(value)
+		return !Number.isNaN(date.getTime()) && date >= start && date <= end
+	}
+	const { start, end } = overviewSpan(rangePeriod)
+	const prevLength = end.getTime() - start.getTime()
+	const prevEnd = new Date(start.getTime() - 1)
+	const prevStart = new Date(prevEnd.getTime() - prevLength)
+	const casesNow = requests.filter((row) => inSpan(row.createdAt, start, end)).length
+	const casesPrev = requests.filter((row) => inSpan(row.createdAt, prevStart, prevEnd)).length
+	const bookedNow = bookings.filter((row) => inSpan(row.createdAt, start, end)).length
+	const bookedPrev = bookings.filter((row) => inSpan(row.createdAt, prevStart, prevEnd)).length
+	const revenueNow = revenueOf(bookings.filter((row) => inSpan(row.createdAt, start, end)))
+	const revenuePrev = revenueOf(bookings.filter((row) => inSpan(row.createdAt, prevStart, prevEnd)))
+	const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()
+	const rangeLabel = start.toDateString() === end.toDateString()
+		? end.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })
+		: sameMonth
+			? `${start.getDate()} – ${end.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}`
+			: `${start.toLocaleDateString(locale, { day: 'numeric', month: 'short' })} – ${end.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}`
+	const chartSpan = overviewSpan(chartPeriod === 'month' ? 'month' : 'week')
+	const dayCount = Math.max(1, Math.round((chartSpan.end - chartSpan.start) / 86400000) + 1)
+	const chartDays = useMemo(() => {
+		const days = []
+		const count = Math.min(dayCount, 31)
+		for (let i = 0; i < count; i += 1) {
+			const date = new Date(chartSpan.start)
+			date.setDate(chartSpan.start.getDate() + i)
+			days.push({
+				key: date.toDateString(),
+				label: date.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
+				total: 0,
+			})
+		}
+		requests.forEach((row) => {
+			const date = new Date(row.createdAt)
+			if (Number.isNaN(date.getTime())) return
+			const bucket = days.find((item) => item.key === date.toDateString())
+			if (bucket) bucket.total += 1
+		})
+		return days
+	}, [requests, locale, chartPeriod, chartSpan.start.getTime(), dayCount])
 	const cards = [
-		{ name: label('total_cases'), value: Number(stats?.totalRequests || 0).toLocaleString('sv-SE'), change: weekChange.cases },
-		{ name: label('new_cases'), value: Number(newThisWeek || 0).toLocaleString('sv-SE'), change: weekChange.cases },
-		{ name: label('booked_jobs'), value: Number(stats?.totalBookings || 0).toLocaleString('sv-SE'), change: weekChange.booked },
-		{ name: label('revenue_vat'), value: formatPrice(revenueTotal || 0), change: weekChange.revenue },
+		{ name: label('total_cases'), value: Number(stats?.totalRequests || 0).toLocaleString('sv-SE'), change: changePercent(casesNow, casesPrev) },
+		{ name: label('new_cases'), value: Number(casesNow || 0).toLocaleString('sv-SE'), change: changePercent(casesNow, casesPrev) },
+		{ name: label('booked_jobs'), value: Number(stats?.totalBookings || 0).toLocaleString('sv-SE'), change: changePercent(bookedNow, bookedPrev) },
+		{ name: label('revenue_vat'), value: formatPrice(revenueNow || 0), change: changePercent(revenueNow, revenuePrev) },
 	]
-	const max = Math.max(8, ...weekDays.map((item) => item.total))
-	const yMax = Math.ceil(max / 4) * 4
+	const max = Math.max(8, ...chartDays.map((item) => item.total))
+	const yMax = Math.ceil(max / 4) * 4 || 4
 	const width = 560
 	const height = 180
-	const points = weekDays.map((item, index) => {
-		const x = weekDays.length === 1 ? 0 : (index / (weekDays.length - 1)) * width
+	const points = chartDays.map((item, index) => {
+		const x = chartDays.length === 1 ? 0 : (index / (chartDays.length - 1)) * width
 		const y = height - (item.total / yMax) * height
 		return { x, y }
 	})
@@ -507,15 +498,35 @@ function Overview({ label, stats, rangeLabel, newThisWeek, revenueTotal, weekCha
 	let angle = 0
 	const painted = slices.filter((slice) => slice.total > 0)
 	const gradient = (painted.length ? painted : slices).map((slice) => {
-		const start = angle
+		const startDeg = angle
 		const sweep = painted.length ? (slice.total / painted.reduce((sum, item) => sum + item.total, 0)) * 360 : 72
 		angle += sweep
-		return `${slice.tone} ${start}deg ${angle}deg`
+		return `${slice.tone} ${startDeg}deg ${angle}deg`
 	}).join(', ')
+	const rangeOptions = [
+		{ value: 'week', label: label('this_week') },
+		{ value: 'seven_days', label: label('seven_days') },
+		{ value: 'month', label: label('this_month') },
+		{ value: 'this_year', label: label('this_year') },
+	]
+	const chartOptions = [
+		{ value: 'week', label: label('this_week') },
+		{ value: 'month', label: label('this_month') },
+	]
 
 	return (
 		<div>
-			<PageTitle extra={<span className="inline-flex items-center gap-2 text-xs sm:text-sm text-[#374151] border border-[#E5E7EB] rounded-xl px-3 sm:px-4 min-h-[36px] sm:min-h-[40px] bg-white whitespace-nowrap">{rangeLabel}<ChevronDown className="w-4 h-4 text-[#9CA3AF]" /></span>}>
+			<PageTitle
+				extra={
+					<DropdownSelect
+						value={rangePeriod}
+						onChange={setRangePeriod}
+						options={rangeOptions}
+						displayLabel={rangeLabel}
+						buttonClassName="inline-flex items-center gap-2 text-xs sm:text-sm text-[#374151] border border-[#E5E7EB] rounded-xl px-3 sm:px-4 min-h-[36px] sm:min-h-[40px] bg-white whitespace-nowrap"
+					/>
+				}
+			>
 				{label('overview')}
 			</PageTitle>
 			<div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5 sm:gap-4 mb-5">
@@ -533,7 +544,13 @@ function Overview({ label, stats, rangeLabel, newThisWeek, revenueTotal, weekCha
 				<div className="rounded-2xl border border-[#E6E8EC] bg-white p-4 sm:p-5 min-w-0">
 					<div className="flex items-center justify-between gap-2 mb-4">
 						<p className="text-sm font-bold text-[#0B2540]">{label('cases_over_time')}</p>
-						<span className="inline-flex items-center gap-1 text-xs text-[#374151] border border-[#E5E7EB] rounded-lg px-2.5 py-1 shrink-0 whitespace-nowrap">{label('this_week')}<ChevronDown className="w-3.5 h-3.5 text-[#9CA3AF]" /></span>
+						<DropdownSelect
+							value={chartPeriod}
+							onChange={setChartPeriod}
+							options={chartOptions}
+							buttonClassName="inline-flex items-center gap-1 text-xs text-[#374151] border border-[#E5E7EB] rounded-lg px-2.5 py-1 shrink-0 whitespace-nowrap bg-white"
+							chevronClassName="w-3.5 h-3.5 text-[#9CA3AF]"
+						/>
 					</div>
 					<div className="flex gap-2 sm:gap-3">
 						<div className="flex flex-col justify-between text-[10px] sm:text-[11px] text-[#9CA3AF] h-36 sm:h-44 pb-5 sm:pb-6 shrink-0">
@@ -547,7 +564,7 @@ function Overview({ label, stats, rangeLabel, newThisWeek, revenueTotal, weekCha
 								<polyline fill="none" stroke="#1B8F3E" strokeWidth="3" points={line} strokeLinejoin="round" strokeLinecap="round" />
 							</svg>
 							<div className="flex justify-between text-[9px] sm:text-[11px] text-[#9CA3AF] mt-1 gap-0.5">
-								{weekDays.map((item) => <span key={item.key} className="truncate text-center flex-1">{item.label}</span>)}
+								{chartDays.map((item) => <span key={item.key} className="truncate text-center flex-1">{item.label}</span>)}
 							</div>
 						</div>
 					</div>
@@ -585,8 +602,132 @@ function SearchBox({ value, onChange, placeholder }) {
 	)
 }
 
-function FilterChip({ children }) {
-	return <span className="inline-flex items-center gap-2 h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm text-[#374151] whitespace-nowrap shrink-0">{children}<ChevronDown className="w-4 h-4 text-[#9CA3AF] shrink-0" /></span>
+function DropdownSelect({
+	value,
+	options = [],
+	onChange,
+	displayLabel,
+	buttonClassName,
+	chevronClassName = 'w-4 h-4 text-[#9CA3AF] shrink-0',
+	menuClassName = '',
+}) {
+	const [open, setOpen] = useState(false)
+	const [menuStyle, setMenuStyle] = useState(null)
+	const buttonRef = useRef(null)
+	const menuRef = useRef(null)
+
+	const updatePosition = () => {
+		const button = buttonRef.current
+		if (!button) return
+		const rect = button.getBoundingClientRect()
+		const width = Math.max(rect.width, 180)
+		const spaceBelow = window.innerHeight - rect.bottom
+		const openUp = spaceBelow < 220 && rect.top > spaceBelow
+		setMenuStyle({
+			position: 'fixed',
+			left: Math.min(rect.left, window.innerWidth - width - 8),
+			width,
+			top: openUp ? undefined : rect.bottom + 4,
+			bottom: openUp ? window.innerHeight - rect.top + 4 : undefined,
+			zIndex: 9999,
+		})
+	}
+
+	useLayoutEffect(() => {
+		if (!open) return undefined
+		updatePosition()
+		const onReposition = () => updatePosition()
+		window.addEventListener('resize', onReposition)
+		window.addEventListener('scroll', onReposition, true)
+		return () => {
+			window.removeEventListener('resize', onReposition)
+			window.removeEventListener('scroll', onReposition, true)
+		}
+	}, [open])
+
+	useEffect(() => {
+		if (!open) return undefined
+		const onDoc = (event) => {
+			const target = event.target
+			if (buttonRef.current?.contains(target) || menuRef.current?.contains(target)) return
+			setOpen(false)
+		}
+		const onKey = (event) => {
+			if (event.key === 'Escape') setOpen(false)
+		}
+		document.addEventListener('mousedown', onDoc)
+		document.addEventListener('touchstart', onDoc)
+		document.addEventListener('keydown', onKey)
+		return () => {
+			document.removeEventListener('mousedown', onDoc)
+			document.removeEventListener('touchstart', onDoc)
+			document.removeEventListener('keydown', onKey)
+		}
+	}, [open])
+
+	const selected = options.find((option) => option.value === value) || options[0]
+	const text = displayLabel || selected?.label || ''
+
+	return (
+		<div className="relative shrink-0">
+			<button
+				ref={buttonRef}
+				type="button"
+				onClick={(event) => {
+					event.preventDefault()
+					event.stopPropagation()
+					setOpen((current) => !current)
+				}}
+				aria-haspopup="listbox"
+				aria-expanded={open}
+				className={buttonClassName || 'inline-flex items-center gap-2 h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm text-[#374151] bg-white whitespace-nowrap'}
+			>
+				<span className="truncate max-w-[160px] sm:max-w-[220px]">{text}</span>
+				<ChevronDown className={chevronClassName} />
+			</button>
+			{open && menuStyle && createPortal(
+				<div
+					ref={menuRef}
+					role="listbox"
+					style={menuStyle}
+					className={`max-h-60 overflow-auto rounded-xl border border-[#E5E7EB] bg-white shadow-lg py-1 ${menuClassName}`}
+				>
+					{options.length === 0 ? (
+						<p className="px-3 py-2 text-sm text-[#9CA3AF]">—</p>
+					) : options.map((option) => (
+						<button
+							key={String(option.value)}
+							type="button"
+							role="option"
+							aria-selected={option.value === value}
+							onClick={(event) => {
+								event.preventDefault()
+								event.stopPropagation()
+								onChange?.(option.value)
+								setOpen(false)
+							}}
+							className={`w-full text-left px-3 py-2 text-sm hover:bg-[#F3F5F8] whitespace-nowrap ${option.value === value ? 'text-[#1B8F3E] font-semibold' : 'text-[#374151]'}`}
+						>
+							{option.label}
+						</button>
+					))}
+				</div>,
+				document.body,
+			)}
+		</div>
+	)
+}
+
+function exportRowsCsv(filename, headers, rows) {
+	const escape = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`
+	const lines = [headers.map(escape).join(','), ...rows.map((row) => row.map(escape).join(','))]
+	const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+	const url = URL.createObjectURL(blob)
+	const link = document.createElement('a')
+	link.href = url
+	link.download = filename
+	link.click()
+	URL.revokeObjectURL(url)
 }
 
 function Pager({ pagination, onPage }) {
@@ -618,7 +759,26 @@ function caseStatusClass(status) {
 	return 'bg-[#FFF6E8] text-[#C4841D]'
 }
 
-function CasesTable({ label, rows, loading, searchQuery, onSearch, statusFilter, onStatus, stats, pagination, onPage, onView, caseNo, locale }) {
+function CasesTable({
+	label,
+	rows,
+	loading,
+	searchQuery,
+	onSearch,
+	statusFilter,
+	onStatus,
+	workshopFilter,
+	onWorkshopFilter,
+	dateFilter,
+	onDateFilter,
+	filterWorkshops = [],
+	stats,
+	pagination,
+	onPage,
+	onView,
+	caseNo,
+	locale,
+}) {
 	const filters = [
 		['all', 'all', stats?.totalRequests],
 		['NEW', 'new', statusFilter === 'NEW' ? pagination?.total : null],
@@ -627,6 +787,42 @@ function CasesTable({ label, rows, loading, searchQuery, onSearch, statusFilter,
 		['ONGOING', 'ongoing', statusFilter === 'ONGOING' ? pagination?.total : null],
 		['COMPLETED', 'done', statusFilter === 'COMPLETED' ? pagination?.total : null],
 	]
+	const workshopOptions = [
+		{ value: 'all', label: label('all_workshops') },
+		...filterWorkshops
+			.map((shop) => ({
+				value: String(shop.id || shop._id),
+				label: shop.companyName || String(shop.id || shop._id),
+			}))
+			.filter((option, index, list) => list.findIndex((item) => item.value === option.value) === index)
+			.sort((a, b) => a.label.localeCompare(b.label, locale)),
+	]
+	const dateOptions = [
+		{ value: 'all', label: label('all_dates') },
+		{ value: 'today', label: label('today') },
+		{ value: 'week', label: label('this_week') },
+		{ value: 'month', label: label('this_month') },
+		{ value: '30d', label: label('last_30_days') },
+	]
+	const handleExport = () => {
+		exportRowsCsv(
+			'fixa2an-cases.csv',
+			[label('case'), label('customer'), label('vehicle'), label('status'), label('created_on'), label('workshop')],
+			rows.map((row) => {
+				const vehicle = row.vehicle || row.vehicleId
+				const car = [vehicle?.make, vehicle?.model].filter(Boolean).join(' ')
+				const plate = vehicle?.registrationNumber || vehicle?.licensePlate || ''
+				return [
+					caseNo(row.id || row._id),
+					row.customer?.name || '',
+					[car, plate].filter(Boolean).join(' · '),
+					label(statusKey(row.status)),
+					caseWhen(row.createdAt, locale),
+					row.workshop?.companyName || '',
+				]
+			}),
+		)
+	}
 	return (
 		<div className="min-w-0">
 			<PageTitle>{label('all_cases')}</PageTitle>
@@ -653,9 +849,9 @@ function CasesTable({ label, rows, loading, searchQuery, onSearch, statusFilter,
 					/>
 				</div>
 				<div className="admin-h-scroll overflow-x-auto flex gap-2 -mx-1 px-1">
-					<FilterChip>{label('all_workshops')}</FilterChip>
-					<FilterChip>{label('all_dates')}</FilterChip>
-					<button type="button" className="h-10 px-4 rounded-xl border border-[#1B8F3E] text-[#1B8F3E] text-sm font-semibold inline-flex items-center gap-2 shrink-0 whitespace-nowrap">
+					<DropdownSelect value={workshopFilter} onChange={onWorkshopFilter} options={workshopOptions} />
+					<DropdownSelect value={dateFilter} onChange={onDateFilter} options={dateOptions} />
+					<button type="button" onClick={handleExport} className="h-10 px-4 rounded-xl border border-[#1B8F3E] text-[#1B8F3E] text-sm font-semibold inline-flex items-center gap-2 shrink-0 whitespace-nowrap">
 						<Download className="w-4 h-4" />
 						{label('export')}
 					</button>
@@ -701,7 +897,7 @@ function CasesTable({ label, rows, loading, searchQuery, onSearch, statusFilter,
 										<span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${caseStatusClass(row.status)}`}>{label(statusKey(row.status))}</span>
 									</td>
 									<td className="py-3.5 pr-3 text-[#6B7280] whitespace-nowrap">{caseWhen(row.createdAt, locale)}</td>
-									<td className="py-3.5 pr-3 text-[#6B7280]">—</td>
+									<td className="py-3.5 pr-3 text-[#6B7280]">{row.workshop?.companyName || '—'}</td>
 									<td className="py-3.5"><button type="button" onClick={() => onView(row)} className="text-[#1B8F3E] font-semibold">{label('view')}</button></td>
 								</tr>
 							)
@@ -766,7 +962,35 @@ function workshopStatusView(workshop) {
 	return { key: 'status_active', className: 'bg-[#E7F6EC] text-[#3DAA62]' }
 }
 
-function WorkshopsTable({ label, rows, loading, searchQuery, onSearch, dateLabel, onView, pagination, onPage }) {
+function WorkshopsTable({
+	label,
+	rows,
+	loading,
+	searchQuery,
+	onSearch,
+	statusFilter = 'all',
+	onStatus,
+	cityFilter = 'all',
+	onCityFilter,
+	filterWorkshops = [],
+	dateLabel,
+	onView,
+	pagination,
+	onPage,
+}) {
+	const statusOptions = [
+		{ value: 'all', label: label('all_status') },
+		{ value: 'active', label: label('status_active') },
+		{ value: 'pending', label: label('status_awaiting') },
+		{ value: 'paused', label: label('status_paused') },
+		{ value: 'rejected', label: label('status_rejected') },
+	]
+	const cityOptions = [
+		{ value: 'all', label: label('all_places') },
+		...[...new Set(filterWorkshops.map((shop) => shop.city).filter(Boolean))]
+			.sort((a, b) => a.localeCompare(b))
+			.map((city) => ({ value: city, label: city })),
+	]
 	return (
 		<div className="min-w-0">
 			<PageTitle extra={<span className="inline-flex items-center h-10 px-4 rounded-xl bg-brand-btn text-white text-sm font-semibold whitespace-nowrap">+ {label('add_workshop')}</span>}>
@@ -782,8 +1006,8 @@ function WorkshopsTable({ label, rows, loading, searchQuery, onSearch, dateLabel
 					/>
 				</div>
 				<div className="admin-h-scroll overflow-x-auto flex gap-2 -mx-1 px-1">
-					<FilterChip>{label('all_status')}</FilterChip>
-					<FilterChip>{label('all_places')}</FilterChip>
+					<DropdownSelect value={statusFilter} onChange={onStatus} options={statusOptions} />
+					<DropdownSelect value={cityFilter} onChange={onCityFilter} options={cityOptions} />
 				</div>
 			</div>
 			<ScrollTable minClass="min-w-[720px]">
@@ -827,7 +1051,12 @@ function WorkshopsTable({ label, rows, loading, searchQuery, onSearch, dateLabel
 	)
 }
 
-function CustomersTable({ label, rows, loading, searchQuery, onSearch, dateLabel, pagination, onPage }) {
+function CustomersTable({ label, rows, loading, searchQuery, onSearch, statusFilter = 'all', onStatus, dateLabel, pagination, onPage }) {
+	const customerOptions = [
+		{ value: 'all', label: label('all_customers') },
+		{ value: 'active', label: label('active') },
+		{ value: 'inactive', label: label('inactive') },
+	]
 	return (
 		<div className="min-w-0">
 			<PageTitle>{label('customers')}</PageTitle>
@@ -841,7 +1070,7 @@ function CustomersTable({ label, rows, loading, searchQuery, onSearch, dateLabel
 					/>
 				</div>
 				<div className="self-start">
-					<FilterChip>{label('all_customers')}</FilterChip>
+					<DropdownSelect value={statusFilter} onChange={onStatus} options={customerOptions} />
 				</div>
 			</div>
 			<ScrollTable minClass="min-w-[720px]">
@@ -1217,10 +1446,13 @@ function StatisticsView({ label, period, setPeriod, requests, bookings, locale }
 							{label(key)}
 						</button>
 					))}
-					<span className="inline-flex items-center gap-2 h-9 px-3 rounded-full border border-[#E5E7EB] text-sm text-[#374151] whitespace-nowrap shrink-0">
-						{rangeLabel}
-						<ChevronDown className="w-4 h-4 text-[#9CA3AF]" />
-					</span>
+					<DropdownSelect
+						value={period}
+						onChange={setPeriod}
+						options={periods.map(([id, key]) => ({ value: id, label: label(key) }))}
+						displayLabel={rangeLabel}
+						buttonClassName="inline-flex items-center gap-2 h-9 px-3 rounded-full border border-[#E5E7EB] text-sm text-[#374151] whitespace-nowrap shrink-0 bg-white"
+					/>
 				</div>
 			</div>
 			<div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-5">
