@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Eye, EyeOff } from 'lucide-react'
 import loginEmail from '../assets/login-email-clear.png'
+import mainLogo from '../assets/main_logo.png'
 import toast from 'react-hot-toast'
 import Footer from '../components/Footer'
 import { useTranslation } from 'react-i18next'
@@ -72,7 +73,10 @@ export default function AdminLoginPage() {
 
 	return (
 		<div className="list-page-shell bg-[#F3F5F8]">
-			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 md:pt-16 lg:pt-20 pb-12">
+			<div className="flex justify-center pt-6 sm:pt-8 px-4">
+				<img src={mainLogo} alt="Fixa2an" className="h-11 sm:h-12 w-auto object-contain" />
+			</div>
+			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-12 lg:pt-16 pb-12">
 				<div className="grid gap-6 lg:gap-8 lg:grid-cols-2 lg:items-center">
 					<div className="order-1 lg:order-2 w-full max-w-md mx-auto lg:max-w-none px-2 sm:px-5 lg:px-8 text-center flex flex-col items-center justify-center">
 						<img
