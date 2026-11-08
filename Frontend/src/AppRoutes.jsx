@@ -10,6 +10,7 @@ import { RouteLoadingSkeleton } from './components/ui/Skeleton'
 import Navbar from './components/Navbar'
 import BottomNavManager from './components/BottomNavManager'
 import SignInPage from './pages/SignInPage'
+import AdminLoginPage from './pages/AdminLoginPage'
 import WorkshopLoginPage from './pages/WorkshopLoginPage'
 import SignUpPage from './pages/SignUpPage'
 import Auth2FAVerifyPage from './pages/Auth2FAVerifyPage'
@@ -145,6 +146,11 @@ function AdminEntry() {
 	)
 }
 
+function SignInEntry() {
+	if (isAdminHost()) return <AdminLoginPage />
+	return <SignInPage />
+}
+
 function RequestRedirect() {
 	const { id } = useParams()
 	return <Navigate to={`/offers?requestId=${id}`} replace />
@@ -181,13 +187,14 @@ function AppRoutes() {
 				<Route path="/cookies" element={<LegalPage pageKey="cookies" />} />
 				<Route path="/workshop/signup" element={<WorkshopSignupPage />} />
 				<Route path="/workshop/login" element={<WorkshopLoginPage />} />
-				<Route path="/auth/signin" element={<SignInPage />} />
+				<Route path="/auth/signin" element={<SignInEntry />} />
 				<Route path="/auth/signup" element={<SignUpPage />} />
 				<Route path="/auth/verify-email" element={<VerifyEmailPage />} />
 				<Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
 				<Route path="/auth/magic-link" element={<MagicLinkVerifyPage />} />
 				<Route path="/auth/2fa-verify" element={<Auth2FAVerifyPage />} />
-				<Route path="/signin" element={<SignInPage />} />
+				<Route path="/signin" element={<SignInEntry />} />
+				<Route path="/admin/login" element={<AdminLoginPage />} />
 				<Route path="/signup" element={<SignUpPage />} />
 				<Route
 					path="/dashboard"
