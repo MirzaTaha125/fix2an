@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { getRoleHomePath } from './utils/roleHome'
+import { getAdminHomePath, isAdminAppPath, isAdminHost } from './utils/adminHost'
 import { CustomerOfferCountProvider } from './context/CustomerOfferCountContext'
 import { CustomerUnreadCountProvider } from './context/CustomerUnreadCountContext'
 import { WorkshopUnreadCountProvider } from './context/WorkshopUnreadCountContext'
@@ -68,8 +69,8 @@ function PrivateRoute({ children, allowedRoles = [] }) {
 	}
 
 	if (allowedRoles.length > 0 && !allowedRoles.map(r => r.toUpperCase()).includes(userRole)) {
-		if (userRole === 'ADMIN' && location.pathname !== '/admin') {
-			return <Navigate to="/admin" replace />
+		if (userRole === 'ADMIN' && !isAdminAppPath(location.pathname)) {
+			return <Navigate to={getAdminHomePath()} replace />
 		} else if (userRole === 'WORKSHOP' && !location.pathname.startsWith('/workshop')) {
 			return <Navigate to="/workshop/dashboard" replace />
 		} else if (userRole !== 'ADMIN' && userRole !== 'WORKSHOP' && !['/dashboard', '/contract', '/offers', '/upload', '/profile', '/book-appointment', '/payment'].some((p) => location.pathname.startsWith(p))) {
@@ -100,8 +101,48 @@ function PrivateRoute({ children, allowedRoles = [] }) {
 function RootRedirect() {
 	const { user, loading } = useAuth()
 	if (loading) return <RouteLoadingSkeleton />
+
+	if (isAdminHost()) {
+		if (!user) return <Navigate to="/auth/signin" replace />
+		if (user.role?.toUpperCase() !== 'ADMIN') return <Navigate to="/auth/signin" replace />
+		return <AdminPage />
+	}
+
 	if (user) return <Navigate to={getRoleHomePath(user)} replace />
 	return <Navigate to="/upload" replace />
+}
+
+function AdminHostGuard({ children }) {
+	const location = useLocation()
+	const { user, loading } = useAuth()
+
+	if (!isAdminHost()) return children
+
+	const path = location.pathname
+	const allowed =
+		path === '/' ||
+		path.startsWith('/admin') ||
+		path.startsWith('/auth') ||
+		path === '/signin' ||
+		path === '/signup'
+
+	if (!allowed) {
+		if (!loading && user?.role?.toUpperCase() === 'ADMIN') {
+			return <Navigate to="/" replace />
+		}
+		return <Navigate to="/auth/signin" replace />
+	}
+
+	return children
+}
+
+function AdminEntry() {
+	if (isAdminHost()) return <Navigate to="/" replace />
+	return (
+		<PrivateRoute allowedRoles={['ADMIN']}>
+			<AdminPage />
+		</PrivateRoute>
+	)
 }
 
 function RequestRedirect() {
@@ -111,7 +152,7 @@ function RequestRedirect() {
 
 function AppFrame({ children }) {
 	const { pathname } = useLocation()
-	const isAdmin = pathname.startsWith('/admin')
+	const isAdmin = isAdminAppPath(pathname) || isAdminHost()
 	const isWorkshopArea = pathname === '/workshop' || pathname.startsWith('/workshop/')
 	const isCustomerWorkshopReviews = /^\/workshop\/[^/]+\/reviews\/?$/.test(pathname)
 	const isCustomer = !isAdmin && (!isWorkshopArea || isCustomerWorkshopReviews)
@@ -125,6 +166,7 @@ function AppRoutes() {
 		<WorkshopUnreadCountProvider>
 			<MobileBackProvider>
 			<AppFrame>
+				<AdminHostGuard>
 				<Routes>
 				<Route path="/" element={<RootRedirect />} />
 				<Route path="/en" element={<RootRedirect />} />
@@ -319,14 +361,7 @@ function AppRoutes() {
 						</PrivateRoute>
 					}
 				/>
-				<Route
-					path="/admin"
-					element={
-						<PrivateRoute allowedRoles={['ADMIN']}>
-							<AdminPage />
-						</PrivateRoute>
-					}
-				/>
+				<Route path="/admin" element={<AdminEntry />} />
 				<Route
 					path="/admin/workshops/:id"
 					element={
@@ -336,6 +371,7 @@ function AppRoutes() {
 					}
 				/>
 				</Routes>
+				</AdminHostGuard>
 				<BottomNavManager />
 			</AppFrame>
 			</MobileBackProvider>

@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { adminAPI } from '../services/api'
 import { getFullUrl } from '../config/api.js'
+import { getAdminHomePath } from '../utils/adminHost'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import {
@@ -88,12 +89,12 @@ export default function WorkshopDetailsPage() {
 				setWorkshop(foundPending)
 			} else {
 				toast.error(t('admin.workshops.details.workshop_not_found'))
-				navigate('/admin')
+				navigate(getAdminHomePath())
 			}
 		} catch (error) {
 			console.error('Failed to fetch workshop details:', error)
 			toast.error(t('admin.workshops.details.failed_load_details'))
-			navigate('/admin')
+			navigate(getAdminHomePath())
 		} finally {
 			setLoading(false)
 		}
@@ -118,7 +119,7 @@ export default function WorkshopDetailsPage() {
 			toast.success(t(`admin.workshops.${actionKey}`) || `Workshop ${action}ed successfully`)
 			
 			// Navigate back to admin page
-			navigate('/admin')
+			navigate(getAdminHomePath())
 		} catch (error) {
 			console.error('Failed to update workshop:', error)
 			toast.error(t('common.failed_update_workshop') || 'Failed to update workshop')
@@ -247,7 +248,7 @@ export default function WorkshopDetailsPage() {
 			<div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 sm:pb-16 w-full">
 				{/* Header */}
 				<div className="mb-6">
-					<Link to="/admin" className="inline-flex items-center gap-2 mb-4 text-sm text-gray-600 hover:text-[#05324f] transition-colors">
+					<Link to={getAdminHomePath()} className="inline-flex items-center gap-2 mb-4 text-sm text-gray-600 hover:text-[#05324f] transition-colors">
 						<ArrowLeft className="w-4 h-4" />
 						{t('admin.workshops.details.back_to_admin')}
 					</Link>

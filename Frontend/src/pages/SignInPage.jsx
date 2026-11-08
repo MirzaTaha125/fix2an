@@ -8,6 +8,7 @@ import Footer from '../components/Footer'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { getRoleHomePath } from '../utils/roleHome'
+import { isAdminHost } from '../utils/adminHost'
 import { authAPI } from '../services/api'
 import { AuthPageSkeleton } from '../components/ui/Skeleton'
 
@@ -17,14 +18,18 @@ export default function SignInPage() {
 	const [isSending, setIsSending] = useState(false)
 	const [sentEmail, setSentEmail] = useState('')
 	const [devMagicLinkUrl, setDevMagicLinkUrl] = useState('')
-	const { user, loading } = useAuth()
+	const { user, loading, logout } = useAuth()
 	const navigate = useNavigate()
 
 	useEffect(() => {
-		if (!loading && user) {
-			navigate(getRoleHomePath(user), { replace: true })
+		if (loading || !user) return
+		if (isAdminHost() && user.role?.toUpperCase() !== 'ADMIN') {
+			toast.error(t('errors.unauthorized') || 'Admin access only')
+			logout()
+			return
 		}
-	}, [user, loading, navigate])
+		navigate(getRoleHomePath(user), { replace: true })
+	}, [user, loading, navigate, logout, t])
 
 	const handleSend = async (event) => {
 		event.preventDefault()

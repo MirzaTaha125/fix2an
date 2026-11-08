@@ -1,9 +1,11 @@
+import { getAdminHomePath } from './adminHost'
+
 export function getRoleHomePath(user) {
 	if (!user) return '/upload'
 
 	const role = user.role?.toUpperCase()
 
-	if (role === 'ADMIN') return '/admin'
+	if (role === 'ADMIN') return getAdminHomePath()
 
 	if (role === 'WORKSHOP') {
 		const rawStatus = user.workshop?.verificationStatus?.toUpperCase()
@@ -22,7 +24,7 @@ export function getRoleLogoPath(user) {
 
 	const role = user.role?.toUpperCase()
 
-	if (role === 'ADMIN') return '/admin'
+	if (role === 'ADMIN') return getAdminHomePath()
 
 	if (role === 'WORKSHOP') {
 		const rawStatus = user.workshop?.verificationStatus?.toUpperCase()

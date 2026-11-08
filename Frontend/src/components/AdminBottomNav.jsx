@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Shield } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { getAdminHomePath } from '../utils/adminHost'
 
 const NavItemContent = ({ active, icon: Icon, label }) => {
 	return (
@@ -35,7 +36,7 @@ export default function AdminBottomNav() {
 
 			<div className="flex justify-around items-stretch w-full h-full relative z-20">
 				<Link 
-					to="/admin" 
+					to={getAdminHomePath()} 
 					className="flex-1 w-full h-full relative"
 				>
 					<NavItemContent 

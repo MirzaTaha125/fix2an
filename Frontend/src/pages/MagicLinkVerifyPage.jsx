@@ -7,6 +7,7 @@ import Footer from '../components/Footer'
 import { authAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { getRoleHomePath } from '../utils/roleHome'
+import { isAdminHost } from '../utils/adminHost'
 import { Skeleton } from '../components/ui/Skeleton'
 
 const SESSION_PREFIX = 'fixa2an-magic-link:'
@@ -103,6 +104,12 @@ export default function MagicLinkVerifyPage() {
 		verifyMagicLinkOnce(token)
 			.then(async ({ authToken, user, redirectTo }) => {
 				if (!active) return
+				if (isAdminHost() && user?.role?.toUpperCase() !== 'ADMIN') {
+					setStatus('error')
+					toast.error(t('errors.unauthorized') || 'Admin access only')
+					navigate('/auth/signin', { replace: true })
+					return
+				}
 				const destination = redirectTo || getRoleHomePath(user) || '/upload'
 				if (!claimTokenUi(token)) {
 					navigate(destination, { replace: true })

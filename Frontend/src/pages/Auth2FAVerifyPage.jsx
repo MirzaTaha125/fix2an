@@ -7,6 +7,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useTranslation } from 'react-i18next'
 import { AuthPageSkeleton } from '../components/ui/Skeleton'
+import { getAdminHomePath } from '../utils/adminHost'
 
 export default function Auth2FAVerifyPage() {
 	const { t } = useTranslation()
@@ -19,7 +20,7 @@ export default function Auth2FAVerifyPage() {
 
 	useEffect(() => {
 		if (!loading && user) {
-			navigate('/admin', { replace: true })
+			navigate(getAdminHomePath(), { replace: true })
 		}
 	}, [user, loading, navigate])
 
@@ -41,7 +42,7 @@ export default function Auth2FAVerifyPage() {
 			const result = await verify2FA(tempToken, code)
 			if (result.success) {
 				toast.success(t('success.login_successful'))
-				navigate('/admin', { replace: true })
+				navigate(getAdminHomePath(), { replace: true })
 			} else {
 				toast.error(result.message || t('auth.twofa.invalid_code'))
 			}
