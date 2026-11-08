@@ -6,6 +6,7 @@ import {
 	BarChart3,
 	Building2,
 	ChevronDown,
+	ChevronRight,
 	CreditCard,
 	Download,
 	FileText,
@@ -188,7 +189,7 @@ export default function AdminPanelView({
 	}, [requests])
 
 	return (
-		<div className="admin-app h-[100dvh] max-h-[100dvh] bg-[#F3F5F8] flex overflow-hidden">
+		<div className="admin-app h-[100dvh] max-h-[100dvh] bg-white lg:bg-[#F3F5F8] flex overflow-hidden">
 			<aside className="hidden lg:flex w-[248px] shrink-0 m-2 mr-0 bg-[#0B2540] text-white rounded-3xl flex-col py-6 px-4">
 				<img src={mainLogo} alt="Fixa2an" className="h-10 w-auto object-contain brightness-0 invert px-3" />
 				<nav className="mt-8 flex-1 space-y-1 overflow-y-auto">
@@ -214,41 +215,74 @@ export default function AdminPanelView({
 				</button>
 			</aside>
 
-			{open && (
-				<div className="lg:hidden fixed inset-0 z-50">
-					<button type="button" className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} aria-label="Close" />
-					<aside className="relative w-[min(280px,86vw)] h-full max-h-[100dvh] bg-[#0B2540] text-white flex flex-col pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] px-4 shadow-2xl">
-						<button type="button" onClick={() => setOpen(false)} className="absolute top-[max(1rem,env(safe-area-inset-top))] right-3 text-white/70 p-1" aria-label="Close">
-							<X className="w-5 h-5" />
-						</button>
-						<img src={mainLogo} alt="Fixa2an" className="h-10 w-auto object-contain brightness-0 invert px-3 mt-1" />
-						<nav className="mt-8 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-1">
-							{NAV.map((item) => {
-								const Icon = item.icon
-								const active = activeTab === item.id
-								return (
-									<button key={item.id} type="button" onClick={() => go(item.id)} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm ${active ? 'bg-brand-btn text-white' : 'text-white/80'}`}>
-										<Icon className="w-5 h-5 shrink-0" strokeWidth={1.75} />
-										{label(item.key)}
-									</button>
-								)
-							})}
-						</nav>
-						<button type="button" onClick={() => { setOpen(false); onLogout() }} className="mt-3 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:bg-white/10">
-							<LogOut className="w-4 h-4" />
-							{label('logout')}
-						</button>
-					</aside>
-				</div>
-			)}
-
 			<main className="flex-1 min-w-0 lg:m-2 bg-white lg:rounded-3xl overflow-y-auto overflow-x-hidden">
-				<div className="lg:hidden sticky top-0 z-20 relative bg-white/95 backdrop-blur-sm border-b border-[#EEF0F4] px-4 py-3 flex items-center justify-between pt-[max(0.75rem,env(safe-area-inset-top))]">
-					<button type="button" onClick={() => setOpen(true)} aria-label="Menu" className="p-1 -ml-1 shrink-0 w-9 h-9 inline-flex items-center justify-center">
-						<Menu className="w-5 h-5 text-[#0B2540]" />
-					</button>
-					<img src={mainLogo} alt="Fixa2an" className="h-8 w-auto object-contain absolute left-1/2 -translate-x-1/2 pointer-events-none" />
-					<span className="w-9 h-9 shrink-0" aria-hidden="true" />
+				<div className="lg:hidden sticky top-0 z-30 relative bg-white pt-[env(safe-area-inset-top,0px)]">
+					<div className="relative flex items-center h-14 px-3">
+						<button
+							type="button"
+							onClick={() => setOpen((value) => !value)}
+							className={`relative z-10 flex items-center justify-center h-11 w-11 -ml-1 text-[#0B2540] rounded-full transition-colors ${
+								open ? 'bg-gray-100' : 'hover:bg-gray-100'
+							}`}
+							aria-label={open ? 'Close' : 'Menu'}
+							aria-expanded={open}
+						>
+							{open ? <X className="w-6 h-6" strokeWidth={2} /> : <Menu className="w-6 h-6" />}
+						</button>
+						<div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+							<img src={mainLogo} alt="Fixa2an" className="h-12 w-auto object-contain" />
+						</div>
+						<span className="w-11 h-11 ml-auto shrink-0" aria-hidden="true" />
+					</div>
+
+					{open ? (
+						<>
+							<button
+								type="button"
+								className="fixed inset-0 z-30 cursor-default"
+								aria-label="Close"
+								onClick={() => setOpen(false)}
+							/>
+							<div className="absolute left-3 right-3 top-full z-40 rounded-2xl border border-[#0B2540]/20 bg-[#0B2540] shadow-[0_8px_30px_rgba(15,23,42,0.18)] overflow-hidden max-h-[min(70dvh,520px)] overflow-y-auto">
+								<nav className="py-1">
+									{NAV.map((item) => {
+										const Icon = item.icon
+										const active = activeTab === item.id
+										return (
+											<button
+												key={item.id}
+												type="button"
+												onClick={() => go(item.id)}
+												className={`flex items-center justify-between gap-3 w-[calc(100%-1rem)] mx-2 px-4 py-3.5 text-left text-[15px] font-semibold rounded-xl transition-colors ${
+													active ? 'bg-brand-btn text-white' : 'text-white/90 hover:bg-white/10'
+												}`}
+											>
+												<span className="flex items-center gap-3 min-w-0">
+													<Icon className="w-5 h-5 shrink-0" strokeWidth={1.75} />
+													<span className="truncate">{label(item.key)}</span>
+												</span>
+												<ChevronRight className="w-5 h-5 shrink-0 opacity-80" strokeWidth={1.75} />
+											</button>
+										)
+									})}
+									<button
+										type="button"
+										onClick={() => {
+											setOpen(false)
+											onLogout()
+										}}
+										className="flex items-center justify-between gap-3 w-[calc(100%-1rem)] mx-2 px-4 py-3.5 text-left text-[15px] font-semibold rounded-xl text-white/90 hover:bg-white/10"
+									>
+										<span className="flex items-center gap-3 min-w-0">
+											<LogOut className="w-5 h-5 shrink-0" strokeWidth={1.75} />
+											<span className="truncate">{label('logout')}</span>
+										</span>
+										<ChevronRight className="w-5 h-5 shrink-0 opacity-80" strokeWidth={1.75} />
+									</button>
+								</nav>
+							</div>
+						</>
+					) : null}
 				</div>
 				<div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
 					{activeTab === 'dashboard' && (
@@ -404,7 +438,7 @@ function ScrollTable({ children, minClass = 'min-w-[720px]' }) {
 
 function ChipRow({ children }) {
 	return (
-		<div className="admin-h-scroll overflow-x-auto flex gap-2 mb-4 pb-0.5 -mx-1 px-1">
+		<div className="admin-h-scroll no-scrollbar overflow-x-auto flex gap-2 mb-4 -mx-1 px-1">
 			{children}
 		</div>
 	)
@@ -516,19 +550,16 @@ function Overview({ label, stats, requests = [], bookings = [], locale, slices }
 
 	return (
 		<div>
-			<PageTitle
-				extra={
-					<DropdownSelect
-						value={rangePeriod}
-						onChange={setRangePeriod}
-						options={rangeOptions}
-						displayLabel={rangeLabel}
-						buttonClassName="inline-flex items-center gap-2 text-xs sm:text-sm text-[#374151] border border-[#E5E7EB] rounded-xl px-3 sm:px-4 min-h-[36px] sm:min-h-[40px] bg-white whitespace-nowrap"
-					/>
-				}
-			>
-				{label('overview')}
-			</PageTitle>
+			<div className="flex items-center justify-between gap-3 mb-5 sm:mb-6">
+				<h1 className="text-[1.35rem] sm:text-[1.65rem] font-bold text-[#0B2540] leading-tight">{label('overview')}</h1>
+				<DropdownSelect
+					value={rangePeriod}
+					onChange={setRangePeriod}
+					options={rangeOptions}
+					displayLabel={rangeLabel}
+					buttonClassName="inline-flex items-center gap-2 text-xs sm:text-sm text-[#374151] border border-[#E5E7EB] rounded-xl px-3 sm:px-4 min-h-[36px] sm:min-h-[40px] bg-white whitespace-nowrap shrink-0"
+				/>
+			</div>
 			<div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5 sm:gap-4 mb-5">
 				{cards.map((card) => (
 					<div key={card.name} className="rounded-2xl border border-[#E6E8EC] bg-white px-3.5 sm:px-5 py-3.5 sm:py-4 min-w-0">
@@ -832,7 +863,7 @@ function CasesTable({
 						key={value}
 						type="button"
 						onClick={() => onStatus(value)}
-						className={`h-9 px-3.5 sm:px-4 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 ${statusFilter === value ? 'bg-brand-btn text-white' : 'bg-[#F3F4F6] text-[#6B7280]'}`}
+						className={`h-8 px-3 rounded-xl text-[13px] lg:h-9 lg:px-4 lg:rounded-full lg:text-sm font-semibold whitespace-nowrap shrink-0 ${statusFilter === value ? 'bg-brand-btn text-white' : 'bg-[#F3F4F6] text-[#6B7280]'}`}
 					>
 						{label(key)}{count != null ? ` ${Number(count).toLocaleString('sv-SE')}` : ''}
 					</button>
@@ -993,9 +1024,10 @@ function WorkshopsTable({
 	]
 	return (
 		<div className="min-w-0">
-			<PageTitle extra={<span className="inline-flex items-center h-10 px-4 rounded-xl bg-brand-btn text-white text-sm font-semibold whitespace-nowrap">+ {label('add_workshop')}</span>}>
-				{label('workshops')}
-			</PageTitle>
+			<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-4 mb-5 sm:mb-6">
+				<h1 className="text-[1.35rem] sm:text-[1.65rem] font-bold text-[#0B2540] leading-tight">{label('workshops')}</h1>
+				<span className="hidden lg:inline-flex items-center h-10 px-4 rounded-xl bg-brand-btn text-white text-sm font-semibold whitespace-nowrap">+ {label('add_workshop')}</span>
+			</div>
 			<div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 mb-5">
 				<div className="flex items-center h-10 w-full sm:min-w-[220px] sm:flex-1 sm:max-w-sm rounded-xl border border-[#E5E7EB] px-3">
 					<input
@@ -1060,7 +1092,7 @@ function CustomersTable({ label, rows, loading, searchQuery, onSearch, statusFil
 	return (
 		<div className="min-w-0">
 			<PageTitle>{label('customers')}</PageTitle>
-			<div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-2 sm:gap-3 mb-5">
+			<div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3 mb-5">
 				<div className="flex items-center h-10 w-full sm:min-w-[260px] sm:flex-1 sm:max-w-md rounded-xl border border-[#E5E7EB] px-3">
 					<input
 						value={searchQuery}
@@ -1299,14 +1331,13 @@ function PaymentsView({ label, bookings, payTab, setPayTab, dateLabel, caseNo, o
 	]
 	return (
 		<div className="min-w-0">
-			<PageTitle extra={(
-				<button type="button" className="h-10 px-4 rounded-xl border border-[#E5E7EB] text-[#374151] text-sm font-semibold inline-flex items-center gap-2 whitespace-nowrap">
+			<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-4 mb-5 sm:mb-6">
+				<h1 className="text-[1.35rem] sm:text-[1.65rem] font-bold text-[#0B2540] leading-tight">{label('commissions')}</h1>
+				<button type="button" className="hidden lg:inline-flex h-10 px-4 rounded-xl border border-[#E5E7EB] text-[#374151] text-sm font-semibold items-center gap-2 whitespace-nowrap">
 					<Download className="w-4 h-4" />
 					{label('export')}
 				</button>
-			)}>
-				{label('commissions')}
-			</PageTitle>
+			</div>
 			<div className="admin-h-scroll overflow-x-auto flex gap-6 sm:gap-8 border-b border-[#EEF0F4] mb-5 -mx-1 px-1">
 				{tabs.map(([id, key]) => (
 					<button key={id} type="button" onClick={() => setPayTab(id)} className={`pb-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap shrink-0 ${payTab === id ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'}`}>
@@ -1517,9 +1548,10 @@ function ContentView({ label, tab, setTab, onOpen }) {
 	const pages = tab === 'blog' ? [] : CMS_PAGES.filter((page) => (tab === 'pages' ? page.key === 'pages' : page.key === tab))
 	return (
 		<div className="min-w-0">
-			<PageTitle extra={<span className="inline-flex items-center h-10 px-4 rounded-xl bg-brand-btn text-white text-sm font-semibold whitespace-nowrap">+ {label('new_page')}</span>}>
-				{label('content')}
-			</PageTitle>
+			<div className="flex items-center justify-between gap-3 mb-5 sm:mb-6">
+				<h1 className="text-[1.35rem] sm:text-[1.65rem] font-bold text-[#0B2540] leading-tight">{label('content')}</h1>
+				<span className="inline-flex items-center h-10 px-4 rounded-xl bg-brand-btn text-white text-sm font-semibold whitespace-nowrap shrink-0">+ {label('new_page')}</span>
+			</div>
 			<div className="admin-h-scroll overflow-x-auto flex gap-5 sm:gap-6 border-b border-[#EEF0F4] mb-4 -mx-1 px-1">
 				{tabs.map((key) => (
 					<button key={key} type="button" onClick={() => setTab(key)} className={`pb-3 text-sm font-semibold border-b-2 -mb-px whitespace-nowrap shrink-0 ${tab === key ? 'text-[#1B8F3E] border-[#1B8F3E]' : 'text-[#9CA3AF] border-transparent'}`}>
