@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext'
 import { Eye, EyeOff } from 'lucide-react'
 import loginEmail from '../assets/login-email-clear.png'
 import toast from 'react-hot-toast'
-import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useTranslation } from 'react-i18next'
 import { getRoleHomePath } from '../utils/roleHome'
@@ -73,8 +72,7 @@ export default function AdminLoginPage() {
 
 	return (
 		<div className="list-page-shell bg-[#F3F5F8]">
-			<Navbar />
-			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-36 lg:pt-40 pb-12">
+			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 md:pt-16 lg:pt-20 pb-12">
 				<div className="grid gap-6 lg:gap-8 lg:grid-cols-2 lg:items-center">
 					<div className="order-1 lg:order-2 w-full max-w-md mx-auto lg:max-w-none px-2 sm:px-5 lg:px-8 text-center flex flex-col items-center justify-center">
 						<img
